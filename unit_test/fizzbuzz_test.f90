@@ -14,10 +14,11 @@ contains
     end function testGenerator
 
     pure function normalNumbersAreString() result(test_result)
-        use Vegetables_m, only: TestResult_t
+        use Fizzbuzz_m, only: fizzbuzz
+        use Vegetables_m, only: TestResult_t, assertEquals
 
         type(TestResult_t) :: test_result
 
-        associate(a => test_result); end associate
+        test_result = assertEquals("1", fizzbuzz(1))
     end function normalNumbersAreString
 end module fizzbuzz_test

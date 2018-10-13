@@ -20,6 +20,9 @@ module Vegetables_m
     end type TestSuite_t
 
     type, public :: TestResult_t
+        private
+        logical :: passed
+        character(len=:), allocatable :: message
     end type TestResult_t
 
     abstract interface
@@ -30,7 +33,11 @@ module Vegetables_m
         end function test
     end interface
 
-    public :: describe, it
+    interface assertEquals
+        module procedure assertEqualsCharacter
+    end interface
+
+    public :: assertEquals, describe, it
 contains
     pure function describe(suite_name, cases) result(test_suite)
         character(len=*), intent(in) :: suite_name
@@ -47,4 +54,29 @@ contains
 
         test_case = TestCase_t(description, case)
     end function it
+
+    pure function assertEqualsCharacter(expected, actual) result(test_result)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(TestResult_t) :: test_result
+
+        character(len=:), allocatable :: message
+
+        allocate(character(len=0)::message)
+
+        if (expected == actual) then
+            test_result = TestResult_t(.true., "")
+        else
+            message = formatMessage(expected, actual)
+            test_result = TestResult_t(.false., message)
+        end if
+    end function assertEqualsCharacter
+
+    pure function formatMessage(expected, actual) result(message)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=:), allocatable :: message
+
+        message = "Expected: '" // expected // "' Actual: '" // actual // "'"
+    end function formatMessage
 end module Vegetables_m
