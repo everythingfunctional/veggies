@@ -4,7 +4,7 @@ module fizzbuzz_test
 
     public :: testGenerator
 contains
-    pure function testGenerator() result(test_suite)
+    function testGenerator() result(test_suite)
         use Vegetables_m, only: TestSuite_t, describe, it
 
         type(TestSuite_t) :: test_suite

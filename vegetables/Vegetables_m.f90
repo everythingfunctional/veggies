@@ -23,7 +23,7 @@ module Vegetables_m
     end type TestResult_t
 
     abstract interface
-        pure function test() result(test_result)
+        function test() result(test_result)
             import TestResult_t
 
             type(TestResult_t) :: test_result
@@ -40,7 +40,7 @@ contains
         test_suite = TestSuite_t(suite_name, TestCaseList_t(cases))
     end function describe
 
-    pure function it(description, case) result(test_case)
+    function it(description, case) result(test_case)
         character(len=*), intent(in) :: description
         procedure(test) :: case
         type(TestCase_t) :: test_case
