@@ -10,14 +10,13 @@ contains
 
         character(len=32) :: temp
 
-        result_ = ""
-        if (mod(number, 3) == 0) then
-            result_ = result_ // "fizz"
-        end if
-        if (mod(number, 5) == 0) then
-            result_ = result_ // "buzz"
-        end if
-        if (result_ == "") then
+        if (mod(number, 15) == 0) then
+            result_ = "fizzbuzz"
+        else if (mod(number, 3) == 0) then
+            result_ = "fizz"
+        else if (mod(number, 5) == 0) then
+            result_ = "buzz"
+        else
             write(temp, '(I0)') number
             result_ = trim(temp)
         end if
