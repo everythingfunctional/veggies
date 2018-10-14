@@ -19,6 +19,6 @@ contains
 
         type(TestResult_t) :: test_result
 
-        test_result = assertEquals("1", fizzbuzz(1))
+        test_result = assertEquals("1", trim(fizzbuzz(1)))
     end function normalNumbersAreString
 end module fizzbuzz_test
