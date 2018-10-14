@@ -16,6 +16,7 @@ module Vegetables_m
         type(TestCase_t), allocatable :: cases(:)
     contains
         private
+        procedure, public :: length => TestCaseListLength
         procedure, public :: runCases
     end type TestCaseList_t
 
@@ -25,6 +26,7 @@ module Vegetables_m
         type(TestCaseList_t) :: cases
     contains
         private
+        procedure, public :: numCases => testSuiteNumCases
         procedure, public :: runSuite
     end type TestSuite_t
 
@@ -56,6 +58,11 @@ module Vegetables_m
 
     interface assertEquals
         module procedure assertEqualsCharacter
+        module procedure assertEqualsInteger
+    end interface
+
+    interface toCharacter
+        module procedure integerToCharacter
     end interface
 
     public :: assertEquals, describe, it
@@ -93,6 +100,23 @@ contains
         end if
     end function assertEqualsCharacter
 
+    pure function assertEqualsInteger(expected, actual) result(test_result)
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        type(TestResult_t) :: test_result
+
+        character(len=:), allocatable :: message
+
+        allocate(character(len=0)::message)
+
+        if (expected == actual) then
+            test_result = TestResult_t(.true., "")
+        else
+            message = formatMessage(toCharacter(expected), toCharacter(actual))
+            test_result = TestResult_t(.false., message)
+        end if
+    end function assertEqualsInteger
+
     pure function formatMessage(expected, actual) result(message)
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
@@ -128,4 +152,32 @@ contains
                 suite_name = self%suite_name, &
                 results = self%cases%runCases())
     end function runSuite
+
+    pure function integerToCharacter(num) result(string)
+        integer, intent(in) :: num
+        character(len=:), allocatable :: string
+
+        character(len=12) :: temp
+
+        write(temp, '(I0)') num
+        string = trim(temp)
+    end function integerToCharacter
+
+    elemental function testSuiteNumCases(self) result(num_cases)
+        class(TestSuite_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%cases%length()
+    end function testSuiteNumCases
+
+    pure function testCaseListLength(self) result(length)
+        class(TestCaseList_t), intent(in) :: self
+        integer :: length
+
+        if (allocated(self%cases)) then
+            length = size(self%cases)
+        else
+            length = 0
+        end if
+    end function testCaseListLength
 end module Vegetables_m
