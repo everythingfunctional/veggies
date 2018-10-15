@@ -50,6 +50,9 @@ module Vegetables_m
         private
         character(len=:), allocatable :: collection_name
         type(TestCaseResult_t), allocatable :: results(:)
+    contains
+        private
+        procedure, public :: passed => TestCollectionResultPassed
     end type TestCollectionResult_t
 
     abstract interface
@@ -199,12 +202,19 @@ contains
         end if
     end function testCaseListLength
 
-    pure function TestCaseResultPassed(self) result(passed)
+    elemental function TestCaseResultPassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
         logical :: passed
 
         passed = self%test_result%passed
     end function TestCaseResultPassed
+
+    pure function TestCollectionResultPassed(self) result(passed)
+        class(TestCollectionResult_t), intent(in) :: self
+        logical :: passed
+
+        passed = all(self%results%passed())
+    end function TestCollectionResultPassed
 
     subroutine executeEverything(test_collections)
         type(TestCollection_t), intent(in) :: test_collections(:)
