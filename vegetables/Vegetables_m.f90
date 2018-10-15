@@ -209,7 +209,7 @@ contains
         passed = self%test_result%passed
     end function TestCaseResultPassed
 
-    pure function TestCollectionResultPassed(self) result(passed)
+    elemental function TestCollectionResultPassed(self) result(passed)
         class(TestCollectionResult_t), intent(in) :: self
         logical :: passed
 
@@ -225,6 +225,8 @@ contains
 
         allocate(test_collection_results(size(test_collections)))
         test_collection_results = test_collections%runCollection()
+
+        call reportResults(test_collection_results)
     end subroutine
 
     subroutine reportTestsToRun(test_collections)
@@ -241,4 +243,20 @@ contains
         write(output_unit, '(A,I0,A,I0,A)') &
                 "Running ", num_tests, " tests across ", num_collections, " collections"
     end subroutine
+
+    subroutine reportResults(test_collection_results)
+        use iso_fortran_env, only: error_unit, output_unit
+        type(TestCollectionResult_t), intent(in) :: test_collection_results(:)
+
+        integer :: num_collections
+
+        num_collections = size(test_collection_results)
+        if (all(test_collection_results%passed())) then
+            write(output_unit, '(A,I0,A)') "All ", num_collections, " passed."
+        else
+            write(error_unit, '(A,I0,A,I0,A)') &
+                    "Only ", count(test_collection_results%passed()), " of ", num_collections, " passed."
+            stop 1
+        end if
+    end subroutine reportResults
 end module Vegetables_m
