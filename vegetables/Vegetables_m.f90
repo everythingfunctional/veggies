@@ -41,6 +41,9 @@ module Vegetables_m
         private
         character(len=:), allocatable :: description
         type(TestResult_t) :: test_result
+    contains
+        private
+        procedure, public :: passed => TestCaseResultPassed
     end type TestCaseResult_t
 
     type, public :: TestCollectionResult_t
@@ -66,7 +69,7 @@ module Vegetables_m
         module procedure integerToCharacter
     end interface
 
-    public :: assertEquals, describe, it, executeEverything
+    public :: assertEquals, assertThat, describe, it, executeEverything
 contains
     pure function describe(collection_name, cases) result(test_collection)
         character(len=*), intent(in) :: collection_name
@@ -117,6 +120,13 @@ contains
             test_result = TestResult_t(.false., message)
         end if
     end function assertEqualsInteger
+
+    pure function assertThat(condition) result(test_result)
+        logical, intent(in) :: condition
+        type(TestResult_t) :: test_result
+
+        test_result = TestResult_t(condition, "Wasn't True")
+    end function assertThat
 
     pure function formatMessage(expected, actual) result(message)
         character(len=*), intent(in) :: expected
@@ -188,6 +198,13 @@ contains
             length = 0
         end if
     end function testCaseListLength
+
+    pure function TestCaseResultPassed(self) result(passed)
+        class(TestCaseResult_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%test_result%passed
+    end function TestCaseResultPassed
 
     subroutine executeEverything(test_collections)
         type(TestCollection_t), intent(in) :: test_collections(:)
