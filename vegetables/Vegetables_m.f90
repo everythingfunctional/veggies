@@ -194,7 +194,24 @@ contains
 
         type(TestCollectionResult_t), allocatable :: test_collection_results(:)
 
+        call reportTestsToRun(test_collections)
+
         allocate(test_collection_results(size(test_collections)))
         test_collection_results = test_collections%runCollection()
+    end subroutine
+
+    subroutine reportTestsToRun(test_collections)
+        use iso_fortran_env, only: output_unit
+
+        type(TestCollection_t), intent(in) :: test_collections(:)
+
+        integer :: num_collections
+        integer :: num_tests
+
+        num_collections = size(test_collections)
+        num_tests = sum(test_collections%numCases())
+
+        write(output_unit, '(A,I0,A,I0,A)') &
+                "Running ", num_tests, " tests across ", num_collections, " collections"
     end subroutine
 end module Vegetables_m
