@@ -1,14 +1,14 @@
 program test_runner
-    use Vegetables_m,  only: TestSuite_t, TestSuiteResult_t
-    use test_suite_test, only: test_suite_testGenerator => testGenerator
+    use Vegetables_m,  only: TestCollection_t, TestCollectionResult_t
+    use test_collection_test, only: test_collection_testGenerator => testGenerator
 
     implicit none
 
-    integer, parameter :: NUM_TEST_SUITES = 1
-    type(TestSuite_t) :: test_suites(NUM_TEST_SUITES)
-    type(TestSuiteResult_t) :: test_suite_results(NUM_TEST_SUITES)
+    integer, parameter :: NUM_test_collectionS = 1
+    type(TestCollection_t) :: test_collections(NUM_test_collectionS)
+    type(TestCollectionResult_t) :: test_collection_results(NUM_test_collectionS)
 
-    test_suites(1) = test_suite_testGenerator()
+    test_collections(1) = test_collection_testGenerator()
 
-    test_suite_results = test_suites%runSuite()
+    test_collection_results = test_collections%runSuite()
 end program test_runner

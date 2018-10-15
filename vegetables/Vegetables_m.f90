@@ -20,15 +20,15 @@ module Vegetables_m
         procedure, public :: runCases
     end type TestCaseList_t
 
-    type, public :: TestSuite_t
+    type, public :: TestCollection_t
         private
-        character(len=:), allocatable :: suite_name
+        character(len=:), allocatable :: collection_name
         type(TestCaseList_t) :: cases
     contains
         private
-        procedure, public :: numCases => testSuiteNumCases
+        procedure, public :: numCases => TestCollectionNumCases
         procedure, public :: runSuite
-    end type TestSuite_t
+    end type TestCollection_t
 
     type, public :: TestResult_t
         private
@@ -42,11 +42,11 @@ module Vegetables_m
         type(TestResult_t) :: test_result
     end type TestCaseResult_t
 
-    type, public :: TestSuiteResult_t
+    type, public :: TestCollectionResult_t
         private
-        character(len=:), allocatable :: suite_name
+        character(len=:), allocatable :: collection_name
         type(TestCaseResult_t), allocatable :: results(:)
-    end type TestSuiteResult_t
+    end type TestCollectionResult_t
 
     abstract interface
         pure function test() result(test_result)
@@ -67,12 +67,12 @@ module Vegetables_m
 
     public :: assertEquals, describe, it
 contains
-    pure function describe(suite_name, cases) result(test_suite)
-        character(len=*), intent(in) :: suite_name
+    pure function describe(collection_name, cases) result(test_collection)
+        character(len=*), intent(in) :: collection_name
         type(TestCase_t), intent(in) :: cases(:)
-        type(TestSuite_t) :: test_suite
+        type(TestCollection_t) :: test_collection
 
-        test_suite = TestSuite_t(suite_name, TestCaseList_t(cases))
+        test_collection = TestCollection_t(collection_name, TestCaseList_t(cases))
     end function describe
 
     pure function it(description, case) result(test_case)
@@ -144,12 +144,12 @@ contains
         end if
     end function runCases
 
-    elemental function runSuite(self) result(test_suite_result)
-        class(TestSuite_t), intent(in) :: self
-        type(TestSuiteResult_t) :: test_suite_result
+    elemental function runSuite(self) result(test_collection_result)
+        class(TestCollection_t), intent(in) :: self
+        type(TestCollectionResult_t) :: test_collection_result
 
-        test_suite_result = TestSuiteResult_t( &
-                suite_name = self%suite_name, &
+        test_collection_result = TestCollectionResult_t( &
+                collection_name = self%collection_name, &
                 results = self%cases%runCases())
     end function runSuite
 
@@ -163,12 +163,12 @@ contains
         string = trim(temp)
     end function integerToCharacter
 
-    elemental function testSuiteNumCases(self) result(num_cases)
-        class(TestSuite_t), intent(in) :: self
+    elemental function TestCollectionNumCases(self) result(num_cases)
+        class(TestCollection_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%cases%length()
-    end function testSuiteNumCases
+    end function TestCollectionNumCases
 
     pure function testCaseListLength(self) result(length)
         class(TestCaseList_t), intent(in) :: self
