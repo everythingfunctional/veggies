@@ -27,7 +27,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: numCases => TestCollectionNumCases
-        procedure, public :: runSuite
+        procedure, public :: runCollection
     end type TestCollection_t
 
     type, public :: TestResult_t
@@ -65,7 +65,7 @@ module Vegetables_m
         module procedure integerToCharacter
     end interface
 
-    public :: assertEquals, describe, it
+    public :: assertEquals, describe, it, executeEverything
 contains
     pure function describe(collection_name, cases) result(test_collection)
         character(len=*), intent(in) :: collection_name
@@ -144,14 +144,14 @@ contains
         end if
     end function runCases
 
-    elemental function runSuite(self) result(test_collection_result)
+    elemental function runCollection(self) result(test_collection_result)
         class(TestCollection_t), intent(in) :: self
         type(TestCollectionResult_t) :: test_collection_result
 
         test_collection_result = TestCollectionResult_t( &
                 collection_name = self%collection_name, &
                 results = self%cases%runCases())
-    end function runSuite
+    end function runCollection
 
     pure function integerToCharacter(num) result(string)
         integer, intent(in) :: num
@@ -180,4 +180,13 @@ contains
             length = 0
         end if
     end function testCaseListLength
+
+    subroutine executeEverything(test_collections)
+        type(TestCollection_t), intent(in) :: test_collections(:)
+
+        type(TestCollectionResult_t), allocatable :: test_collection_results(:)
+
+        allocate(test_collection_results(size(test_collections)))
+        test_collection_results = test_collections%runCollection()
+    end subroutine
 end module Vegetables_m
