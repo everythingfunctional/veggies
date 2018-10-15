@@ -9,6 +9,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: runCase
+        procedure, public :: getDescription => testCaseGetDescription
     end type TestCase_t
 
     type, public :: TestCaseList_t
@@ -133,6 +134,13 @@ contains
                 description = self%description, &
                 test_result = self%case_())
     end function runCase
+
+    pure function testCaseGetDescription(self) result(description)
+        class(TestCase_t), intent(in) :: self
+        character(len=:), allocatable :: description
+
+        description = self%description
+    end function testCaseGetDescription
 
     pure function runCases(self) result(test_case_results)
         class(TestCaseList_t), intent(in) :: self
