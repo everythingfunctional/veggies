@@ -1,6 +1,7 @@
 program run_tests
-    use Vegetables_m
+    use Vegetables_m, only: runTests
+
     implicit none
 
-    print *, "Running Tests"
+    call runTests
 end program run_tests
