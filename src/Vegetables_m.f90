@@ -59,6 +59,12 @@ module Vegetables_m
         end function statNum
     end interface
 
+    type :: Result_t
+        private
+        logical :: passed
+        type(VegetableString_t) :: message
+    end type Result_t
+
     type, public, extends(Test_t) :: TestCase_t
         private
         procedure(test_), nopass, pointer :: test
@@ -69,17 +75,13 @@ module Vegetables_m
     end type TestCase_t
 
     type, public, extends(TestResult_t) :: TestCaseResult_t
+        private
+        type(Result_t) :: result_
     contains
         private
         procedure, public :: numCases => testCaseNumCases
         procedure, public :: passed => testCasePassed
     end type TestCaseResult_t
-
-    type :: Result_t
-        private
-        logical :: passed
-        type(VegetableString_t) :: message
-    end type Result_t
 
     interface
         pure function test_() result(result)
@@ -190,7 +192,9 @@ contains
         class(TestCase_t), intent(in) :: self
         class(TestResult_t), allocatable :: test_result
 
-        test_result = TestCaseResult_t(description_ = self%description_)
+        test_result = TestCaseResult_t( &
+                description_ = self%description_, &
+                result_ = self%test())
     end function runTestCase
 
     pure function testCaseNumCases(self) result(num_cases)
