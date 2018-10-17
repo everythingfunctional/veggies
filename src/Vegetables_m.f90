@@ -23,6 +23,7 @@ module Vegetables_m
     type, abstract, public :: TestResult_t
     contains
         private
+        procedure(statNum), pass(self), public, deferred :: numCases
         procedure(passed_), pass(self), public, deferred :: passed
     end type TestResult_t
 
@@ -47,6 +48,13 @@ module Vegetables_m
             class(TestResult_t), intent(in) :: self
             logical :: passed_
         end function passed_
+
+        pure function statNum(self) result(num)
+            import TestResult_t
+
+            class(TestResult_t), intent(in) :: self
+            integer :: num
+        end function statNum
     end interface
 
     type, public, extends(Test_t) :: TestCase_t
@@ -59,6 +67,7 @@ module Vegetables_m
     type, public, extends(TestResult_t) :: TestCaseResult_t
     contains
         private
+        procedure, public :: numCases => testCaseNumCases
         procedure, public :: passed => testCasePassed
     end type TestCaseResult_t
 
@@ -66,15 +75,28 @@ module Vegetables_m
 contains
     subroutine runTests(tests)
         use iso_fortran_env, only: output_unit
+
         class(Test_t) :: tests
+
+        integer :: num_cases
         class(TestResult_t), allocatable :: test_result
 
         write(output_unit, *) "Running Tests"
         write(output_unit, *) tests%description()
         test_result = tests%run()
         if (test_result%passed()) then
+            num_cases = test_result%numCases()
+            call writePassingReport(num_cases)
         end if
     end subroutine
+
+    subroutine writePassingReport(num_cases)
+        use iso_fortran_env, only: output_unit
+
+        integer, intent(in) :: num_cases
+
+        write(output_unit, *) "All ", num_cases, " Passed"
+    end subroutine writePassingReport
 
     pure function SUCCESSFUL() result(test_case)
         type(TestCase_t) :: test_case
@@ -128,6 +150,14 @@ contains
         associate(a => self); end associate
         test_result = TestCaseResult_t()
     end function runTestCase
+
+    pure function testCaseNumCases(self) result(num_cases)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self); end associate
+        num_cases = 1
+    end function testCaseNumCases
 
     pure function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
