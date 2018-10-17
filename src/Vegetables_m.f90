@@ -49,10 +49,11 @@ module Vegetables_m
     public :: runTests, SUCCESSFUL, TODO
 contains
     subroutine runTests(tests)
+        use iso_fortran_env, only: output_unit
         class(Test_t) :: tests
 
-        print *, "Running Tests"
-        print *, tests%description()
+        write(output_unit, *) "Running Tests"
+        write(output_unit, *) tests%description()
     end subroutine
 
     pure function SUCCESSFUL() result(test_case)
