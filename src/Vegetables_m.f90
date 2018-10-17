@@ -209,7 +209,6 @@ contains
         class(TestCaseResult_t), intent(in) :: self
         logical :: passed
 
-        associate(a => self); end associate
-        passed = .true.
+        passed = self%result_%passed
     end function testCasePassed
 end module Vegetables_m
