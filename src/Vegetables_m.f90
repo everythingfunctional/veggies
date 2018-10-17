@@ -46,14 +46,19 @@ module Vegetables_m
         procedure, public :: run => runTestCase
     end type TestCase_t
 
+    type, public, extends(TestResult_t) :: TestCaseResult_t
+    end type TestCaseResult_t
+
     public :: runTests, SUCCESSFUL, TODO
 contains
     subroutine runTests(tests)
         use iso_fortran_env, only: output_unit
         class(Test_t) :: tests
+        class(TestResult_t), allocatable :: test_result
 
         write(output_unit, *) "Running Tests"
         write(output_unit, *) tests%description()
+        test_result = tests%run()
     end subroutine
 
     pure function SUCCESSFUL() result(test_case)
@@ -105,6 +110,7 @@ contains
         class(TestCase_t), intent(in) :: self
         class(TestResult_t), allocatable :: test_result
 
-        associate(a => self, b => test_result); end associate
+        associate(a => self); end associate
+        test_result = TestCaseResult_t()
     end function runTestCase
 end module Vegetables_m
