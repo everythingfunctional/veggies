@@ -74,6 +74,9 @@ module Vegetables_m
     end type TestCaseResult_t
 
     type :: Result_t
+        private
+        logical :: passed
+        type(VegetableString_t) :: message
     end type Result_t
 
     interface
@@ -120,25 +123,38 @@ contains
     pure function SUCCEEDS()
         type(TestCase_t) :: SUCCEEDS
 
-        SUCCEEDS = TestCase_t(description_ = toString("SUCCEEDS"), test = succeed)
+        SUCCEEDS = TestCase_t(description_ = toString("SUCCEEDS"), test = alwaysSucceed)
     end function SUCCEEDS
 
-    pure function succeed() result(test_result)
+    pure function alwaysSucceed() result(test_result)
         type(Result_t) :: test_result
 
-        test_result = Result_t()
+        test_result = succeed()
+    end function alwaysSucceed
+
+    pure function succeed() result(success)
+        type(Result_t) :: success
+
+        success = Result_t(passed = .true., message = toString(""))
     end function succeed
 
     pure function TODO() result(test_case)
         type(TestCase_t) :: test_case
 
-        test_case = TestCase_t(description_ = toString("TODO"), test = fail)
+        test_case = TestCase_t(description_ = toString("TODO"), test = alwaysFail)
     end function TODO
 
-    pure function fail() result(test_result)
+    pure function alwaysFail() result(test_result)
         type(Result_t) :: test_result
 
-        test_result = Result_t()
+        test_result = fail(toString("Intentional Failure"))
+    end function alwaysFail
+
+    pure function fail(message) result(failure)
+        type(VegetableString_t), intent(in) :: message
+        type(Result_t) :: failure
+
+        failure = Result_t(passed = .false., message = message)
     end function fail
 
     pure function toString(string_in) result(string_out)
