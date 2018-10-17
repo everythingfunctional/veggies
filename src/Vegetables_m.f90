@@ -58,6 +58,8 @@ module Vegetables_m
     end interface
 
     type, public, extends(Test_t) :: TestCase_t
+        private
+        procedure(test_), nopass, pointer :: test
     contains
         private
         procedure, public :: description => testCaseDescription
@@ -70,6 +72,17 @@ module Vegetables_m
         procedure, public :: numCases => testCaseNumCases
         procedure, public :: passed => testCasePassed
     end type TestCaseResult_t
+
+    type :: Result_t
+    end type Result_t
+
+    interface
+        pure function test_() result(result)
+            import Result_t
+
+            type(Result_t) :: result
+        end function test_
+    end interface
 
     public :: runTests, SUCCESSFUL, TODO
 contains
@@ -107,14 +120,26 @@ contains
     pure function SUCCEEDS()
         type(TestCase_t) :: SUCCEEDS
 
-        SUCCEEDS = TestCase_t(description_ = toString("SUCCEEDS"))
+        SUCCEEDS = TestCase_t(description_ = toString("SUCCEEDS"), test = succeed)
     end function SUCCEEDS
+
+    pure function succeed() result(test_result)
+        type(Result_t) :: test_result
+
+        test_result = Result_t()
+    end function succeed
 
     pure function TODO() result(test_case)
         type(TestCase_t) :: test_case
 
-        test_case = TestCase_t(description_ = toString("TODO"))
+        test_case = TestCase_t(description_ = toString("TODO"), test = fail)
     end function TODO
+
+    pure function fail() result(test_result)
+        type(Result_t) :: test_result
+
+        test_result = Result_t()
+    end function fail
 
     pure function toString(string_in) result(string_out)
         character(len=*), intent(in) :: string_in
