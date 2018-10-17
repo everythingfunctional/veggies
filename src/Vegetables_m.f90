@@ -17,7 +17,11 @@ module Vegetables_m
     contains
         private
         procedure(description_), pass(self), public, deferred :: description
+        procedure(run_), pass(self), public, deferred :: run
     end type Test_t
+
+    type, abstract, public :: TestResult_t
+    end type TestResult_t
 
     abstract interface
         pure function description_(self)
@@ -26,12 +30,20 @@ module Vegetables_m
             class(Test_t), intent(in) :: self
             type(VegetableString_t) :: description_
         end function description_
+
+        pure function run_(self) result(test_result)
+            import Test_t, TestResult_t
+
+            class(Test_t), intent(in) :: self
+            class(TestResult_t), allocatable :: test_result
+        end function run_
     end interface
 
     type, public, extends(Test_t) :: TestCase_t
     contains
         private
         procedure, public :: description => testCaseDescription
+        procedure, public :: run => runTestCase
     end type TestCase_t
 
     public :: runTests, SUCCESSFUL, TODO
@@ -87,4 +99,11 @@ contains
 
         description = self%description_
     end function testCaseDescription
+
+    pure function runTestCase(self) result(test_result)
+        class(TestCase_t), intent(in) :: self
+        class(TestResult_t), allocatable :: test_result
+
+        associate(a => self, b => test_result); end associate
+    end function runTestCase
 end module Vegetables_m
