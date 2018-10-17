@@ -21,6 +21,9 @@ module Vegetables_m
     end type Test_t
 
     type, abstract, public :: TestResult_t
+    contains
+        private
+        procedure(passed_), pass(self), public, deferred :: passed
     end type TestResult_t
 
     abstract interface
@@ -37,6 +40,13 @@ module Vegetables_m
             class(Test_t), intent(in) :: self
             class(TestResult_t), allocatable :: test_result
         end function run_
+
+        pure function passed_(self)
+            import TestResult_t
+
+            class(TestResult_t), intent(in) :: self
+            logical :: passed_
+        end function passed_
     end interface
 
     type, public, extends(Test_t) :: TestCase_t
@@ -47,6 +57,9 @@ module Vegetables_m
     end type TestCase_t
 
     type, public, extends(TestResult_t) :: TestCaseResult_t
+    contains
+        private
+        procedure, public :: passed => testCasePassed
     end type TestCaseResult_t
 
     public :: runTests, SUCCESSFUL, TODO
@@ -59,6 +72,8 @@ contains
         write(output_unit, *) "Running Tests"
         write(output_unit, *) tests%description()
         test_result = tests%run()
+        if (test_result%passed()) then
+        end if
     end subroutine
 
     pure function SUCCESSFUL() result(test_case)
@@ -113,4 +128,12 @@ contains
         associate(a => self); end associate
         test_result = TestCaseResult_t()
     end function runTestCase
+
+    pure function testCasePassed(self) result(passed)
+        class(TestCaseResult_t), intent(in) :: self
+        logical :: passed
+
+        associate(a => self); end associate
+        passed = .true.
+    end function testCasePassed
 end module Vegetables_m
