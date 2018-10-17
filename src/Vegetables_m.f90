@@ -21,6 +21,8 @@ module Vegetables_m
     end type Test_t
 
     type, abstract, public :: TestResult_t
+        private
+        type(VegetableString_t) :: description_
     contains
         private
         procedure(statNum), pass(self), public, deferred :: numCases
@@ -188,8 +190,7 @@ contains
         class(TestCase_t), intent(in) :: self
         class(TestResult_t), allocatable :: test_result
 
-        associate(a => self); end associate
-        test_result = TestCaseResult_t()
+        test_result = TestCaseResult_t(description_ = self%description_)
     end function runTestCase
 
     pure function testCaseNumCases(self) result(num_cases)
