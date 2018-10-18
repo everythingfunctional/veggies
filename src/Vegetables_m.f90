@@ -121,7 +121,11 @@ module Vegetables_m
         end function test_
     end interface
 
-    public :: testThat, runTests, SUCCESSFUL, TODO
+    interface operator(.and.)
+        module procedure testCollectionAndTest
+    end interface
+
+    public :: operator(.and.), testThat, runTests, SUCCESSFUL, TODO
 contains
     pure function testThat(test_case) result(test_collection)
         class(Test_t), intent(in) :: test_case
@@ -131,6 +135,23 @@ contains
                 description_ = toString("Test That"), &
                 tests = [TestItem_t(test_case)])
     end function testThat
+
+    pure function testCollectionAndTest(test_collection, test) result(new_collection)
+        type(TestCollection_t), intent(in) :: test_collection
+        class(Test_t), intent(in) :: test
+        type(TestCollection_t) :: new_collection
+
+        integer :: new_num_tests
+        integer :: prev_num_tests
+
+        prev_num_tests = size(test_collection%tests)
+        new_num_tests = prev_num_tests + 1
+
+        new_collection%description_ = test_collection%description_
+        allocate(new_collection%tests(new_num_tests))
+        new_collection%tests(1:prev_num_tests) = test_collection%tests(1:prev_num_tests)
+        new_collection%tests(new_num_tests) = TestItem_t(test)
+    end function testCollectionAndTest
 
     subroutine runTests(tests)
         use iso_fortran_env, only: error_unit, output_unit
