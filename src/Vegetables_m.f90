@@ -74,6 +74,19 @@ module Vegetables_m
         procedure, public :: run => runTestCase
     end type TestCase_t
 
+    type :: TestItem_t
+        private
+        class(Test_t), allocatable :: test
+    end type TestItem_t
+
+    type, public, extends(Test_t) :: TestCollection_t
+        private
+        type(TestItem_t), allocatable :: tests(:)
+    contains
+        procedure, public :: description => testCollectionDescription
+        procedure, public :: run => runTestCollection
+    end type TestCollection_t
+
     type, public, extends(TestResult_t) :: TestCaseResult_t
         private
         type(Result_t) :: result_
@@ -82,6 +95,20 @@ module Vegetables_m
         procedure, public :: numCases => testCaseNumCases
         procedure, public :: passed => testCasePassed
     end type TestCaseResult_t
+
+    type :: TestResultItem_t
+        private
+        class(TestResult_t), allocatable :: test_result
+    end type TestResultItem_t
+
+    type, public, extends(TestResult_t) :: TestCollectionResult_t
+        private
+        type(TestResultItem_t), allocatable :: results(:)
+    contains
+        private
+        procedure, public :: numCases => testCollectionNumCases
+        procedure, public :: passed => testCollectionPassed
+    end type TestCollectionResult_t
 
     interface
         pure function test_() result(result)
@@ -211,4 +238,34 @@ contains
 
         passed = self%result_%passed
     end function testCasePassed
+
+    pure function testCollectionDescription(self) result(description)
+        class(TestCollection_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%description_
+    end function testCollectionDescription
+
+    pure function runTestCollection(self) result(test_result)
+        class(TestCollection_t), intent(in) :: self
+        class(TestResult_t), allocatable :: test_result
+
+        associate(a => self, b => test_result); end associate
+    end function runTestCollection
+
+    pure function testCollectionNumCases(self) result(num_cases)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self); end associate
+        num_cases = 1
+    end function testCollectionNumCases
+
+    pure function testCollectionPassed(self) result(passed)
+        class(TestCollectionResult_t), intent(in) :: self
+        logical :: passed
+
+        associate(a => self); end associate
+        passed = .true.
+    end function testCollectionPassed
 end module Vegetables_m
