@@ -137,6 +137,7 @@ contains
             call writePassingReport(num_cases)
         else
             call writeFailingReport
+            stop 1
         end if
     end subroutine
 
