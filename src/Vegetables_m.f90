@@ -78,6 +78,8 @@ module Vegetables_m
     type :: TestItem_t
         private
         class(Test_t), allocatable :: test
+    contains
+        procedure, public :: run => runTestItem
     end type TestItem_t
 
     type, public, extends(Test_t) :: TestCollection_t
@@ -119,8 +121,17 @@ module Vegetables_m
         end function test_
     end interface
 
-    public :: runTests, SUCCESSFUL, TODO
+    public :: testThat, runTests, SUCCESSFUL, TODO
 contains
+    pure function testThat(test_case) result(test_collection)
+        class(Test_t), intent(in) :: test_case
+        type(TestCollection_t) :: test_collection
+
+        test_collection = TestCollection_t( &
+                description_ = toString("Test That"), &
+                tests = [TestItem_t(test_case)])
+    end function testThat
+
     subroutine runTests(tests)
         use iso_fortran_env, only: error_unit, output_unit
 
@@ -244,7 +255,9 @@ contains
         class(TestCollection_t), intent(in) :: self
         class(TestResult_t), allocatable :: test_result
 
-        associate(a => self, b => test_result); end associate
+        test_result = TestCollectionResult_t( &
+                description_ = self%description_, &
+                results = self%tests%run())
     end function runTestCollection
 
     pure function testCollectionNumCases(self) result(num_cases)
@@ -262,4 +275,11 @@ contains
         associate(a => self); end associate
         passed = .true.
     end function testCollectionPassed
+
+    elemental function runTestItem(self) result(test_result)
+        class(TestItem_t), intent(in) :: self
+        type(TestResultItem_t) :: test_result
+
+        test_result = TestResultItem_t(self%test%run())
+    end function runTestItem
 end module Vegetables_m
