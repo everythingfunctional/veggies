@@ -135,6 +135,8 @@ contains
         if (test_result%passed()) then
             num_cases = test_result%numCases()
             call writePassingReport(num_cases)
+        else
+            call writeFailingReport
         end if
     end subroutine
 
@@ -145,6 +147,12 @@ contains
 
         write(output_unit, *) "All ", num_cases, " Passed"
     end subroutine writePassingReport
+
+    subroutine writeFailingReport()
+        use iso_fortran_env, only: error_unit
+
+        write(error_unit, *) "Failed"
+    end subroutine writeFailingReport
 
     pure function SUCCESSFUL() result(test_case)
         type(TestCase_t) :: test_case
