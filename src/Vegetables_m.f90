@@ -122,38 +122,22 @@ module Vegetables_m
     public :: runTests, SUCCESSFUL, TODO
 contains
     subroutine runTests(tests)
-        use iso_fortran_env, only: output_unit
+        use iso_fortran_env, only: error_unit, output_unit
 
         class(Test_t) :: tests
 
-        integer :: num_cases
         class(TestResult_t), allocatable :: test_result
 
         write(output_unit, *) "Running Tests"
         write(output_unit, *) tests%description()
         test_result = tests%run()
         if (test_result%passed()) then
-            num_cases = test_result%numCases()
-            call writePassingReport(num_cases)
+            write(output_unit, *) "Passed"
         else
-            call writeFailingReport
+            write(error_unit, *) "Failed"
             stop 1
         end if
     end subroutine
-
-    subroutine writePassingReport(num_cases)
-        use iso_fortran_env, only: output_unit
-
-        integer, intent(in) :: num_cases
-
-        write(output_unit, *) "All ", num_cases, " Passed"
-    end subroutine writePassingReport
-
-    subroutine writeFailingReport()
-        use iso_fortran_env, only: error_unit
-
-        write(error_unit, *) "Failed"
-    end subroutine writeFailingReport
 
     pure function SUCCESSFUL() result(test_case)
         type(TestCase_t) :: test_case
