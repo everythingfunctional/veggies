@@ -59,7 +59,7 @@ module Vegetables_m
         end function statNum
     end interface
 
-    type :: Result_t
+    type, public :: Result_t
         private
         integer :: num_asserts
         logical :: passed
@@ -125,7 +125,12 @@ module Vegetables_m
         module procedure testCollectionAndTest
     end interface
 
-    public :: operator(.and.), testThat, runTests, SUCCESSFUL, TODO
+    interface fail
+        module procedure failWithCharacter
+        module procedure failWithString
+    end interface
+
+    public :: operator(.and.), fail, Given, testThat, runTests, SUCCESSFUL, TODO, When, Then
 contains
     pure function testThat(test_case) result(test_collection)
         class(Test_t), intent(in) :: test_case
@@ -135,6 +140,43 @@ contains
                 description_ = toString("Test That"), &
                 tests = [TestItem_t(test_case)])
     end function testThat
+
+    pure function Given(description, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        type(TestCollection_t), intent(in) :: tests(:)
+        type(TestCollection_t) :: test_collection
+
+        test_collection = TestCollection_t( &
+                description_ = toString("Given " // description), &
+                tests = toItem(tests))
+    end function Given
+
+    elemental function toItem(test) result(item)
+        class(Test_t), intent(in) :: test
+        type(TestItem_t) :: item
+
+        item = TestItem_t(test)
+    end function toItem
+
+    pure function When(description, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        type(TestCase_t), intent(in) :: tests(:)
+        type(TestCollection_t) :: test_collection
+
+        test_collection = TestCollection_t( &
+                description_ = toString("When " // description), &
+                tests = toItem(tests))
+    end function When
+
+    pure function Then(description, test) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(test_) :: test
+        type(TestCase_t) :: test_case
+
+        test_case = TestCase_t( &
+                description_ = toString("Then " // description), &
+                test = test)
+    end function Then
 
     pure function testCollectionAndTest(test_collection, test) result(new_collection)
         type(TestCollection_t), intent(in) :: test_collection
@@ -204,15 +246,22 @@ contains
     pure function alwaysFail() result(test_result)
         type(Result_t) :: test_result
 
-        test_result = fail(toString("Intentional Failure"))
+        test_result = fail("Intentional Failure")
     end function alwaysFail
 
-    pure function fail(message) result(failure)
+    pure function failWithString(message) result(failure)
         type(VegetableString_t), intent(in) :: message
         type(Result_t) :: failure
 
         failure = Result_t(num_asserts = 1, passed = .false., message = message)
-    end function fail
+    end function failWithString
+
+    pure function failWithCharacter(message) result(failure)
+        character(len=*), intent(in) :: message
+        type(Result_t) :: failure
+
+        failure = fail(toString(message))
+    end function failWithCharacter
 
     pure function toString(string_in) result(string_out)
         character(len=*), intent(in) :: string_in
