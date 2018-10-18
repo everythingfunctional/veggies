@@ -61,6 +61,7 @@ module Vegetables_m
 
     type :: Result_t
         private
+        integer :: num_asserts
         logical :: passed
         type(VegetableString_t) :: message
     end type Result_t
@@ -166,7 +167,7 @@ contains
     pure function succeed() result(success)
         type(Result_t) :: success
 
-        success = Result_t(passed = .true., message = toString(""))
+        success = Result_t(num_asserts = 1, passed = .true., message = toString(""))
     end function succeed
 
     pure function TODO() result(test_case)
@@ -185,7 +186,7 @@ contains
         type(VegetableString_t), intent(in) :: message
         type(Result_t) :: failure
 
-        failure = Result_t(passed = .false., message = message)
+        failure = Result_t(num_asserts = 1, passed = .false., message = message)
     end function fail
 
     pure function toString(string_in) result(string_out)
