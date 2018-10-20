@@ -7,6 +7,7 @@ module Vegetables_m
         character(len=:), allocatable :: string
     contains
         private
+        procedure, public :: includes
         generic, public :: WRITE(FORMATTED) => stringWrite
         procedure :: stringWrite
     end type VegetableString_t
@@ -128,6 +129,10 @@ module Vegetables_m
         module procedure testCollectionAndTest
     end interface
 
+    interface assertIncludes
+        module procedure assertStringIncludesCharacter
+    end interface
+
     interface fail
         module procedure failWithCharacter
         module procedure failWithString
@@ -135,11 +140,15 @@ module Vegetables_m
 
     public :: &
             operator(.and.), &
+            assertIncludes, &
             assertNot, &
+            Describe, &
             fail, &
             FAILING, &
             Given, &
+            It, &
             runTests, &
+            succeed, &
             SUCCEEDS, &
             testThat, &
             Then, &
@@ -162,6 +171,30 @@ contains
             result_ = succeed()
         end if
     end function assertNot
+
+    pure function assertStringIncludesCharacter(character_, string) result(result_)
+        character(len=*), intent(in) :: character_
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result_
+
+        if (string%includes(character_)) then
+            result_ = succeed()
+        else
+            result_ = fail( &
+                    "'" // string%string // "' did not include '" &
+                    // character_ // "'")
+        end if
+    end function assertStringIncludesCharacter
+
+    pure function Describe(description, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        type(TestCase_t), intent(in) :: tests(:)
+        type(TestCollection_t) :: test_collection
+
+        test_collection = TestCollection_t( &
+                description_ = toString(description), &
+                tests = toItem(tests))
+    end function Describe
 
     pure function FAILING() result(test_case)
         type(TestCase_t) :: test_case
@@ -192,6 +225,24 @@ contains
                 description_ = toString("Given " // description), &
                 tests = toItem(tests))
     end function Given
+
+    pure function includes(self, character_)
+        class(VegetableString_t), intent(in) :: self
+        character(len=*), intent(in) :: character_
+        logical :: includes
+
+        includes = index(self%string, character_) > 0
+    end function includes
+
+    pure function It(description, test) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(test_) :: test
+        type(TestCase_t) :: test_case
+
+        test_case = TestCase_t( &
+                description_ = toString(description), &
+                test = test)
+    end function It
 
     pure function runTestCase(self) result(test_result)
         class(TestCase_t), intent(in) :: self
@@ -343,9 +394,7 @@ contains
         procedure(test_) :: test
         type(TestCase_t) :: test_case
 
-        test_case = TestCase_t( &
-                description_ = toString("Then " // description), &
-                test = test)
+        test_case = It("Then " // description, test)
     end function Then
 
     pure function TODO() result(test_case)
@@ -373,8 +422,6 @@ contains
         type(TestCase_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
 
-        test_collection = TestCollection_t( &
-                description_ = toString("When " // description), &
-                tests = toItem(tests))
+        test_collection = Describe("When " // description, tests)
     end function When
 end module Vegetables_m
