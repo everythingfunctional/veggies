@@ -1,7 +1,7 @@
 program run_tests
     use test_case_test, only: test_can_be_single_case
     use test_collection_test, only: test_collection_can_tell_failure
-    use Vegetables_m, only: TestCollection_t, operator(.and.), testThat, runTests, SUCCESSFUL
+    use Vegetables_m, only: TestCollection_t, operator(.and.), testThat, runTests
 
     implicit none
 

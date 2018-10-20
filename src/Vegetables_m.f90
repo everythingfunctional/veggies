@@ -140,12 +140,18 @@ module Vegetables_m
             FAILING, &
             Given, &
             runTests, &
-            SUCCESSFUL, &
+            SUCCEEDS, &
             testThat, &
             Then, &
             TODO, &
             When
 contains
+    pure function alwaysFail() result(test_result)
+        type(Result_t) :: test_result
+
+        test_result = fail("Intentional Failure")
+    end function alwaysFail
+
     pure function assertNot(condition) result(result_)
         logical, intent(in) :: condition
         type(Result_t) :: result_
@@ -156,14 +162,26 @@ contains
             result_ = succeed()
         end if
     end function assertNot
-    pure function testThat(test_case) result(test_collection)
-        class(Test_t), intent(in) :: test_case
-        type(TestCollection_t) :: test_collection
 
-        test_collection = TestCollection_t( &
-                description_ = toString("Test That"), &
-                tests = [TestItem_t(test_case)])
-    end function testThat
+    pure function FAILING() result(test_case)
+        type(TestCase_t) :: test_case
+
+        test_case = TestCase_t(description_ = toString("FAIL"), test = alwaysFail)
+    end function FAILING
+
+    pure function failWithCharacter(message) result(failure)
+        character(len=*), intent(in) :: message
+        type(Result_t) :: failure
+
+        failure = fail(toString(message))
+    end function failWithCharacter
+
+    pure function failWithString(message) result(failure)
+        type(VegetableString_t), intent(in) :: message
+        type(Result_t) :: failure
+
+        failure = Result_t(num_asserts = 1, passed = .false., message = message)
+    end function failWithString
 
     pure function Given(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -175,32 +193,95 @@ contains
                 tests = toItem(tests))
     end function Given
 
-    elemental function toItem(test) result(item)
-        class(Test_t), intent(in) :: test
-        type(TestItem_t) :: item
+    pure function runTestCase(self) result(test_result)
+        class(TestCase_t), intent(in) :: self
+        class(TestResult_t), allocatable :: test_result
 
-        item = TestItem_t(test)
-    end function toItem
+        test_result = TestCaseResult_t( &
+                description_ = self%description_, &
+                result_ = self%test())
+    end function runTestCase
 
-    pure function When(description, tests) result(test_collection)
-        character(len=*), intent(in) :: description
-        type(TestCase_t), intent(in) :: tests(:)
-        type(TestCollection_t) :: test_collection
+    pure function runTestCollection(self) result(test_result)
+        class(TestCollection_t), intent(in) :: self
+        class(TestResult_t), allocatable :: test_result
 
-        test_collection = TestCollection_t( &
-                description_ = toString("When " // description), &
-                tests = toItem(tests))
-    end function When
+        test_result = TestCollectionResult_t( &
+                description_ = self%description_, &
+                results = self%tests%run())
+    end function runTestCollection
 
-    pure function Then(description, test) result(test_case)
-        character(len=*), intent(in) :: description
-        procedure(test_) :: test
-        type(TestCase_t) :: test_case
+    elemental function runTestItem(self) result(test_result)
+        class(TestItem_t), intent(in) :: self
+        type(TestResultItem_t) :: test_result
 
-        test_case = TestCase_t( &
-                description_ = toString("Then " // description), &
-                test = test)
-    end function Then
+        test_result = TestResultItem_t(self%test%run())
+    end function runTestItem
+
+    subroutine runTests(tests)
+        use iso_fortran_env, only: error_unit, output_unit
+
+        class(Test_t) :: tests
+
+        class(TestResult_t), allocatable :: test_result
+
+        write(output_unit, *) "Running Tests"
+        write(output_unit, *) tests%description()
+        test_result = tests%run()
+        if (test_result%passed()) then
+            write(output_unit, *) "Passed"
+        else
+            write(error_unit, *) "Failed"
+            stop 1
+        end if
+    end subroutine runTests
+
+    subroutine stringWrite(string, unit, iotype, v_list, iostat, iomsg)
+        class(VegetableString_t), intent(in) :: string
+        integer, intent(in) :: unit
+        character(len=*), intent(in) :: iotype
+        integer, intent(in) :: v_list(:)
+        integer, intent(out) :: iostat
+        character(len=*), intent(inout) :: iomsg
+
+        associate(a => iotype, b => v_list); end associate
+
+        write(unit=unit, iostat=iostat, iomsg=iomsg, fmt='(A)') string%string
+    end subroutine stringWrite
+
+    pure function succeed() result(success)
+        type(Result_t) :: success
+
+        success = Result_t(num_asserts = 1, passed = .true., message = toString(""))
+    end function succeed
+
+    pure function SUCCEEDS()
+        type(TestCase_t) :: SUCCEEDS
+
+        SUCCEEDS = TestCase_t(description_ = toString("SUCCEEDS"), test = succeed)
+    end function SUCCEEDS
+
+    pure function testCaseDescription(self) result(description)
+        class(TestCase_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%description_
+    end function testCaseDescription
+
+    pure function testCaseNumCases(self) result(num_cases)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self); end associate
+        num_cases = 1
+    end function testCaseNumCases
+
+    pure function testCasePassed(self) result(passed)
+        class(TestCaseResult_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%result_%passed
+    end function testCasePassed
 
     pure function testCollectionAndTest(test_collection, test) result(new_collection)
         type(TestCollection_t), intent(in) :: test_collection
@@ -219,146 +300,12 @@ contains
         new_collection%tests(new_num_tests) = TestItem_t(test)
     end function testCollectionAndTest
 
-    subroutine runTests(tests)
-        use iso_fortran_env, only: error_unit, output_unit
-
-        class(Test_t) :: tests
-
-        class(TestResult_t), allocatable :: test_result
-
-        write(output_unit, *) "Running Tests"
-        write(output_unit, *) tests%description()
-        test_result = tests%run()
-        if (test_result%passed()) then
-            write(output_unit, *) "Passed"
-        else
-            write(error_unit, *) "Failed"
-            stop 1
-        end if
-    end subroutine
-
-    pure function FAILING() result(test_case)
-        type(TestCase_t) :: test_case
-
-        test_case = TestCase_t(description_ = toString("FAIL"), test = alwaysFail)
-    end function FAILING
-
-    pure function SUCCESSFUL() result(test_case)
-        type(TestCase_t) :: test_case
-
-        test_case = SUCCEEDS()
-    end function SUCCESSFUL
-
-    pure function SUCCEEDS()
-        type(TestCase_t) :: SUCCEEDS
-
-        SUCCEEDS = TestCase_t(description_ = toString("SUCCEEDS"), test = alwaysSucceed)
-    end function SUCCEEDS
-
-    pure function alwaysSucceed() result(test_result)
-        type(Result_t) :: test_result
-
-        test_result = succeed()
-    end function alwaysSucceed
-
-    pure function succeed() result(success)
-        type(Result_t) :: success
-
-        success = Result_t(num_asserts = 1, passed = .true., message = toString(""))
-    end function succeed
-
-    pure function TODO() result(test_case)
-        type(TestCase_t) :: test_case
-
-        test_case = TestCase_t(description_ = toString("TODO"), test = alwaysFail)
-    end function TODO
-
-    pure function alwaysFail() result(test_result)
-        type(Result_t) :: test_result
-
-        test_result = fail("Intentional Failure")
-    end function alwaysFail
-
-    pure function failWithString(message) result(failure)
-        type(VegetableString_t), intent(in) :: message
-        type(Result_t) :: failure
-
-        failure = Result_t(num_asserts = 1, passed = .false., message = message)
-    end function failWithString
-
-    pure function failWithCharacter(message) result(failure)
-        character(len=*), intent(in) :: message
-        type(Result_t) :: failure
-
-        failure = fail(toString(message))
-    end function failWithCharacter
-
-    pure function toString(string_in) result(string_out)
-        character(len=*), intent(in) :: string_in
-        type(VegetableString_t) :: string_out
-
-        string_out = VegetableString_t(string_in)
-    end function toString
-
-    subroutine stringWrite(string, unit, iotype, v_list, iostat, iomsg)
-        class(VegetableString_t), intent(in) :: string
-        integer, intent(in) :: unit
-        character(len=*), intent(in) :: iotype
-        integer, intent(in) :: v_list(:)
-        integer, intent(out) :: iostat
-        character(len=*), intent(inout) :: iomsg
-
-        associate(a => iotype, b => v_list); end associate
-
-        write(unit=unit, iostat=iostat, iomsg=iomsg, fmt='(A)') string%string
-    end subroutine stringWrite
-
-    pure function testCaseDescription(self) result(description)
-        class(TestCase_t), intent(in) :: self
-        type(VegetableString_t) :: description
-
-        description = self%description_
-    end function testCaseDescription
-
-    pure function runTestCase(self) result(test_result)
-        class(TestCase_t), intent(in) :: self
-        class(TestResult_t), allocatable :: test_result
-
-        test_result = TestCaseResult_t( &
-                description_ = self%description_, &
-                result_ = self%test())
-    end function runTestCase
-
-    pure function testCaseNumCases(self) result(num_cases)
-        class(TestCaseResult_t), intent(in) :: self
-        integer :: num_cases
-
-        associate(a => self); end associate
-        num_cases = 1
-    end function testCaseNumCases
-
-    pure function testCasePassed(self) result(passed)
-        class(TestCaseResult_t), intent(in) :: self
-        logical :: passed
-
-        passed = self%result_%passed
-    end function testCasePassed
-
     pure function testCollectionDescription(self) result(description)
         class(TestCollection_t), intent(in) :: self
         type(VegetableString_t) :: description
 
         description = self%description_
     end function testCollectionDescription
-
-    pure function runTestCollection(self) result(test_result)
-        class(TestCollection_t), intent(in) :: self
-        class(TestResult_t), allocatable :: test_result
-
-        test_result = TestCollectionResult_t( &
-                description_ = self%description_, &
-                results = self%tests%run())
-    end function runTestCollection
 
     pure function testCollectionNumCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
@@ -375,17 +322,59 @@ contains
         passed = all(self%results%passed())
     end function testCollectionPassed
 
-    elemental function runTestItem(self) result(test_result)
-        class(TestItem_t), intent(in) :: self
-        type(TestResultItem_t) :: test_result
-
-        test_result = TestResultItem_t(self%test%run())
-    end function runTestItem
-
     elemental function testItemPassed(self) result(passed)
         class(TestResultItem_t), intent(in) :: self
         logical :: passed
 
         passed = self%test_result%passed()
     end function testItemPassed
+
+    pure function testThat(test_case) result(test_collection)
+        class(Test_t), intent(in) :: test_case
+        type(TestCollection_t) :: test_collection
+
+        test_collection = TestCollection_t( &
+                description_ = toString("Test That"), &
+                tests = [TestItem_t(test_case)])
+    end function testThat
+
+    pure function Then(description, test) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(test_) :: test
+        type(TestCase_t) :: test_case
+
+        test_case = TestCase_t( &
+                description_ = toString("Then " // description), &
+                test = test)
+    end function Then
+
+    pure function TODO() result(test_case)
+        type(TestCase_t) :: test_case
+
+        test_case = TestCase_t(description_ = toString("TODO"), test = alwaysFail)
+    end function TODO
+
+    elemental function toItem(test) result(item)
+        class(Test_t), intent(in) :: test
+        type(TestItem_t) :: item
+
+        item = TestItem_t(test)
+    end function toItem
+
+    pure function toString(string_in) result(string_out)
+        character(len=*), intent(in) :: string_in
+        type(VegetableString_t) :: string_out
+
+        string_out = VegetableString_t(string_in)
+    end function toString
+
+    pure function When(description, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        type(TestCase_t), intent(in) :: tests(:)
+        type(TestCollection_t) :: test_collection
+
+        test_collection = TestCollection_t( &
+                description_ = toString("When " // description), &
+                tests = toItem(tests))
+    end function When
 end module Vegetables_m
