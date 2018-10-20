@@ -15,10 +15,25 @@ contains
     end function test_collection_can_tell_failure
 
     pure function checkfailedCollection() result(test_result)
-        use Vegetables_m, only: Result_t, fail
+        use Vegetables_m, only: &
+                Result_t, TestCollection_t, TestResult_t, assertNot
 
         type(Result_t) :: test_result
 
-        test_result = fail("TODO")
+        type(TestCollection_t) :: failing_collection
+        class(TestResult_t), allocatable :: failed_collection
+
+        failing_collection = failingCollection()
+        failed_collection = failing_collection%run()
+
+        test_result = assertNot(failed_collection%passed())
     end function checkfailedCollection
+
+    pure function failingCollection() result(collection)
+        use Vegetables_m, only: TestCollection_t, testThat, FAILING
+
+        type(TestCollection_t) :: collection
+
+        collection = testThat(FAILING())
+    end function failingCollection
 end module test_collection_test

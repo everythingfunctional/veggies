@@ -102,6 +102,9 @@ module Vegetables_m
     type :: TestResultItem_t
         private
         class(TestResult_t), allocatable :: test_result
+    contains
+        private
+        procedure :: passed => testItemPassed
     end type TestResultItem_t
 
     type, public, extends(TestResult_t) :: TestCollectionResult_t
@@ -130,8 +133,29 @@ module Vegetables_m
         module procedure failWithString
     end interface
 
-    public :: operator(.and.), fail, Given, testThat, runTests, SUCCESSFUL, TODO, When, Then
+    public :: &
+            operator(.and.), &
+            assertNot, &
+            fail, &
+            FAILING, &
+            Given, &
+            runTests, &
+            SUCCESSFUL, &
+            testThat, &
+            Then, &
+            TODO, &
+            When
 contains
+    pure function assertNot(condition) result(result_)
+        logical, intent(in) :: condition
+        type(Result_t) :: result_
+
+        if (condition) then
+            result_ = fail("Wasn't False")
+        else
+            result_ = succeed()
+        end if
+    end function assertNot
     pure function testThat(test_case) result(test_collection)
         class(Test_t), intent(in) :: test_case
         type(TestCollection_t) :: test_collection
@@ -212,6 +236,12 @@ contains
             stop 1
         end if
     end subroutine
+
+    pure function FAILING() result(test_case)
+        type(TestCase_t) :: test_case
+
+        test_case = TestCase_t(description_ = toString("FAIL"), test = alwaysFail)
+    end function FAILING
 
     pure function SUCCESSFUL() result(test_case)
         type(TestCase_t) :: test_case
@@ -342,8 +372,7 @@ contains
         class(TestCollectionResult_t), intent(in) :: self
         logical :: passed
 
-        associate(a => self); end associate
-        passed = .true.
+        passed = all(self%results%passed())
     end function testCollectionPassed
 
     elemental function runTestItem(self) result(test_result)
@@ -352,4 +381,11 @@ contains
 
         test_result = TestResultItem_t(self%test%run())
     end function runTestItem
+
+    elemental function testItemPassed(self) result(passed)
+        class(TestResultItem_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%test_result%passed()
+    end function testItemPassed
 end module Vegetables_m
