@@ -5,9 +5,9 @@ module test_collection_test
     public :: test_collection_can_tell_failure
 contains
     pure function test_collection_can_tell_failure() result(test)
-        use Vegetables_m, only: Test_t, Given, When, Then
+        use Vegetables_m, only: TestCollection_t, Given, When, Then
 
-        class(Test_t), allocatable :: test
+        type(TestCollection_t) :: test
 
         test = Given("A test collection with a failing test", &
                 [When("It is run", &
@@ -30,10 +30,10 @@ contains
     end function checkfailedCollection
 
     pure function failingCollection() result(collection)
-        use Vegetables_m, only: TestCollection_t, testThat, FAILING
+        use Vegetables_m, only: TestCollection_t, Describe, FAILING
 
         type(TestCollection_t) :: collection
 
-        collection = testThat(FAILING())
+        collection = Describe("Failing", [FAILING()])
     end function failingCollection
 end module test_collection_test

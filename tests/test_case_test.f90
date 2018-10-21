@@ -2,20 +2,12 @@ module test_case_test
     implicit none
     private
 
-    public :: test_can_be_single_case, test_case_properties
+    public :: test_case_properties
 contains
-    pure function test_can_be_single_case() result(test)
-        use Vegetables_m, only: Test_t, SUCCEEDS
-
-        class(Test_t), allocatable :: test
-
-        test = SUCCEEDS()
-    end function test_can_be_single_case
-
     pure function test_case_properties() result(test)
-        use Vegetables_m, only: Test_t, Describe, It
+        use Vegetables_m, only: TestCollection_t, Describe, It
 
-        class(Test_t), allocatable :: test
+        type(TestCollection_t) :: test
 
         test = Describe("A test case", &
                 [It("includes the given description", caseDescriptionCheck)])

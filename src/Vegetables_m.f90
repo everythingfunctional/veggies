@@ -133,10 +133,6 @@ module Vegetables_m
         end function test_
     end interface
 
-    interface operator(.and.)
-        module procedure testCollectionAndTest
-    end interface
-
     interface assertIncludes
         module procedure assertStringIncludesCharacter
     end interface
@@ -159,7 +155,6 @@ module Vegetables_m
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
 
     public :: &
-            operator(.and.), &
             assertIncludes, &
             assertNot, &
             Describe, &
@@ -468,23 +463,6 @@ contains
         passed = self%result_%passed
     end function testCasePassed
 
-    pure function testCollectionAndTest(test_collection, test) result(new_collection)
-        type(TestCollection_t), intent(in) :: test_collection
-        class(Test_t), intent(in) :: test
-        type(TestCollection_t) :: new_collection
-
-        integer :: new_num_tests
-        integer :: prev_num_tests
-
-        prev_num_tests = size(test_collection%tests)
-        new_num_tests = prev_num_tests + 1
-
-        new_collection%description_ = test_collection%description_
-        allocate(new_collection%tests(new_num_tests))
-        new_collection%tests(1:prev_num_tests) = test_collection%tests(1:prev_num_tests)
-        new_collection%tests(new_num_tests) = TestItem_t(test)
-    end function testCollectionAndTest
-
     pure function testCollectionDescription(self) result(description)
         class(TestCollection_t), intent(in) :: self
         type(VegetableString_t) :: description
@@ -523,13 +501,13 @@ contains
         passed = self%test_result%passed()
     end function testItemPassed
 
-    pure function testThat(test_case) result(test_collection)
-        class(Test_t), intent(in) :: test_case
+    pure function testThat(tests) result(test_collection)
+        type(TestCollection_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
 
         test_collection = TestCollection_t( &
                 description_ = toString("Test That"), &
-                tests = [TestItem_t(test_case)])
+                tests = toItem(tests))
     end function testThat
 
     pure function Then(description, test) result(test_case)
