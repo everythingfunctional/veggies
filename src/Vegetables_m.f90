@@ -25,6 +25,7 @@ module Vegetables_m
     contains
         private
         procedure(description_), pass(self), public, deferred :: description
+        procedure(testNum), pass(self), public, deferred :: numCases
         procedure(run_), pass(self), public, deferred :: run
     end type Test_t
 
@@ -33,7 +34,7 @@ module Vegetables_m
         type(VegetableString_t) :: description_
     contains
         private
-        procedure(statNum), pass(self), public, deferred :: numCases
+        procedure(resultNum), pass(self), public, deferred :: numCases
         procedure(passed_), pass(self), public, deferred :: passed
     end type TestResult_t
 
@@ -59,12 +60,19 @@ module Vegetables_m
             logical :: passed_
         end function passed_
 
-        pure function statNum(self) result(num)
+        pure function resultNum(self) result(num)
             import TestResult_t
 
             class(TestResult_t), intent(in) :: self
             integer :: num
-        end function statNum
+        end function resultNum
+
+        pure function testNum(self) result(num)
+            import Test_t
+
+            class(Test_t), intent(in) :: self
+            integer :: num
+        end function testNum
     end interface
 
     type, public :: Result_t
@@ -80,6 +88,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: description => testCaseDescription
+        procedure, public :: numCases => testCaseNumCases
         procedure, public :: run => runTestCase
     end type TestCase_t
 
@@ -96,6 +105,7 @@ module Vegetables_m
         type(TestItem_t), allocatable :: tests(:)
     contains
         procedure, public :: description => testCollectionDescription
+        procedure, public :: numCases => testCollectionNumCases
         procedure, public :: run => runTestCollection
     end type TestCollection_t
 
@@ -104,7 +114,7 @@ module Vegetables_m
         type(Result_t) :: result_
     contains
         private
-        procedure, public :: numCases => testCaseNumCases
+        procedure, public :: numCases => testCaseResultNumCases
         procedure, public :: passed => testCasePassed
     end type TestCaseResult_t
 
@@ -121,7 +131,7 @@ module Vegetables_m
         type(TestResultItem_t), allocatable :: results(:)
     contains
         private
-        procedure, public :: numCases => testCollectionNumCases
+        procedure, public :: numCases => testCollectionResultNumCases
         procedure, public :: passed => testCollectionPassed
     end type TestCollectionResult_t
 
@@ -131,6 +141,10 @@ module Vegetables_m
 
             type(Result_t) :: result
         end function test_
+    end interface
+
+    interface assertEquals
+        module procedure assertIntegerEqualsInteger
     end interface
 
     interface assertIncludes
@@ -155,6 +169,7 @@ module Vegetables_m
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
 
     public :: &
+            assertEquals, &
             assertIncludes, &
             assertNot, &
             Describe, &
@@ -175,6 +190,18 @@ contains
 
         test_result = fail("Intentional Failure")
     end function alwaysFail
+
+    pure function assertIntegerEqualsInteger(expected, actual) result(result_)
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        type(Result_t) :: result_
+
+        if (expected == actual) then
+            result_ = succeed()
+        else
+            result_ = fail("Integers weren't equal")
+        end if
+    end function assertIntegerEqualsInteger
 
     pure function assertNot(condition) result(result_)
         logical, intent(in) :: condition
@@ -449,12 +476,20 @@ contains
     end function testCaseDescription
 
     pure function testCaseNumCases(self) result(num_cases)
-        class(TestCaseResult_t), intent(in) :: self
+        class(TestCase_t), intent(in) :: self
         integer :: num_cases
 
         associate(a => self); end associate
         num_cases = 1
     end function testCaseNumCases
+
+    pure function testCaseResultNumCases(self) result(num_cases)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self); end associate
+        num_cases = 1
+    end function testCaseResultNumCases
 
     pure function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
@@ -473,12 +508,20 @@ contains
     end function testCollectionDescription
 
     pure function testCollectionNumCases(self) result(num_cases)
-        class(TestCollectionResult_t), intent(in) :: self
+        class(TestCollection_t), intent(in) :: self
         integer :: num_cases
 
         associate(a => self); end associate
         num_cases = 1
     end function testCollectionNumCases
+
+    pure function testCollectionResultNumCases(self) result(num_cases)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self); end associate
+        num_cases = 1
+    end function testCollectionResultNumCases
 
     pure function testCollectionPassed(self) result(passed)
         class(TestCollectionResult_t), intent(in) :: self
