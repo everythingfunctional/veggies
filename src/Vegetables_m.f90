@@ -97,6 +97,7 @@ module Vegetables_m
         class(Test_t), allocatable :: test
     contains
         procedure, public :: description => testItemDescription
+        procedure, public :: numCases => testItemNumCases
         procedure, public :: run => runTestItem
     end type TestItem_t
 
@@ -511,8 +512,7 @@ contains
         class(TestCollection_t), intent(in) :: self
         integer :: num_cases
 
-        associate(a => self); end associate
-        num_cases = 1
+        num_cases = sum(self%tests%numCases())
     end function testCollectionNumCases
 
     pure function testCollectionResultNumCases(self) result(num_cases)
@@ -536,6 +536,13 @@ contains
 
         description = self%test%description()
     end function testItemDescription
+
+    elemental function testItemNumCases(self) result(num_cases)
+        class(TestItem_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%test%numCases()
+    end function testItemNumCases
 
     elemental function testItemPassed(self) result(passed)
         class(TestResultItem_t), intent(in) :: self
