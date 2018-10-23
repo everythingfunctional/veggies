@@ -39,35 +39,35 @@ module Vegetables_m
     end type TestResult_t
 
     abstract interface
-        pure function description_(self)
+        function description_(self)
             import Test_t, VegetableString_t
 
             class(Test_t), intent(in) :: self
             type(VegetableString_t) :: description_
         end function description_
 
-        pure function run_(self) result(test_result)
+        function run_(self) result(test_result)
             import Test_t, TestResult_t
 
             class(Test_t), intent(in) :: self
-            class(TestResult_t), allocatable :: test_result
+            class(TestResult_t), pointer :: test_result
         end function run_
 
-        pure function passed_(self)
+        function passed_(self)
             import TestResult_t
 
             class(TestResult_t), intent(in) :: self
             logical :: passed_
         end function passed_
 
-        pure function resultNum(self) result(num)
+        function resultNum(self) result(num)
             import TestResult_t
 
             class(TestResult_t), intent(in) :: self
             integer :: num
         end function resultNum
 
-        pure function testNum(self) result(num)
+        function testNum(self) result(num)
             import Test_t
 
             class(Test_t), intent(in) :: self
@@ -94,7 +94,7 @@ module Vegetables_m
 
     type :: TestItem_t
         private
-        class(Test_t), allocatable :: test
+        class(Test_t), pointer :: test
     contains
         procedure, public :: description => testItemDescription
         procedure, public :: numCases => testItemNumCases
@@ -121,7 +121,7 @@ module Vegetables_m
 
     type :: TestResultItem_t
         private
-        class(TestResult_t), allocatable :: test_result
+        class(TestResult_t), pointer :: test_result
     contains
         private
         procedure :: passed => testItemPassed
@@ -137,7 +137,7 @@ module Vegetables_m
     end type TestCollectionResult_t
 
     interface
-        pure function test_() result(result)
+        function test_() result(result)
             import Result_t
 
             type(Result_t) :: result
@@ -186,13 +186,13 @@ module Vegetables_m
             TODO, &
             When
 contains
-    pure function alwaysFail() result(test_result)
+    function alwaysFail() result(test_result)
         type(Result_t) :: test_result
 
         test_result = fail("Intentional Failure")
     end function alwaysFail
 
-    pure function assertIntegerEqualsInteger(expected, actual) result(result_)
+    function assertIntegerEqualsInteger(expected, actual) result(result_)
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(Result_t) :: result_
@@ -204,7 +204,7 @@ contains
         end if
     end function assertIntegerEqualsInteger
 
-    pure function assertNot(condition) result(result_)
+    function assertNot(condition) result(result_)
         logical, intent(in) :: condition
         type(Result_t) :: result_
 
@@ -215,7 +215,7 @@ contains
         end if
     end function assertNot
 
-    pure function assertStringIncludesCharacter(character_, string) result(result_)
+    function assertStringIncludesCharacter(character_, string) result(result_)
         character(len=*), intent(in) :: character_
         type(VegetableString_t), intent(in) :: string
         type(Result_t) :: result_
@@ -229,7 +229,7 @@ contains
         end if
     end function assertStringIncludesCharacter
 
-    pure function concatCharacterAndString(lhs, rhs) result(concatted)
+    function concatCharacterAndString(lhs, rhs) result(concatted)
         character(len=*), intent(in) :: lhs
         class(VegetableString_t), intent(in) :: rhs
         type(VegetableString_t) :: concatted
@@ -237,7 +237,7 @@ contains
         concatted = toString(lhs // rhs%string)
     end function concatCharacterAndString
 
-    pure function concatStringAndCharacter(lhs, rhs) result(concatted)
+    function concatStringAndCharacter(lhs, rhs) result(concatted)
         class(VegetableString_t), intent(in) :: lhs
         character(len=*), intent(in) :: rhs
         type(VegetableString_t) :: concatted
@@ -245,7 +245,7 @@ contains
         concatted = toString(lhs%string // rhs)
     end function concatStringAndCharacter
 
-    pure function concatStrings(lhs, rhs) result(concatted)
+    function concatStrings(lhs, rhs) result(concatted)
         class(VegetableString_t), intent(in) :: lhs
         type(VegetableString_t), intent(in) :: rhs
         type(VegetableString_t) :: concatted
@@ -253,47 +253,47 @@ contains
         concatted = toString(lhs%string // rhs%string)
     end function concatStrings
 
-    pure function Describe(description, tests) result(test_collection)
+    function Describe(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestCase_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
 
         test_collection = TestCollection_t( &
                 description_ = toString(description), &
-                tests = toItem(tests))
+                tests = toItems(tests))
     end function Describe
 
-    pure function FAILING() result(test_case)
+    function FAILING() result(test_case)
         type(TestCase_t) :: test_case
 
         test_case = TestCase_t(description_ = toString("FAIL"), test = alwaysFail)
     end function FAILING
 
-    pure function failWithCharacter(message) result(failure)
+    function failWithCharacter(message) result(failure)
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
 
         failure = fail(toString(message))
     end function failWithCharacter
 
-    pure function failWithString(message) result(failure)
+    function failWithString(message) result(failure)
         type(VegetableString_t), intent(in) :: message
         type(Result_t) :: failure
 
         failure = Result_t(num_asserts = 1, passed = .false., message = message)
     end function failWithString
 
-    pure function Given(description, tests) result(test_collection)
+    function Given(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestCollection_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
 
         test_collection = TestCollection_t( &
                 description_ = toString("Given " // description), &
-                tests = toItem(tests))
+                tests = toItems(tests))
     end function Given
 
-    pure function hangingIndent(string_) result(indented)
+    function hangingIndent(string_) result(indented)
         type(VegetableString_t), intent(in) :: string_
         type(VegetableString_t), allocatable :: indented
 
@@ -304,7 +304,7 @@ contains
     end function hangingIndent
 
 
-    pure function includes(self, character_)
+    function includes(self, character_)
         class(VegetableString_t), intent(in) :: self
         character(len=*), intent(in) :: character_
         logical :: includes
@@ -312,7 +312,7 @@ contains
         includes = index(self%string, character_) > 0
     end function includes
 
-    pure function It(description, test) result(test_case)
+    function It(description, test) result(test_case)
         character(len=*), intent(in) :: description
         procedure(test_) :: test
         type(TestCase_t) :: test_case
@@ -322,7 +322,7 @@ contains
                 test = test)
     end function It
 
-    pure function joinWithCharacter(strings, separator) result(string)
+    function joinWithCharacter(strings, separator) result(string)
         type(VegetableString_t), intent(in) :: strings(:)
         character(len=*), intent(in) :: separator
         type(VegetableString_t) :: string
@@ -330,7 +330,7 @@ contains
         string = join(strings, toString(separator))
     end function joinWithCharacter
 
-    pure function joinWithString(strings, separator) result(string)
+    function joinWithString(strings, separator) result(string)
         type(VegetableString_t), intent(in) :: strings(:)
         type(VegetableString_t), intent(in) :: separator
         type(VegetableString_t) :: string
@@ -343,29 +343,41 @@ contains
         end do
     end function joinWithString
 
-    pure function runTestCase(self) result(test_result)
+    function runTestCase(self) result(test_result)
         class(TestCase_t), intent(in) :: self
-        class(TestResult_t), allocatable :: test_result
+        class(TestResult_t), pointer :: test_result
 
-        test_result = TestCaseResult_t( &
+        allocate(test_result, source=TestCaseResult_t( &
                 description_ = self%description_, &
-                result_ = self%test())
+                result_ = self%test()))
     end function runTestCase
 
-    pure function runTestCollection(self) result(test_result)
+    function runTestCollection(self) result(test_result)
         class(TestCollection_t), intent(in) :: self
-        class(TestResult_t), allocatable :: test_result
+        class(TestResult_t), pointer :: test_result
 
-        test_result = TestCollectionResult_t( &
-                description_ = self%description_, &
-                results = self%tests%run())
+        integer :: i
+        integer :: num_tests
+
+        if (allocated(self%tests)) then
+            allocate(TestCollectionResult_t::test_result)
+            test_result%description_ = self%description_
+            select type (test_result)
+            type is (TestCollectionResult_t)
+                num_tests = size(self%tests)
+                allocate(test_result%results(num_tests))
+                do i = 1, num_tests
+                    test_result%results(i) = self%tests(i)%run()
+                end do
+            end select
+        end if
     end function runTestCollection
 
-    elemental function runTestItem(self) result(test_result)
+    function runTestItem(self) result(test_result)
         class(TestItem_t), intent(in) :: self
         type(TestResultItem_t) :: test_result
 
-        test_result = TestResultItem_t(self%test%run())
+        test_result%test_result => self%test%run()
     end function runTestItem
 
     subroutine runTests(tests)
@@ -373,11 +385,11 @@ contains
 
         class(Test_t) :: tests
 
-        class(TestResult_t), allocatable :: test_result
+        class(TestResult_t), pointer :: test_result
 
         write(output_unit, *) "Running Tests"
         write(output_unit, *) tests%description()
-        test_result = tests%run()
+        test_result => tests%run()
         if (test_result%passed()) then
             write(output_unit, *) "Passed"
         else
@@ -386,7 +398,7 @@ contains
         end if
     end subroutine runTests
 
-    pure recursive function splitAtBothCharacter(&
+    recursive function splitAtBothCharacter(&
             string_, split_characters) result(strings)
         character(len=*), intent(in) :: string_
         character(len=*), intent(in) :: split_characters
@@ -410,7 +422,7 @@ contains
             strings(1) = toString(string_)
         end if
     contains
-        pure function doSplit(string__, split_characters_) result(strings_)
+        function doSplit(string__, split_characters_) result(strings_)
             character(len=*), intent(in) :: string__
             character(len=*), intent(in) :: split_characters_
             type(VegetableString_t), allocatable :: strings_(:)
@@ -436,7 +448,7 @@ contains
         end function doSplit
     end function splitAtBothCharacter
 
-    pure function splitAtStringCharacter(string_, split_characters) result(strings)
+    function splitAtStringCharacter(string_, split_characters) result(strings)
         type(VegetableString_t), intent(in) :: string_
         character(len=*), intent(in) :: split_characters
         type(VegetableString_t), allocatable :: strings(:)
@@ -457,26 +469,26 @@ contains
         write(unit=unit, iostat=iostat, iomsg=iomsg, fmt='(A)') string%string
     end subroutine stringWrite
 
-    pure function succeed() result(success)
+    function succeed() result(success)
         type(Result_t) :: success
 
         success = Result_t(num_asserts = 1, passed = .true., message = toString(""))
     end function succeed
 
-    pure function SUCCEEDS()
+    function SUCCEEDS()
         type(TestCase_t) :: SUCCEEDS
 
         SUCCEEDS = TestCase_t(description_ = toString("SUCCEEDS"), test = succeed)
     end function SUCCEEDS
 
-    pure function testCaseDescription(self) result(description)
+    function testCaseDescription(self) result(description)
         class(TestCase_t), intent(in) :: self
         type(VegetableString_t) :: description
 
         description = self%description_
     end function testCaseDescription
 
-    pure function testCaseNumCases(self) result(num_cases)
+    function testCaseNumCases(self) result(num_cases)
         class(TestCase_t), intent(in) :: self
         integer :: num_cases
 
@@ -484,7 +496,7 @@ contains
         num_cases = 1
     end function testCaseNumCases
 
-    pure function testCaseResultNumCases(self) result(num_cases)
+    function testCaseResultNumCases(self) result(num_cases)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_cases
 
@@ -492,30 +504,48 @@ contains
         num_cases = 1
     end function testCaseResultNumCases
 
-    pure function testCasePassed(self) result(passed)
+    function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
         logical :: passed
 
         passed = self%result_%passed
     end function testCasePassed
 
-    pure function testCollectionDescription(self) result(description)
+    function testCollectionDescription(self) result(description)
         class(TestCollection_t), intent(in) :: self
         type(VegetableString_t) :: description
 
+        type(VegetableString_t), allocatable :: descriptions(:)
+        integer :: i
+        integer :: num_cases
+
+        num_cases = size(self%tests)
+        allocate(descriptions(num_cases))
+        do i = 1, num_cases
+            descriptions(i) = self%tests(i)%description()
+        end do
         description = hangingIndent( &
                 self%description_ // NEWLINE &
-                // join(self%tests%description(), NEWLINE))
+                // join(descriptions, NEWLINE))
     end function testCollectionDescription
 
-    pure function testCollectionNumCases(self) result(num_cases)
+    function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self
         integer :: num_cases
 
-        num_cases = sum(self%tests%numCases())
+        integer :: i
+        integer, allocatable :: individual_num_cases(:)
+        integer :: num_tests
+
+        num_tests = size(self%tests)
+        allocate(individual_num_cases(num_tests))
+        do i = 1, num_tests
+            individual_num_cases(i) = self%tests(i)%numCases()
+        end do
+        num_cases = sum(individual_num_cases)
     end function testCollectionNumCases
 
-    pure function testCollectionResultNumCases(self) result(num_cases)
+    function testCollectionResultNumCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_cases
 
@@ -523,44 +553,53 @@ contains
         num_cases = 1
     end function testCollectionResultNumCases
 
-    pure function testCollectionPassed(self) result(passed)
+    function testCollectionPassed(self) result(passed)
         class(TestCollectionResult_t), intent(in) :: self
         logical :: passed
 
-        passed = all(self%results%passed())
+        integer :: i
+        logical, allocatable :: individual_passed(:)
+        integer :: num_cases
+
+        num_cases = size(self%results)
+        allocate(individual_passed(num_cases))
+        do i = 1, num_cases
+            individual_passed(i) = self%results(i)%passed()
+        end do
+        passed = all(individual_passed)
     end function testCollectionPassed
 
-    elemental function testItemDescription(self) result(description)
+    function testItemDescription(self) result(description)
         class(TestItem_t), intent(in) :: self
         type(VegetableString_t) :: description
 
         description = self%test%description()
     end function testItemDescription
 
-    elemental function testItemNumCases(self) result(num_cases)
+    function testItemNumCases(self) result(num_cases)
         class(TestItem_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%test%numCases()
     end function testItemNumCases
 
-    elemental function testItemPassed(self) result(passed)
+    function testItemPassed(self) result(passed)
         class(TestResultItem_t), intent(in) :: self
         logical :: passed
 
         passed = self%test_result%passed()
     end function testItemPassed
 
-    pure function testThat(tests) result(test_collection)
+    function testThat(tests) result(test_collection)
         type(TestCollection_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
 
         test_collection = TestCollection_t( &
                 description_ = toString("Test That"), &
-                tests = toItem(tests))
+                tests = toItems(tests))
     end function testThat
 
-    pure function Then(description, test) result(test_case)
+    function Then(description, test) result(test_case)
         character(len=*), intent(in) :: description
         procedure(test_) :: test
         type(TestCase_t) :: test_case
@@ -568,27 +607,41 @@ contains
         test_case = It("Then " // description, test)
     end function Then
 
-    pure function TODO() result(test_case)
+    function TODO() result(test_case)
         type(TestCase_t) :: test_case
 
         test_case = TestCase_t(description_ = toString("TODO"), test = alwaysFail)
     end function TODO
 
-    elemental function toItem(test) result(item)
-        class(Test_t), intent(in) :: test
+    function toItem(test) result(item)
+        class(Test_t), target, intent(in) :: test
         type(TestItem_t) :: item
 
-        item = TestItem_t(test)
+        item%test => test
     end function toItem
 
-    pure function toString(string_in) result(string_out)
+    function toItems(tests) result(items)
+        class(Test_t), intent(in) :: tests(:)
+        type(TestItem_t), allocatable :: items(:)
+
+        integer :: i
+        integer :: num_items
+
+        num_items = size(tests)
+        allocate(items(num_items))
+        do i = 1, num_items
+            items(i) = toItem(tests(i))
+        end do
+    end function toItems
+
+    function toString(string_in) result(string_out)
         character(len=*), intent(in) :: string_in
         type(VegetableString_t) :: string_out
 
         string_out = VegetableString_t(string_in)
     end function toString
 
-    pure function When(description, tests) result(test_collection)
+    function When(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestCase_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
