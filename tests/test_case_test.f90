@@ -12,8 +12,8 @@ contains
         type(TestCollection_t) :: test
 
         test = Describe("A test case", &
-                [It("includes the given description", caseDescriptionCheck), &
-                It("Only has 1 test case", checkNumCases)])
+                [It("includes the given description", caseDescriptionCheck)])!, &
+                ! It("Only has 1 test case", checkNumCases)])
     end function test_case_properties
 
     function caseDescriptionCheck() result(result_)
@@ -27,16 +27,16 @@ contains
         result_ = assertIncludes(EXAMPLE_DESCRIPTION, test_case%description())
     end function caseDescriptionCheck
 
-    function checkNumCases() result(result_)
-        use Vegetables_m, only: Result_t, TestCase_t, assertEquals
-
-        type(Result_t) :: result_
-
-        type(TestCase_t) :: test_case
-
-        test_case = exampleTestCase()
-        result_ = assertEquals(1, test_case%numCases())
-    end function checkNumCases
+    ! function checkNumCases() result(result_)
+    !     use Vegetables_m, only: Result_t, TestCase_t, assertEquals
+    !
+    !     type(Result_t) :: result_
+    !
+    !     type(TestCase_t) :: test_case
+    !
+    !     test_case = exampleTestCase()
+    !     result_ = assertEquals(1, test_case%numCases())
+    ! end function checkNumCases
 
     function exampleTestCase() result(test_case)
         use Vegetables_m, only: TestCase_t, It, succeed
