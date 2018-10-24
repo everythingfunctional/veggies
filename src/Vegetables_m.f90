@@ -22,7 +22,7 @@ module Vegetables_m
     end interface
 
 
-    public :: assertIncludes, Describe, It, succeed
+    public :: assertIncludes, Describe, It, runTests, succeed, testThat
 contains
     function assertIncludes(search_for, string) result(result_)
         character(len=*), intent(in) :: search_for
@@ -54,6 +54,14 @@ contains
         test_case = TestCase_t()
     end function It
 
+    subroutine runTests(tests)
+        type(TestCollection_t) :: tests
+
+        associate(a => tests)
+        end associate
+        print *, "Running Tests"
+    end subroutine runTests
+
     function succeed() result(result_)
         type(Result_t) :: result_
 
@@ -68,4 +76,13 @@ contains
         end associate
         description = ""
     end function testCaseDescription
+
+    function testThat(tests) result(test_collection)
+        type(TestCollection_t), intent(in) :: tests(:)
+        type(TestCollection_t) :: test_collection
+
+        associate(a => tests)
+        end associate
+        test_collection = TestCollection_t()
+    end function testThat
 end module Vegetables_m
