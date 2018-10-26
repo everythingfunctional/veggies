@@ -19,6 +19,10 @@ module Vegetables_m
     type, public :: TestCollection_t
     end type TestCollection_t
 
+    interface operator(.includes.)
+        module procedure includes
+    end interface
+
     interface
         function cResult(passed) result(result_) bind(C, name="cResult")
             use iso_c_binding, only: c_bool, c_ptr
@@ -46,9 +50,11 @@ contains
         character(len=*), intent(in) :: string
         type(Result_t) :: result_
 
-        associate(a => search_for, b => string)
-        end associate
-        result_ = succeed()
+        if (string.includes.search_for) then
+            result_ = succeed()
+        else
+            result_ = fail()
+        end if
     end function assertIncludes
 
     function Describe(description, tests) result(test_collection)
@@ -61,12 +67,26 @@ contains
         test_collection = TestCollection_t()
     end function Describe
 
+    function fail() result(result_)
+        type(Result_t) :: result_
+
+        result_%contents = cResult(CFALSE)
+    end function fail
+
     function fStringToC(f_string) result(c_string)
         character(len=*), intent(in) :: f_string
         character(len=:), allocatable :: c_string
 
         c_string = f_string // char(0)
     end function fStringToC
+
+    pure function includes(string, search_for)
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: search_for
+        logical :: includes
+
+        includes = index(string, search_for) > 0
+    end function includes
 
     function It(description, test) result(test_case)
         character(len=*), intent(in) :: description
