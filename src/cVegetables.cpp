@@ -2,6 +2,8 @@
 MODULE cVegetables
 */
 
+#include <cstring>
+
 class Result {
 private:
     bool passed;
@@ -12,11 +14,12 @@ public:
 
 class TestCase {
 private:
-  char *description;
-  void *test;
+  char *_description;
+  void *_test;
 
 public:
   TestCase(char *description, void *test);
+  char *description();
 };
 
 Result::Result(bool passed) : passed(passed) {}
@@ -26,9 +29,17 @@ extern "C" Result *cResult(bool passed) {
     return result;
 }
 
-TestCase::TestCase(char *description, void *test) : description(description), test(test) {}
+TestCase::TestCase(char *description, void *test) : _description(description), _test(test) {}
+
+char *TestCase::description() {
+    return this->_description;
+}
 
 extern "C" TestCase *cTestCase(char *description, void *test) {
   TestCase *test_case = new TestCase(description, test);
   return test_case;
+}
+
+extern "C" void cTestCaseDescription(TestCase *test_case, char* description, int maxlen) {
+    strncpy(description, test_case->description(), maxlen);
 }

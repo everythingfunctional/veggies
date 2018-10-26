@@ -57,6 +57,20 @@ contains
         end if
     end function assertIncludes
 
+    function cStringToF(c_string) result(f_string)
+        character(len=*), intent(in) :: c_string
+        character(len=:), allocatable :: f_string
+
+        integer :: terminator_position
+
+        terminator_position = index(c_string, char(0))
+        if (terminator_position == 0) then
+            f_string = c_string
+        else
+            f_string = c_string(1:terminator_position-1)
+        end if
+    end function cStringToF
+
     function Describe(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestCase_t), intent(in) :: tests(:)
@@ -121,12 +135,30 @@ contains
     end function succeed
 
     function testCaseDescription(self) result(description)
+        use iso_c_binding, only: c_char
+
         class(TestCase_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        associate(a => self)
-        end associate
-        description = ""
+        interface
+            subroutine cTestCaseDescription( &
+                    test_case, &
+                    description, &
+                    max_length) &
+                    bind(C, name="cTestCaseDescription")
+                use iso_c_binding, only: c_char, c_int, c_ptr
+
+                type(c_ptr) :: test_case
+                character(kind=c_char), dimension(*) :: description
+                integer(kind=c_int), value, intent(in) :: max_length
+            end subroutine cTestCaseDescription
+        end interface
+
+        integer, parameter :: MAX_STRING_LENGTH = 10000
+        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
+
+        call cTestCaseDescription(self%contents, description_, MAX_STRING_LENGTH)
+        description = cStringToF(description_)
     end function testCaseDescription
 
     function testThat(tests) result(test_collection)
