@@ -13,9 +13,10 @@ public:
 class TestCase {
 private:
   char *description;
+  void *test;
 
 public:
-  TestCase(char *description);
+  TestCase(char *description, void *test);
 };
 
 Result::Result(bool passed) : passed(passed) {}
@@ -25,9 +26,9 @@ extern "C" Result *cResult(bool passed) {
     return result;
 }
 
-TestCase::TestCase(char *description) : description(description) {}
+TestCase::TestCase(char *description, void *test) : description(description), test(test) {}
 
-extern "C" TestCase *cTestCase(char *description) {
-  TestCase *test_case = new TestCase(description);
+extern "C" TestCase *cTestCase(char *description, void *test) {
+  TestCase *test_case = new TestCase(description, test);
   return test_case;
 }

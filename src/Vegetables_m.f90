@@ -23,13 +23,13 @@ module Vegetables_m
         function cResult(passed) result(result_) bind(C, name="cResult")
             use iso_c_binding, only: c_bool, c_ptr
 
-            logical(kind=c_bool), intent(in) :: passed
+            logical(kind=c_bool), value, intent(in) :: passed
             type(c_ptr) :: result_
         end function cResult
     end interface
 
     interface
-        function test_() result(result_)
+        function test_() result(result_) bind(c)
             import Result_t
 
             type(Result_t) :: result_
@@ -74,17 +74,16 @@ contains
         type(TestCase_t) :: test_case
 
         interface
-            function cTestCase(description) result(test_case) bind(C, name="cTestCase")
+            function cTestCase(description, test) result(test_case) bind(C, name="cTestCase")
                 use iso_c_binding, only: c_char, c_ptr
 
                 character(len=1, kind=C_CHAR), dimension(*), intent(in) :: description
+                procedure(test_) :: test
                 type(c_ptr) :: test_case
             end function cTestCase
         end interface
 
-        associate(a => description, b => test)
-        end associate
-        test_case%contents = cTestCase(fStringToC(description))
+        test_case%contents = cTestCase(fStringToC(description), test)
     end function It
 
     subroutine runTests(tests)
