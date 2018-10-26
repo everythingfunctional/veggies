@@ -48,7 +48,7 @@ contains
 
         associate(a => search_for, b => string)
         end associate
-        result_%contents = cResult(CTRUE)
+        result_ = succeed()
     end function assertIncludes
 
     function Describe(description, tests) result(test_collection)
