@@ -1,11 +1,12 @@
 module Vegetables_m
 !   use cVegetables
-    use iso_c_binding, only: c_ptr
+    use iso_c_binding, only: c_bool, c_ptr
 
     implicit none
     private
 
-    type, public :: Result_t
+    type, bind(c), public :: Result_t
+        type(c_ptr) :: contents
     end type Result_t
 
     type, public :: TestCase_t
@@ -19,6 +20,15 @@ module Vegetables_m
     end type TestCollection_t
 
     interface
+        function cResult(passed) result(result_) bind(C, name="cResult")
+            use iso_c_binding, only: c_bool, c_ptr
+
+            logical(kind=c_bool), intent(in) :: passed
+            type(c_ptr) :: result_
+        end function cResult
+    end interface
+
+    interface
         function test_() result(result_)
             import Result_t
 
@@ -26,6 +36,8 @@ module Vegetables_m
         end function test_
     end interface
 
+    logical(kind=c_bool), parameter :: CTRUE = .true.
+    logical(kind=c_bool), parameter :: CFALSE = .false.
 
     public :: assertIncludes, Describe, It, runTests, succeed, testThat
 contains
@@ -36,7 +48,7 @@ contains
 
         associate(a => search_for, b => string)
         end associate
-        result_ = Result_t()
+        result_%contents = cResult(CTRUE)
     end function assertIncludes
 
     function Describe(description, tests) result(test_collection)
@@ -86,7 +98,7 @@ contains
     function succeed() result(result_)
         type(Result_t) :: result_
 
-        result_ = Result_t()
+        result_%contents = cResult(CTRUE)
     end function succeed
 
     function testCaseDescription(self) result(description)
