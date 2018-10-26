@@ -22,6 +22,13 @@ public:
   char *description();
 };
 
+class TestCollection {
+private:
+
+public:
+    TestCollection();
+};
+
 Result::Result(bool passed) : passed(passed) {}
 
 extern "C" Result *cResult(bool passed) {
@@ -42,4 +49,11 @@ extern "C" TestCase *cTestCase(char *description, void *test) {
 
 extern "C" void cTestCaseDescription(TestCase *test_case, char* description, int maxlen) {
     strncpy(description, test_case->description(), maxlen);
+}
+
+TestCollection::TestCollection() {}
+
+extern "C" TestCollection *cTestCollection() {
+    TestCollection *test_collection = new TestCollection();
+    return test_collection;
 }

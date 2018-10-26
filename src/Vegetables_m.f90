@@ -6,6 +6,7 @@ module Vegetables_m
     private
 
     type, bind(c), public :: Result_t
+        private
         type(c_ptr) :: contents
     end type Result_t
 
@@ -17,6 +18,8 @@ module Vegetables_m
     end type TestCase_t
 
     type, public :: TestCollection_t
+        private
+        type(c_ptr) :: contents
     end type TestCollection_t
 
     interface operator(.includes.)
@@ -30,9 +33,13 @@ module Vegetables_m
             logical(kind=c_bool), value, intent(in) :: passed
             type(c_ptr) :: result_
         end function cResult
-    end interface
 
-    interface
+        function cTestCollection() result(test_collection) bind(C, name="cTestCollection")
+            use iso_c_binding, only: c_ptr
+
+            type(c_ptr) :: test_collection
+        end function cTestCollection
+
         function test_() result(result_) bind(c)
             import Result_t
 
@@ -78,7 +85,7 @@ contains
 
         associate(a => description, b => tests)
         end associate
-        test_collection = TestCollection_t()
+        test_collection%contents = cTestCollection()
     end function Describe
 
     function fail() result(result_)
@@ -167,6 +174,6 @@ contains
 
         associate(a => tests)
         end associate
-        test_collection = TestCollection_t()
+        test_collection%contents = cTestCollection()
     end function testThat
 end module Vegetables_m
