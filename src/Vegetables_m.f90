@@ -26,6 +26,8 @@ module Vegetables_m
     end type TestCollection_t
 
     type, public :: TestResultCollection_t
+        private
+        type(c_ptr) :: contents
     end type TestResultCollection_t
 
     interface operator(.includes.)
@@ -144,9 +146,19 @@ contains
         class(TestCollection_t), intent(in) :: self
         type(TestResultCollection_t) :: test_result
 
-        associate(a => self)
-        end associate
-        test_result = TestResultCollection_t()
+        interface
+            function cRunTestCollection( &
+                    collection) &
+                    result(results) &
+                    bind(C, name="cRunTestCollection")
+                use iso_c_binding, only: c_ptr
+
+                type(c_ptr), intent(in) :: collection
+                type(c_ptr) :: results
+            end function cRunTestCollection
+        end interface
+
+        test_result%contents = cRunTestCollection(self%contents)
     end function runTestCollection
 
     subroutine runTests(tests)

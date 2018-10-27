@@ -34,6 +34,12 @@ public:
   TestCollection(char *description, std::vector<Test *> tests);
 };
 
+class TestResultCollection {
+private:
+public:
+  TestResultCollection();
+};
+
 Result::Result(bool passed) : passed(passed) {}
 
 extern "C" Result *cResult(bool passed) {
@@ -67,4 +73,12 @@ extern "C" TestCollection *cTestCollection(char *description, Test *tests[],
   }
   TestCollection *test_collection = new TestCollection(description, tests_);
   return test_collection;
+}
+
+TestResultCollection::TestResultCollection() {}
+
+extern "C" TestResultCollection *cRunTestCollection(TestCollection *tests) {
+  (void)tests;
+  TestResultCollection *results = new TestResultCollection();
+  return results;
 }
