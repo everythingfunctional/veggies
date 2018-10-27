@@ -3,6 +3,7 @@ MODULE cVegetables
 */
 
 #include <cstring>
+#include <vector>
 
 class Result {
 private:
@@ -12,7 +13,9 @@ public:
   Result(bool passed);
 };
 
-class TestCase {
+class Test {};
+
+class TestCase : public Test {
 private:
   char *_description;
   void *_test;
@@ -22,12 +25,13 @@ public:
   char *description();
 };
 
-class TestCollection {
+class TestCollection : public Test {
 private:
   char *_description;
+  std::vector<Test *> _tests;
 
 public:
-  TestCollection(char *description);
+  TestCollection(char *description, std::vector<Test *> tests);
 };
 
 Result::Result(bool passed) : passed(passed) {}
@@ -52,9 +56,15 @@ extern "C" void cTestCaseDescription(TestCase *test_case, char *description,
   strncpy(description, test_case->description(), maxlen);
 }
 
-TestCollection::TestCollection(char *description) : _description(description) {}
+TestCollection::TestCollection(char *description, std::vector<Test *> tests)
+    : _description(description), _tests(tests) {}
 
-extern "C" TestCollection *cTestCollection(char *description) {
-  TestCollection *test_collection = new TestCollection(description);
+extern "C" TestCollection *cTestCollection(char *description, Test *tests[],
+                                           int num_tests) {
+  std::vector<Test *> tests_;
+  for (int i = 0; i < num_tests; i++) {
+    tests_.push_back(tests[i]);
+  }
+  TestCollection *test_collection = new TestCollection(description, tests_);
   return test_collection;
 }

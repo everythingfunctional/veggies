@@ -35,12 +35,16 @@ module Vegetables_m
         end function cResult
 
         function cTestCollection( &
-                description) &
+                description, &
+                tests, &
+                num_tests) &
                 result(test_collection) &
                 bind(C, name="cTestCollection")
-            use iso_c_binding, only: c_char, c_ptr
+            use iso_c_binding, only: c_char, c_int, c_ptr
 
             character(len=1, kind=c_char), dimension(*), intent(in) :: description
+            type(c_ptr), intent(in) :: tests(:)
+            integer(kind=c_int), value, intent(in) :: num_tests
             type(c_ptr) :: test_collection
         end function cTestCollection
 
@@ -87,9 +91,8 @@ contains
         type(TestCase_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
 
-        associate(a => description, b => tests)
-        end associate
-        test_collection%contents = cTestCollection(description)
+        test_collection%contents = cTestCollection( &
+                description, tests%contents, size(tests))
     end function Describe
 
     function fail() result(result_)
@@ -176,8 +179,7 @@ contains
         type(TestCollection_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
 
-        associate(a => tests)
-        end associate
-        test_collection%contents = cTestCollection("Test that")
+        test_collection%contents = cTestCollection( &
+                "Test that", tests%contents, size(tests))
     end function testThat
 end module Vegetables_m

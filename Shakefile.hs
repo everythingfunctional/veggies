@@ -94,7 +94,7 @@ sourceDirs = ["src"]
 flags = ["-Wall",  "-Wextra", "-Werror", "-pedantic"]
 develFlags = ["-g"] ++ flags
 fFlags = []
-cFlags' cIncludeFlags = ["-std=c++11"] ++ cIncludeFlags
+cFlags' cIncludeFlags = ["-std=c++17"] ++ cIncludeFlags
 fDevelFlags = [] ++ fFlags ++ develFlags
 cDevelFlags' cFlags = [] ++ cFlags ++ develFlags
 develLinkFlags = develFlags ++ ["-lgfortran"]
