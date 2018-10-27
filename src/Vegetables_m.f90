@@ -68,7 +68,7 @@ module Vegetables_m
     logical(kind=c_bool), parameter :: CTRUE = .true.
     logical(kind=c_bool), parameter :: CFALSE = .false.
 
-    public :: assertIncludes, Describe, It, runTests, succeed, testThat
+    public :: assertIncludes, Describe, It, runATest, runTests, succeed, testThat
 contains
     function assertIncludes(search_for, string) result(result_)
         character(len=*), intent(in) :: search_for
@@ -103,7 +103,7 @@ contains
 
         integer :: i
 
-        test_collection%contents = cTestCollection(description)
+        test_collection%contents = cTestCollection(fStringToC(description))
         do i = 1, size(tests)
             call cAddTest(test_collection%contents, tests(i)%contents)
         end do
@@ -147,6 +147,16 @@ contains
 
         test_case%contents = cTestCase(fStringToC(description), test)
     end function It
+
+    function runATest(test) result(result_) bind(C, name="runATest")
+        procedure(test_) :: test
+        type(c_ptr) :: result_
+
+        type(Result_t) :: test_result
+
+        test_result = test()
+        result_ = test_result%contents
+    end function runATest
 
     function runTestCollection(self) result(test_result)
         class(TestCollection_t), intent(in) :: self
@@ -196,7 +206,7 @@ contains
                     bind(C, name="cTestCaseDescription")
                 use iso_c_binding, only: c_char, c_int, c_ptr
 
-                type(c_ptr) :: test_case
+                type(c_ptr), value, intent(in) :: test_case
                 character(kind=c_char), dimension(*) :: description
                 integer(kind=c_int), value, intent(in) :: max_length
             end subroutine cTestCaseDescription
@@ -215,7 +225,7 @@ contains
 
         integer :: i
 
-        test_collection%contents = cTestCollection("Test that")
+        test_collection%contents = cTestCollection(fStringToC("Test that"))
         do i = 1, size(tests)
             call cAddTest(test_collection%contents, tests(i)%contents)
         end do

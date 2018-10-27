@@ -4,6 +4,7 @@ MODULE cVegetables
 
 #include <cstring>
 #include <iostream>
+#include <string>
 #include <vector>
 
 class Result {
@@ -16,16 +17,16 @@ public:
 
 class TestResult {
 protected:
-  char *_description;
+  std::string _description;
 
 public:
-  TestResult(char *description);
+  TestResult(std::string description);
 };
 
 class TestCaseResult : public TestResult {
 private:
 public:
-  TestCaseResult(char *_description);
+  TestCaseResult(std::string _description);
 };
 
 class TestCollectionResult : public TestResult {
@@ -33,15 +34,16 @@ private:
   std::vector<TestResult *> _results;
 
 public:
-  TestCollectionResult(char *_description, std::vector<TestResult *> results);
+  TestCollectionResult(std::string _description,
+                       std::vector<TestResult *> results);
 };
 
 class Test {
 protected:
-  char *_description;
+  std::string _description;
 
 public:
-  Test(char *description);
+  Test(std::string description);
   virtual TestResult *run() = 0;
 };
 
@@ -50,8 +52,8 @@ private:
   void *_test;
 
 public:
-  TestCase(char *description, void *test);
-  char *description();
+  TestCase(std::string description, void *test);
+  std::string description();
   TestCaseResult *run();
 };
 
@@ -60,10 +62,12 @@ private:
   std::vector<Test *> _tests;
 
 public:
-  TestCollection(char *description);
+  TestCollection(std::string description);
   void addTest(Test *test);
   TestCollectionResult *run();
 };
+
+extern "C" Result *runATest(void *test);
 
 Result::Result(bool passed) : passed(passed) {}
 
@@ -72,37 +76,38 @@ extern "C" Result *cResult(bool passed) {
   return result;
 }
 
-Test::Test(char *description) : _description(description) {}
+Test::Test(std::string description) : _description(description) {}
 
-TestCase::TestCase(char *description, void *test)
+TestCase::TestCase(std::string description, void *test)
     : Test(description), _test(test) {}
 
-char *TestCase::description() { return this->_description; }
+std::string TestCase::description() { return this->_description; }
 
 TestCaseResult *TestCase::run() {
+  Result *test_result = runATest(this->_test);
+  (void)test_result;
   TestCaseResult *result = new TestCaseResult(this->_description);
   return result;
 }
 
 extern "C" TestCase *cTestCase(char *description, void *test) {
-  TestCase *test_case = new TestCase(description, test);
-  std::cout << "Test case at " << test_case << "\n";
+  TestCase *test_case = new TestCase(std::string(description), test);
   return test_case;
 }
 
 extern "C" void cTestCaseDescription(TestCase *test_case, char *description,
                                      int maxlen) {
-  strncpy(description, test_case->description(), maxlen);
+  std::string the_description = test_case->description();
+  strncpy(description, the_description.c_str(), maxlen);
 }
 
-TestCollection::TestCollection(char *description) : Test(description) {}
+TestCollection::TestCollection(std::string description) : Test(description) {}
 
 void TestCollection::addTest(Test *test) { this->_tests.push_back(test); }
 
 TestCollectionResult *TestCollection::run() {
   std::vector<TestResult *> results;
   for (auto const &test : this->_tests) {
-    std::cout << "Trying to run test at " << test << "\n";
     results.push_back(test->run());
   }
   TestCollectionResult *result =
@@ -111,14 +116,12 @@ TestCollectionResult *TestCollection::run() {
 }
 
 extern "C" TestCollection *cTestCollection(char *description) {
-  TestCollection *test_collection = new TestCollection(description);
-  std::cout << "Test collection at " << test_collection << "\n";
+  TestCollection *test_collection =
+      new TestCollection(std::string(description));
   return test_collection;
 }
 
 extern "C" void cAddTest(TestCollection *collection, Test *test) {
-  std::cout << "Adding test to collection at " << collection << "\n";
-  std::cout << "The test is at " << test << "\n";
   collection->addTest(test);
 }
 
@@ -126,10 +129,11 @@ extern "C" TestCollectionResult *cRunTestCollection(TestCollection *tests) {
   return tests->run();
 }
 
-TestResult::TestResult(char *description) : _description(description) {}
+TestResult::TestResult(std::string description) : _description(description) {}
 
-TestCaseResult::TestCaseResult(char *description) : TestResult(description) {}
+TestCaseResult::TestCaseResult(std::string description)
+    : TestResult(description) {}
 
-TestCollectionResult::TestCollectionResult(char *description,
+TestCollectionResult::TestCollectionResult(std::string description,
                                            std::vector<TestResult *> results)
     : TestResult(description), _results(results) {}
