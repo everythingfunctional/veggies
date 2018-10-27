@@ -30,8 +30,10 @@ public:
 
 class TestCollectionResult : public TestResult {
 private:
+  std::vector<TestResult *> _results;
+
 public:
-  TestCollectionResult(char *_description);
+  TestCollectionResult(char *_description, std::vector<TestResult *> results);
 };
 
 class Test {
@@ -58,7 +60,8 @@ private:
   std::vector<Test *> _tests;
 
 public:
-  TestCollection(char *description, std::vector<Test *> tests);
+  TestCollection(char *description);
+  void addTest(Test *test);
   TestCollectionResult *run();
 };
 
@@ -92,25 +95,31 @@ extern "C" void cTestCaseDescription(TestCase *test_case, char *description,
   strncpy(description, test_case->description(), maxlen);
 }
 
-TestCollection::TestCollection(char *description, std::vector<Test *> tests)
-    : Test(description), _tests(tests) {}
+TestCollection::TestCollection(char *description) : Test(description) {}
+
+void TestCollection::addTest(Test *test) { this->_tests.push_back(test); }
 
 TestCollectionResult *TestCollection::run() {
-  TestCollectionResult *results = new TestCollectionResult(this->_description);
-  return results;
+  std::vector<TestResult *> results;
+  for (auto const &test : this->_tests) {
+    std::cout << "Trying to run test at " << test << "\n";
+    results.push_back(test->run());
+  }
+  TestCollectionResult *result =
+      new TestCollectionResult(this->_description, results);
+  return result;
 }
 
-extern "C" TestCollection *cTestCollection(char *description, Test **tests,
-                                           int num_tests) {
-  std::cout << "Given tests at " << tests << "\n";
-  std::vector<Test *> tests_;
-  for (int i = 0; i < num_tests; i++) {
-    std::cout << "Adding test at " << tests[i] << "\n";
-    tests_.push_back(tests[i]);
-  }
-  TestCollection *test_collection = new TestCollection(description, tests_);
+extern "C" TestCollection *cTestCollection(char *description) {
+  TestCollection *test_collection = new TestCollection(description);
   std::cout << "Test collection at " << test_collection << "\n";
   return test_collection;
+}
+
+extern "C" void cAddTest(TestCollection *collection, Test *test) {
+  std::cout << "Adding test to collection at " << collection << "\n";
+  std::cout << "The test is at " << test << "\n";
+  collection->addTest(test);
 }
 
 extern "C" TestCollectionResult *cRunTestCollection(TestCollection *tests) {
@@ -121,5 +130,6 @@ TestResult::TestResult(char *description) : _description(description) {}
 
 TestCaseResult::TestCaseResult(char *description) : TestResult(description) {}
 
-TestCollectionResult::TestCollectionResult(char *description)
-    : TestResult(description) {}
+TestCollectionResult::TestCollectionResult(char *description,
+                                           std::vector<TestResult *> results)
+    : TestResult(description), _results(results) {}
