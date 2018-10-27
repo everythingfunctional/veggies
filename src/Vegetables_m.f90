@@ -20,7 +20,13 @@ module Vegetables_m
     type, public :: TestCollection_t
         private
         type(c_ptr) :: contents
+    contains
+        private
+        procedure, public :: run => runTestCollection
     end type TestCollection_t
+
+    type, public :: TestResultCollection_t
+    end type TestResultCollection_t
 
     interface operator(.includes.)
         module procedure includes
@@ -134,12 +140,22 @@ contains
         test_case%contents = cTestCase(fStringToC(description), test)
     end function It
 
-    subroutine runTests(tests)
-        type(TestCollection_t) :: tests
+    function runTestCollection(self) result(test_result)
+        class(TestCollection_t), intent(in) :: self
+        type(TestResultCollection_t) :: test_result
 
-        associate(a => tests)
+        associate(a => self)
         end associate
+        test_result = TestResultCollection_t()
+    end function runTestCollection
+
+    subroutine runTests(tests)
+        type(TestCollection_t), intent(in) :: tests
+
+        type(TestResultCollection_t) :: test_results
+
         print *, "Running Tests"
+        test_results = tests%run()
     end subroutine runTests
 
     function succeed() result(result_)
