@@ -153,7 +153,7 @@ contains
                     bind(C, name="cRunTestCollection")
                 use iso_c_binding, only: c_ptr
 
-                type(c_ptr), intent(in) :: collection
+                type(c_ptr), value, intent(in) :: collection
                 type(c_ptr) :: results
             end function cRunTestCollection
         end interface

@@ -3,6 +3,7 @@ MODULE cVegetables
 */
 
 #include <cstring>
+#include <iostream>
 #include <vector>
 
 class Result {
@@ -13,27 +14,37 @@ public:
   Result(bool passed);
 };
 
-class TestResultCollection {
+class TestResult {};
+
+class TestResultCase : public TestResult {};
+
+class TestResultCollection : public TestResult {
 private:
 public:
   TestResultCollection();
 };
 
-class Test {};
+class Test {
+protected:
+  char *_description;
+
+public:
+  Test(char *description);
+  virtual TestResult *run() = 0;
+};
 
 class TestCase : public Test {
 private:
-  char *_description;
   void *_test;
 
 public:
   TestCase(char *description, void *test);
   char *description();
+  TestResultCase *run();
 };
 
 class TestCollection : public Test {
 private:
-  char *_description;
   std::vector<Test *> _tests;
 
 public:
@@ -48,13 +59,21 @@ extern "C" Result *cResult(bool passed) {
   return result;
 }
 
+Test::Test(char *description) : _description(description) {}
+
 TestCase::TestCase(char *description, void *test)
-    : _description(description), _test(test) {}
+    : Test(description), _test(test) {}
 
 char *TestCase::description() { return this->_description; }
 
+TestResultCase *TestCase::run() {
+  TestResultCase *result = new TestResultCase();
+  return result;
+}
+
 extern "C" TestCase *cTestCase(char *description, void *test) {
   TestCase *test_case = new TestCase(description, test);
+  std::cout << "Test case at " << test_case << "\n";
   return test_case;
 }
 
@@ -64,20 +83,23 @@ extern "C" void cTestCaseDescription(TestCase *test_case, char *description,
 }
 
 TestCollection::TestCollection(char *description, std::vector<Test *> tests)
-    : _description(description), _tests(tests) {}
+    : Test(description), _tests(tests) {}
 
 TestResultCollection *TestCollection::run() {
   TestResultCollection *results = new TestResultCollection();
   return results;
 }
 
-extern "C" TestCollection *cTestCollection(char *description, Test *tests[],
+extern "C" TestCollection *cTestCollection(char *description, Test **tests,
                                            int num_tests) {
+  std::cout << "Given tests at " << tests << "\n";
   std::vector<Test *> tests_;
   for (int i = 0; i < num_tests; i++) {
+    std::cout << "Adding test at " << tests[i] << "\n";
     tests_.push_back(tests[i]);
   }
   TestCollection *test_collection = new TestCollection(description, tests_);
+  std::cout << "Test collection at " << test_collection << "\n";
   return test_collection;
 }
 
