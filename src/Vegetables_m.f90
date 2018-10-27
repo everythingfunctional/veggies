@@ -34,9 +34,13 @@ module Vegetables_m
             type(c_ptr) :: result_
         end function cResult
 
-        function cTestCollection() result(test_collection) bind(C, name="cTestCollection")
-            use iso_c_binding, only: c_ptr
+        function cTestCollection( &
+                description) &
+                result(test_collection) &
+                bind(C, name="cTestCollection")
+            use iso_c_binding, only: c_char, c_ptr
 
+            character(len=1, kind=c_char), dimension(*), intent(in) :: description
             type(c_ptr) :: test_collection
         end function cTestCollection
 
@@ -85,7 +89,7 @@ contains
 
         associate(a => description, b => tests)
         end associate
-        test_collection%contents = cTestCollection()
+        test_collection%contents = cTestCollection(description)
     end function Describe
 
     function fail() result(result_)
@@ -118,7 +122,7 @@ contains
             function cTestCase(description, test) result(test_case) bind(C, name="cTestCase")
                 use iso_c_binding, only: c_char, c_ptr
 
-                character(len=1, kind=C_CHAR), dimension(*), intent(in) :: description
+                character(len=1, kind=c_char), dimension(*), intent(in) :: description
                 procedure(test_) :: test
                 type(c_ptr) :: test_case
             end function cTestCase
@@ -174,6 +178,6 @@ contains
 
         associate(a => tests)
         end associate
-        test_collection%contents = cTestCollection()
+        test_collection%contents = cTestCollection("Test that")
     end function testThat
 end module Vegetables_m
