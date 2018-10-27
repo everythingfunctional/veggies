@@ -14,14 +14,24 @@ public:
   Result(bool passed);
 };
 
-class TestResult {};
+class TestResult {
+protected:
+  char *_description;
 
-class TestResultCase : public TestResult {};
+public:
+  TestResult(char *description);
+};
 
-class TestResultCollection : public TestResult {
+class TestCaseResult : public TestResult {
 private:
 public:
-  TestResultCollection();
+  TestCaseResult(char *_description);
+};
+
+class TestCollectionResult : public TestResult {
+private:
+public:
+  TestCollectionResult(char *_description);
 };
 
 class Test {
@@ -40,7 +50,7 @@ private:
 public:
   TestCase(char *description, void *test);
   char *description();
-  TestResultCase *run();
+  TestCaseResult *run();
 };
 
 class TestCollection : public Test {
@@ -49,7 +59,7 @@ private:
 
 public:
   TestCollection(char *description, std::vector<Test *> tests);
-  TestResultCollection *run();
+  TestCollectionResult *run();
 };
 
 Result::Result(bool passed) : passed(passed) {}
@@ -66,8 +76,8 @@ TestCase::TestCase(char *description, void *test)
 
 char *TestCase::description() { return this->_description; }
 
-TestResultCase *TestCase::run() {
-  TestResultCase *result = new TestResultCase();
+TestCaseResult *TestCase::run() {
+  TestCaseResult *result = new TestCaseResult(this->_description);
   return result;
 }
 
@@ -85,8 +95,8 @@ extern "C" void cTestCaseDescription(TestCase *test_case, char *description,
 TestCollection::TestCollection(char *description, std::vector<Test *> tests)
     : Test(description), _tests(tests) {}
 
-TestResultCollection *TestCollection::run() {
-  TestResultCollection *results = new TestResultCollection();
+TestCollectionResult *TestCollection::run() {
+  TestCollectionResult *results = new TestCollectionResult(this->_description);
   return results;
 }
 
@@ -103,8 +113,13 @@ extern "C" TestCollection *cTestCollection(char *description, Test **tests,
   return test_collection;
 }
 
-TestResultCollection::TestResultCollection() {}
-
-extern "C" TestResultCollection *cRunTestCollection(TestCollection *tests) {
+extern "C" TestCollectionResult *cRunTestCollection(TestCollection *tests) {
   return tests->run();
 }
+
+TestResult::TestResult(char *description) : _description(description) {}
+
+TestCaseResult::TestCaseResult(char *description) : TestResult(description) {}
+
+TestCollectionResult::TestCollectionResult(char *description)
+    : TestResult(description) {}
