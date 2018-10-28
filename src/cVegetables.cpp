@@ -5,6 +5,7 @@ MODULE cVegetables
 #include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -51,6 +52,7 @@ protected:
 
 public:
   Test(std::string description);
+  virtual int numCases() = 0;
   virtual TestResult *run() = 0;
 };
 
@@ -61,6 +63,7 @@ private:
 public:
   TestCase(std::string description, void *test);
   std::string description();
+  int numCases();
   TestCaseResult *run();
 };
 
@@ -71,6 +74,7 @@ private:
 public:
   TestCollection(std::string description);
   void addTest(Test *test);
+  int numCases();
   TestCollectionResult *run();
 };
 
@@ -92,6 +96,8 @@ TestCase::TestCase(std::string description, void *test)
 
 std::string TestCase::description() { return this->_description; }
 
+int TestCase::numCases() { return 1; }
+
 TestCaseResult *TestCase::run() {
   Result *test_result = runATest(this->_test);
   TestCaseResult *result = new TestCaseResult(this->_description, test_result);
@@ -112,6 +118,15 @@ extern "C" void cTestCaseDescription(TestCase *test_case, char *description,
 TestCollection::TestCollection(std::string description) : Test(description) {}
 
 void TestCollection::addTest(Test *test) { this->_tests.push_back(test); }
+
+int TestCollection::numCases() {
+  std::vector<int> individual_nums;
+  individual_nums.resize(this->_tests.size());
+  std::transform(this->_tests.begin(), this->_tests.end(),
+                 individual_nums.begin(),
+                 [](Test *test) { return test->numCases(); });
+  return std::accumulate(individual_nums.begin(), individual_nums.end(), 0);
+}
 
 TestCollectionResult *TestCollection::run() {
   std::vector<TestResult *> results;
@@ -135,6 +150,10 @@ extern "C" void cAddTest(TestCollection *collection, Test *test) {
 
 extern "C" TestCollectionResult *cRunTestCollection(TestCollection *tests) {
   return tests->run();
+}
+
+extern "C" int cTestCollectionNumCases(TestCollection *tests) {
+  return tests->numCases();
 }
 
 TestResult::TestResult(std::string description) : _description(description) {}
