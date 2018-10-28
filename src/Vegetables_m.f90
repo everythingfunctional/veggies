@@ -15,6 +15,7 @@ module Vegetables_m
         type(c_ptr) :: contents
     contains
         procedure, public :: description => testCaseDescription
+        procedure, public :: numCases => testCaseNumCases
     end type TestCase_t
 
     type, public :: TestCollection_t
@@ -70,8 +71,32 @@ module Vegetables_m
     logical(kind=c_bool), parameter :: CTRUE = .true.
     logical(kind=c_bool), parameter :: CFALSE = .false.
 
-    public :: assertIncludes, Describe, It, runATest, runTests, succeed, testThat
+    interface assertEquals
+        module procedure assertEqualsInteger
+    end interface
+
+    public :: &
+            assertEquals, &
+            assertIncludes, &
+            Describe, &
+            It, &
+            runATest, &
+            runTests, &
+            succeed, &
+            testThat
 contains
+    function assertEqualsInteger(expected, actual) result(result_)
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        type(Result_t) :: result_
+
+        if (expected == actual) then
+            result_ = succeed()
+        else
+            result_ = fail()
+        end if
+    end function assertEqualsInteger
+
     function assertIncludes(search_for, string) result(result_)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -227,6 +252,15 @@ contains
         call cTestCaseDescription(self%contents, description_, MAX_STRING_LENGTH)
         description = cStringToF(description_)
     end function testCaseDescription
+
+    function testCaseNumCases(self) result(num_cases)
+        class(TestCase_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self)
+        end associate
+        num_cases = 1
+    end function testCaseNumCases
 
     function testCollectionPassed(self) result(passed)
         class(TestResultCollection_t), intent(in) :: self
