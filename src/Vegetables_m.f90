@@ -232,9 +232,19 @@ contains
         class(TestResultCollection_t), intent(in) :: self
         logical :: passed
 
-        associate(a => self)
-        end associate
-        passed = .true.
+        interface
+            function cTestCollectionPassed( &
+                    collection) &
+                    result(passed) &
+                    bind(C, name="cTestCollectionPassed")
+                use iso_c_binding, only: c_bool, c_ptr
+
+                type(c_ptr), value, intent(in) :: collection
+                logical(kind=c_bool) :: passed
+            end function cTestCollectionPassed
+        end interface
+
+        passed = cTestCollectionPassed(self%contents)
     end function testCollectionPassed
 
     function testThat(tests) result(test_collection)
