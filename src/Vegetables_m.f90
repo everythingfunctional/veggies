@@ -73,11 +73,16 @@ module Vegetables_m
     logical(kind=c_bool), parameter :: CTRUE = .true.
     logical(kind=c_bool), parameter :: CFALSE = .false.
 
+    interface operator(.and.)
+        module procedure combineResults
+    end interface
+
     interface assertEquals
         module procedure assertEqualsInteger
     end interface
 
     public :: &
+            operator(.and.), &
             assertEquals, &
             assertIncludes, &
             Describe, &
@@ -110,6 +115,25 @@ contains
             result_ = fail()
         end if
     end function assertIncludes
+
+    function combineResults(lhs, rhs) result(combined)
+        type(Result_t), intent(in) :: lhs
+        type(Result_t), intent(in) :: rhs
+        type(Result_t) :: combined
+
+        interface
+            function cCombineResults( &
+                    lhs, rhs) result(combined) bind(C, name="cCombineResults")
+                use iso_c_binding, only: c_ptr
+
+                type(c_ptr), value, intent(in) :: lhs
+                type(c_ptr), value, intent(in) :: rhs
+                type(c_ptr) :: combined
+            end function cCombineResults
+        end interface
+
+        combined%contents = cCombineResults(lhs%contents, rhs%contents)
+    end function combineResults
 
     function cStringToF(c_string) result(f_string)
         character(len=*), intent(in) :: c_string
@@ -213,6 +237,7 @@ contains
         type(TestResultCollection_t) :: test_results
 
         write(output_unit, *) "Running Tests"
+        write(output_unit, *) tests%description()
         test_results = tests%run()
         if (test_results%passed()) then
             write(output_unit, *) "All Passed"

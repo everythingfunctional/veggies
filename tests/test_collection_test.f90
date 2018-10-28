@@ -15,7 +15,8 @@ contains
 
         test = Describe("A test collection", &
                 [It("can tell how many tests it has", checkNumCases), &
-                It("includes the given description", checkCollectionTopDescription)])
+                It("includes the given description", checkCollectionTopDescription), &
+                It("includes the individual test descriptions", checkCollectionDescriptions)])
     end function test_collection_properties
 
     function checkNumCases() result(result_)
@@ -40,6 +41,21 @@ contains
         result_ = assertIncludes( &
                 EXAMPLE_DESCRIPTION3, test_collection%description())
     end function checkCollectionTopDescription
+
+    function checkCollectionDescriptions() result(result_)
+        use Vegetables_m, only: Result_t, TestCollection_t, assertIncludes, operator(.and.)
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+
+        test_collection = exampleTestCollection()
+        result_ = &
+                assertIncludes( &
+                        EXAMPLE_DESCRIPTION1, test_collection%description()) &
+                .and.assertIncludes( &
+                        EXAMPLE_DESCRIPTION2, test_collection%description())
+    end function checkCollectionDescriptions
 
     function exampleTestCase1() result(test_case)
         use Vegetables_m, only: TestCase_t, It, succeed

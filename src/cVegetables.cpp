@@ -15,6 +15,7 @@ private:
 
 public:
   Result(bool passed);
+  Result *combineWith(Result *addition);
   bool passed();
 };
 
@@ -82,9 +83,26 @@ public:
 
 extern "C" Result *runATest(void *test);
 
+std::string join(std::vector<std::string> strings, std::string separator) {
+  std::string joined = strings[0];
+  for (size_t i = 1; i < strings.size(); i++) {
+    joined += separator + strings[i];
+  }
+  return joined;
+}
+
 Result::Result(bool passed) : _passed(passed) {}
 
 bool Result::passed() { return this->_passed; }
+
+Result *Result::combineWith(Result *addition) {
+  Result *combined = new Result(this->_passed && addition->_passed);
+  return combined;
+}
+
+extern "C" Result *cCombineResults(Result *lhs, Result *rhs) {
+  return lhs->combineWith(rhs);
+}
 
 extern "C" Result *cResult(bool passed) {
   Result *result = new Result(passed);
@@ -121,7 +139,14 @@ TestCollection::TestCollection(std::string description) : Test(description) {}
 
 void TestCollection::addTest(Test *test) { this->_tests.push_back(test); }
 
-std::string TestCollection::description() { return this->_description; }
+std::string TestCollection::description() {
+  std::vector<std::string> individual_descriptions;
+  individual_descriptions.resize(this->_tests.size());
+  std::transform(this->_tests.begin(), this->_tests.end(),
+                 individual_descriptions.begin(),
+                 [](Test *test) { return test->description(); });
+  return this->_description + "\n" + join(individual_descriptions, "\n");
+}
 
 int TestCollection::numCases() {
   std::vector<int> individual_nums;
