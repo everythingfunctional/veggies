@@ -2,6 +2,7 @@
 MODULE cVegetables
 */
 
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <string>
@@ -9,10 +10,11 @@ MODULE cVegetables
 
 class Result {
 private:
-  bool passed;
+  bool _passed;
 
 public:
   Result(bool passed);
+  bool passed();
 };
 
 class TestResult {
@@ -21,12 +23,16 @@ protected:
 
 public:
   TestResult(std::string description);
+  virtual bool passed() = 0;
 };
 
 class TestCaseResult : public TestResult {
 private:
+  Result *_result;
+
 public:
-  TestCaseResult(std::string _description);
+  TestCaseResult(std::string _description, Result *result);
+  bool passed();
 };
 
 class TestCollectionResult : public TestResult {
@@ -36,6 +42,7 @@ private:
 public:
   TestCollectionResult(std::string _description,
                        std::vector<TestResult *> results);
+  bool passed();
 };
 
 class Test {
@@ -69,7 +76,9 @@ public:
 
 extern "C" Result *runATest(void *test);
 
-Result::Result(bool passed) : passed(passed) {}
+Result::Result(bool passed) : _passed(passed) {}
+
+bool Result::passed() { return this->_passed; }
 
 extern "C" Result *cResult(bool passed) {
   Result *result = new Result(passed);
@@ -85,8 +94,7 @@ std::string TestCase::description() { return this->_description; }
 
 TestCaseResult *TestCase::run() {
   Result *test_result = runATest(this->_test);
-  (void)test_result;
-  TestCaseResult *result = new TestCaseResult(this->_description);
+  TestCaseResult *result = new TestCaseResult(this->_description, test_result);
   return result;
 }
 
@@ -131,14 +139,20 @@ extern "C" TestCollectionResult *cRunTestCollection(TestCollection *tests) {
 
 TestResult::TestResult(std::string description) : _description(description) {}
 
-TestCaseResult::TestCaseResult(std::string description)
-    : TestResult(description) {}
+TestCaseResult::TestCaseResult(std::string description, Result *result)
+    : TestResult(description), _result(result) {}
+
+bool TestCaseResult::passed() { return this->_result->passed(); }
 
 TestCollectionResult::TestCollectionResult(std::string description,
                                            std::vector<TestResult *> results)
     : TestResult(description), _results(results) {}
 
+bool TestCollectionResult::passed() {
+  return std::all_of(this->_results.begin(), this->_results.end(),
+                     [](TestResult *result) { return result->passed(); });
+}
+
 extern "C" bool cTestCollectionPassed(TestCollectionResult *collection) {
-  (void)collection;
-  return true;
+  return collection->passed();
 }
