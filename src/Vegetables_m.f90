@@ -28,6 +28,8 @@ module Vegetables_m
     type, public :: TestResultCollection_t
         private
         type(c_ptr) :: contents
+    contains
+        procedure, public :: passed => testCollectionPassed
     end type TestResultCollection_t
 
     interface operator(.includes.)
@@ -178,12 +180,19 @@ contains
     end function runTestCollection
 
     subroutine runTests(tests)
+        use iso_fortran_env, only: error_unit, output_unit
         type(TestCollection_t), intent(in) :: tests
 
         type(TestResultCollection_t) :: test_results
 
-        print *, "Running Tests"
+        write(output_unit, *) "Running Tests"
         test_results = tests%run()
+        if (test_results%passed()) then
+            write(output_unit, *) "All Passed"
+        else
+            write(error_unit, *) "Failed"
+            stop 1
+        end if
     end subroutine runTests
 
     function succeed() result(result_)
@@ -218,6 +227,15 @@ contains
         call cTestCaseDescription(self%contents, description_, MAX_STRING_LENGTH)
         description = cStringToF(description_)
     end function testCaseDescription
+
+    function testCollectionPassed(self) result(passed)
+        class(TestResultCollection_t), intent(in) :: self
+        logical :: passed
+
+        associate(a => self)
+        end associate
+        passed = .true.
+    end function testCollectionPassed
 
     function testThat(tests) result(test_collection)
         type(TestCollection_t), intent(in) :: tests(:)
