@@ -23,6 +23,7 @@ module Vegetables_m
         type(c_ptr) :: contents
     contains
         private
+        procedure, public :: description => testCollectionDescription
         procedure, public :: numCases => testCollectionNumCases
         procedure, public :: run => runTestCollection
     end type TestCollection_t
@@ -262,6 +263,34 @@ contains
         end associate
         num_cases = 1
     end function testCaseNumCases
+
+    function testCollectionDescription(self) result(description)
+        use iso_c_binding, only: c_char
+
+        class(TestCollection_t), intent(in) :: self
+        character(len=:), allocatable :: description
+
+        interface
+            subroutine cTestCollectionDescription( &
+                    test_collection, &
+                    description, &
+                    max_length) &
+                    bind(C, name="cTestCollectionDescription")
+                use iso_c_binding, only: c_char, c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: test_collection
+                character(kind=c_char), dimension(*) :: description
+                integer(kind=c_int), value, intent(in) :: max_length
+            end subroutine cTestCollectionDescription
+        end interface
+
+        integer, parameter :: MAX_STRING_LENGTH = 10000
+        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
+
+        call cTestCollectionDescription( &
+                self%contents, description_, MAX_STRING_LENGTH)
+        description = cStringToF(description_)
+    end function testCollectionDescription
 
     function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self

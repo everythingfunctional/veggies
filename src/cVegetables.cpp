@@ -52,6 +52,7 @@ protected:
 
 public:
   Test(std::string description);
+  virtual std::string description() = 0;
   virtual int numCases() = 0;
   virtual TestResult *run() = 0;
 };
@@ -74,6 +75,7 @@ private:
 public:
   TestCollection(std::string description);
   void addTest(Test *test);
+  std::string description();
   int numCases();
   TestCollectionResult *run();
 };
@@ -119,6 +121,8 @@ TestCollection::TestCollection(std::string description) : Test(description) {}
 
 void TestCollection::addTest(Test *test) { this->_tests.push_back(test); }
 
+std::string TestCollection::description() { return this->_description; }
+
 int TestCollection::numCases() {
   std::vector<int> individual_nums;
   individual_nums.resize(this->_tests.size());
@@ -150,6 +154,12 @@ extern "C" void cAddTest(TestCollection *collection, Test *test) {
 
 extern "C" TestCollectionResult *cRunTestCollection(TestCollection *tests) {
   return tests->run();
+}
+
+extern "C" void cTestCollectionDescription(TestCollection *test_collection,
+                                           char *description, int maxlen) {
+  std::string the_description = test_collection->description();
+  strncpy(description, the_description.c_str(), maxlen);
 }
 
 extern "C" int cTestCollectionNumCases(TestCollection *tests) {
