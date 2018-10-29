@@ -91,6 +91,56 @@ std::string join(std::vector<std::string> strings, std::string separator) {
   return joined;
 }
 
+std::vector<std::string> doSplit(std::string, std::string separators);
+
+std::vector<std::string> splitAt(std::string string, std::string separators) {
+  if (separators.size() > 0) {
+    if (string.size() > 0) {
+      if (separators.find(string[0]) != std::string::npos) {
+        return splitAt(string.substr(1), separators);
+      } else if (separators.find(string[string.size() - 1]) !=
+                 std::string::npos) {
+        return splitAt(string.substr(0, string.size() - 1), separators);
+      } else {
+        return doSplit(string, separators);
+      }
+    } else {
+      std::vector<std::string> result;
+      result.push_back(std::string(""));
+      return result;
+    }
+  } else {
+    std::vector<std::string> result;
+    result.push_back(string);
+    return result;
+  }
+}
+
+std::vector<std::string> doSplit(std::string string, std::string separators) {
+  size_t i;
+  for (i = 1; i < string.size(); i++) {
+    if (separators.find(string[i]) != std::string::npos)
+      break;
+  }
+  if (i < string.size()) {
+    std::string this_string = string.substr(0, i);
+    std::vector<std::string> rest = splitAt(string.substr(i), separators);
+    std::vector<std::string> result;
+    result.push_back(this_string);
+    result.insert(result.end(), rest.begin(), rest.end());
+    return result;
+  } else {
+    std::vector<std::string> result;
+    result.push_back(string);
+    return result;
+  }
+}
+
+std::string hangingIndent(std::string string) {
+  std::vector<std::string> lines = splitAt(string, "\n");
+  return join(lines, "\n    ");
+}
+
 Result::Result(bool passed) : _passed(passed) {}
 
 bool Result::passed() { return this->_passed; }
@@ -145,7 +195,8 @@ std::string TestCollection::description() {
   std::transform(this->_tests.begin(), this->_tests.end(),
                  individual_descriptions.begin(),
                  [](Test *test) { return test->description(); });
-  return this->_description + "\n" + join(individual_descriptions, "\n");
+  return hangingIndent(this->_description + "\n" +
+                       join(individual_descriptions, "\n"));
 }
 
 int TestCollection::numCases() {
