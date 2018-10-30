@@ -81,6 +81,10 @@ module Vegetables_m
         module procedure assertEqualsInteger
     end interface
 
+    interface toString
+        module procedure toStringInteger
+    end interface toString
+
     public :: &
             operator(.and.), &
             assertEquals, &
@@ -238,6 +242,8 @@ contains
 
         write(output_unit, '(A)') "Running Tests"
         write(output_unit, '(A)') tests%description()
+        write(output_unit, '(A)') &
+                "A total of " // toString(tests%numCases()) // " test cases"
         test_results = tests%run()
         if (test_results%passed()) then
             write(output_unit, '(A)') "All Passed"
@@ -366,4 +372,14 @@ contains
             call cAddTest(test_collection%contents, tests(i)%contents)
         end do
     end function testThat
+
+    function toStringInteger(int) result(string)
+        integer, intent(in) :: int
+        character(len=:), allocatable :: string
+
+        character(len=12) :: temp
+
+        write(temp, '(I0)') int
+        string = trim(temp)
+    end function toStringInteger
 end module Vegetables_m
