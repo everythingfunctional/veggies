@@ -174,6 +174,10 @@ TestCaseResult *TestCase::run() {
   return result;
 }
 
+extern "C" TestCaseResult *cRunTestCase(TestCase *test_case) {
+  return test_case->run();
+}
+
 extern "C" TestCase *cTestCase(char *description, void *test) {
   TestCase *test_case = new TestCase(std::string(description), test);
   return test_case;
@@ -248,6 +252,8 @@ TestCaseResult::TestCaseResult(std::string description, Result *result)
     : TestResult(description), _result(result) {}
 
 bool TestCaseResult::passed() { return this->_result->passed(); }
+
+extern "C" bool cTestCasePassed(TestCaseResult *test) { return test->passed(); }
 
 TestCollectionResult::TestCollectionResult(std::string description,
                                            std::vector<TestResult *> results)

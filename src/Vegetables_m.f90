@@ -16,6 +16,7 @@ module Vegetables_m
     contains
         procedure, public :: description => testCaseDescription
         procedure, public :: numCases => testCaseNumCases
+        procedure, public :: run => runTestCase
     end type TestCase_t
 
     type, public :: TestCollection_t
@@ -28,12 +29,20 @@ module Vegetables_m
         procedure, public :: run => runTestCollection
     end type TestCollection_t
 
-    type, public :: TestResultCollection_t
+    type, public :: TestCaseResult_t
+        private
+        type(c_ptr) :: contents
+    contains
+        private
+        procedure, public :: passed => testCasePassed
+    end type TestCaseResult_t
+
+    type, public :: TestCollectionResult_t
         private
         type(c_ptr) :: contents
     contains
         procedure, public :: passed => testCollectionPassed
-    end type TestResultCollection_t
+    end type TestCollectionResult_t
 
     interface operator(.includes.)
         module procedure includes
@@ -89,12 +98,16 @@ module Vegetables_m
             operator(.and.), &
             assertEquals, &
             assertIncludes, &
+            assertThat, &
             describe, &
+            given, &
             it, &
             runATest, &
             runTests, &
             succeed, &
-            testThat
+            testThat, &
+            then, &
+            when
 contains
     function assertEqualsInteger(expected, actual) result(result_)
         integer, intent(in) :: expected
@@ -119,6 +132,17 @@ contains
             result_ = fail()
         end if
     end function assertIncludes
+
+    function assertThat(condition) result(result_)
+        logical, intent(in) :: condition
+        type(Result_t) :: result_
+
+        if (condition) then
+            result_ = succeed()
+        else
+            result_ = fail()
+        end if
+    end function assertThat
 
     function combineResults(lhs, rhs) result(combined)
         type(Result_t), intent(in) :: lhs
@@ -179,6 +203,19 @@ contains
         c_string = f_string // char(0)
     end function fStringToC
 
+    function given(description, tests) result(collection)
+        character(len=*), intent(in) :: description
+        type(TestCollection_t), intent(in) :: tests(:)
+        type(TestCollection_t) :: collection
+
+        integer :: i
+
+        collection%contents = cTestCollection(fStringToC("Given " // description))
+        do i = 1, size(tests)
+            call cAddTest(collection%contents, tests(i)%contents)
+        end do
+    end function given
+
     pure function includes(string, search_for)
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: search_for
@@ -215,9 +252,28 @@ contains
         result_ = test_result%contents
     end function runATest
 
+    function runTestCase(self) result(test_result)
+        class(TestCase_t), intent(in) :: self
+        type(TestCaseResult_t) :: test_result
+
+        interface
+            function cRunTestCase( &
+                    test_case) &
+                    result(result_) &
+                    bind(C, name="cRunTestCase")
+                use iso_c_binding, only: c_ptr
+
+                type(c_ptr), value, intent(in) :: test_case
+                type(c_ptr) :: result_
+            end function cRunTestCase
+        end interface
+
+        test_result%contents = cRunTestCase(self%contents)
+    end function runTestCase
+
     function runTestCollection(self) result(test_result)
         class(TestCollection_t), intent(in) :: self
-        type(TestResultCollection_t) :: test_result
+        type(TestCollectionResult_t) :: test_result
 
         interface
             function cRunTestCollection( &
@@ -238,7 +294,7 @@ contains
         use iso_fortran_env, only: error_unit, output_unit
         type(TestCollection_t), intent(in) :: tests
 
-        type(TestResultCollection_t) :: test_results
+        type(TestCollectionResult_t) :: test_results
 
         write(output_unit, '(A)') "Running Tests"
         write(output_unit, '(A)') tests%description()
@@ -295,6 +351,25 @@ contains
         num_cases = 1
     end function testCaseNumCases
 
+    function testCasePassed(self) result(passed)
+        class(TestCaseResult_t), intent(in) :: self
+        logical :: passed
+
+        interface
+            function cTestCasePassed( &
+                    collection) &
+                    result(passed) &
+                    bind(C, name="cTestCasePassed")
+                use iso_c_binding, only: c_bool, c_ptr
+
+                type(c_ptr), value, intent(in) :: collection
+                logical(kind=c_bool) :: passed
+            end function cTestCasePassed
+        end interface
+
+        passed = cTestCasePassed(self%contents)
+    end function testCasePassed
+
     function testCollectionDescription(self) result(description)
         use iso_c_binding, only: c_char
 
@@ -343,7 +418,7 @@ contains
     end function testCollectionNumCases
 
     function testCollectionPassed(self) result(passed)
-        class(TestResultCollection_t), intent(in) :: self
+        class(TestCollectionResult_t), intent(in) :: self
         logical :: passed
 
         interface
@@ -373,6 +448,14 @@ contains
         end do
     end function testThat
 
+    function then(description, test) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(test_) :: test
+        type(TestCase_t) :: test_case
+
+        test_case = it("Then " // description, test)
+    end function then
+
     function toStringInteger(int) result(string)
         integer, intent(in) :: int
         character(len=:), allocatable :: string
@@ -382,4 +465,12 @@ contains
         write(temp, '(I0)') int
         string = trim(temp)
     end function toStringInteger
+
+    function when(description, tests) result(collection)
+        character(len=*), intent(in) :: description
+        type(TestCase_t), intent(in) :: tests(:)
+        type(TestCollection_t) :: collection
+
+        collection = describe("When " // description, tests)
+    end function when
 end module Vegetables_m
