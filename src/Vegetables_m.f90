@@ -305,7 +305,7 @@ contains
             write(output_unit, '(A)') "All Passed"
         else
             write(error_unit, '(A)') "Failed"
-            stop 1
+            call exit(1)
         end if
     end subroutine runTests
 
