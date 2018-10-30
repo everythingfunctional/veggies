@@ -85,8 +85,8 @@ module Vegetables_m
             operator(.and.), &
             assertEquals, &
             assertIncludes, &
-            Describe, &
-            It, &
+            describe, &
+            it, &
             runATest, &
             runTests, &
             succeed, &
@@ -149,7 +149,7 @@ contains
         end if
     end function cStringToF
 
-    function Describe(description, tests) result(test_collection)
+    function describe(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestCase_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
@@ -160,7 +160,7 @@ contains
         do i = 1, size(tests)
             call cAddTest(test_collection%contents, tests(i)%contents)
         end do
-    end function Describe
+    end function describe
 
     function fail() result(result_)
         type(Result_t) :: result_
@@ -183,7 +183,7 @@ contains
         includes = index(string, search_for) > 0
     end function includes
 
-    function It(description, test) result(test_case)
+    function it(description, test) result(test_case)
         character(len=*), intent(in) :: description
         procedure(test_) :: test
         type(TestCase_t) :: test_case
@@ -199,7 +199,7 @@ contains
         end interface
 
         test_case%contents = cTestCase(fStringToC(description), test)
-    end function It
+    end function it
 
     function runATest(test) result(result_) bind(C, name="runATest")
         procedure(test_) :: test
