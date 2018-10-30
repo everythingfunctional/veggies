@@ -236,13 +236,13 @@ contains
 
         type(TestResultCollection_t) :: test_results
 
-        write(output_unit, *) "Running Tests"
-        write(output_unit, *) tests%description()
+        write(output_unit, '(A)') "Running Tests"
+        write(output_unit, '(A)') tests%description()
         test_results = tests%run()
         if (test_results%passed()) then
-            write(output_unit, *) "All Passed"
+            write(output_unit, '(A)') "All Passed"
         else
-            write(error_unit, *) "Failed"
+            write(error_unit, '(A)') "Failed"
             stop 1
         end if
     end subroutine runTests
