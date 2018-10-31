@@ -34,6 +34,7 @@ private:
 
 public:
   TestCaseResult(std::string _description, Result *result);
+  int numCases();
   bool passed();
 };
 
@@ -189,6 +190,10 @@ extern "C" void cTestCaseDescription(TestCase *test_case, char *description,
   strncpy(description, the_description.c_str(), maxlen);
 }
 
+extern "C" int cTestCaseNumCases(TestCase *test_case) {
+  return test_case->numCases();
+}
+
 TestCollection::TestCollection(std::string description) : Test(description) {}
 
 void TestCollection::addTest(Test *test) { this->_tests.push_back(test); }
@@ -251,7 +256,13 @@ TestResult::TestResult(std::string description) : _description(description) {}
 TestCaseResult::TestCaseResult(std::string description, Result *result)
     : TestResult(description), _result(result) {}
 
+int TestCaseResult::numCases() { return 1; }
+
 bool TestCaseResult::passed() { return this->_result->passed(); }
+
+extern "C" int cTestCaseResultNumCases(TestCaseResult *test) {
+  return test->numCases();
+}
 
 extern "C" bool cTestCasePassed(TestCaseResult *test) { return test->passed(); }
 

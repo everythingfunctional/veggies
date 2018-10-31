@@ -23,7 +23,8 @@ contains
 
         test = given("a passing test case", &
                 [when("it is run", &
-                        [then("it knows it passed", checkCasePasses)])])
+                        [then("it knows it passed", checkCasePasses), &
+                        then("it still has 1 test case", checkNumCasesRun)])])
     end function test_passing_case_behaviors
 
     function caseDescriptionCheck() result(result_)
@@ -68,4 +69,17 @@ contains
         test_result = test_case%run()
         result_ = assertThat(test_result%passed())
     end function checkCasePasses
+
+    function checkNumCasesRun() result(result_)
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = exampleTestCase()
+        test_result = test_case%run()
+        result_ = assertEquals(1, test_result%numCases())
+    end function checkNumCasesRun
 end module test_case_test
