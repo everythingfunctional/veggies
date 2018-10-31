@@ -34,6 +34,7 @@ private:
 
 public:
   TestCaseResult(std::string _description, Result *result);
+  std::string failureDescription();
   int numCases();
   bool passed();
   std::string verboseDescription();
@@ -257,11 +258,20 @@ TestResult::TestResult(std::string description) : _description(description) {}
 TestCaseResult::TestCaseResult(std::string description, Result *result)
     : TestResult(description), _result(result) {}
 
+std::string TestCaseResult::failureDescription() { return ""; }
+
 int TestCaseResult::numCases() { return 1; }
 
 bool TestCaseResult::passed() { return this->_result->passed(); }
 
 std::string TestCaseResult::verboseDescription() { return this->_description; }
+
+extern "C" void cTestCaseResultFailureDescription(TestCaseResult *test_case,
+                                                  char *description,
+                                                  int maxlen) {
+  std::string the_description = test_case->failureDescription();
+  strncpy(description, the_description.c_str(), maxlen);
+}
 
 extern "C" int cTestCaseResultNumCases(TestCaseResult *test) {
   return test->numCases();

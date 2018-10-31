@@ -34,6 +34,7 @@ module Vegetables_m
         type(c_ptr) :: contents
     contains
         private
+        procedure, public :: failureDescription => testCaseFailureDescription
         procedure, public :: numCases => testCaseResultNumCases
         procedure, public :: passed => testCasePassed
         procedure, public :: verboseDescription => testCaseVerboseDescription
@@ -98,6 +99,7 @@ module Vegetables_m
 
     public :: &
             operator(.and.), &
+            assertEmpty, &
             assertEquals, &
             assertIncludes, &
             assertThat, &
@@ -111,6 +113,17 @@ module Vegetables_m
             then, &
             when
 contains
+    function assertEmpty(string) result(result_)
+        character(len=*), intent(in) :: string
+        type(Result_t) :: result_
+
+        if (string == "") then
+            result_ = succeed()
+        else
+            result_ = fail()
+        end if
+    end function assertEmpty
+
     function assertEqualsInteger(expected, actual) result(result_)
         integer, intent(in) :: expected
         integer, intent(in) :: actual
@@ -343,6 +356,33 @@ contains
         call cTestCaseDescription(self%contents, description_, MAX_STRING_LENGTH)
         description = cStringToF(description_)
     end function testCaseDescription
+
+    function testCaseFailureDescription(self) result(description)
+        use iso_c_binding, only: c_char
+
+        class(TestCaseResult_t), intent(in) :: self
+        character(len=:), allocatable :: description
+
+        interface
+            subroutine cTestCaseResultFailureDescription( &
+                    test_case, &
+                    description, &
+                    max_length) &
+                    bind(C, name="cTestCaseResultFailureDescription")
+                use iso_c_binding, only: c_char, c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: test_case
+                character(kind=c_char), dimension(*) :: description
+                integer(kind=c_int), value, intent(in) :: max_length
+            end subroutine cTestCaseResultFailureDescription
+        end interface
+
+        integer, parameter :: MAX_STRING_LENGTH = 10000
+        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
+
+        call cTestCaseResultFailureDescription(self%contents, description_, MAX_STRING_LENGTH)
+        description = cStringToF(description_)
+    end function testCaseFailureDescription
 
     function testCaseNumCases(self) result(num_cases)
         class(TestCase_t), intent(in) :: self
