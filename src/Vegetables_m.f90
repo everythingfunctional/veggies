@@ -36,6 +36,7 @@ module Vegetables_m
         private
         procedure, public :: numCases => testCaseResultNumCases
         procedure, public :: passed => testCasePassed
+        procedure, public :: verboseDescription => testCaseVerboseDescription
     end type TestCaseResult_t
 
     type, public :: TestCollectionResult_t
@@ -399,6 +400,33 @@ contains
 
         num_cases = cTestCaseResultNumCases(self%contents)
     end function testCaseResultNumCases
+
+    function testCaseVerboseDescription(self) result(description)
+        use iso_c_binding, only: c_char
+
+        class(TestCaseResult_t), intent(in) :: self
+        character(len=:), allocatable :: description
+
+        interface
+            subroutine cTestCaseResultVerboseDescription( &
+                    test_case, &
+                    description, &
+                    max_length) &
+                    bind(C, name="cTestCaseResultVerboseDescription")
+                use iso_c_binding, only: c_char, c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: test_case
+                character(kind=c_char), dimension(*) :: description
+                integer(kind=c_int), value, intent(in) :: max_length
+            end subroutine cTestCaseResultVerboseDescription
+        end interface
+
+        integer, parameter :: MAX_STRING_LENGTH = 10000
+        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
+
+        call cTestCaseResultVerboseDescription(self%contents, description_, MAX_STRING_LENGTH)
+        description = cStringToF(description_)
+    end function testCaseVerboseDescription
 
     function testCollectionDescription(self) result(description)
         use iso_c_binding, only: c_char

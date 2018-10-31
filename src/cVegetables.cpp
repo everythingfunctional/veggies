@@ -36,6 +36,7 @@ public:
   TestCaseResult(std::string _description, Result *result);
   int numCases();
   bool passed();
+  std::string verboseDescription();
 };
 
 class TestCollectionResult : public TestResult {
@@ -260,11 +261,20 @@ int TestCaseResult::numCases() { return 1; }
 
 bool TestCaseResult::passed() { return this->_result->passed(); }
 
+std::string TestCaseResult::verboseDescription() { return this->_description; }
+
 extern "C" int cTestCaseResultNumCases(TestCaseResult *test) {
   return test->numCases();
 }
 
 extern "C" bool cTestCasePassed(TestCaseResult *test) { return test->passed(); }
+
+extern "C" void cTestCaseResultVerboseDescription(TestCaseResult *test_case,
+                                                  char *description,
+                                                  int maxlen) {
+  std::string the_description = test_case->verboseDescription();
+  strncpy(description, the_description.c_str(), maxlen);
+}
 
 TestCollectionResult::TestCollectionResult(std::string description,
                                            std::vector<TestResult *> results)
