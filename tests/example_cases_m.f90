@@ -3,6 +3,7 @@ module example_cases_m
     private
 
     character(len=*), parameter, public :: EXAMPLE_DESCRIPTION = "Example Description"
+    character(len=*), parameter, public :: FAILURE_MESSAGE = "Failure Message"
     integer, parameter, public :: NUM_ASSERTS_IN_PASSING = 2
 
     public :: exampleFailingTestCase, examplePassingTestCase
@@ -20,7 +21,7 @@ contains
 
         type(Result_t) :: result_
 
-        result_ = succeed().and.fail()
+        result_ = succeed().and.fail(FAILURE_MESSAGE)
     end function exampleMultipleAssertsWithFail
 
     function examplePassingTestCase() result(test_case)

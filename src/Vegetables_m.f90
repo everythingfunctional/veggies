@@ -59,9 +59,11 @@ module Vegetables_m
             type(c_ptr), value, intent(in) :: collection
             type(c_ptr), value, intent(in) :: test
         end subroutine cAddTest
-        function cResult(passed) result(result_) bind(C, name="cResult")
-            use iso_c_binding, only: c_bool, c_ptr
 
+        function cResult(message, passed) result(result_) bind(C, name="cResult")
+            use iso_c_binding, only: c_bool, c_char, c_ptr
+
+            character(len=1, kind=c_char), dimension(*), intent(in) :: message
             logical(kind=c_bool), value, intent(in) :: passed
             type(c_ptr) :: result_
         end function cResult
@@ -123,7 +125,7 @@ contains
         if (string == "") then
             result_ = succeed()
         else
-            result_ = fail()
+            result_ = fail("String '" // string // "' wasn't empty")
         end if
     end function assertEmpty
 
@@ -135,7 +137,9 @@ contains
         if (expected == actual) then
             result_ = succeed()
         else
-            result_ = fail()
+            result_ = fail( &
+                    "Expected '" // toString(expected) &
+                    // "' but got '" // toString(actual) // "'")
         end if
     end function assertEqualsInteger
 
@@ -147,7 +151,9 @@ contains
         if (string.includes.search_for) then
             result_ = succeed()
         else
-            result_ = fail()
+            result_ = fail( &
+                    "Expected '" // string &
+                    // "' to include '" // search_for // "'")
         end if
     end function assertIncludes
 
@@ -158,7 +164,7 @@ contains
         if (.not.condition) then
             result_ = succeed()
         else
-            result_ = fail()
+            result_ = fail("Expected to be FALSE")
         end if
     end function assertNot
 
@@ -169,7 +175,7 @@ contains
         if (condition) then
             result_ = succeed()
         else
-            result_ = fail()
+            result_ = fail("Expected to be TRUE")
         end if
     end function assertThat
 
@@ -219,10 +225,11 @@ contains
         end do
     end function describe
 
-    function fail() result(result_)
+    function fail(message) result(result_)
+        character(len=*), intent(in) :: message
         type(Result_t) :: result_
 
-        result_%contents = cResult(CFALSE)
+        result_%contents = cResult(fStringToC(message), CFALSE)
     end function fail
 
     function fStringToC(f_string) result(c_string)
@@ -341,7 +348,7 @@ contains
     function succeed() result(result_)
         type(Result_t) :: result_
 
-        result_%contents = cResult(CTRUE)
+        result_%contents = cResult(fStringToC(""), CTRUE)
     end function succeed
 
     function testCaseDescription(self) result(description)

@@ -11,13 +11,15 @@ MODULE cVegetables
 
 class Result {
 private:
+  std::string _message;
   int _num_asserts;
   bool _passed;
 
 public:
-  Result(bool passed);
-  Result(bool passed, int num_asserts);
+  Result(std::string message, bool passed);
+  Result(std::string message, bool passed, int num_asserts);
   Result *combineWith(Result *addition);
+  std::string message();
   int numAsserts();
   bool passed();
 };
@@ -148,27 +150,39 @@ std::string hangingIndent(std::string string) {
   return join(lines, "\n    ");
 }
 
-Result::Result(bool passed) : _num_asserts(1), _passed(passed) {}
+Result::Result(std::string message, bool passed)
+    : _message(message), _num_asserts(1), _passed(passed) {}
 
-Result::Result(bool passed, int num_asserts)
-    : _num_asserts(num_asserts), _passed(passed) {}
+Result::Result(std::string message, bool passed, int num_asserts)
+    : _message(message), _num_asserts(num_asserts), _passed(passed) {}
+
+std::string Result::message() { return this->_message; }
 
 int Result::numAsserts() { return this->_num_asserts; }
 
 bool Result::passed() { return this->_passed; }
 
 Result *Result::combineWith(Result *addition) {
-  Result *combined = new Result(this->_passed && addition->_passed,
-                                this->_num_asserts + addition->_num_asserts);
-  return combined;
+  if (this->_passed && addition->_passed) {
+    return new Result("", true, this->_num_asserts + addition->_num_asserts);
+  } else if (this->_passed) {
+    return new Result(addition->_message, false,
+                      this->_num_asserts + addition->_num_asserts);
+  } else if (addition->_passed) {
+    return new Result(this->_message, false,
+                      this->_num_asserts + addition->_num_asserts);
+  } else {
+    return new Result(this->_message + "\n" + addition->_message, false,
+                      this->_num_asserts + addition->_num_asserts);
+  }
 }
 
 extern "C" Result *cCombineResults(Result *lhs, Result *rhs) {
   return lhs->combineWith(rhs);
 }
 
-extern "C" Result *cResult(bool passed) {
-  Result *result = new Result(passed);
+extern "C" Result *cResult(char *message, bool passed) {
+  Result *result = new Result(std::string(message), passed);
   return result;
 }
 
@@ -276,7 +290,13 @@ int TestCaseResult::numCases() { return 1; }
 
 bool TestCaseResult::passed() { return this->_result->passed(); }
 
-std::string TestCaseResult::verboseDescription() { return this->_description; }
+std::string TestCaseResult::verboseDescription() {
+  if (this->passed()) {
+    return this->_description;
+  } else {
+    return hangingIndent(this->_description + "\n" + this->_result->message());
+  }
+}
 
 extern "C" void cTestCaseResultFailureDescription(TestCaseResult *test_case,
                                                   char *description,
