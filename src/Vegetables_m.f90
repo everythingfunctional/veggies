@@ -35,6 +35,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: failureDescription => testCaseFailureDescription
+        procedure, public :: numAsserts => testCaseNumAsserts
         procedure, public :: numCases => testCaseResultNumCases
         procedure, public :: passed => testCasePassed
         procedure, public :: verboseDescription => testCaseVerboseDescription
@@ -383,6 +384,25 @@ contains
         call cTestCaseResultFailureDescription(self%contents, description_, MAX_STRING_LENGTH)
         description = cStringToF(description_)
     end function testCaseFailureDescription
+
+    function testCaseNumAsserts(self) result(num_asserts)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        interface
+            function cTestCaseNumAsserts( &
+                    test_case) &
+                    result(num_cases) &
+                    bind(C, name="cTestCaseNumAsserts")
+                use iso_c_binding, only: c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: test_case
+                integer(kind=c_int) :: num_cases
+            end function cTestCaseNumAsserts
+        end interface
+
+        num_asserts = cTestCaseNumAsserts(self%contents)
+    end function testCaseNumAsserts
 
     function testCaseNumCases(self) result(num_cases)
         class(TestCase_t), intent(in) :: self

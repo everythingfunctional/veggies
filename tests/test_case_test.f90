@@ -26,7 +26,8 @@ contains
                         [then("it knows it passed", checkCasePasses), &
                         then("it still has 1 test case", checkNumCasesRun), &
                         then("it's verbose description still includes the given description", checkVerboseDescription), &
-                        then("it's failure description is empty", checkFailureDescriptionEmpty)])])
+                        then("it's failure description is empty", checkFailureDescriptionEmpty), &
+                        then("it knows how many asserts there were", checkNumAsserts)])])
     end function test_passing_case_behaviors
 
     function caseDescriptionCheck() result(result_)
@@ -51,12 +52,20 @@ contains
         result_ = assertEquals(1, test_case%numCases())
     end function checkNumCases
 
+    function exampleMultipleAsserts() result(result_)
+        use Vegetables_m, only: Result_t, operator(.and.), succeed
+
+        type(Result_t) :: result_
+
+        result_ = succeed().and.succeed()
+    end function exampleMultipleAsserts
+
     function exampleTestCase() result(test_case)
         use Vegetables_m, only: TestCase_t, it, succeed
 
         type(TestCase_t) :: test_case
 
-        test_case = it(EXAMPLE_DESCRIPTION, succeed)
+        test_case = it(EXAMPLE_DESCRIPTION, exampleMultipleAsserts)
     end function exampleTestCase
 
     function checkCasePasses() result(result_)
@@ -110,4 +119,17 @@ contains
         test_result = test_case%run()
         result_ = assertEmpty(test_result%failureDescription())
     end function checkFailureDescriptionEmpty
+
+    function checkNumAsserts() result(result_)
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = exampleTestCase()
+        test_result = test_case%run()
+        result_ = assertEquals(2, test_result%numAsserts())
+    end function checkNumAsserts
 end module test_case_test

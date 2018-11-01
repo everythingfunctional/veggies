@@ -11,11 +11,14 @@ MODULE cVegetables
 
 class Result {
 private:
+  int _num_asserts;
   bool _passed;
 
 public:
   Result(bool passed);
+  Result(bool passed, int num_asserts);
   Result *combineWith(Result *addition);
+  int numAsserts();
   bool passed();
 };
 
@@ -35,6 +38,7 @@ private:
 public:
   TestCaseResult(std::string _description, Result *result);
   std::string failureDescription();
+  int numAsserts();
   int numCases();
   bool passed();
   std::string verboseDescription();
@@ -144,12 +148,18 @@ std::string hangingIndent(std::string string) {
   return join(lines, "\n    ");
 }
 
-Result::Result(bool passed) : _passed(passed) {}
+Result::Result(bool passed) : _num_asserts(1), _passed(passed) {}
+
+Result::Result(bool passed, int num_asserts)
+    : _num_asserts(num_asserts), _passed(passed) {}
+
+int Result::numAsserts() { return this->_num_asserts; }
 
 bool Result::passed() { return this->_passed; }
 
 Result *Result::combineWith(Result *addition) {
-  Result *combined = new Result(this->_passed && addition->_passed);
+  Result *combined = new Result(this->_passed && addition->_passed,
+                                this->_num_asserts + addition->_num_asserts);
   return combined;
 }
 
@@ -260,6 +270,8 @@ TestCaseResult::TestCaseResult(std::string description, Result *result)
 
 std::string TestCaseResult::failureDescription() { return ""; }
 
+int TestCaseResult::numAsserts() { return this->_result->numAsserts(); }
+
 int TestCaseResult::numCases() { return 1; }
 
 bool TestCaseResult::passed() { return this->_result->passed(); }
@@ -271,6 +283,10 @@ extern "C" void cTestCaseResultFailureDescription(TestCaseResult *test_case,
                                                   int maxlen) {
   std::string the_description = test_case->failureDescription();
   strncpy(description, the_description.c_str(), maxlen);
+}
+
+extern "C" int cTestCaseNumAsserts(TestCaseResult *test) {
+  return test->numAsserts();
 }
 
 extern "C" int cTestCaseResultNumCases(TestCaseResult *test) {
