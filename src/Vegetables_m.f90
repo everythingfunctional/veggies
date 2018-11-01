@@ -103,8 +103,10 @@ module Vegetables_m
             assertEmpty, &
             assertEquals, &
             assertIncludes, &
+            assertNot, &
             assertThat, &
             describe, &
+            fail, &
             given, &
             it, &
             runATest, &
@@ -148,6 +150,17 @@ contains
             result_ = fail()
         end if
     end function assertIncludes
+
+    function assertNot(condition) result(result_)
+        logical, intent(in) :: condition
+        type(Result_t) :: result_
+
+        if (.not.condition) then
+            result_ = succeed()
+        else
+            result_ = fail()
+        end if
+    end function assertNot
 
     function assertThat(condition) result(result_)
         logical, intent(in) :: condition

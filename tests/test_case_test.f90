@@ -4,7 +4,10 @@ module test_case_test
 
     character(len=*), parameter :: EXAMPLE_DESCRIPTION = "Example Description"
 
-    public :: test_case_properties, test_passing_case_behaviors
+    public :: &
+            test_case_properties, &
+            test_failing_case_behaviors, &
+            test_passing_case_behaviors
 contains
     function test_case_properties() result(test)
         use Vegetables_m, only: TestCollection_t, describe, it
@@ -29,6 +32,16 @@ contains
                         then("it's failure description is empty", checkFailureDescriptionEmpty), &
                         then("it knows how many asserts there were", checkNumAsserts)])])
     end function test_passing_case_behaviors
+
+    function test_failing_case_behaviors() result(test)
+        use Vegetables_m, only: TestCollection_t, given, then, when
+
+        type(TestCollection_t) :: test
+
+        test = given("a failing test case", &
+                [when("it is run", &
+                        [then("it knows it failed", checkCaseFails)])])
+    end function test_failing_case_behaviors
 
     function caseDescriptionCheck() result(result_)
         use Vegetables_m, only: Result_t, TestCase_t, assertIncludes
@@ -60,6 +73,14 @@ contains
         result_ = succeed().and.succeed()
     end function exampleMultipleAsserts
 
+    function exampleMultipleAssertsWithFail() result(result_)
+        use Vegetables_m, only: Result_t, operator(.and.), fail, succeed
+
+        type(Result_t) :: result_
+
+        result_ = succeed().and.fail()
+    end function exampleMultipleAssertsWithFail
+
     function exampleTestCase() result(test_case)
         use Vegetables_m, only: TestCase_t, it, succeed
 
@@ -67,6 +88,14 @@ contains
 
         test_case = it(EXAMPLE_DESCRIPTION, exampleMultipleAsserts)
     end function exampleTestCase
+
+    function exampleFailingTestCase() result(test_case)
+        use Vegetables_m, only: TestCase_t, it, succeed
+
+        type(TestCase_t) :: test_case
+
+        test_case = it(EXAMPLE_DESCRIPTION, exampleMultipleAssertsWithFail)
+    end function exampleFailingTestCase
 
     function checkCasePasses() result(result_)
         use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertThat
@@ -132,4 +161,17 @@ contains
         test_result = test_case%run()
         result_ = assertEquals(2, test_result%numAsserts())
     end function checkNumAsserts
+
+    function checkCaseFails() result(result_)
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertNot
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = exampleFailingTestCase()
+        test_result = test_case%run()
+        result_ = assertNot(test_result%passed())
+    end function checkCaseFails
 end module test_case_test
