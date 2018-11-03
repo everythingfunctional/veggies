@@ -282,7 +282,13 @@ TestResult::TestResult(std::string description) : _description(description) {}
 TestCaseResult::TestCaseResult(std::string description, Result *result)
     : TestResult(description), _result(result) {}
 
-std::string TestCaseResult::failureDescription() { return ""; }
+std::string TestCaseResult::failureDescription() {
+  if (this->passed()) {
+    return "";
+  } else {
+    return hangingIndent(this->_description + "\n" + this->_result->message());
+  }
+}
 
 int TestCaseResult::numAsserts() { return this->_result->numAsserts(); }
 
@@ -294,7 +300,7 @@ std::string TestCaseResult::verboseDescription() {
   if (this->passed()) {
     return this->_description;
   } else {
-    return hangingIndent(this->_description + "\n" + this->_result->message());
+    return this->failureDescription();
   }
 }
 
