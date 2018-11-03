@@ -4,6 +4,10 @@ module example_cases_m
 
     character(len=*), parameter, public :: EXAMPLE_DESCRIPTION = "Example Description"
     character(len=*), parameter, public :: FAILURE_MESSAGE = "Failure Message"
+    integer, parameter, public :: NUM_FAILING_ASSERTS_IN_FAILING = 1
+    integer, parameter, public :: NUM_PASSING_ASSERTS_IN_FAILING = 1
+    integer, parameter, public :: NUM_ASSERTS_IN_FAILING = &
+            NUM_FAILING_ASSERTS_IN_FAILING + NUM_PASSING_ASSERTS_IN_FAILING
     integer, parameter, public :: NUM_ASSERTS_IN_PASSING = 2
 
     public :: exampleFailingTestCase, examplePassingTestCase

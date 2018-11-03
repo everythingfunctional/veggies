@@ -12,15 +12,18 @@ MODULE cVegetables
 class Result {
 private:
   std::string _message;
-  int _num_asserts;
+  int _num_failing_asserts;
+  int _num_passing_asserts;
   bool _passed;
 
 public:
   Result(std::string message, bool passed);
-  Result(std::string message, bool passed, int num_asserts);
+  Result(std::string message, bool passed, int num_failing_asserts,
+         int num_passing_asserts);
   Result *combineWith(Result *addition);
   std::string message();
   int numAsserts();
+  int numFailingAsserts();
   bool passed();
 };
 
@@ -42,6 +45,7 @@ public:
   std::string failureDescription();
   int numAsserts();
   int numCases();
+  int numFailingAsserts();
   bool passed();
   std::string verboseDescription();
 };
@@ -151,29 +155,51 @@ std::string hangingIndent(std::string string) {
 }
 
 Result::Result(std::string message, bool passed)
-    : _message(message), _num_asserts(1), _passed(passed) {}
+    : _message(message), _passed(passed) {
+  if (passed) {
+    this->_num_failing_asserts = 0;
+    this->_num_passing_asserts = 1;
+  } else {
+    this->_num_failing_asserts = 1;
+    this->_num_passing_asserts = 0;
+  }
+}
 
-Result::Result(std::string message, bool passed, int num_asserts)
-    : _message(message), _num_asserts(num_asserts), _passed(passed) {}
+Result::Result(std::string message, bool passed, int num_failing_asserts,
+               int num_passing_asserts)
+    : _message(message), _num_failing_asserts(num_failing_asserts),
+      _num_passing_asserts(num_passing_asserts), _passed(passed) {}
 
 std::string Result::message() { return this->_message; }
 
-int Result::numAsserts() { return this->_num_asserts; }
+int Result::numAsserts() {
+  return this->_num_failing_asserts + this->_num_passing_asserts;
+}
+
+int Result::numFailingAsserts() { return this->_num_failing_asserts; }
 
 bool Result::passed() { return this->_passed; }
 
 Result *Result::combineWith(Result *addition) {
   if (this->_passed && addition->_passed) {
-    return new Result("", true, this->_num_asserts + addition->_num_asserts);
+    return new Result(
+        "", true, this->_num_failing_asserts + addition->_num_failing_asserts,
+        this->_num_passing_asserts + addition->_num_passing_asserts);
   } else if (this->_passed) {
-    return new Result(addition->_message, false,
-                      this->_num_asserts + addition->_num_asserts);
+    return new Result(
+        addition->_message, false,
+        this->_num_failing_asserts + addition->_num_failing_asserts,
+        this->_num_passing_asserts + addition->_num_passing_asserts);
   } else if (addition->_passed) {
-    return new Result(this->_message, false,
-                      this->_num_asserts + addition->_num_asserts);
+    return new Result(
+        this->_message, false,
+        this->_num_failing_asserts + addition->_num_failing_asserts,
+        this->_num_passing_asserts + addition->_num_passing_asserts);
   } else {
-    return new Result(this->_message + "\n" + addition->_message, false,
-                      this->_num_asserts + addition->_num_asserts);
+    return new Result(
+        this->_message + "\n" + addition->_message, false,
+        this->_num_failing_asserts + addition->_num_failing_asserts,
+        this->_num_passing_asserts + addition->_num_passing_asserts);
   }
 }
 
@@ -294,6 +320,10 @@ int TestCaseResult::numAsserts() { return this->_result->numAsserts(); }
 
 int TestCaseResult::numCases() { return 1; }
 
+int TestCaseResult::numFailingAsserts() {
+  return this->_result->numFailingAsserts();
+}
+
 bool TestCaseResult::passed() { return this->_result->passed(); }
 
 std::string TestCaseResult::verboseDescription() {
@@ -313,6 +343,10 @@ extern "C" void cTestCaseResultFailureDescription(TestCaseResult *test_case,
 
 extern "C" int cTestCaseNumAsserts(TestCaseResult *test) {
   return test->numAsserts();
+}
+
+extern "C" int cTestCaseNumFailingAsserts(TestCaseResult *test) {
+  return test->numFailingAsserts();
 }
 
 extern "C" int cTestCaseResultNumCases(TestCaseResult *test) {

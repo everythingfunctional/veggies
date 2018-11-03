@@ -37,6 +37,7 @@ module Vegetables_m
         procedure, public :: failureDescription => testCaseFailureDescription
         procedure, public :: numAsserts => testCaseNumAsserts
         procedure, public :: numCases => testCaseResultNumCases
+        procedure, public :: numFailingAsserts => testCaseNumFailingAsserts
         procedure, public :: passed => testCasePassed
         procedure, public :: verboseDescription => testCaseVerboseDescription
     end type TestCaseResult_t
@@ -412,12 +413,12 @@ contains
         interface
             function cTestCaseNumAsserts( &
                     test_case) &
-                    result(num_cases) &
+                    result(num_asserts) &
                     bind(C, name="cTestCaseNumAsserts")
                 use iso_c_binding, only: c_int, c_ptr
 
                 type(c_ptr), value, intent(in) :: test_case
-                integer(kind=c_int) :: num_cases
+                integer(kind=c_int) :: num_asserts
             end function cTestCaseNumAsserts
         end interface
 
@@ -441,7 +442,26 @@ contains
         end interface
 
         num_cases = cTestCaseNumCases(self%contents)
-    end function testCaseNumCases
+    end function
+
+    function testCaseNumFailingAsserts(self) result(num_failing)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_failing
+
+        interface
+            function cTestCaseNumFailingAsserts( &
+                    test_case) &
+                    result(num_failing) &
+                    bind(C, name="cTestCaseNumFailingAsserts")
+                use iso_c_binding, only: c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: test_case
+                integer(kind=c_int) :: num_failing
+            end function cTestCaseNumFailingAsserts
+        end interface
+
+        num_failing = cTestCaseNumFailingAsserts(self%contents)
+    end function testCaseNumFailingAsserts
 
     function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
