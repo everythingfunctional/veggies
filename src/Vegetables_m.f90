@@ -47,6 +47,7 @@ module Vegetables_m
         private
         type(c_ptr) :: contents
     contains
+        procedure, public :: numCases => testCollectionResultNumCases
         procedure, public :: passed => testCollectionPassed
     end type TestCollectionResult_t
 
@@ -613,6 +614,25 @@ contains
 
         passed = cTestCollectionPassed(self%contents)
     end function testCollectionPassed
+
+    function testCollectionResultNumCases(self) result(num_cases)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_cases
+
+        interface
+            function cTestCollectionResultNumCases( &
+                    test_case) &
+                    result(num_cases) &
+                    bind(C, name="cTestCollectionResultNumCases")
+                use iso_c_binding, only: c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: test_case
+                integer(kind=c_int) :: num_cases
+            end function cTestCollectionResultNumCases
+        end interface
+
+        num_cases = cTestCollectionResultNumCases(self%contents)
+    end function testCollectionResultNumCases
 
     function testThat(tests) result(test_collection)
         type(TestCollection_t), intent(in) :: tests(:)

@@ -8,9 +8,9 @@ module example_collections_m
             "Example Case Description 2"
     character(len=*), parameter, public :: EXAMPLE_COLLECTION_DESCRIPTION = &
             "Example Collection Description"
-    integer, parameter, public :: NUM_CASES = 2
+    integer, parameter, public :: NUM_CASES_IN_PASSING = 2
 
-    public :: exampleTestCollection
+    public :: examplePassingCollection
 contains
     function exampleTestCase1() result(test_case)
         use Vegetables_m, only: TestCase_t, it, succeed
@@ -28,12 +28,12 @@ contains
         test_case = it(EXAMPLE_CASE_DESCRIPTION_2, succeed)
     end function exampleTestCase2
 
-    function exampleTestCollection() result(test_collection)
+    function examplePassingCollection() result(test_collection)
         use Vegetables_m, only: TestCollection_t, describe
 
         type(TestCollection_t) :: test_collection
 
         test_collection = describe(EXAMPLE_COLLECTION_DESCRIPTION, &
                 [exampleTestCase1(), exampleTestCase2()])
-    end function exampleTestCollection
+    end function examplePassingCollection
 end module example_collections_m
