@@ -24,6 +24,7 @@ public:
   std::string message();
   int numAsserts();
   int numFailingAsserts();
+  int numPassingAsserts();
   bool passed();
 };
 
@@ -46,6 +47,7 @@ public:
   int numAsserts();
   int numCases();
   int numFailingAsserts();
+  int numPassingAsserts();
   bool passed();
   std::string verboseDescription();
 };
@@ -177,6 +179,8 @@ int Result::numAsserts() {
 }
 
 int Result::numFailingAsserts() { return this->_num_failing_asserts; }
+
+int Result::numPassingAsserts() { return this->_num_passing_asserts; }
 
 bool Result::passed() { return this->_passed; }
 
@@ -324,6 +328,10 @@ int TestCaseResult::numFailingAsserts() {
   return this->_result->numFailingAsserts();
 }
 
+int TestCaseResult::numPassingAsserts() {
+  return this->_result->numPassingAsserts();
+}
+
 bool TestCaseResult::passed() { return this->_result->passed(); }
 
 std::string TestCaseResult::verboseDescription() {
@@ -347,6 +355,10 @@ extern "C" int cTestCaseNumAsserts(TestCaseResult *test) {
 
 extern "C" int cTestCaseNumFailingAsserts(TestCaseResult *test) {
   return test->numFailingAsserts();
+}
+
+extern "C" int cTestCaseNumPassingAsserts(TestCaseResult *test) {
+  return test->numPassingAsserts();
 }
 
 extern "C" int cTestCaseResultNumCases(TestCaseResult *test) {

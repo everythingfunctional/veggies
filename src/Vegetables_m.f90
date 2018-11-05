@@ -38,6 +38,7 @@ module Vegetables_m
         procedure, public :: numAsserts => testCaseNumAsserts
         procedure, public :: numCases => testCaseResultNumCases
         procedure, public :: numFailingAsserts => testCaseNumFailingAsserts
+        procedure, public :: numPassingAsserts => testCaseNumPassingAsserts
         procedure, public :: passed => testCasePassed
         procedure, public :: verboseDescription => testCaseVerboseDescription
     end type TestCaseResult_t
@@ -462,6 +463,25 @@ contains
 
         num_failing = cTestCaseNumFailingAsserts(self%contents)
     end function testCaseNumFailingAsserts
+
+    function testCaseNumPassingAsserts(self) result(num_passing)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_passing
+
+        interface
+            function cTestCaseNumPassingAsserts( &
+                    test_case) &
+                    result(num_passing) &
+                    bind(C, name="cTestCaseNumPassingAsserts")
+                use iso_c_binding, only: c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: test_case
+                integer(kind=c_int) :: num_passing
+            end function cTestCaseNumPassingAsserts
+        end interface
+
+        num_passing = cTestCaseNumPassingAsserts(self%contents)
+    end function testCaseNumPassingAsserts
 
     function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
