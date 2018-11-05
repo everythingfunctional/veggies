@@ -36,6 +36,7 @@ public:
   TestResult(std::string description);
   virtual int numCases() = 0;
   virtual bool passed() = 0;
+  virtual std::string verboseDescription() = 0;
 };
 
 class TestCaseResult : public TestResult {
@@ -62,6 +63,7 @@ public:
                        std::vector<TestResult *> results);
   int numCases();
   bool passed();
+  std::string verboseDescription();
 };
 
 class Test {
@@ -394,10 +396,28 @@ bool TestCollectionResult::passed() {
                      [](TestResult *result) { return result->passed(); });
 }
 
+std::string TestCollectionResult::verboseDescription() {
+  std::vector<std::string> individual_descriptions;
+  individual_descriptions.resize(this->_results.size());
+  std::transform(this->_results.begin(), this->_results.end(),
+                 individual_descriptions.begin(), [](TestResult *result) {
+                   return result->verboseDescription();
+                 });
+  return hangingIndent(this->_description + "\n" +
+                       join(individual_descriptions, "\n"));
+}
+
 extern "C" bool cTestCollectionPassed(TestCollectionResult *collection) {
   return collection->passed();
 }
 
 extern "C" int cTestCollectionResultNumCases(TestCollectionResult *collection) {
   return collection->numCases();
+}
+
+extern "C" void
+cTestCollectionResultVerboseDescription(TestCollectionResult *collection,
+                                        char *description, int maxlen) {
+  std::string the_description = collection->verboseDescription();
+  strncpy(description, the_description.c_str(), maxlen);
 }
