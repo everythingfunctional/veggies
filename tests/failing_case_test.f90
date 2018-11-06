@@ -12,7 +12,9 @@ contains
         test = given("a failing test case", &
                 [when("it is run", &
                         [then("it knows it failed", checkCaseFails), &
-                        then("it still has 1 test case", checkNumCases), &
+                        then("it has 1 test case", checkNumCases), &
+                        then("it has no passing case", checkNumPassingCases), &
+                        then("it has 1 failing case", checkNumFailingCases), &
                         then("it's verbose description includes the given description", checkVerboseForGivenDescription), &
                         then("it's verbose description includes the failure message", checkVerboseForFailureMessage), &
                         then("it's failure description includes the given description", checkFailureForGivenDescription), &
@@ -49,6 +51,34 @@ contains
         test_result = test_case%run()
         result_ = assertEquals(1, test_result%numCases())
     end function checkNumCases
+
+    function checkNumPassingCases() result(result_)
+        use example_cases_m, only: exampleFailingTestCase
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = exampleFailingTestCase()
+        test_result = test_case%run()
+        result_ = assertEquals(0, test_result%numPassingCases())
+    end function checkNumPassingCases
+
+    function checkNumFailingCases() result(result_)
+        use example_cases_m, only: exampleFailingTestCase
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = exampleFailingTestCase()
+        test_result = test_case%run()
+        result_ = assertEquals(1, test_result%numFailingCases())
+    end function checkNumFailingCases
 
     function checkVerboseForGivenDescription() result(result_)
         use example_cases_m, only: exampleFailingTestCase, EXAMPLE_DESCRIPTION

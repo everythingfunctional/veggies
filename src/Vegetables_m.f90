@@ -38,7 +38,9 @@ module Vegetables_m
         procedure, public :: numAsserts => testCaseNumAsserts
         procedure, public :: numCases => testCaseResultNumCases
         procedure, public :: numFailingAsserts => testCaseNumFailingAsserts
+        procedure, public :: numFailingCases => testCaseNumFailingCases
         procedure, public :: numPassingAsserts => testCaseNumPassingAsserts
+        procedure, public :: numPassingCases => testCaseNumPassingCases
         procedure, public :: passed => testCasePassed
         procedure, public :: verboseDescription => testCaseVerboseDescription
     end type TestCaseResult_t
@@ -466,6 +468,25 @@ contains
         num_failing = cTestCaseNumFailingAsserts(self%contents)
     end function testCaseNumFailingAsserts
 
+    function testCaseNumFailingCases(self) result(num_passing)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_passing
+
+        interface
+            function cTestCaseNumFailingCases( &
+                    test_case) &
+                    result(num_passing) &
+                    bind(C, name="cTestCaseNumFailingCases")
+                use iso_c_binding, only: c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: test_case
+                integer(kind=c_int) :: num_passing
+            end function cTestCaseNumFailingCases
+        end interface
+
+        num_passing = cTestCaseNumFailingCases(self%contents)
+    end function testCaseNumFailingCases
+
     function testCaseNumPassingAsserts(self) result(num_passing)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_passing
@@ -484,6 +505,25 @@ contains
 
         num_passing = cTestCaseNumPassingAsserts(self%contents)
     end function testCaseNumPassingAsserts
+
+    function testCaseNumPassingCases(self) result(num_passing)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_passing
+
+        interface
+            function cTestCaseNumPassingCases( &
+                    test_case) &
+                    result(num_passing) &
+                    bind(C, name="cTestCaseNumPassingCases")
+                use iso_c_binding, only: c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: test_case
+                integer(kind=c_int) :: num_passing
+            end function cTestCaseNumPassingCases
+        end interface
+
+        num_passing = cTestCaseNumPassingCases(self%contents)
+    end function testCaseNumPassingCases
 
     function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self

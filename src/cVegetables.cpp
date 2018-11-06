@@ -49,7 +49,9 @@ public:
   int numAsserts();
   int numCases();
   int numFailingAsserts();
+  int numFailingCases();
   int numPassingAsserts();
+  int numPassingCases();
   bool passed();
   std::string verboseDescription();
 };
@@ -332,8 +334,24 @@ int TestCaseResult::numFailingAsserts() {
   return this->_result->numFailingAsserts();
 }
 
+int TestCaseResult::numFailingCases() {
+  if (this->passed()) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
 int TestCaseResult::numPassingAsserts() {
   return this->_result->numPassingAsserts();
+}
+
+int TestCaseResult::numPassingCases() {
+  if (this->passed()) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 bool TestCaseResult::passed() { return this->_result->passed(); }
@@ -367,6 +385,14 @@ extern "C" int cTestCaseNumPassingAsserts(TestCaseResult *test) {
 
 extern "C" int cTestCaseResultNumCases(TestCaseResult *test) {
   return test->numCases();
+}
+
+extern "C" int cTestCaseNumFailingCases(TestCaseResult *test) {
+  return test->numFailingCases();
+}
+
+extern "C" int cTestCaseNumPassingCases(TestCaseResult *test) {
+  return test->numPassingCases();
 }
 
 extern "C" bool cTestCasePassed(TestCaseResult *test) { return test->passed(); }
