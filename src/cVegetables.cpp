@@ -34,6 +34,7 @@ protected:
 
 public:
   TestResult(std::string description);
+  virtual std::string failureDescription() = 0;
   virtual int numCases() = 0;
   virtual int numFailingCases() = 0;
   virtual int numPassingCases() = 0;
@@ -65,6 +66,7 @@ private:
 public:
   TestCollectionResult(std::string _description,
                        std::vector<TestResult *> results);
+  std::string failureDescription();
   int numCases();
   int numFailingCases();
   int numPassingCases();
@@ -412,6 +414,14 @@ TestCollectionResult::TestCollectionResult(std::string description,
                                            std::vector<TestResult *> results)
     : TestResult(description), _results(results) {}
 
+std::string TestCollectionResult::failureDescription() {
+  if (this->passed()) {
+    return "";
+  } else {
+    return "";
+  }
+}
+
 int TestCollectionResult::numCases() {
   std::vector<int> individual_nums;
   individual_nums.resize(this->_results.size());
@@ -471,6 +481,13 @@ cTestCollectionNumFailingCases(TestCollectionResult *collection) {
 extern "C" int
 cTestCollectionNumPassingCases(TestCollectionResult *collection) {
   return collection->numPassingCases();
+}
+
+extern "C" void
+cTestCollectionResultFailureDescription(TestCollectionResult *collection,
+                                        char *description, int maxlen) {
+  std::string the_description = collection->failureDescription();
+  strncpy(description, the_description.c_str(), maxlen);
 }
 
 extern "C" void

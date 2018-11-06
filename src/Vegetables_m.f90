@@ -49,6 +49,7 @@ module Vegetables_m
         private
         type(c_ptr) :: contents
     contains
+        procedure, public :: failureDescription => testCollectionFailureDescription
         procedure, public :: numCases => testCollectionResultNumCases
         procedure, public :: numFailingCases => testCollectionNumFailingCases
         procedure, public :: numPassingCases => testCollectionNumPassingCases
@@ -619,6 +620,33 @@ contains
                 self%contents, description_, MAX_STRING_LENGTH)
         description = cStringToF(description_)
     end function testCollectionDescription
+
+    function testCollectionFailureDescription(self) result(description)
+        use iso_c_binding, only: c_char
+
+        class(TestCollectionResult_t), intent(in) :: self
+        character(len=:), allocatable :: description
+
+        interface
+            subroutine cTestCollectionResultFailureDescription( &
+                    test_collection, &
+                    description, &
+                    max_length) &
+                    bind(C, name="cTestCollectionResultFailureDescription")
+                use iso_c_binding, only: c_char, c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: test_collection
+                character(kind=c_char), dimension(*) :: description
+                integer(kind=c_int), value, intent(in) :: max_length
+            end subroutine cTestCollectionResultFailureDescription
+        end interface
+
+        integer, parameter :: MAX_STRING_LENGTH = 10000
+        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
+
+        call cTestCollectionResultFailureDescription(self%contents, description_, MAX_STRING_LENGTH)
+        description = cStringToF(description_)
+    end function testCollectionFailureDescription
 
     function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self
