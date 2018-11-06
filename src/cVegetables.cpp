@@ -35,6 +35,7 @@ protected:
 public:
   TestResult(std::string description);
   virtual int numCases() = 0;
+  virtual int numPassingCases() = 0;
   virtual bool passed() = 0;
   virtual std::string verboseDescription() = 0;
 };
@@ -64,6 +65,7 @@ public:
   TestCollectionResult(std::string _description,
                        std::vector<TestResult *> results);
   int numCases();
+  int numPassingCases();
   bool passed();
   std::string verboseDescription();
 };
@@ -417,6 +419,15 @@ int TestCollectionResult::numCases() {
   return std::accumulate(individual_nums.begin(), individual_nums.end(), 0);
 }
 
+int TestCollectionResult::numPassingCases() {
+  std::vector<int> individual_nums;
+  individual_nums.resize(this->_results.size());
+  std::transform(this->_results.begin(), this->_results.end(),
+                 individual_nums.begin(),
+                 [](TestResult *result) { return result->numPassingCases(); });
+  return std::accumulate(individual_nums.begin(), individual_nums.end(), 0);
+}
+
 bool TestCollectionResult::passed() {
   return std::all_of(this->_results.begin(), this->_results.end(),
                      [](TestResult *result) { return result->passed(); });
@@ -439,6 +450,11 @@ extern "C" bool cTestCollectionPassed(TestCollectionResult *collection) {
 
 extern "C" int cTestCollectionResultNumCases(TestCollectionResult *collection) {
   return collection->numCases();
+}
+
+extern "C" int
+cTestCollectionNumPassingCases(TestCollectionResult *collection) {
+  return collection->numPassingCases();
 }
 
 extern "C" void
