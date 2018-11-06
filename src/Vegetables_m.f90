@@ -343,12 +343,19 @@ contains
         type(TestCollectionResult_t) :: test_results
 
         write(output_unit, '(A)') "Running Tests"
+        write(output_unit, '(A)')
         write(output_unit, '(A)') tests%description()
+        write(output_unit, '(A)')
         write(output_unit, '(A)') &
                 "A total of " // toString(tests%numCases()) // " test cases"
+        write(output_unit, '(A)')
         test_results = tests%run()
         if (test_results%passed()) then
             write(output_unit, '(A)') "All Passed"
+            write(output_unit, '(A)') &
+                    "A total of " // toString(test_results%numCases()) &
+                    // " test cases containg a total of " &
+                    // toString(test_results%numAsserts()) // " assertions"
         else
             write(error_unit, '(A)') "Failed"
             call exit(1)
