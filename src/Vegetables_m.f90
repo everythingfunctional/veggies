@@ -52,7 +52,9 @@ module Vegetables_m
         procedure, public :: failureDescription => testCollectionFailureDescription
         procedure, public :: numAsserts => testCollectionNumAsserts
         procedure, public :: numCases => testCollectionResultNumCases
+        procedure, public :: numFailingAsserts => testCollectionNumFailingAsserts
         procedure, public :: numFailingCases => testCollectionNumFailingCases
+        procedure, public :: numPassingAsserts => testCollectionNumPassingAsserts
         procedure, public :: numPassingCases => testCollectionNumPassingCases
         procedure, public :: passed => testCollectionPassed
         procedure, public :: verboseDescription => testCollectionVerboseDescription
@@ -694,6 +696,25 @@ contains
         num_cases = cTestCollectionNumCases(self%contents)
     end function testCollectionNumCases
 
+    function testCollectionNumFailingAsserts(self) result(num_asserts)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        interface
+            function cTestCollectionNumFailingAsserts( &
+                    collection) &
+                    result(num_asserts) &
+                    bind(C, name="cTestCollectionNumFailingAsserts")
+                use iso_c_binding, only: c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: collection
+                integer(kind=c_int) :: num_asserts
+            end function cTestCollectionNumFailingAsserts
+        end interface
+
+        num_asserts = cTestCollectionNumFailingAsserts(self%contents)
+    end function testCollectionNumFailingAsserts
+
     function testCollectionNumFailingCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_cases
@@ -712,6 +733,25 @@ contains
 
         num_cases = cTestCollectionNumFailingCases(self%contents)
     end function testCollectionNumFailingCases
+
+    function testCollectionNumPassingAsserts(self) result(num_asserts)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        interface
+            function cTestCollectionNumPassingAsserts( &
+                    collection) &
+                    result(num_asserts) &
+                    bind(C, name="cTestCollectionNumPassingAsserts")
+                use iso_c_binding, only: c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: collection
+                integer(kind=c_int) :: num_asserts
+            end function cTestCollectionNumPassingAsserts
+        end interface
+
+        num_asserts = cTestCollectionNumPassingAsserts(self%contents)
+    end function testCollectionNumPassingAsserts
 
     function testCollectionNumPassingCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self

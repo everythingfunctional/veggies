@@ -37,7 +37,9 @@ public:
   virtual std::string failureDescription() = 0;
   virtual int numAsserts() = 0;
   virtual int numCases() = 0;
+  virtual int numFailingAsserts() = 0;
   virtual int numFailingCases() = 0;
+  virtual int numPassingAsserts() = 0;
   virtual int numPassingCases() = 0;
   virtual bool passed() = 0;
   virtual std::string verboseDescription() = 0;
@@ -70,7 +72,9 @@ public:
   std::string failureDescription();
   int numAsserts();
   int numCases();
+  int numFailingAsserts();
   int numFailingCases();
+  int numPassingAsserts();
   int numPassingCases();
   bool passed();
   std::string verboseDescription();
@@ -442,12 +446,30 @@ int TestCollectionResult::numCases() {
   return std::accumulate(individual_nums.begin(), individual_nums.end(), 0);
 }
 
+int TestCollectionResult::numFailingAsserts() {
+  std::vector<int> individual_nums;
+  individual_nums.resize(this->_results.size());
+  std::transform(
+      this->_results.begin(), this->_results.end(), individual_nums.begin(),
+      [](TestResult *result) { return result->numFailingAsserts(); });
+  return std::accumulate(individual_nums.begin(), individual_nums.end(), 0);
+}
+
 int TestCollectionResult::numFailingCases() {
   std::vector<int> individual_nums;
   individual_nums.resize(this->_results.size());
   std::transform(this->_results.begin(), this->_results.end(),
                  individual_nums.begin(),
                  [](TestResult *result) { return result->numFailingCases(); });
+  return std::accumulate(individual_nums.begin(), individual_nums.end(), 0);
+}
+
+int TestCollectionResult::numPassingAsserts() {
+  std::vector<int> individual_nums;
+  individual_nums.resize(this->_results.size());
+  std::transform(
+      this->_results.begin(), this->_results.end(), individual_nums.begin(),
+      [](TestResult *result) { return result->numPassingAsserts(); });
   return std::accumulate(individual_nums.begin(), individual_nums.end(), 0);
 }
 
@@ -489,8 +511,18 @@ extern "C" int cTestCollectionNumAsserts(TestCollectionResult *collection) {
 }
 
 extern "C" int
+cTestCollectionNumFailingAsserts(TestCollectionResult *collection) {
+  return collection->numFailingAsserts();
+}
+
+extern "C" int
 cTestCollectionNumFailingCases(TestCollectionResult *collection) {
   return collection->numFailingCases();
+}
+
+extern "C" int
+cTestCollectionNumPassingAsserts(TestCollectionResult *collection) {
+  return collection->numPassingAsserts();
 }
 
 extern "C" int

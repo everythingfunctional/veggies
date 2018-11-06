@@ -18,7 +18,9 @@ contains
                         then("it's verbose description includes the given description", checkVerboseTopDescription), &
                         then("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
                         then("it's failure description is empty", checkFailureDescriptionEmpty), &
-                        then("it knows how many asserts there were", checkNumAsserts)])])
+                        then("it knows how many asserts there were", checkNumAsserts), &
+                        then("it knows how many asserts passed", checkNumPassingAsserts), &
+                        then("it has no failing asserts", checkNumFailingAsserts)])])
     end function test_passing_collection_behaviors
 
     function checkCollectionPasses() result(result_)
@@ -159,4 +161,35 @@ contains
         test_results = test_collection%run()
         result_ = assertEquals(NUM_ASSERTS_IN_PASSING, test_results%numAsserts())
     end function checkNumAsserts
+
+    function checkNumPassingAsserts() result(result_)
+        use example_collections_m, only: &
+                examplePassingCollection, NUM_ASSERTS_IN_PASSING
+        use Vegetables_m, only: &
+                Result_t, TestCollection_t, TestCollectionResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = examplePassingCollection()
+        test_results = test_collection%run()
+        result_ = assertEquals(NUM_ASSERTS_IN_PASSING, test_results%numPassingAsserts())
+    end function checkNumPassingAsserts
+
+    function checkNumFailingAsserts() result(result_)
+        use example_collections_m, only: examplePassingCollection
+        use Vegetables_m, only: &
+                Result_t, TestCollection_t, TestCollectionResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = examplePassingCollection()
+        test_results = test_collection%run()
+        result_ = assertEquals(0, test_results%numFailingAsserts())
+    end function checkNumFailingAsserts
 end module passing_collection_test
