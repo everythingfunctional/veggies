@@ -50,6 +50,7 @@ module Vegetables_m
         type(c_ptr) :: contents
     contains
         procedure, public :: failureDescription => testCollectionFailureDescription
+        procedure, public :: numAsserts => testCollectionNumAsserts
         procedure, public :: numCases => testCollectionResultNumCases
         procedure, public :: numFailingCases => testCollectionNumFailingCases
         procedure, public :: numPassingCases => testCollectionNumPassingCases
@@ -647,6 +648,25 @@ contains
         call cTestCollectionResultFailureDescription(self%contents, description_, MAX_STRING_LENGTH)
         description = cStringToF(description_)
     end function testCollectionFailureDescription
+
+    function testCollectionNumAsserts(self) result(num_asserts)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        interface
+            function cTestCollectionNumAsserts( &
+                    collection) &
+                    result(num_asserts) &
+                    bind(C, name="cTestCollectionNumAsserts")
+                use iso_c_binding, only: c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: collection
+                integer(kind=c_int) :: num_asserts
+            end function cTestCollectionNumAsserts
+        end interface
+
+        num_asserts = cTestCollectionNumAsserts(self%contents)
+    end function testCollectionNumAsserts
 
     function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self

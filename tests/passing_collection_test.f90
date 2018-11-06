@@ -17,7 +17,8 @@ contains
                         then("it has no failing cases", checkNumFailingCases), &
                         then("it's verbose description includes the given description", checkVerboseTopDescription), &
                         then("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
-                        then("it's failure description is empty", checkFailureDescriptionEmpty)])])
+                        then("it's failure description is empty", checkFailureDescriptionEmpty), &
+                        then("it knows how many asserts there were", checkNumAsserts)])])
     end function test_passing_collection_behaviors
 
     function checkCollectionPasses() result(result_)
@@ -142,4 +143,20 @@ contains
         test_results = test_collection%run()
         result_ = assertEmpty(test_results%failureDescription())
     end function checkFailureDescriptionEmpty
+
+    function checkNumAsserts() result(result_)
+        use example_collections_m, only: &
+                examplePassingCollection, NUM_ASSERTS_IN_PASSING
+        use Vegetables_m, only: &
+                Result_t, TestCollection_t, TestCollectionResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = examplePassingCollection()
+        test_results = test_collection%run()
+        result_ = assertEquals(NUM_ASSERTS_IN_PASSING, test_results%numAsserts())
+    end function checkNumAsserts
 end module passing_collection_test

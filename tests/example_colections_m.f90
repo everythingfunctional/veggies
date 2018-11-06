@@ -8,6 +8,7 @@ module example_collections_m
             "Example Case Description 2"
     character(len=*), parameter, public :: EXAMPLE_COLLECTION_DESCRIPTION = &
             "Example Collection Description"
+    integer, parameter, public :: NUM_ASSERTS_IN_PASSING = 2
     integer, parameter, public :: NUM_CASES_IN_PASSING = 2
 
     public :: examplePassingCollection

@@ -18,7 +18,7 @@ contains
                         then("it's verbose description still includes the given description", checkVerboseDescription), &
                         then("it's failure description is empty", checkFailureDescriptionEmpty), &
                         then("it knows how many asserts there were", checkNumAsserts), &
-                        then("it knows how many asserts failed", checkNumFailingAsserts), &
+                        then("it has no failing asserts", checkNumFailingAsserts), &
                         then("it knows how many asserts passed", checkNumPassingAsserts)])])
     end function test_passing_case_behaviors
 
