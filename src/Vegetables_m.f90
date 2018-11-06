@@ -50,6 +50,7 @@ module Vegetables_m
         type(c_ptr) :: contents
     contains
         procedure, public :: numCases => testCollectionResultNumCases
+        procedure, public :: numFailingCases => testCollectionNumFailingCases
         procedure, public :: numPassingCases => testCollectionNumPassingCases
         procedure, public :: passed => testCollectionPassed
         procedure, public :: verboseDescription => testCollectionVerboseDescription
@@ -637,6 +638,25 @@ contains
 
         num_cases = cTestCollectionNumCases(self%contents)
     end function testCollectionNumCases
+
+    function testCollectionNumFailingCases(self) result(num_cases)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_cases
+
+        interface
+            function cTestCollectionNumFailingCases( &
+                    collection) &
+                    result(num_cases) &
+                    bind(C, name="cTestCollectionNumFailingCases")
+                use iso_c_binding, only: c_int, c_ptr
+
+                type(c_ptr), value, intent(in) :: collection
+                integer(kind=c_int) :: num_cases
+            end function cTestCollectionNumFailingCases
+        end interface
+
+        num_cases = cTestCollectionNumFailingCases(self%contents)
+    end function testCollectionNumFailingCases
 
     function testCollectionNumPassingCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self

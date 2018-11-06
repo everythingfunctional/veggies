@@ -14,6 +14,7 @@ contains
                         [then("it knows it passed", checkCollectionPasses), &
                         then("it knows how many cases there were", checkNumCases), &
                         then("it knows how many cases passed", checkNumPassingCases), &
+                        then("it has no failing cases", checkNumFailingCases), &
                         then("it's verbose description includes the given description", checkVerboseTopDescription), &
                         then("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions)])])
     end function test_passing_collection_behaviors
@@ -64,6 +65,21 @@ contains
         test_results = test_collection%run()
         result_ = assertEquals(NUM_CASES_IN_PASSING, test_results%numPassingCases())
     end function checkNumPassingCases
+
+    function checkNumFailingCases() result(result_)
+        use example_collections_m, only: examplePassingCollection
+        use Vegetables_m, only: &
+                Result_t, TestCollection_t, TestCollectionResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = examplePassingCollection()
+        test_results = test_collection%run()
+        result_ = assertEquals(0, test_results%numFailingCases())
+    end function checkNumFailingCases
 
     function checkVerboseTopDescription() result(result_)
         use example_collections_m, only: &
