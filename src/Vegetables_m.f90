@@ -352,16 +352,28 @@ contains
         write(output_unit, '(A)')
         write(output_unit, '(A)') &
                 "A total of " // toString(tests%numCases()) // " test cases"
-        write(output_unit, '(A)')
         test_results = tests%run()
         if (test_results%passed()) then
+            write(output_unit, '(A)')
             write(output_unit, '(A)') "All Passed"
             write(output_unit, '(A)') &
                     "A total of " // toString(test_results%numCases()) &
                     // " test cases containg a total of " &
                     // toString(test_results%numAsserts()) // " assertions"
+            write(output_unit, '(A)')
         else
+            write(error_unit, '(A)')
             write(error_unit, '(A)') "Failed"
+            write(error_unit, '(A)')
+            write(error_unit, '(A)') &
+                    toString(test_results%numFailingCases()) // " of " &
+                    // toString(test_results%numCases()) // " cases failed"
+            write(error_unit, '(A)') &
+                    toString(test_results%numFailingAsserts()) // " of " &
+                    // toString(test_results%numAsserts()) // " assertions failed"
+            write(error_unit, '(A)')
+            write(error_unit, '(A)') test_results%failureDescription()
+            write(error_unit, '(A)')
             call exit(1)
         end if
     end subroutine runTests
