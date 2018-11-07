@@ -431,7 +431,7 @@ TestCollectionResult::TestCollectionResult(std::string description,
     : TestResult(description), _results(results) {}
 
 bool TestCollectionResult::failed() {
-  return std::all_of(this->_results.begin(), this->_results.end(),
+  return std::any_of(this->_results.begin(), this->_results.end(),
                      [](TestResult *result) { return result->failed(); });
 }
 
