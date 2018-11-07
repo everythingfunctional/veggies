@@ -50,6 +50,7 @@ module Vegetables_m
         private
         type(c_ptr) :: contents
     contains
+        procedure, public :: failed => testCollectionFailed
         procedure, public :: failureDescription => testCollectionFailureDescription
         procedure, public :: numAsserts => testCollectionNumAsserts
         procedure, public :: numCases => testCollectionResultNumCases
@@ -650,6 +651,25 @@ contains
                 self%contents, description_, MAX_STRING_LENGTH)
         description = cStringToF(description_)
     end function testCollectionDescription
+
+    function testCollectionFailed(self) result(failed)
+        class(TestCollectionResult_t), intent(in) :: self
+        logical :: failed
+
+        interface
+            function cTestCollectionFailed( &
+                    collection) &
+                    result(failed) &
+                    bind(C, name="cTestCollectionFailed")
+                use iso_c_binding, only: c_bool, c_ptr
+
+                type(c_ptr), value, intent(in) :: collection
+                logical(kind=c_bool) :: failed
+            end function cTestCollectionFailed
+        end interface
+
+        failed = cTestCollectionFailed(self%contents)
+    end function testCollectionFailed
 
     function testCollectionFailureDescription(self) result(description)
         use iso_c_binding, only: c_char

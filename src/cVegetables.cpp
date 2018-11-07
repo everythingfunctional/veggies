@@ -35,6 +35,7 @@ protected:
 
 public:
   TestResult(std::string description);
+  virtual bool failed() = 0;
   virtual std::string failureDescription() = 0;
   virtual int numAsserts() = 0;
   virtual int numCases() = 0;
@@ -71,6 +72,7 @@ private:
 public:
   TestCollectionResult(std::string _description,
                        std::vector<TestResult *> results);
+  bool failed();
   std::string failureDescription();
   int numAsserts();
   int numCases();
@@ -428,6 +430,11 @@ TestCollectionResult::TestCollectionResult(std::string description,
                                            std::vector<TestResult *> results)
     : TestResult(description), _results(results) {}
 
+bool TestCollectionResult::failed() {
+  return std::all_of(this->_results.begin(), this->_results.end(),
+                     [](TestResult *result) { return result->failed(); });
+}
+
 std::string TestCollectionResult::failureDescription() {
   if (this->passed()) {
     return "";
@@ -504,6 +511,10 @@ std::string TestCollectionResult::verboseDescription() {
                  });
   return hangingIndent(this->_description + "\n" +
                        join(individual_descriptions, "\n"));
+}
+
+extern "C" bool cTestCollectionFailed(TestCollectionResult *collection) {
+  return collection->failed();
 }
 
 extern "C" bool cTestCollectionPassed(TestCollectionResult *collection) {

@@ -26,7 +26,12 @@ contains
     function checkCollectionPasses() result(result_)
         use example_collections_m, only: examplePassingCollection
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, TestCollectionResult_t, assertThat
+                Result_t, &
+                TestCollection_t, &
+                TestCollectionResult_t, &
+                operator(.and.), &
+                assertNot, &
+                assertThat
 
         type(Result_t) :: result_
 
@@ -35,7 +40,7 @@ contains
 
         test_collection = examplePassingCollection()
         test_results = test_collection%run()
-        result_ = assertThat(test_results%passed())
+        result_ = assertThat(test_results%passed()).and.assertNot(test_results%failed())
     end function checkCollectionPasses
 
     function checkNumCases() result(result_)
