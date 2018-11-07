@@ -24,7 +24,13 @@ contains
 
     function checkCasePasses() result(result_)
         use example_cases_m, only: examplePassingTestCase
-        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertThat
+        use Vegetables_m, only: &
+                Result_t, &
+                TestCase_t, &
+                TestCaseResult_t, &
+                operator(.and.), &
+                assertNot, &
+                assertThat
 
         type(Result_t) :: result_
 
@@ -33,7 +39,7 @@ contains
 
         test_case = examplePassingTestCase()
         test_result = test_case%run()
-        result_ = assertThat(test_result%passed())
+        result_ = assertThat(test_result%passed()).and.assertNot(test_result%failed())
     end function checkCasePasses
 
     function checkNumCases() result(result_)

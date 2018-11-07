@@ -34,6 +34,7 @@ module Vegetables_m
         type(c_ptr) :: contents
     contains
         private
+        procedure, public :: failed => testCaseFailed
         procedure, public :: failureDescription => testCaseFailureDescription
         procedure, public :: numAsserts => testCaseNumAsserts
         procedure, public :: numCases => testCaseResultNumCases
@@ -396,6 +397,25 @@ contains
         call cTestCaseDescription(self%contents, description_, MAX_STRING_LENGTH)
         description = cStringToF(description_)
     end function testCaseDescription
+
+    function testCaseFailed(self) result(failed)
+        class(TestCaseResult_t), intent(in) :: self
+        logical :: failed
+
+        interface
+            function cTestCaseFailed( &
+                    collection) &
+                    result(failed) &
+                    bind(C, name="cTestCaseFailed")
+                use iso_c_binding, only: c_bool, c_ptr
+
+                type(c_ptr), value, intent(in) :: collection
+                logical(kind=c_bool) :: failed
+            end function cTestCaseFailed
+        end interface
+
+        failed = cTestCaseFailed(self%contents)
+    end function testCaseFailed
 
     function testCaseFailureDescription(self) result(description)
         use iso_c_binding, only: c_char

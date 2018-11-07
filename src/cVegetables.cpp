@@ -21,6 +21,7 @@ public:
   Result(std::string message, bool passed, int num_failing_asserts,
          int num_passing_asserts);
   Result *combineWith(Result *addition);
+  bool failed();
   std::string message();
   int numAsserts();
   int numFailingAsserts();
@@ -51,6 +52,7 @@ private:
 
 public:
   TestCaseResult(std::string _description, Result *result);
+  bool failed();
   std::string failureDescription();
   int numAsserts();
   int numCases();
@@ -189,6 +191,8 @@ Result::Result(std::string message, bool passed, int num_failing_asserts,
                int num_passing_asserts)
     : _message(message), _num_failing_asserts(num_failing_asserts),
       _num_passing_asserts(num_passing_asserts), _passed(passed) {}
+
+bool Result::failed() { return !this->_passed; }
 
 std::string Result::message() { return this->_message; }
 
@@ -330,6 +334,8 @@ TestResult::TestResult(std::string description) : _description(description) {}
 TestCaseResult::TestCaseResult(std::string description, Result *result)
     : TestResult(description), _result(result) {}
 
+bool TestCaseResult::failed() { return this->_result->failed(); }
+
 std::string TestCaseResult::failureDescription() {
   if (this->passed()) {
     return "";
@@ -375,6 +381,8 @@ std::string TestCaseResult::verboseDescription() {
     return this->failureDescription();
   }
 }
+
+extern "C" bool cTestCaseFailed(TestCaseResult *test) { return test->failed(); }
 
 extern "C" void cTestCaseResultFailureDescription(TestCaseResult *test_case,
                                                   char *description,
