@@ -116,6 +116,7 @@ module Vegetables_m
 
     public :: &
             operator(.and.), &
+            assertDoesntInclude, &
             assertEmpty, &
             assertEquals, &
             assertIncludes, &
@@ -132,6 +133,20 @@ module Vegetables_m
             then, &
             when
 contains
+    function assertDoesntInclude(search_for, string) result(result_)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(Result_t) :: result_
+
+        if (.not.(string.includes.search_for)) then
+            result_ = succeed()
+        else
+            result_ = fail( &
+                    "Expected '" // string &
+                    // "' to NOT include '" // search_for // "'")
+        end if
+    end function assertDoesntInclude
+
     function assertEmpty(string) result(result_)
         character(len=*), intent(in) :: string
         type(Result_t) :: result_
