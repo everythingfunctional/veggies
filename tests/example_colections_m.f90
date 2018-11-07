@@ -12,7 +12,10 @@ module example_collections_m
             "Example Failing Case Description"
     character(len=*), parameter, public :: FAILURE_MESSAGE = "Failure Message"
     integer, parameter, public :: NUM_ASSERTS_IN_PASSING = 2
+    integer, parameter, public :: NUM_CASES_IN_FAILING = 3
     integer, parameter, public :: NUM_CASES_IN_PASSING = 2
+    integer, parameter, public :: NUM_FAILING_CASES = 1
+    integer, parameter, public :: NUM_PASSING_CASES_IN_FAILING = 2
 
     public :: exampleFailingCollection, examplePassingCollection
 contains
