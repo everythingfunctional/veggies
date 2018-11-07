@@ -11,10 +11,13 @@ contains
 
         tests = given("a failing test collection", &
                 [when("it is run", &
-                [then("it knows it failed", checkCollectionFails), &
-                then("it knows how many cases there were", checkNumCases), &
-                then("it knows how many cases passed", checkNumPassingCases), &
-                then("it knows how many cases failed", checkNumFailingCases)])])
+                        [then("it knows it failed", checkCollectionFails), &
+                        then("it knows how many cases there were", checkNumCases), &
+                        then("it knows how many cases passed", checkNumPassingCases), &
+                        then("it knows how many cases failed", checkNumFailingCases), &
+                        then("it's verbose description includes the given description", checkVerboseTopDescription), &
+                        then("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
+                        then("it's verbose description includes the failure message", checkVerboseForFailureMessage)])])
     end function test_failing_collection_behaviors
 
     function checkCollectionFails() result(result_)
@@ -84,4 +87,76 @@ contains
         test_results = test_collection%run()
         result_ = assertEquals(NUM_FAILING_CASES, test_results%numFailingCases())
     end function checkNumFailingCases
+
+    function checkVerboseTopDescription() result(result_)
+        use example_collections_m, only: &
+                exampleFailingCollection, EXAMPLE_COLLECTION_DESCRIPTION
+        use Vegetables_m, only: &
+                Result_t, TestCollection_t, TestCollectionResult_t, assertIncludes
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = exampleFailingCollection()
+        test_results = test_collection%run()
+        result_ = assertIncludes( &
+                EXAMPLE_COLLECTION_DESCRIPTION, &
+                test_results%verboseDescription())
+    end function checkVerboseTopDescription
+
+    function checkVerboseCaseDescriptions() result(result_)
+        use example_collections_m, only: &
+                exampleFailingCollection, &
+                EXAMPLE_CASE_DESCRIPTION_1, &
+                EXAMPLE_CASE_DESCRIPTION_2, &
+                EXAMPLE_FAILING_CASE_DESCRIPTION
+        use Vegetables_m, only: &
+                Result_t, &
+                TestCollection_t, &
+                TestCollectionResult_t, &
+                operator(.and.), &
+                assertIncludes
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = exampleFailingCollection()
+        test_results = test_collection%run()
+        result_ = &
+                assertIncludes( &
+                        EXAMPLE_CASE_DESCRIPTION_1, &
+                        test_results%verboseDescription()) &
+                .and.assertIncludes( &
+                        EXAMPLE_CASE_DESCRIPTION_2, &
+                        test_results%verboseDescription()) &
+                .and.assertIncludes( &
+                        EXAMPLE_FAILING_CASE_DESCRIPTION, &
+                        test_results%verboseDescription())
+    end function checkVerboseCaseDescriptions
+
+    function checkVerboseForFailureMessage() result(result_)
+        use example_collections_m, only: &
+                exampleFailingCollection, &
+                FAILURE_MESSAGE
+        use Vegetables_m, only: &
+                Result_t, &
+                TestCollection_t, &
+                TestCollectionResult_t, &
+                assertIncludes
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = exampleFailingCollection()
+        test_results = test_collection%run()
+        result_ = assertIncludes( &
+                FAILURE_MESSAGE, &
+                test_results%verboseDescription())
+    end function checkVerboseForFailureMessage
 end module failing_collection_test
