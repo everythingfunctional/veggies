@@ -17,7 +17,8 @@ contains
                         then("it knows how many cases failed", checkNumFailingCases), &
                         then("it's verbose description includes the given description", checkVerboseTopDescription), &
                         then("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
-                        then("it's verbose description includes the failure message", checkVerboseForFailureMessage)])])
+                        then("it's verbose description includes the failure message", checkVerboseForFailureMessage), &
+                        then("it's failure description includes the given description", checkFailureForTopDescription)])])
     end function test_failing_collection_behaviors
 
     function checkCollectionFails() result(result_)
@@ -159,4 +160,22 @@ contains
                 FAILURE_MESSAGE, &
                 test_results%verboseDescription())
     end function checkVerboseForFailureMessage
+
+    function checkFailureForTopDescription() result(result_)
+        use example_collections_m, only: &
+                exampleFailingCollection, EXAMPLE_COLLECTION_DESCRIPTION
+        use Vegetables_m, only: &
+                Result_t, TestCollection_t, TestCollectionResult_t, assertIncludes
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = exampleFailingCollection()
+        test_results = test_collection%run()
+        result_ = assertIncludes( &
+                EXAMPLE_COLLECTION_DESCRIPTION, &
+                test_results%failureDescription())
+    end function checkFailureForTopDescription
 end module failing_collection_test

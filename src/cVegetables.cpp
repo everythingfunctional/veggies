@@ -439,7 +439,14 @@ std::string TestCollectionResult::failureDescription() {
   if (this->passed()) {
     return "";
   } else {
-    return "";
+    std::vector<std::string> individual_descriptions;
+    individual_descriptions.resize(this->_results.size());
+    std::transform(this->_results.begin(), this->_results.end(),
+                   individual_descriptions.begin(), [](TestResult *result) {
+                     return result->failureDescription();
+                   });
+    return hangingIndent(this->_description + "\n" +
+                         join(individual_descriptions, "\n"));
   }
 }
 
