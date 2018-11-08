@@ -2,7 +2,7 @@ image: archlinux/base:latest
 
 before_script:
   - pacman --noconfirm -Syu
-  - pacman --noconfirm -S stack gcc-fortran
+  - pacman --noconfirm -S stack gcc-fortran make tar
   - stack install MissingH shake split
   
 test:
