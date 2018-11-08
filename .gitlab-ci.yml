@@ -5,4 +5,5 @@ before_script:
   - stack install MissingH shake split
   
 test:
-  - ./shake.sh
+  script:
+    - ./shake.sh
