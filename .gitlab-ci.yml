@@ -1,10 +1,5 @@
-image: archlinux/base:latest
+image: registry.gitlab.com/everythingfunctional/fortranshaker
 
-before_script:
-  - pacman --noconfirm -Syu
-  - pacman --noconfirm -S stack gcc-fortran make tar
-  - stack install MissingH shake split
-  
 test:
   script:
     - ./shake.sh
