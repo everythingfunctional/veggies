@@ -36,6 +36,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: run => runCase
+        procedure, public :: numCases => testCaseNumCases
     end type TestCase_t
 
     type, extends(Test_t), public :: TestCollection_t
@@ -66,8 +67,30 @@ module Vegetables_m
         type(TestResultItem_t), allocatable :: results(:)
     end type TestCollectionResult_t
 
-    public :: describe, it, succeed, testThat
+    interface assertEquals
+        module procedure assertEqualsInteger
+    end interface assertEquals
+
+    public :: assertEquals, describe, it, runTests, succeed, TestCase, testThat
 contains
+    function assertEqualsInteger(expected, actual) result(result__)
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        type(Result_t) :: result__
+
+        if (expected == actual) then
+            result__ = succeed()
+        else
+            result__ = fail()
+        end if
+    end function assertEqualsInteger
+
+    function fail() result(failure)
+        type(Result_t) :: failure
+
+        failure = Result_()
+    end function fail
+
     function describe(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
@@ -141,6 +164,13 @@ contains
         end select
     end function runTestItem
 
+    subroutine runTests(tests)
+        type(TestItem_t) :: tests
+        type(TestResultItem_t) :: results
+
+        results = tests%run()
+    end subroutine
+
     function succeed() result(success)
         type(Result_t) :: success
 
@@ -155,6 +185,15 @@ contains
         test_case%description = toString(description)
         test_case%test => func
     end function TestCase
+
+    function TestCaseNumCases(self) result(num_cases)
+        class(TestCase_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self)
+        end associate
+        num_cases = 1
+    end function TestCaseNumCases
 
     function TestCaseResult(description, result__) result(test_case_result)
         type(VegetableString_t), intent(in) :: description
