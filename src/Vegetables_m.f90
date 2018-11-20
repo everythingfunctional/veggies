@@ -5,6 +5,13 @@ module Vegetables_m
     type, public :: VegetableString_t
         private
         character(len=:), allocatable :: string
+    contains
+        private
+        generic, public :: operator(//) => &
+                concatCharsAndString, concatStringAndChars, concatStrings
+        procedure, pass(string) :: concatCharsAndString
+        procedure :: concatStringAndChars
+        procedure :: concatStrings
     end type VegetableString_t
 
     type, public :: Result_t
@@ -13,6 +20,10 @@ module Vegetables_m
         integer :: num_failling_asserts
         integer :: num_passing_asserts
         logical :: passed
+    contains
+        private
+        generic, public :: operator(.and.) => combineResults
+        procedure :: combineResults
     end type Result_t
 
     abstract interface
@@ -76,9 +87,22 @@ module Vegetables_m
         module procedure assertEqualsInteger
     end interface assertEquals
 
+    interface fail
+        module procedure failWithChars
+        module procedure failWithString
+    end interface fail
+
+    interface succeed
+        module procedure succeedWithChars
+        module procedure succeedWithString
+    end interface succeed
+
+    character(len=*), parameter :: NEWLINE = NEW_LINE('A')
+
     public :: &
             assertEquals, &
             describe, &
+            fail, &
             it, &
             runTests, &
             succeed, &
@@ -92,13 +116,56 @@ contains
         type(Result_t) :: result__
 
         if (expected == actual) then
-            result__ = succeed(toString("Expected and got"))
+            result__ = succeed("Expected and got")
         else
-            result__ = fail(toString("Expected but got"))
+            result__ = fail("Expected but got")
         end if
     end function assertEqualsInteger
 
-    function fail(message) result(failure)
+    function combineResults(lhs, rhs) result(combined)
+        class(Result_t), intent(in) :: lhs
+        type(Result_t), intent(in) :: rhs
+        type(Result_t) :: combined
+
+        combined = Result_( &
+                message = lhs%message // NEWLINE // rhs%message, &
+                passed = lhs%passed .and. rhs%passed, &
+                num_failling_asserts = lhs%num_failling_asserts + rhs%num_failling_asserts, &
+                num_passing_asserts = lhs%num_passing_asserts + rhs%num_passing_asserts)
+    end function combineResults
+
+    function concatCharsAndString(chars, string) result(combined)
+        character(len=*), intent(in) :: chars
+        class(VegetableString_t), intent(in) :: string
+        type(VegetableString_t) :: combined
+
+        combined = toString(chars // string%string)
+    end function concatCharsAndString
+
+    function concatStringAndChars(string, chars) result(combined)
+        class(VegetableString_t), intent(in) :: string
+        character(len=*), intent(in) :: chars
+        type(VegetableString_t) :: combined
+
+        combined = toString(string%string // chars)
+    end function concatStringAndChars
+
+    function concatStrings(lhs, rhs) result(combined)
+        class(VegetableString_t), intent(in) :: lhs
+        type(VegetableString_t), intent(in) :: rhs
+        type(VegetableString_t) :: combined
+
+        combined = toString(lhs%string // rhs%string)
+    end function concatStrings
+
+    function failWithChars(message) result(failure)
+        character(len=*), intent(in) :: message
+        type(Result_t) :: failure
+
+        failure = fail(toString(message))
+    end function failWithChars
+
+    function failWithString(message) result(failure)
         type(VegetableString_t), intent(in) :: message
         type(Result_t) :: failure
 
@@ -107,7 +174,7 @@ contains
                 message = message, &
                 num_failling_asserts = 1, &
                 num_passing_asserts = 0)
-    end function fail
+    end function failWithString
 
     function describe(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -197,7 +264,14 @@ contains
         results = tests%run()
     end subroutine
 
-    function succeed(message) result(success)
+    function succeedWithChars(message) result(success)
+        character(len=*), intent(in) :: message
+        type(Result_t) :: success
+
+        success = succeed(toString(message))
+    end function succeedWithChars
+
+    function succeedWithString(message) result(success)
         type(VegetableString_t), intent(in) :: message
         type(Result_t) :: success
 
@@ -206,7 +280,7 @@ contains
                 message = message, &
                 num_failling_asserts = 0, &
                 num_passing_asserts = 1)
-    end function succeed
+    end function succeedWithString
 
     function TestCase(description, func) result(test_case)
         character(len=*), intent(in) :: description
