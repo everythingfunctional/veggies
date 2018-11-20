@@ -12,6 +12,8 @@ module Vegetables_m
         procedure, pass(string) :: concatCharsAndString
         procedure :: concatStringAndChars
         procedure :: concatStrings
+        generic, public :: operator(.includes.) => stringIncludesString
+        procedure :: stringIncludesString
     end type VegetableString_t
 
     type, public :: Result_t
@@ -35,7 +37,7 @@ module Vegetables_m
 
     type, abstract, public :: Test_t
         private
-        type(VegetableString_t) :: description
+        type(VegetableString_t) :: description_
     end type Test_t
 
     type, public :: TestItem_t
@@ -51,6 +53,7 @@ module Vegetables_m
         procedure(test_), nopass, pointer :: test
     contains
         private
+        procedure, public :: description => testCaseDescription
         procedure, public :: run => runCase
         procedure, public :: numCases => testCaseNumCases
     end type TestCase_t
@@ -87,6 +90,11 @@ module Vegetables_m
         module procedure assertEqualsInteger
     end interface assertEquals
 
+    interface assertIncludes
+        module procedure assertStringIncludesChars
+        module procedure assertStringIncludesString
+    end interface assertIncludes
+
     interface fail
         module procedure failWithChars
         module procedure failWithString
@@ -101,6 +109,7 @@ module Vegetables_m
 
     public :: &
             assertEquals, &
+            assertIncludes, &
             describe, &
             fail, &
             it, &
@@ -121,6 +130,26 @@ contains
             result__ = fail("Expected but got")
         end if
     end function assertEqualsInteger
+
+    function assertStringIncludesChars(search_for, string) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(toString(search_for), string)
+    end function assertStringIncludesChars
+
+    function assertStringIncludesString(search_for, string) result(result__)
+        type(VegetableString_t), intent(in) :: search_for
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result__
+
+        if (string.includes.search_for) then
+            result__ = succeed("'" // string // "' included '" // search_for // "'")
+        else
+            result__ = fail("Expected '" // string // "' to include '" // search_for // "'")
+        end if
+    end function assertStringIncludesString
 
     function combineResults(lhs, rhs) result(combined)
         class(Result_t), intent(in) :: lhs
@@ -218,7 +247,7 @@ contains
         class(TestCase_t), intent(in) :: self
         type(TestCaseResult_t) :: result__
 
-        result__ = TestCaseResult(self%description, self%test())
+        result__ = TestCaseResult(self%description_, self%test())
     end function runCase
 
     function runCollection(self) result(result__)
@@ -234,7 +263,7 @@ contains
         do i = 1, num_tests
             results(i) = self%tests(i)%run()
         end do
-        result__ = TestCollectionResult(self%description, results)
+        result__ = TestCollectionResult(self%description_, results)
     end function runCollection
 
     function runTestItem(self) result(result_item)
@@ -264,6 +293,14 @@ contains
         results = tests%run()
     end subroutine
 
+    function stringIncludesString(string, search_for)
+        class(VegetableString_t), intent(in) :: string
+        type(VegetableString_t), intent(in) :: search_for
+        logical :: stringIncludesString
+
+        stringIncludesString = index(string%string, search_for%string) > 0
+    end function stringIncludesString
+
     function succeedWithChars(message) result(success)
         character(len=*), intent(in) :: message
         type(Result_t) :: success
@@ -287,9 +324,16 @@ contains
         procedure(test_) :: func
         type(TestCase_t) :: test_case
 
-        test_case%description = toString(description)
+        test_case%description_ = toString(description)
         test_case%test => func
     end function TestCase
+
+    function TestCaseDescription(self) result(description)
+        class(TestCase_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%description_
+    end function TestCaseDescription
 
     function TestCaseNumCases(self) result(num_cases)
         class(TestCase_t), intent(in) :: self
@@ -314,7 +358,7 @@ contains
         type(TestItem_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
 
-        test_collection%description = toString(description)
+        test_collection%description_ = toString(description)
         allocate(test_collection%tests(size(tests)))
         test_collection%tests = tests
     end function TestCollection
