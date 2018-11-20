@@ -8,6 +8,11 @@ module Vegetables_m
     end type VegetableString_t
 
     type, public :: Result_t
+        private
+        type(VegetableString_t) :: message
+        integer :: num_failling_asserts
+        integer :: num_passing_asserts
+        logical :: passed
     end type Result_t
 
     abstract interface
@@ -71,7 +76,15 @@ module Vegetables_m
         module procedure assertEqualsInteger
     end interface assertEquals
 
-    public :: assertEquals, describe, it, runTests, succeed, TestCase, testThat
+    public :: &
+            assertEquals, &
+            describe, &
+            it, &
+            runTests, &
+            succeed, &
+            TestCase, &
+            testThat, &
+            toString
 contains
     function assertEqualsInteger(expected, actual) result(result__)
         integer, intent(in) :: expected
@@ -79,16 +92,21 @@ contains
         type(Result_t) :: result__
 
         if (expected == actual) then
-            result__ = succeed()
+            result__ = succeed(toString("Expected and got"))
         else
-            result__ = fail()
+            result__ = fail(toString("Expected but got"))
         end if
     end function assertEqualsInteger
 
-    function fail() result(failure)
+    function fail(message) result(failure)
+        type(VegetableString_t), intent(in) :: message
         type(Result_t) :: failure
 
-        failure = Result_()
+        failure = Result_( &
+                passed = .false., &
+                message = message, &
+                num_failling_asserts = 1, &
+                num_passing_asserts = 0)
     end function fail
 
     function describe(description, tests) result(test_collection)
@@ -115,10 +133,18 @@ contains
         end select
     end function it
 
-    function Result_()
+    function Result_(passed, message, num_failling_asserts, num_passing_asserts)
+        logical, intent(in) :: passed
+        type(VegetableString_t), intent(in) :: message
+        integer, intent(in) :: num_failling_asserts
+        integer, intent(in) :: num_passing_asserts
         type(Result_t) :: Result_
 
-        Result_ = Result_t()
+        Result_ = Result_t( &
+                message = message, &
+                num_failling_asserts = num_failling_asserts, &
+                num_passing_asserts = num_passing_asserts, &
+                passed = passed)
     end function Result_
 
     function runCase(self) result(result__)
@@ -171,10 +197,15 @@ contains
         results = tests%run()
     end subroutine
 
-    function succeed() result(success)
+    function succeed(message) result(success)
+        type(VegetableString_t), intent(in) :: message
         type(Result_t) :: success
 
-        success = Result_()
+        success = Result_( &
+                passed = .true., &
+                message = message, &
+                num_failling_asserts = 0, &
+                num_passing_asserts = 1)
     end function succeed
 
     function TestCase(description, func) result(test_case)
