@@ -137,6 +137,7 @@ main = do
         phony "clean" $ do
             removeFilesAfter buildDir ["//"]
             removeFilesAfter testBuildDir ["//"]
+            removeFilesAfter "_shake" ["//"]
 
 getCIncludeDirs :: [FilePath] -> [FilePattern] -> IO [FilePath]
 getCIncludeDirs dirs exts = do
