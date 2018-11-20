@@ -105,6 +105,11 @@ module Vegetables_m
         module procedure succeedWithString
     end interface succeed
 
+    interface toString
+        module procedure charsToString
+        module procedure integerToString
+    end interface toString
+
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
 
     public :: &
@@ -125,9 +130,11 @@ contains
         type(Result_t) :: result__
 
         if (expected == actual) then
-            result__ = succeed("Expected and got")
+            result__ = succeed("Expected and got '" // toString(expected) // "'")
         else
-            result__ = fail("Expected but got")
+            result__ = fail( &
+                    "Expected '" // toString(expected) &
+                    // "' but got '" // toString(actual) // "'")
         end if
     end function assertEqualsInteger
 
@@ -145,11 +152,21 @@ contains
         type(Result_t) :: result__
 
         if (string.includes.search_for) then
-            result__ = succeed("'" // string // "' included '" // search_for // "'")
+            result__ = succeed( &
+                    "'" // string // "' included '" // search_for // "'")
         else
-            result__ = fail("Expected '" // string // "' to include '" // search_for // "'")
+            result__ = fail( &
+                    "Expected '" // string &
+                    // "' to include '" // search_for // "'")
         end if
     end function assertStringIncludesString
+
+    function charsToString(chars) result(string)
+        character(len=*), intent(in) :: chars
+        type(VegetableString_t) :: string
+
+        string%string = chars
+    end function charsToString
 
     function combineResults(lhs, rhs) result(combined)
         class(Result_t), intent(in) :: lhs
@@ -187,6 +204,18 @@ contains
         combined = toString(lhs%string // rhs%string)
     end function concatStrings
 
+    function describe(description, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
+
+        allocate(TestCollection_t :: test_collection%test)
+        select type (test => test_collection%test)
+        type is (TestCollection_t)
+            test = TestCollection(description, tests)
+        end select
+    end function describe
+
     function failWithChars(message) result(failure)
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
@@ -205,17 +234,15 @@ contains
                 num_passing_asserts = 0)
     end function failWithString
 
-    function describe(description, tests) result(test_collection)
-        character(len=*), intent(in) :: description
-        type(TestItem_t), intent(in) :: tests(:)
-        type(TestItem_t) :: test_collection
+    function integerToString(int) result(string)
+        integer, intent(in) :: int
+        type(VegetableString_t) :: string
 
-        allocate(TestCollection_t :: test_collection%test)
-        select type (test => test_collection%test)
-        type is (TestCollection_t)
-            test = TestCollection(description, tests)
-        end select
-    end function describe
+        character(len=12) :: temp
+
+        write(temp, '(I0)') int
+        string = toString(trim(temp))
+    end function integerToString
 
     function it(description, func) result(test_case)
         character(len=*), intent(in) :: description
@@ -383,11 +410,4 @@ contains
             test = TestCollection("Test that", tests)
         end select
     end function testThat
-
-    function toString(chars) result(string)
-        character(len=*), intent(in) :: chars
-        type(VegetableString_t) :: string
-
-        string%string = chars
-    end function toString
 end module Vegetables_m
