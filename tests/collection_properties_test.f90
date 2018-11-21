@@ -10,7 +10,8 @@ contains
         type(TestItem_t) :: test
 
         test = describe("A test collection", &
-                [it("can tell how many tests it has", checkNumCases)])
+                [it("can tell how many tests it has", checkNumCases), &
+                it("includes the given description", checkCollectionTopDescription)])
     end function test_collection_properties
 
     function checkNumCases() result(result_)
@@ -25,4 +26,18 @@ contains
         test_collection = examplePassingCollection()
         result_ = assertEquals(NUM_CASES_IN_PASSING, test_collection%numCases())
     end function checkNumCases
+
+    function checkCollectionTopDescription() result(result_)
+        use example_collections_m, only: &
+                examplePassingCollection, EXAMPLE_COLLECTION_DESCRIPTION
+        use Vegetables_m, only: Result_t, TestCollection_t, assertIncludes
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+
+        test_collection = examplePassingCollection()
+        result_ = assertIncludes( &
+                EXAMPLE_COLLECTION_DESCRIPTION, test_collection%description())
+    end function checkCollectionTopDescription
 end module collection_properties_test

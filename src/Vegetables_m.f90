@@ -33,6 +33,7 @@ module Vegetables_m
         type(VegetableString_t) :: description_
     contains
         private
+        procedure(testDescription), deferred, public :: description
         procedure(testNum), deferred, public :: numCases
     end type Test_t
 
@@ -41,6 +42,12 @@ module Vegetables_m
             import :: Result_t
             type(Result_t) :: result_
         end function
+
+        function testDescription(self) result(description)
+            import :: Test_t, VegetableString_t
+            class(Test_t), intent(in) :: self
+            type(VegetableString_t) :: description
+        end function testDescription
 
         function testNum(self) result(num)
             import :: Test_t
@@ -54,6 +61,7 @@ module Vegetables_m
         class(Test_t), pointer :: test => null()
     contains
         private
+        procedure, public :: description => testItemDescription
         procedure, public :: numCases => testItemNumCases
         procedure, public :: run => runTestItem
     end type TestItem_t
@@ -73,6 +81,7 @@ module Vegetables_m
         type(TestItem_t), allocatable :: tests(:)
     contains
         private
+        procedure, public :: description => testCollectionDescription
         procedure, public :: numCases => testCollectionNumCases
         procedure, public :: run => runCollection
     end type TestCollection_t
@@ -110,6 +119,16 @@ module Vegetables_m
         module procedure failWithChars
         module procedure failWithString
     end interface fail
+
+    interface join
+        module procedure joinWithCharacter
+        module procedure joinWithString
+    end interface
+
+    interface splitAt
+        module procedure splitAtBothCharacter
+        module procedure splitAtStringCharacter
+    end interface
 
     interface succeed
         module procedure succeedWithChars
@@ -246,6 +265,17 @@ contains
                 num_passing_asserts = 0)
     end function failWithString
 
+    function hangingIndent(string_) result(indented)
+        type(VegetableString_t), intent(in) :: string_
+        type(VegetableString_t), allocatable :: indented
+
+        type(VegetableString_t), allocatable :: lines(:)
+
+        allocate(lines(0))
+        lines = splitAt(string_, NEWLINE)
+        indented = join(lines, NEWLINE // "    ")
+    end function hangingIndent
+
     function integerToString(int) result(string)
         integer, intent(in) :: int
         type(VegetableString_t) :: string
@@ -267,6 +297,27 @@ contains
             test = TestCase(description, func)
         end select
     end function it
+
+    function joinWithCharacter(strings, separator) result(string)
+        type(VegetableString_t), intent(in) :: strings(:)
+        character(len=*), intent(in) :: separator
+        type(VegetableString_t) :: string
+
+        string = join(strings, toString(separator))
+    end function joinWithCharacter
+
+    function joinWithString(strings, separator) result(string)
+        type(VegetableString_t), intent(in) :: strings(:)
+        type(VegetableString_t), intent(in) :: separator
+        type(VegetableString_t) :: string
+
+        integer :: i
+
+        string = strings(1)
+        do i = 2, size(strings)
+            string = string // separator // strings(i)
+        end do
+    end function joinWithString
 
     function Result_(passed, message, num_failling_asserts, num_passing_asserts)
         logical, intent(in) :: passed
@@ -331,6 +382,64 @@ contains
 
         results = tests%run()
     end subroutine
+
+    recursive function splitAtBothCharacter(&
+            string_, split_characters) result(strings)
+        character(len=*), intent(in) :: string_
+        character(len=*), intent(in) :: split_characters
+        type(VegetableString_t), allocatable :: strings(:)
+
+        if (len(split_characters) > 0) then
+            if (len(string_) > 0) then
+                if (index(split_characters, string_(1:1)) > 0) then
+                    strings = splitAtBothCharacter(string_(2:), split_characters)
+                else if (index(split_characters, string_(len(string_):len(string_))) > 0) then
+                    strings = splitAtBothCharacter(string_(1:len(string_) - 1), split_characters)
+                else
+                    strings = doSplit(string_, split_characters)
+                end if
+            else
+                allocate(strings(1))
+                strings(1) = toString("")
+            end if
+        else
+            allocate(strings(1))
+            strings(1) = toString(string_)
+        end if
+    contains
+        function doSplit(string__, split_characters_) result(strings_)
+            character(len=*), intent(in) :: string__
+            character(len=*), intent(in) :: split_characters_
+            type(VegetableString_t), allocatable :: strings_(:)
+
+            integer :: i
+            type(VegetableString_t), allocatable :: rest(:)
+            character(len=:), allocatable :: this_string
+            allocate(character(len=0)::this_string)
+
+            do i = 2, len(string__)
+                if (index(split_characters_, string__(i:i)) > 0) exit
+            end do
+            if (i < len(string__)) then
+                this_string = string__(1:i - 1)
+                rest = splitAtBothCharacter(string__(i + 1:), split_characters_)
+                allocate(strings_(size(rest) + 1))
+                strings_(1) = toString(this_string)
+                strings_(2:) = rest(:)
+            else
+                allocate(strings_(1))
+                strings_(1) = toString(string__)
+            end if
+        end function doSplit
+    end function splitAtBothCharacter
+
+    function splitAtStringCharacter(string_, split_characters) result(strings)
+        type(VegetableString_t), intent(in) :: string_
+        character(len=*), intent(in) :: split_characters
+        type(VegetableString_t), allocatable :: strings(:)
+
+        strings = splitAt(string_%string, split_characters)
+    end function splitAtStringCharacter
 
     function stringIncludesString(string, search_for)
         class(VegetableString_t), intent(in) :: string
@@ -402,6 +511,25 @@ contains
         test_collection%tests = tests
     end function TestCollection
 
+    function TestCollectionDescription(self) result(description)
+        class(TestCollection_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        type(VegetableString_t), allocatable :: descriptions(:)
+        integer :: i
+        integer :: num_cases
+
+        num_cases = size(self%tests)
+        allocate(descriptions(num_cases))
+        do i = 1, num_cases
+            descriptions(i) = self%tests(i)%description()
+        end do
+        description = hangingIndent( &
+                self%description_ // NEWLINE &
+                // join(descriptions, NEWLINE))
+
+    end function TestCollectionDescription
+
     function TestCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self
         integer :: num_cases
@@ -430,12 +558,19 @@ contains
         test_collection_result%results = results
     end function TestCollectionResult
 
-    function TestItemNumCases(self) result(num_cases)
+    function testItemDescription(self) result(description)
+        class(TestItem_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%test%description()
+    end function testItemDescription
+
+    function testItemNumCases(self) result(num_cases)
         class(TestItem_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%test%numCases()
-    end function TestItemNumCases
+    end function testItemNumCases
 
     function testThat(tests) result(test_collection)
         type(TestItem_t), intent(in) :: tests(:)
