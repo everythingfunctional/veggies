@@ -14,6 +14,8 @@ module Vegetables_m
         procedure :: concatStrings
         generic, public :: operator(.includes.) => stringIncludesString
         procedure :: stringIncludesString
+        generic, public :: WRITE(FORMATTED) => stringWriteFormatted
+        procedure :: stringWriteFormatted
     end type VegetableString_t
 
     type, public :: Result_t
@@ -271,7 +273,6 @@ contains
 
         type(VegetableString_t), allocatable :: lines(:)
 
-        allocate(lines(0))
         lines = splitAt(string_, NEWLINE)
         indented = join(lines, NEWLINE // "    ")
     end function hangingIndent
@@ -377,9 +378,18 @@ contains
     end function runTestItem
 
     subroutine runTests(tests)
+        use iso_fortran_env, only: error_unit, output_unit
+
         type(TestItem_t) :: tests
         type(TestResultItem_t) :: results
 
+        write(output_unit, '(A)') "Running Tests"
+        write(output_unit, '(A)')
+        write(output_unit, '(DT)') tests%description()
+        write(output_unit, '(A)')
+        write(output_unit, '(DT)') &
+                "A total of " // toString(tests%numCases()) // " test cases"
+        write(output_unit, '(A)')
         results = tests%run()
     end subroutine
 
@@ -449,6 +459,19 @@ contains
         stringIncludesString = index(string%string, search_for%string) > 0
     end function stringIncludesString
 
+    subroutine stringWriteFormatted(string, unit, iotype, v_list, iostat, iomsg)
+        class(VegetableString_t), intent(in) :: string
+        integer, intent(in) :: unit
+        character(len=*), intent(in) :: iotype
+        integer, intent(in) :: v_list(:)
+        integer, intent(out) :: iostat
+        character(len=*), intent(inout) :: iomsg
+
+        associate(a => iotype, b => v_list); end associate
+
+        write(unit=unit, iostat=iostat, iomsg=iomsg, fmt='(A)') string%string
+    end subroutine stringWriteFormatted
+
     function succeedWithChars(message) result(success)
         character(len=*), intent(in) :: message
         type(Result_t) :: success
@@ -515,19 +538,33 @@ contains
         class(TestCollection_t), intent(in) :: self
         type(VegetableString_t) :: description
 
-        type(VegetableString_t), allocatable :: descriptions(:)
+        type :: VegStringArray_t
+            type(VegetableString_t), pointer :: strings(:) => null()
+        end type VegStringArray_t
+
+        integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
+        integer :: descriptions_location
         integer :: i
         integer :: num_cases
 
         num_cases = size(self%tests)
-        allocate(descriptions(num_cases))
+        do i = 1, MAX_STACK_SIZE
+            if (.not.associated(descriptions(i)%strings)) then
+                descriptions_location = i
+                allocate(descriptions(descriptions_location)%strings(num_cases))
+                exit
+            end if
+        end do
+        if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
         do i = 1, num_cases
-            descriptions(i) = self%tests(i)%description()
+            descriptions(descriptions_location)%strings(i) = self%tests(i)%description()
         end do
         description = hangingIndent( &
                 self%description_ // NEWLINE &
-                // join(descriptions, NEWLINE))
-
+                // join(descriptions(descriptions_location)%strings, NEWLINE))
+        deallocate(descriptions(descriptions_location)%strings)
+        nullify(descriptions(descriptions_location)%strings)
     end function TestCollectionDescription
 
     function TestCollectionNumCases(self) result(num_cases)
