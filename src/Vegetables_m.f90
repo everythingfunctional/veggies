@@ -101,6 +101,10 @@ module Vegetables_m
     type, extends(TestResult_t), public :: TestCaseResult_t
         private
         type(Result_t) :: result_
+    contains
+        private
+        procedure, public :: failed => testCaseFailed
+        procedure, public :: passed => testCasePassed
     end type TestCaseResult_t
 
     type, extends(TestResult_t), public :: TestCollectionResult_t
@@ -147,15 +151,20 @@ module Vegetables_m
     public :: &
             assertEquals, &
             assertIncludes, &
+            assertNot, &
+            assertThat, &
             describe, &
             fail, &
+            given, &
             it, &
             runTests, &
             succeed, &
             TestCase, &
             TestCollection, &
             testThat, &
-            toString
+            then, &
+            toString, &
+            when
 contains
     function assertEqualsInteger(expected, actual) result(result__)
         integer, intent(in) :: expected
@@ -170,6 +179,17 @@ contains
                     // "' but got '" // toString(actual) // "'")
         end if
     end function assertEqualsInteger
+
+    function assertNot(condition) result(result__)
+        logical, intent(in) :: condition
+        type(Result_t) :: result__
+
+        if (.not. condition) then
+            result__ = succeed("Was not true")
+        else
+            result__ = fail("Expected to not be true")
+        end if
+    end function assertNot
 
     function assertStringIncludesChars(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
@@ -193,6 +213,17 @@ contains
                     // "' to include '" // search_for // "'")
         end if
     end function assertStringIncludesString
+
+    function assertThat(condition) result(result__)
+        logical, intent(in) :: condition
+        type(Result_t) :: result__
+
+        if (condition) then
+            result__ = succeed("Was true")
+        else
+            result__ = fail("Expected to be true")
+        end if
+    end function assertThat
 
     function charsToString(chars) result(string)
         character(len=*), intent(in) :: chars
@@ -266,6 +297,14 @@ contains
                 num_failling_asserts = 1, &
                 num_passing_asserts = 0)
     end function failWithString
+
+    function given(description, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
+
+        test_collection = describe("Given " // description, tests)
+    end function given
 
     function hangingIndent(string_) result(indented)
         type(VegetableString_t), intent(in) :: string_
@@ -506,6 +545,13 @@ contains
         description = self%description_
     end function TestCaseDescription
 
+    function testCaseFailed(self) result(failed)
+        class(TestCaseResult_t), intent(in) :: self
+        logical :: failed
+
+        failed = .not.self%passed()
+    end function testCaseFailed
+
     function TestCaseNumCases(self) result(num_cases)
         class(TestCase_t), intent(in) :: self
         integer :: num_cases
@@ -514,6 +560,13 @@ contains
         end associate
         num_cases = 1
     end function TestCaseNumCases
+
+    function testCasePassed(self) result(passed)
+        class(TestCaseResult_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%result_%passed
+    end function testCasePassed
 
     function TestCaseResult(description, result__) result(test_case_result)
         type(VegetableString_t), intent(in) :: description
@@ -619,4 +672,20 @@ contains
             test = TestCollection("Test that", tests)
         end select
     end function testThat
+
+    function then(description, func) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(test_) :: func
+        type(TestItem_t) :: test_case
+
+        test_case = it("Then " // description, func)
+    end function then
+
+    function when(description, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
+
+        test_collection = describe("When " // description, tests)
+    end function when
 end module Vegetables_m
