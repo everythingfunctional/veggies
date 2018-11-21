@@ -60,7 +60,7 @@ module Vegetables_m
 
     type, public :: TestItem_t
         private
-        class(Test_t), pointer :: test => null()
+        class(Test_t), allocatable :: test
     contains
         private
         procedure, public :: description => testItemDescription
@@ -95,7 +95,7 @@ module Vegetables_m
 
     type, public :: TestResultItem_t
         private
-        class(TestResult_t), pointer :: result_ => null()
+        class(TestResult_t), pointer :: result_
     end type TestResultItem_t
 
     type, extends(TestResult_t), public :: TestCaseResult_t
