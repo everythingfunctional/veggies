@@ -39,6 +39,15 @@ module Vegetables_m
         procedure(testNum), deferred, public :: numCases
     end type Test_t
 
+    type, abstract, public :: TestResult_t
+        private
+        type(VegetableString_t) :: description
+    contains
+        private
+        procedure(testQuestion), deferred, public :: failed
+        procedure(testQuestion), deferred, public :: passed
+    end type TestResult_t
+
     abstract interface
         function test_() result(result_)
             import :: Result_t
@@ -56,6 +65,12 @@ module Vegetables_m
             class(Test_t), intent(in) :: self
             integer :: num
         end function testNum
+
+        function testQuestion(self) result(answer)
+            import :: TestResult_t
+            class(TestResult_t), intent(in) :: self
+            logical :: answer
+        end function testQuestion
     end interface
 
     type, public :: TestItem_t
@@ -88,14 +103,12 @@ module Vegetables_m
         procedure, public :: run => runCollection
     end type TestCollection_t
 
-    type, abstract, public :: TestResult_t
-        private
-        type(VegetableString_t) :: description
-    end type TestResult_t
-
     type, public :: TestResultItem_t
         private
         class(TestResult_t), pointer :: result_
+    contains
+        private
+        procedure, public :: passed => testItemPassed
     end type TestResultItem_t
 
     type, extends(TestResult_t), public :: TestCaseResult_t
@@ -110,6 +123,10 @@ module Vegetables_m
     type, extends(TestResult_t), public :: TestCollectionResult_t
         private
         type(TestResultItem_t), allocatable :: results(:)
+    contains
+        private
+        procedure, public :: failed => testCollectionFailed
+        procedure, public :: passed => testCollectionPassed
     end type TestCollectionResult_t
 
     interface assertEquals
@@ -428,8 +445,17 @@ contains
         write(output_unit, '(A)')
         write(output_unit, '(DT)') &
                 "A total of " // toString(tests%numCases()) // " test cases"
-        write(output_unit, '(A)')
         results = tests%run()
+        if (results%passed()) then
+            write(output_unit, '(A)')
+            write(output_unit, '(A)') "All Passed"
+            write(output_unit, '(A)')
+        else
+            write(error_unit, '(A)')
+            write(error_unit, '(A)') "Failed"
+            write(error_unit, '(A)')
+            call exit(1)
+        end if
     end subroutine
 
     recursive function splitAtBothCharacter(&
@@ -538,12 +564,12 @@ contains
         test_case%test => func
     end function TestCase
 
-    function TestCaseDescription(self) result(description)
+    function testCaseDescription(self) result(description)
         class(TestCase_t), intent(in) :: self
         type(VegetableString_t) :: description
 
         description = self%description_
-    end function TestCaseDescription
+    end function testCaseDescription
 
     function testCaseFailed(self) result(failed)
         class(TestCaseResult_t), intent(in) :: self
@@ -552,14 +578,14 @@ contains
         failed = .not.self%passed()
     end function testCaseFailed
 
-    function TestCaseNumCases(self) result(num_cases)
+    function testCaseNumCases(self) result(num_cases)
         class(TestCase_t), intent(in) :: self
         integer :: num_cases
 
         associate(a => self)
         end associate
         num_cases = 1
-    end function TestCaseNumCases
+    end function testCaseNumCases
 
     function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
@@ -587,7 +613,7 @@ contains
         test_collection%tests = tests
     end function TestCollection
 
-    function TestCollectionDescription(self) result(description)
+    function testCollectionDescription(self) result(description)
         class(TestCollection_t), intent(in) :: self
         type(VegetableString_t) :: description
 
@@ -618,9 +644,16 @@ contains
                 // join(descriptions(descriptions_location)%strings, NEWLINE))
         deallocate(descriptions(descriptions_location)%strings)
         nullify(descriptions(descriptions_location)%strings)
-    end function TestCollectionDescription
+    end function testCollectionDescription
 
-    function TestCollectionNumCases(self) result(num_cases)
+    function testCollectionFailed(self) result(failed)
+        class(TestCollectionResult_t), intent(in) :: self
+        logical :: failed
+
+        failed = .not.self%passed()
+    end function testCollectionFailed
+
+    function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self
         integer :: num_cases
 
@@ -628,15 +661,29 @@ contains
         integer, allocatable :: individual_nums(:)
         integer :: num_individual
 
-        associate(a => self)
-        end associate
         num_individual = size(self%tests)
         allocate(individual_nums(num_individual))
         do i = 1, num_individual
             individual_nums(i) = self%tests(i)%numCases()
         end do
         num_cases = sum(individual_nums)
-    end function TestCollectionNumCases
+    end function testCollectionNumCases
+
+    function testCollectionPassed(self) result(passed)
+        class(TestCollectionResult_t), intent(in) :: self
+        logical :: passed
+
+        integer :: i
+        logical, allocatable :: individual_passed(:)
+        integer :: num_individual
+
+        num_individual = size(self%results)
+        allocate(individual_passed(num_individual))
+        do i = 1, num_individual
+            individual_passed(i) = self%results(i)%passed()
+        end do
+        passed = all(individual_passed)
+    end function testCollectionPassed
 
     function TestCollectionResult(description, results) result(test_collection_result)
         type(VegetableString_t), intent(in) :: description
@@ -661,6 +708,13 @@ contains
 
         num_cases = self%test%numCases()
     end function testItemNumCases
+
+    function testItemPassed(self) result(passed)
+        class(TestResultItem_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%result_%passed()
+    end function testItemPassed
 
     function testThat(tests) result(test_collection)
         type(TestItem_t), intent(in) :: tests(:)
