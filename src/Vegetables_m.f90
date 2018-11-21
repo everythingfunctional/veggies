@@ -28,23 +28,33 @@ module Vegetables_m
         procedure :: combineResults
     end type Result_t
 
+    type, abstract, public :: Test_t
+        private
+        type(VegetableString_t) :: description_
+    contains
+        private
+        procedure(testNum), deferred, public :: numCases
+    end type Test_t
+
     abstract interface
         function test_() result(result_)
             import :: Result_t
             type(Result_t) :: result_
         end function
-    end interface
 
-    type, abstract, public :: Test_t
-        private
-        type(VegetableString_t) :: description_
-    end type Test_t
+        function testNum(self) result(num)
+            import :: Test_t
+            class(Test_t), intent(in) :: self
+            integer :: num
+        end function testNum
+    end interface
 
     type, public :: TestItem_t
         private
         class(Test_t), pointer :: test => null()
     contains
         private
+        procedure, public :: numCases => testItemNumCases
         procedure, public :: run => runTestItem
     end type TestItem_t
 
@@ -54,8 +64,8 @@ module Vegetables_m
     contains
         private
         procedure, public :: description => testCaseDescription
-        procedure, public :: run => runCase
         procedure, public :: numCases => testCaseNumCases
+        procedure, public :: run => runCase
     end type TestCase_t
 
     type, extends(Test_t), public :: TestCollection_t
@@ -63,6 +73,7 @@ module Vegetables_m
         type(TestItem_t), allocatable :: tests(:)
     contains
         private
+        procedure, public :: numCases => testCollectionNumCases
         procedure, public :: run => runCollection
     end type TestCollection_t
 
@@ -121,6 +132,7 @@ module Vegetables_m
             runTests, &
             succeed, &
             TestCase, &
+            TestCollection, &
             testThat, &
             toString
 contains
@@ -390,6 +402,24 @@ contains
         test_collection%tests = tests
     end function TestCollection
 
+    function TestCollectionNumCases(self) result(num_cases)
+        class(TestCollection_t), intent(in) :: self
+        integer :: num_cases
+
+        integer :: i
+        integer, allocatable :: individual_nums(:)
+        integer :: num_individual
+
+        associate(a => self)
+        end associate
+        num_individual = size(self%tests)
+        allocate(individual_nums(num_individual))
+        do i = 1, num_individual
+            individual_nums(i) = self%tests(i)%numCases()
+        end do
+        num_cases = sum(individual_nums)
+    end function TestCollectionNumCases
+
     function TestCollectionResult(description, results) result(test_collection_result)
         type(VegetableString_t), intent(in) :: description
         type(TestResultItem_t), intent(in) :: results(:)
@@ -399,6 +429,13 @@ contains
         allocate(test_collection_result%results(size(results)))
         test_collection_result%results = results
     end function TestCollectionResult
+
+    function TestItemNumCases(self) result(num_cases)
+        class(TestItem_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%test%numCases()
+    end function TestItemNumCases
 
     function testThat(tests) result(test_collection)
         type(TestItem_t), intent(in) :: tests(:)

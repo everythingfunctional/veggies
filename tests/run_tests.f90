@@ -1,4 +1,5 @@
 program run_tests
+    use collection_properties_test, only: test_collection_properties
     use single_case_properties_test, only: test_case_properties
     use Vegetables_m, only: TestItem_t, testThat, runTests
 
@@ -6,6 +7,8 @@ program run_tests
 
     type(TestItem_t) :: tests
 
-    tests = testThat([test_case_properties()])
+    tests = testThat( &
+            [test_collection_properties(), &
+            test_case_properties()])
     call runTests(tests)
 end program run_tests
