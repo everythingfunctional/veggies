@@ -29,6 +29,7 @@ module Vegetables_m
         private
         generic, public :: operator(.and.) => combineResults
         procedure :: combineResults
+        procedure, public :: failureDescription => resultFailureDescription
         procedure, public :: passed => resultPassed
         procedure, public :: verboseDescription => resultVerboseDescription
     end type Result_t
@@ -120,6 +121,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: failed => testCaseFailed
+        procedure, public :: failureDescription => testCaseFailureDescription
         procedure, public :: numCases => testCaseResultNumCases
         procedure, public :: numFailingCases => testCaseNumFailing
         procedure, public :: numPassingCases => testCaseNumPassing
@@ -135,6 +137,11 @@ module Vegetables_m
         procedure, public :: failed => testCollectionFailed
         procedure, public :: passed => testCollectionPassed
     end type TestCollectionResult_t
+
+    interface assertEmpty
+        module procedure assertEmptyChars
+        module procedure assertEmptyString
+    end interface
 
     interface assertEquals
         module procedure assertEqualsInteger
@@ -173,6 +180,7 @@ module Vegetables_m
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
 
     public :: &
+            assertEmpty, &
             assertEquals, &
             assertIncludes, &
             assertNot, &
@@ -190,6 +198,24 @@ module Vegetables_m
             toString, &
             when
 contains
+    function assertEmptyChars(string) result(result__)
+        character(len=*), intent(in) :: string
+        type(Result_t) :: result__
+
+        if (string == "") then
+            result__ = succeed("String was empty")
+        else
+            result__ = fail("String '" // string // "' wasn't empty")
+        end if
+    end function assertEmptyChars
+
+    function assertEmptyString(string) result(result__)
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(string%string)
+    end function assertEmptyString
+
     function assertEqualsInteger(expected, actual) result(result__)
         integer, intent(in) :: expected
         integer, intent(in) :: actual
@@ -401,6 +427,13 @@ contains
                 passed_ = passed)
     end function Result_
 
+    function resultFailureDescription(self) result(description)
+        class(Result_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%failing_message
+    end function resultFailureDescription
+
     function resultPassed(self) result(passed)
         class(Result_t), intent(in) :: self
         logical :: passed
@@ -603,6 +636,18 @@ contains
 
         failed = .not.self%passed()
     end function testCaseFailed
+
+    function testCaseFailureDescription(self) result(description)
+        class(TestCaseResult_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        if (self%passed()) then
+            description = toString("")
+        else
+            description = hangingIndent( &
+                    self%description // NEWLINE // self%result_%failureDescription())
+        end if
+    end function testCaseFailureDescription
 
     function testCaseNumCases(self) result(num_cases)
         class(TestCase_t), intent(in) :: self
