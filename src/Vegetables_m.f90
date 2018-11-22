@@ -117,6 +117,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: failed => testCaseFailed
+        procedure, public :: numCases => testCaseResultNumCases
         procedure, public :: passed => testCasePassed
     end type TestCaseResult_t
 
@@ -602,6 +603,15 @@ contains
         test_case_result%description = description
         test_case_result%result_ = result__
     end function TestCaseResult
+
+    function testCaseResultNumCases(self) result(num_cases)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self)
+        end associate
+        num_cases = 1
+    end function testCaseResultNumCases
 
     function TestCollection(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
