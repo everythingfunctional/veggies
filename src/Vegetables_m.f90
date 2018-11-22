@@ -23,11 +23,12 @@ module Vegetables_m
         type(VegetableString_t) :: message
         integer :: num_failling_asserts
         integer :: num_passing_asserts
-        logical :: passed
+        logical :: passed_
     contains
         private
         generic, public :: operator(.and.) => combineResults
         procedure :: combineResults
+        procedure, public :: passed => resultPassed
     end type Result_t
 
     type, abstract, public :: Test_t
@@ -257,7 +258,7 @@ contains
 
         combined = Result_( &
                 message = lhs%message // NEWLINE // rhs%message, &
-                passed = lhs%passed .and. rhs%passed, &
+                passed = lhs%passed_ .and. rhs%passed_, &
                 num_failling_asserts = lhs%num_failling_asserts + rhs%num_failling_asserts, &
                 num_passing_asserts = lhs%num_passing_asserts + rhs%num_passing_asserts)
     end function combineResults
@@ -388,8 +389,15 @@ contains
                 message = message, &
                 num_failling_asserts = num_failling_asserts, &
                 num_passing_asserts = num_passing_asserts, &
-                passed = passed)
+                passed_ = passed)
     end function Result_
+
+    function resultPassed(self) result(passed)
+        class(Result_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%passed_
+    end function resultPassed
 
     function runCase(self) result(result__)
         class(TestCase_t), intent(in) :: self
@@ -592,7 +600,7 @@ contains
         class(TestCaseResult_t), intent(in) :: self
         logical :: passed
 
-        passed = self%result_%passed
+        passed = self%result_%passed()
     end function testCasePassed
 
     function TestCaseResult(description, result__) result(test_case_result)
