@@ -12,7 +12,9 @@ contains
         test = given("a passing test case", &
                 [when("it is run", &
                         [then("it knows it passed", checkCasePasses), &
-                        then("it has 1 test case", checkNumCases)])])
+                        then("it has 1 test case", checkNumCases), &
+                        then("it has 1 passing case", checkNumPassingCases), &
+                        then("it has no failing case", checkNumFailingCases)])])
     end function test_passing_case_behaviors
 
     function checkCasePasses() result(result_)
@@ -47,4 +49,32 @@ contains
         test_result = test_case%run()
         result_ = assertEquals(1, test_result%numCases())
     end function checkNumCases
+
+    function checkNumPassingCases() result(result_)
+        use example_cases_m, only: examplePassingTestCase
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = examplePassingTestCase()
+        test_result = test_case%run()
+        result_ = assertEquals(1, test_result%numPassingCases())
+    end function checkNumPassingCases
+
+    function checkNumFailingCases() result(result_)
+        use example_cases_m, only: examplePassingTestCase
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = examplePassingTestCase()
+        test_result = test_case%run()
+        result_ = assertEquals(0, test_result%numFailingCases())
+    end function checkNumFailingCases
 end module passing_case_test

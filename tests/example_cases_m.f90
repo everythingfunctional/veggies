@@ -3,11 +3,6 @@ module example_cases_m
     private
 
     character(len=*), parameter, public :: EXAMPLE_DESCRIPTION = "Example Description"
-    integer, parameter, public :: NUM_FAILING_ASSERTS_IN_FAILING = 1
-    integer, parameter, public :: NUM_PASSING_ASSERTS_IN_FAILING = 1
-    integer, parameter, public :: NUM_ASSERTS_IN_FAILING = &
-            NUM_FAILING_ASSERTS_IN_FAILING + NUM_PASSING_ASSERTS_IN_FAILING
-    integer, parameter, public :: NUM_ASSERTS_IN_PASSING = 2
 
     public :: exampleFailingTestCase, examplePassingTestCase
 contains

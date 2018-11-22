@@ -119,6 +119,8 @@ module Vegetables_m
         private
         procedure, public :: failed => testCaseFailed
         procedure, public :: numCases => testCaseResultNumCases
+        procedure, public :: numFailingCases => testCaseNumFailing
+        procedure, public :: numPassingCases => testCaseNumPassing
         procedure, public :: passed => testCasePassed
     end type TestCaseResult_t
 
@@ -595,6 +597,28 @@ contains
         end associate
         num_cases = 1
     end function testCaseNumCases
+
+    function testCaseNumFailing(self) result(num_cases)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_cases
+
+        if (self%passed()) then
+            num_cases = 0
+        else
+            num_cases = 1
+        end if
+    end function testCaseNumFailing
+
+    function testCaseNumPassing(self) result(num_cases)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_cases
+
+        if (self%passed()) then
+            num_cases = 1
+        else
+            num_cases = 0
+        end if
+    end function testCaseNumPassing
 
     function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
