@@ -14,7 +14,8 @@ contains
                         [then("it knows it passed", checkCasePasses), &
                         then("it has 1 test case", checkNumCases), &
                         then("it has 1 passing case", checkNumPassingCases), &
-                        then("it has no failing case", checkNumFailingCases)])])
+                        then("it has no failing case", checkNumFailingCases), &
+                        then("it's verbose description still includes the given description", checkVerboseDescription)])])
     end function test_passing_case_behaviors
 
     function checkCasePasses() result(result_)
@@ -77,4 +78,18 @@ contains
         test_result = test_case%run()
         result_ = assertEquals(0, test_result%numFailingCases())
     end function checkNumFailingCases
+
+    function checkVerboseDescription() result(result_)
+        use example_cases_m, only: examplePassingTestCase, EXAMPLE_DESCRIPTION
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertIncludes
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = examplePassingTestCase()
+        test_result = test_case%run()
+        result_ = assertIncludes(EXAMPLE_DESCRIPTION, test_result%verboseDescription())
+    end function checkVerboseDescription
 end module passing_case_test

@@ -20,7 +20,8 @@ module Vegetables_m
 
     type, public :: Result_t
         private
-        type(VegetableString_t) :: message
+        type(VegetableString_t) :: all_message
+        type(VegetableString_t) :: failing_message
         integer :: num_failling_asserts
         integer :: num_passing_asserts
         logical :: passed_
@@ -29,6 +30,7 @@ module Vegetables_m
         generic, public :: operator(.and.) => combineResults
         procedure :: combineResults
         procedure, public :: passed => resultPassed
+        procedure, public :: verboseDescription => resultVerboseDescription
     end type Result_t
 
     type, abstract, public :: Test_t
@@ -122,6 +124,7 @@ module Vegetables_m
         procedure, public :: numFailingCases => testCaseNumFailing
         procedure, public :: numPassingCases => testCaseNumPassing
         procedure, public :: passed => testCasePassed
+        procedure, public :: verboseDescription => testCaseVerboseDescription
     end type TestCaseResult_t
 
     type, extends(TestResult_t), public :: TestCollectionResult_t
@@ -259,7 +262,8 @@ contains
         type(Result_t) :: combined
 
         combined = Result_( &
-                message = lhs%message // NEWLINE // rhs%message, &
+                all_message = lhs%all_message // NEWLINE // rhs%all_message, &
+                failing_message = lhs%failing_message // NEWLINE // rhs%failing_message, &
                 passed = lhs%passed_ .and. rhs%passed_, &
                 num_failling_asserts = lhs%num_failling_asserts + rhs%num_failling_asserts, &
                 num_passing_asserts = lhs%num_passing_asserts + rhs%num_passing_asserts)
@@ -314,7 +318,8 @@ contains
 
         failure = Result_( &
                 passed = .false., &
-                message = message, &
+                all_message = message, &
+                failing_message = message, &
                 num_failling_asserts = 1, &
                 num_passing_asserts = 0)
     end function failWithString
@@ -380,15 +385,17 @@ contains
         end do
     end function joinWithString
 
-    function Result_(passed, message, num_failling_asserts, num_passing_asserts)
+    function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
         logical, intent(in) :: passed
-        type(VegetableString_t), intent(in) :: message
+        type(VegetableString_t), intent(in) :: all_message
+        type(VegetableString_t), intent(in) :: failing_message
         integer, intent(in) :: num_failling_asserts
         integer, intent(in) :: num_passing_asserts
         type(Result_t) :: Result_
 
         Result_ = Result_t( &
-                message = message, &
+                all_message = all_message, &
+                failing_message = failing_message, &
                 num_failling_asserts = num_failling_asserts, &
                 num_passing_asserts = num_passing_asserts, &
                 passed_ = passed)
@@ -400,6 +407,13 @@ contains
 
         passed = self%passed_
     end function resultPassed
+
+    function resultVerboseDescription(self) result(description)
+        class(Result_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%all_message
+    end function resultVerboseDescription
 
     function runCase(self) result(result__)
         class(TestCase_t), intent(in) :: self
@@ -561,7 +575,8 @@ contains
 
         success = Result_( &
                 passed = .true., &
-                message = message, &
+                all_message = message, &
+                failing_message = toString(""), &
                 num_failling_asserts = 0, &
                 num_passing_asserts = 1)
     end function succeedWithString
@@ -644,6 +659,14 @@ contains
         end associate
         num_cases = 1
     end function testCaseResultNumCases
+
+    function testCaseVerboseDescription(self) result(description)
+        class(TestCaseResult_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = hangingIndent( &
+                self%description // NEWLINE // self%result_%verboseDescription())
+    end function testCaseVerboseDescription
 
     function TestCollection(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
