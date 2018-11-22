@@ -16,7 +16,10 @@ contains
                         then("it has 1 passing case", checkNumPassingCases), &
                         then("it has no failing case", checkNumFailingCases), &
                         then("it's verbose description still includes the given description", checkVerboseDescription), &
-                        then("it's failure description is empty", checkFailureDescriptionEmpty)])])
+                        then("it's failure description is empty", checkFailureDescriptionEmpty), &
+                        then("it knows how many asserts there were", checkNumAsserts), &
+                        then("it has no failing asserts", checkNumFailingAsserts), &
+                        then("it knows how many asserts passed", checkNumPassingAsserts)])])
     end function test_passing_case_behaviors
 
     function checkCasePasses() result(result_)
@@ -107,4 +110,49 @@ contains
         test_result = test_case%run()
         result_ = assertEmpty(test_result%failureDescription())
     end function checkFailureDescriptionEmpty
+
+    function checkNumAsserts() result(result_)
+        use example_asserts_m, only: NUM_ASSERTS_IN_PASSING
+        use example_cases_m, only: examplePassingTestCase
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = examplePassingTestCase()
+        test_result = test_case%run()
+        result_ = assertEquals(NUM_ASSERTS_IN_PASSING, test_result%numAsserts())
+    end function checkNumAsserts
+
+    function checkNumFailingAsserts() result(result_)
+        use example_cases_m, only: examplePassingTestCase
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = examplePassingTestCase()
+        test_result = test_case%run()
+        result_ = assertEquals(0, test_result%numFailingAsserts())
+    end function checkNumFailingAsserts
+
+    function checkNumPassingAsserts() result(result_)
+        use example_asserts_m, only: NUM_ASSERTS_IN_PASSING
+        use example_cases_m, only: examplePassingTestCase
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = examplePassingTestCase()
+        test_result = test_case%run()
+        result_ = assertEquals( &
+                NUM_ASSERTS_IN_PASSING, test_result%numPassingAsserts())
+    end function checkNumPassingAsserts
 end module passing_case_test

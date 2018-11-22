@@ -30,6 +30,9 @@ module Vegetables_m
         generic, public :: operator(.and.) => combineResults
         procedure :: combineResults
         procedure, public :: failureDescription => resultFailureDescription
+        procedure, public :: numAsserts => resultNumAsserts
+        procedure, public :: numFailing => resultNumFailing
+        procedure, public :: numPassing => resultNumPassing
         procedure, public :: passed => resultPassed
         procedure, public :: verboseDescription => resultVerboseDescription
     end type Result_t
@@ -122,8 +125,11 @@ module Vegetables_m
         private
         procedure, public :: failed => testCaseFailed
         procedure, public :: failureDescription => testCaseFailureDescription
+        procedure, public :: numAsserts => testCaseNumAsserts
         procedure, public :: numCases => testCaseResultNumCases
+        procedure, public :: numFailingAsserts => testCaseNumFailingAsserts
         procedure, public :: numFailingCases => testCaseNumFailing
+        procedure, public :: numPassingAsserts => testCaseNumPassingAsserts
         procedure, public :: numPassingCases => testCaseNumPassing
         procedure, public :: passed => testCasePassed
         procedure, public :: verboseDescription => testCaseVerboseDescription
@@ -434,6 +440,27 @@ contains
         description = self%failing_message
     end function resultFailureDescription
 
+    function resultNumAsserts(self) result(num_asserts)
+        class(Result_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%num_passing_asserts + self%num_failling_asserts
+    end function resultNumAsserts
+
+    function resultNumFailing(self) result(num_asserts)
+        class(Result_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%num_failling_asserts
+    end function resultNumFailing
+
+    function resultNumPassing(self) result(num_asserts)
+        class(Result_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%num_passing_asserts
+    end function resultNumPassing
+
     function resultPassed(self) result(passed)
         class(Result_t), intent(in) :: self
         logical :: passed
@@ -649,6 +676,13 @@ contains
         end if
     end function testCaseFailureDescription
 
+    function testCaseNumAsserts(self) result(num_asserts)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numAsserts()
+    end function testCaseNumAsserts
+
     function testCaseNumCases(self) result(num_cases)
         class(TestCase_t), intent(in) :: self
         integer :: num_cases
@@ -669,6 +703,13 @@ contains
         end if
     end function testCaseNumFailing
 
+    function testCaseNumFailingAsserts(self) result(num_asserts)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numFailing()
+    end function testCaseNumFailingAsserts
+
     function testCaseNumPassing(self) result(num_cases)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_cases
@@ -679,6 +720,13 @@ contains
             num_cases = 0
         end if
     end function testCaseNumPassing
+
+    function testCaseNumPassingAsserts(self) result(num_asserts)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numPassing()
+    end function testCaseNumPassingAsserts
 
     function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
