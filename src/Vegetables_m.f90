@@ -52,6 +52,9 @@ module Vegetables_m
     contains
         private
         procedure(testQuestion), deferred, public :: failed
+        procedure(testResultNum), deferred, public :: numCases
+        procedure(testResultNum), deferred, public :: numFailingCases
+        procedure(testResultNum), deferred, public :: numPassingCases
         procedure(testQuestion), deferred, public :: passed
     end type TestResult_t
 
@@ -78,6 +81,12 @@ module Vegetables_m
             class(TestResult_t), intent(in) :: self
             logical :: answer
         end function testQuestion
+
+        function testResultNum(self) result(num)
+            import :: TestResult_t
+            class(TestResult_t), intent(in) :: self
+            integer :: num
+        end function testResultNum
     end interface
 
     type, public :: TestItem_t
@@ -115,6 +124,9 @@ module Vegetables_m
         class(TestResult_t), pointer :: result_
     contains
         private
+        procedure, public :: numCases => testResultItemNumCases
+        procedure, public :: numFailingCases => testResultItemNumFailing
+        procedure, public :: numPassingCases => testResultItemNumPassing
         procedure, public :: passed => testItemPassed
     end type TestResultItem_t
 
@@ -141,6 +153,9 @@ module Vegetables_m
     contains
         private
         procedure, public :: failed => testCollectionFailed
+        procedure, public :: numCases => testCollectionResultNumCases
+        procedure, public :: numFailingCases => testCollectionNumFailing
+        procedure, public :: numPassingCases => testCollectionNumPassing
         procedure, public :: passed => testCollectionPassed
     end type TestCollectionResult_t
 
@@ -827,6 +842,38 @@ contains
         num_cases = sum(individual_nums)
     end function testCollectionNumCases
 
+    function testCollectionNumFailing(self) result(num_cases)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_cases
+
+        integer :: i
+        integer, allocatable :: individual_nums(:)
+        integer :: num_individual
+
+        num_individual = size(self%results)
+        allocate(individual_nums(num_individual))
+        do i = 1, num_individual
+            individual_nums(i) = self%results(i)%numFailingCases()
+        end do
+        num_cases = sum(individual_nums)
+    end function testCollectionNumFailing
+
+    function testCollectionNumPassing(self) result(num_cases)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_cases
+
+        integer :: i
+        integer, allocatable :: individual_nums(:)
+        integer :: num_individual
+
+        num_individual = size(self%results)
+        allocate(individual_nums(num_individual))
+        do i = 1, num_individual
+            individual_nums(i) = self%results(i)%numPassingCases()
+        end do
+        num_cases = sum(individual_nums)
+    end function testCollectionNumPassing
+
     function testCollectionPassed(self) result(passed)
         class(TestCollectionResult_t), intent(in) :: self
         logical :: passed
@@ -853,6 +900,22 @@ contains
         test_collection_result%results = results
     end function TestCollectionResult
 
+    function testCollectionResultNumCases(self) result(num_cases)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_cases
+
+        integer :: i
+        integer, allocatable :: individual_nums(:)
+        integer :: num_individual
+
+        num_individual = size(self%results)
+        allocate(individual_nums(num_individual))
+        do i = 1, num_individual
+            individual_nums(i) = self%results(i)%numCases()
+        end do
+        num_cases = sum(individual_nums)
+    end function testCollectionResultNumCases
+
     function testItemDescription(self) result(description)
         class(TestItem_t), intent(in) :: self
         type(VegetableString_t) :: description
@@ -873,6 +936,27 @@ contains
 
         passed = self%result_%passed()
     end function testItemPassed
+
+    function testResultItemNumCases(self) result(num_cases)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%result_%numCases()
+    end function testResultItemNumCases
+
+    function testResultItemNumFailing(self) result(num_cases)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%result_%numFailingCases()
+    end function testResultItemNumFailing
+
+    function testResultItemNumPassing(self) result(num_cases)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%result_%numPassingCases()
+    end function testResultItemNumPassing
 
     function testThat(tests) result(test_collection)
         type(TestItem_t), intent(in) :: tests(:)

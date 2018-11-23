@@ -1,4 +1,6 @@
 module example_collections_m
+    use example_asserts_m, only: NUM_PASSING_FROM_EXAMPLE => NUM_ASSERTS_IN_PASSING
+
     implicit none
     private
 
@@ -11,14 +13,14 @@ module example_collections_m
     character(len=*), parameter, public :: EXAMPLE_FAILING_CASE_DESCRIPTION = &
             "Example Failing Case Description"
     character(len=*), parameter, public :: FAILURE_MESSAGE = "Failure Message"
-    integer, parameter, public :: NUM_ASSERTS_IN_FAILING = 3
-    integer, parameter, public :: NUM_ASSERTS_IN_PASSING = 2
-    integer, parameter, public :: NUM_CASES_IN_FAILING = 3
+    integer, parameter, public :: NUM_ASSERTS_IN_PASSING = NUM_PASSING_FROM_EXAMPLE * 2
+    integer, parameter, public :: NUM_ASSERTS_IN_FAILING = NUM_ASSERTS_IN_PASSING + 1
     integer, parameter, public :: NUM_CASES_IN_PASSING = 2
+    integer, parameter, public :: NUM_CASES_IN_FAILING = NUM_CASES_IN_PASSING + 1
     integer, parameter, public :: NUM_FAILING_ASSERTS = 1
     integer, parameter, public :: NUM_FAILING_CASES = 1
-    integer, parameter, public :: NUM_PASSING_ASSERTS_IN_FAILING = 2
-    integer, parameter, public :: NUM_PASSING_CASES_IN_FAILING = 2
+    integer, parameter, public :: NUM_PASSING_ASSERTS_IN_FAILING = NUM_ASSERTS_IN_PASSING
+    integer, parameter, public :: NUM_PASSING_CASES_IN_FAILING = NUM_CASES_IN_PASSING
 
     public :: exampleFailingCollection, examplePassingCollection
 contains
