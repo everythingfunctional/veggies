@@ -52,10 +52,12 @@ module Vegetables_m
     contains
         private
         procedure(testQuestion), deferred, public :: failed
+        procedure(testResultDescription), deferred, public :: failureDescription
         procedure(testResultNum), deferred, public :: numCases
         procedure(testResultNum), deferred, public :: numFailingCases
         procedure(testResultNum), deferred, public :: numPassingCases
         procedure(testQuestion), deferred, public :: passed
+        procedure(testResultDescription), deferred, public :: verboseDescription
     end type TestResult_t
 
     abstract interface
@@ -81,6 +83,12 @@ module Vegetables_m
             class(TestResult_t), intent(in) :: self
             logical :: answer
         end function testQuestion
+
+        function testResultDescription(self) result(description)
+            import :: TestResult_t, VegetableString_t
+            class(TestResult_t), intent(in) :: self
+            type(VegetableString_t) :: description
+        end function testResultDescription
 
         function testResultNum(self) result(num)
             import :: TestResult_t
@@ -124,10 +132,12 @@ module Vegetables_m
         class(TestResult_t), pointer :: result_
     contains
         private
+        procedure, public :: failureDescription => testResultItemFailureDescription
         procedure, public :: numCases => testResultItemNumCases
         procedure, public :: numFailingCases => testResultItemNumFailing
         procedure, public :: numPassingCases => testResultItemNumPassing
         procedure, public :: passed => testItemPassed
+        procedure, public :: verboseDescription => testResultItemVerboseDescription
     end type TestResultItem_t
 
     type, extends(TestResult_t), public :: TestCaseResult_t
@@ -153,10 +163,12 @@ module Vegetables_m
     contains
         private
         procedure, public :: failed => testCollectionFailed
+        procedure, public :: failureDescription => testCollectionFailureDescription
         procedure, public :: numCases => testCollectionResultNumCases
         procedure, public :: numFailingCases => testCollectionNumFailing
         procedure, public :: numPassingCases => testCollectionNumPassing
         procedure, public :: passed => testCollectionPassed
+        procedure, public :: verboseDescription => testCollectionVerboseDescription
     end type TestCollectionResult_t
 
     interface assertEmpty
@@ -826,6 +838,28 @@ contains
         failed = .not.self%passed()
     end function testCollectionFailed
 
+    function testCollectionFailureDescription(self) result(description)
+        class(TestCollectionResult_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        integer :: i
+        type(VegetableString_t), allocatable :: individual_descriptions(:)
+        integer :: num_individual
+
+        if (self%passed()) then
+            description = toString("")
+        else
+            num_individual = size(self%results)
+            allocate(individual_descriptions(num_individual))
+            do i = 1, num_individual
+                individual_descriptions(i) = self%results(i)%failureDescription()
+            end do
+            description = hangingIndent( &
+                    self%description // NEWLINE &
+                    // join(individual_descriptions, NEWLINE))
+        end if
+    end function testCollectionFailureDescription
+
     function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self
         integer :: num_cases
@@ -916,6 +950,24 @@ contains
         num_cases = sum(individual_nums)
     end function testCollectionResultNumCases
 
+    function testCollectionVerboseDescription(self) result(description)
+        class(TestCollectionResult_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        integer :: i
+        type(VegetableString_t), allocatable :: individual_descriptions(:)
+        integer :: num_individual
+
+        num_individual = size(self%results)
+        allocate(individual_descriptions(num_individual))
+        do i = 1, num_individual
+            individual_descriptions(i) = self%results(i)%verboseDescription()
+        end do
+        description = hangingIndent( &
+                self%description // NEWLINE &
+                // join(individual_descriptions, NEWLINE))
+    end function testCollectionVerboseDescription
+
     function testItemDescription(self) result(description)
         class(TestItem_t), intent(in) :: self
         type(VegetableString_t) :: description
@@ -937,6 +989,13 @@ contains
         passed = self%result_%passed()
     end function testItemPassed
 
+    function testResultItemFailureDescription(self) result(description)
+        class(TestResultItem_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%result_%failureDescription()
+    end function testResultItemFailureDescription
+
     function testResultItemNumCases(self) result(num_cases)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_cases
@@ -957,6 +1016,13 @@ contains
 
         num_cases = self%result_%numPassingCases()
     end function testResultItemNumPassing
+
+    function testResultItemVerboseDescription(self) result(description)
+        class(TestResultItem_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%result_%verboseDescription()
+    end function testResultItemVerboseDescription
 
     function testThat(tests) result(test_collection)
         type(TestItem_t), intent(in) :: tests(:)
