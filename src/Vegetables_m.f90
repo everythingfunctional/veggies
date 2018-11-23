@@ -53,8 +53,11 @@ module Vegetables_m
         private
         procedure(testQuestion), deferred, public :: failed
         procedure(testResultDescription), deferred, public :: failureDescription
+        procedure(testResultNum), deferred, public :: numAsserts
         procedure(testResultNum), deferred, public :: numCases
+        procedure(testResultNum), deferred, public :: numFailingAsserts
         procedure(testResultNum), deferred, public :: numFailingCases
+        procedure(testResultNum), deferred, public :: numPassingAsserts
         procedure(testResultNum), deferred, public :: numPassingCases
         procedure(testQuestion), deferred, public :: passed
         procedure(testResultDescription), deferred, public :: verboseDescription
@@ -133,8 +136,11 @@ module Vegetables_m
     contains
         private
         procedure, public :: failureDescription => testResultItemFailureDescription
+        procedure, public :: numAsserts => testResultItemNumAsserts
         procedure, public :: numCases => testResultItemNumCases
+        procedure, public :: numFailingAsserts => testResultItemNumFailingAsserts
         procedure, public :: numFailingCases => testResultItemNumFailing
+        procedure, public :: numPassingAsserts => testResultItemNumPassingAsserts
         procedure, public :: numPassingCases => testResultItemNumPassing
         procedure, public :: passed => testItemPassed
         procedure, public :: verboseDescription => testResultItemVerboseDescription
@@ -164,8 +170,11 @@ module Vegetables_m
         private
         procedure, public :: failed => testCollectionFailed
         procedure, public :: failureDescription => testCollectionFailureDescription
+        procedure, public :: numAsserts => testCollectionNumAsserts
         procedure, public :: numCases => testCollectionResultNumCases
+        procedure, public :: numFailingAsserts => testCollectionNumFailingAsserts
         procedure, public :: numFailingCases => testCollectionNumFailing
+        procedure, public :: numPassingAsserts => testCollectionNumPassingAsserts
         procedure, public :: numPassingCases => testCollectionNumPassing
         procedure, public :: passed => testCollectionPassed
         procedure, public :: verboseDescription => testCollectionVerboseDescription
@@ -860,6 +869,22 @@ contains
         end if
     end function testCollectionFailureDescription
 
+    function testCollectionNumAsserts(self) result(num_asserts)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        integer :: i
+        integer, allocatable :: individual_nums(:)
+        integer :: num_individual
+
+        num_individual = size(self%results)
+        allocate(individual_nums(num_individual))
+        do i = 1, num_individual
+            individual_nums(i) = self%results(i)%numAsserts()
+        end do
+        num_asserts = sum(individual_nums)
+    end function testCollectionNumAsserts
+
     function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self
         integer :: num_cases
@@ -892,6 +917,22 @@ contains
         num_cases = sum(individual_nums)
     end function testCollectionNumFailing
 
+    function testCollectionNumFailingAsserts(self) result(num_asserts)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        integer :: i
+        integer, allocatable :: individual_nums(:)
+        integer :: num_individual
+
+        num_individual = size(self%results)
+        allocate(individual_nums(num_individual))
+        do i = 1, num_individual
+            individual_nums(i) = self%results(i)%numFailingAsserts()
+        end do
+        num_asserts = sum(individual_nums)
+    end function testCollectionNumFailingAsserts
+
     function testCollectionNumPassing(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_cases
@@ -907,6 +948,22 @@ contains
         end do
         num_cases = sum(individual_nums)
     end function testCollectionNumPassing
+
+    function testCollectionNumPassingAsserts(self) result(num_asserts)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        integer :: i
+        integer, allocatable :: individual_nums(:)
+        integer :: num_individual
+
+        num_individual = size(self%results)
+        allocate(individual_nums(num_individual))
+        do i = 1, num_individual
+            individual_nums(i) = self%results(i)%numPassingAsserts()
+        end do
+        num_asserts = sum(individual_nums)
+    end function testCollectionNumPassingAsserts
 
     function testCollectionPassed(self) result(passed)
         class(TestCollectionResult_t), intent(in) :: self
@@ -996,6 +1053,13 @@ contains
         description = self%result_%failureDescription()
     end function testResultItemFailureDescription
 
+    function testResultItemNumAsserts(self) result(num_asserts)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numAsserts()
+    end function testResultItemNumAsserts
+
     function testResultItemNumCases(self) result(num_cases)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_cases
@@ -1010,12 +1074,26 @@ contains
         num_cases = self%result_%numFailingCases()
     end function testResultItemNumFailing
 
+    function testResultItemNumFailingAsserts(self) result(num_asserts)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numFailingAsserts()
+    end function testResultItemNumFailingAsserts
+
     function testResultItemNumPassing(self) result(num_cases)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%result_%numPassingCases()
     end function testResultItemNumPassing
+
+    function testResultItemNumPassingAsserts(self) result(num_asserts)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numPassingAsserts()
+    end function testResultItemNumPassingAsserts
 
     function testResultItemVerboseDescription(self) result(description)
         class(TestResultItem_t), intent(in) :: self
