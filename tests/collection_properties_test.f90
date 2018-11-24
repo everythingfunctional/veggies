@@ -5,9 +5,9 @@ module collection_properties_test
     public :: test_collection_properties
 contains
     function test_collection_properties() result(test)
-        use Vegetables_m, only: TestCollection_t, describe, it
+        use Vegetables_m, only: TestItem_t, describe, it
 
-        type(TestCollection_t) :: test
+        type(TestItem_t) :: test
 
         test = describe("A test collection", &
                 [it("can tell how many tests it has", checkNumCases), &
@@ -48,7 +48,7 @@ contains
                 EXAMPLE_CASE_DESCRIPTION_1, &
                 EXAMPLE_CASE_DESCRIPTION_2
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, assertIncludes, operator(.and.)
+                Result_t, TestCollection_t, assertIncludes
 
         type(Result_t) :: result_
 

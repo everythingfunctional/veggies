@@ -5,13 +5,13 @@ module single_case_properties_test
     public :: test_case_properties
 contains
     function test_case_properties() result(test)
-        use Vegetables_m, only: TestCollection_t, describe, it
+        use Vegetables_m, only: TestItem_t, describe, it
 
-        type(TestCollection_t) :: test
+        type(TestItem_t) :: test
 
         test = describe("A test case", &
                 [it("includes the given description", checkCaseDescription), &
-                it("Only has 1 test case", checkNumCases)])
+                it("only has 1 test case", checkNumCases)])
     end function test_case_properties
 
     function checkCaseDescription() result(result_)

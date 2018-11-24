@@ -5,9 +5,9 @@ module passing_collection_test
     public :: test_passing_collection_behaviors
 contains
     function test_passing_collection_behaviors() result(tests)
-        use Vegetables_m, only: TestCollection_t, given, then, when
+        use Vegetables_m, only: TestItem_t, given, then, when
 
-        type(TestCollection_t) :: tests
+        type(TestItem_t) :: tests
 
         tests = given("a passing test collection", &
                 [when("it is run", &
@@ -17,6 +17,7 @@ contains
                         then("it has no failing cases", checkNumFailingCases), &
                         then("it's verbose description includes the given description", checkVerboseTopDescription), &
                         then("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
+                        then("it's verbose description includes the assertion message", checkVerboseDescriptionAssertion), &
                         then("it's failure description is empty", checkFailureDescriptionEmpty), &
                         then("it knows how many asserts there were", checkNumAsserts), &
                         then("it knows how many asserts passed", checkNumPassingAsserts), &
@@ -29,7 +30,6 @@ contains
                 Result_t, &
                 TestCollection_t, &
                 TestCollectionResult_t, &
-                operator(.and.), &
                 assertNot, &
                 assertThat
 
@@ -117,7 +117,6 @@ contains
                 Result_t, &
                 TestCollection_t, &
                 TestCollectionResult_t, &
-                operator(.and.), &
                 assertIncludes
 
         type(Result_t) :: result_
@@ -135,6 +134,24 @@ contains
                         EXAMPLE_CASE_DESCRIPTION_2, &
                         test_results%verboseDescription())
     end function checkVerboseCaseDescriptions
+
+    function checkVerboseDescriptionAssertion() result(result_)
+        use example_asserts_m, only: SUCCESS_MESSAGE
+        use example_collections_m, only: examplePassingCollection
+        use Vegetables_m, only: &
+                Result_t, TestCollection_t, TestCollectionResult_t, assertIncludes
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = examplePassingCollection()
+        test_results = test_collection%run()
+        result_ = assertIncludes( &
+                SUCCESS_MESSAGE, &
+                test_results%verboseDescription())
+    end function checkVerboseDescriptionAssertion
 
     function checkFailureDescriptionEmpty() result(result_)
         use example_collections_m, only: examplePassingCollection

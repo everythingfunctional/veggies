@@ -1,37 +1,154 @@
 module Vegetables_m
-!   use cVegetables
-    use iso_c_binding, only: c_bool, c_ptr
-
     implicit none
     private
 
-    type, bind(c), public :: Result_t
+    type, public :: VegetableString_t
         private
-        type(c_ptr) :: contents
+        character(len=:), allocatable :: string
+    contains
+        private
+        generic, public :: operator(//) => &
+                concatCharsAndString, concatStringAndChars, concatStrings
+        procedure, pass(string) :: concatCharsAndString
+        procedure :: concatStringAndChars
+        procedure :: concatStrings
+        generic, public :: operator(.includes.) => stringIncludesString
+        procedure :: stringIncludesString
+        generic, public :: WRITE(FORMATTED) => stringWriteFormatted
+        procedure :: stringWriteFormatted
+    end type VegetableString_t
+
+    type, public :: Result_t
+        private
+        type(VegetableString_t) :: all_message
+        type(VegetableString_t) :: failing_message
+        integer :: num_failling_asserts
+        integer :: num_passing_asserts
+        logical :: passed_
+    contains
+        private
+        generic, public :: operator(.and.) => combineResults
+        procedure :: combineResults
+        procedure, public :: failureDescription => resultFailureDescription
+        procedure, public :: numAsserts => resultNumAsserts
+        procedure, public :: numFailing => resultNumFailing
+        procedure, public :: numPassing => resultNumPassing
+        procedure, public :: passed => resultPassed
+        procedure, public :: verboseDescription => resultVerboseDescription
     end type Result_t
 
-    type, public :: TestCase_t
+    type, abstract, public :: Test_t
         private
-        type(c_ptr) :: contents
+        type(VegetableString_t) :: description_
     contains
+        private
+        procedure(testDescription), deferred, public :: description
+        procedure(testNum), deferred, public :: numCases
+    end type Test_t
+
+    type, abstract, public :: TestResult_t
+        private
+        type(VegetableString_t) :: description
+    contains
+        private
+        procedure(testQuestion), deferred, public :: failed
+        procedure(testResultDescription), deferred, public :: failureDescription
+        procedure(testResultNum), deferred, public :: numAsserts
+        procedure(testResultNum), deferred, public :: numCases
+        procedure(testResultNum), deferred, public :: numFailingAsserts
+        procedure(testResultNum), deferred, public :: numFailingCases
+        procedure(testResultNum), deferred, public :: numPassingAsserts
+        procedure(testResultNum), deferred, public :: numPassingCases
+        procedure(testQuestion), deferred, public :: passed
+        procedure(testResultDescription), deferred, public :: verboseDescription
+    end type TestResult_t
+
+    abstract interface
+        function test_() result(result_)
+            import :: Result_t
+            type(Result_t) :: result_
+        end function
+
+        function testDescription(self) result(description)
+            import :: Test_t, VegetableString_t
+            class(Test_t), intent(in) :: self
+            type(VegetableString_t) :: description
+        end function testDescription
+
+        pure function testNum(self) result(num)
+            import :: Test_t
+            class(Test_t), intent(in) :: self
+            integer :: num
+        end function testNum
+
+        pure function testQuestion(self) result(answer)
+            import :: TestResult_t
+            class(TestResult_t), intent(in) :: self
+            logical :: answer
+        end function testQuestion
+
+        function testResultDescription(self) result(description)
+            import :: TestResult_t, VegetableString_t
+            class(TestResult_t), intent(in) :: self
+            type(VegetableString_t) :: description
+        end function testResultDescription
+
+        pure function testResultNum(self) result(num)
+            import :: TestResult_t
+            class(TestResult_t), intent(in) :: self
+            integer :: num
+        end function testResultNum
+    end interface
+
+    type, public :: TestItem_t
+        private
+        class(Test_t), allocatable :: test
+    contains
+        private
+        procedure, public :: description => testItemDescription
+        procedure, public :: numCases => testItemNumCases
+        procedure, public :: run => runTestItem
+    end type TestItem_t
+
+    type, extends(Test_t), public :: TestCase_t
+        private
+        procedure(test_), nopass, pointer :: test
+    contains
+        private
         procedure, public :: description => testCaseDescription
         procedure, public :: numCases => testCaseNumCases
-        procedure, public :: run => runTestCase
+        procedure, public :: run => runCase
     end type TestCase_t
 
-    type, public :: TestCollection_t
+    type, extends(Test_t), public :: TestCollection_t
         private
-        type(c_ptr) :: contents
+        type(TestItem_t), allocatable :: tests(:)
     contains
         private
         procedure, public :: description => testCollectionDescription
         procedure, public :: numCases => testCollectionNumCases
-        procedure, public :: run => runTestCollection
+        procedure, public :: run => runCollection
     end type TestCollection_t
 
-    type, public :: TestCaseResult_t
+    type, public :: TestResultItem_t
         private
-        type(c_ptr) :: contents
+        class(TestResult_t), allocatable :: result_
+    contains
+        private
+        procedure, public :: failureDescription => testResultItemFailureDescription
+        procedure, public :: numAsserts => testResultItemNumAsserts
+        procedure, public :: numCases => testResultItemNumCases
+        procedure, public :: numFailingAsserts => testResultItemNumFailingAsserts
+        procedure, public :: numFailingCases => testResultItemNumFailing
+        procedure, public :: numPassingAsserts => testResultItemNumPassingAsserts
+        procedure, public :: numPassingCases => testResultItemNumPassing
+        procedure, public :: passed => testItemPassed
+        procedure, public :: verboseDescription => testResultItemVerboseDescription
+    end type TestResultItem_t
+
+    type, extends(TestResult_t), public :: TestCaseResult_t
+        private
+        type(Result_t) :: result_
     contains
         private
         procedure, public :: failed => testCaseFailed
@@ -39,83 +156,77 @@ module Vegetables_m
         procedure, public :: numAsserts => testCaseNumAsserts
         procedure, public :: numCases => testCaseResultNumCases
         procedure, public :: numFailingAsserts => testCaseNumFailingAsserts
-        procedure, public :: numFailingCases => testCaseNumFailingCases
+        procedure, public :: numFailingCases => testCaseNumFailing
         procedure, public :: numPassingAsserts => testCaseNumPassingAsserts
-        procedure, public :: numPassingCases => testCaseNumPassingCases
+        procedure, public :: numPassingCases => testCaseNumPassing
         procedure, public :: passed => testCasePassed
         procedure, public :: verboseDescription => testCaseVerboseDescription
     end type TestCaseResult_t
 
-    type, public :: TestCollectionResult_t
+    type, extends(TestResult_t), public :: TestCollectionResult_t
         private
-        type(c_ptr) :: contents
+        type(TestResultItem_t), allocatable :: results(:)
     contains
+        private
         procedure, public :: failed => testCollectionFailed
         procedure, public :: failureDescription => testCollectionFailureDescription
         procedure, public :: numAsserts => testCollectionNumAsserts
         procedure, public :: numCases => testCollectionResultNumCases
         procedure, public :: numFailingAsserts => testCollectionNumFailingAsserts
-        procedure, public :: numFailingCases => testCollectionNumFailingCases
+        procedure, public :: numFailingCases => testCollectionNumFailing
         procedure, public :: numPassingAsserts => testCollectionNumPassingAsserts
-        procedure, public :: numPassingCases => testCollectionNumPassingCases
+        procedure, public :: numPassingCases => testCollectionNumPassing
         procedure, public :: passed => testCollectionPassed
         procedure, public :: verboseDescription => testCollectionVerboseDescription
     end type TestCollectionResult_t
 
-    interface operator(.includes.)
-        module procedure includes
-    end interface
+    interface assertDoesntInclude
+        module procedure assertStringDoesntIncludeChars
+        module procedure assertStringDoesntIncludeString
+    end interface assertDoesntInclude
 
-    interface
-        subroutine cAddTest(collection, test) bind(C, name="cAddTest")
-            use iso_c_binding, only: c_ptr
-
-            type(c_ptr), value, intent(in) :: collection
-            type(c_ptr), value, intent(in) :: test
-        end subroutine cAddTest
-
-        function cResult(message, passed) result(result_) bind(C, name="cResult")
-            use iso_c_binding, only: c_bool, c_char, c_ptr
-
-            character(len=1, kind=c_char), dimension(*), intent(in) :: message
-            logical(kind=c_bool), value, intent(in) :: passed
-            type(c_ptr) :: result_
-        end function cResult
-
-        function cTestCollection( &
-                description) &
-                result(test_collection) &
-                bind(C, name="cTestCollection")
-            use iso_c_binding, only: c_char, c_int, c_ptr
-
-            character(len=1, kind=c_char), dimension(*), intent(in) :: description
-            type(c_ptr) :: test_collection
-        end function cTestCollection
-
-        function test_() result(result_) bind(c)
-            import Result_t
-
-            type(Result_t) :: result_
-        end function test_
-    end interface
-
-    logical(kind=c_bool), parameter :: CTRUE = .true.
-    logical(kind=c_bool), parameter :: CFALSE = .false.
-
-    interface operator(.and.)
-        module procedure combineResults
-    end interface
+    interface assertEmpty
+        module procedure assertEmptyChars
+        module procedure assertEmptyString
+    end interface assertEmpty
 
     interface assertEquals
         module procedure assertEqualsInteger
-    end interface
+    end interface assertEquals
+
+    interface assertIncludes
+        module procedure assertStringIncludesChars
+        module procedure assertStringIncludesString
+    end interface assertIncludes
+
+    interface fail
+        module procedure failWithChars
+        module procedure failWithString
+    end interface fail
+
+    interface join
+        module procedure joinWithCharacter
+        module procedure joinWithString
+    end interface join
+
+    interface splitAt
+        module procedure splitAtBothCharacter
+        module procedure splitAtStringCharacter
+    end interface splitAt
+
+    interface succeed
+        module procedure succeedWithChars
+        module procedure succeedWithString
+    end interface succeed
 
     interface toString
-        module procedure toStringInteger
+        module procedure charsToString
+        module procedure integerToString
     end interface toString
 
+    character(len=*), parameter :: NEWLINE = NEW_LINE('A')
+
     public :: &
-            operator(.and.), &
             assertDoesntInclude, &
             assertEmpty, &
             assertEquals, &
@@ -126,820 +237,896 @@ module Vegetables_m
             fail, &
             given, &
             it, &
-            runATest, &
             runTests, &
             succeed, &
+            TestCase, &
+            TestCollection, &
             testThat, &
             then, &
+            toString, &
             when
 contains
-    function assertDoesntInclude(search_for, string) result(result_)
-        character(len=*), intent(in) :: search_for
+    pure function assertEmptyChars(string) result(result__)
         character(len=*), intent(in) :: string
-        type(Result_t) :: result_
-
-        if (.not.(string.includes.search_for)) then
-            result_ = succeed()
-        else
-            result_ = fail( &
-                    "Expected '" // string &
-                    // "' to NOT include '" // search_for // "'")
-        end if
-    end function assertDoesntInclude
-
-    function assertEmpty(string) result(result_)
-        character(len=*), intent(in) :: string
-        type(Result_t) :: result_
+        type(Result_t) :: result__
 
         if (string == "") then
-            result_ = succeed()
+            result__ = succeed("String was empty")
         else
-            result_ = fail("String '" // string // "' wasn't empty")
+            result__ = fail("String '" // string // "' wasn't empty")
         end if
-    end function assertEmpty
+    end function assertEmptyChars
 
-    function assertEqualsInteger(expected, actual) result(result_)
+    pure function assertEmptyString(string) result(result__)
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(string%string)
+    end function assertEmptyString
+
+    pure function assertEqualsInteger(expected, actual) result(result__)
         integer, intent(in) :: expected
         integer, intent(in) :: actual
-        type(Result_t) :: result_
+        type(Result_t) :: result__
 
         if (expected == actual) then
-            result_ = succeed()
+            result__ = succeed("Expected and got '" // toString(expected) // "'")
         else
-            result_ = fail( &
+            result__ = fail( &
                     "Expected '" // toString(expected) &
                     // "' but got '" // toString(actual) // "'")
         end if
     end function assertEqualsInteger
 
-    function assertIncludes(search_for, string) result(result_)
-        character(len=*), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(Result_t) :: result_
-
-        if (string.includes.search_for) then
-            result_ = succeed()
-        else
-            result_ = fail( &
-                    "Expected '" // string &
-                    // "' to include '" // search_for // "'")
-        end if
-    end function assertIncludes
-
-    function assertNot(condition) result(result_)
+    pure function assertNot(condition) result(result__)
         logical, intent(in) :: condition
-        type(Result_t) :: result_
+        type(Result_t) :: result__
 
-        if (.not.condition) then
-            result_ = succeed()
+        if (.not. condition) then
+            result__ = succeed("Was not true")
         else
-            result_ = fail("Expected to be FALSE")
+            result__ = fail("Expected to not be true")
         end if
     end function assertNot
 
-    function assertThat(condition) result(result_)
+    pure function assertStringDoesntIncludeChars(search_for, string) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(toString(search_for), string)
+    end function assertStringDoesntIncludeChars
+
+    pure function assertStringDoesntIncludeString(search_for, string) result(result__)
+        type(VegetableString_t), intent(in) :: search_for
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result__
+
+        if (.not.(string.includes.search_for)) then
+            result__ = succeed( &
+                    "'" // string // "' did not include '" // search_for // "'")
+        else
+            result__ = fail( &
+                    "Expected '" // string &
+                    // "' to not include '" // search_for // "'")
+        end if
+    end function assertStringDoesntIncludeString
+
+    pure function assertStringIncludesChars(search_for, string) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(toString(search_for), string)
+    end function assertStringIncludesChars
+
+    pure function assertStringIncludesString(search_for, string) result(result__)
+        type(VegetableString_t), intent(in) :: search_for
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result__
+
+        if (string.includes.search_for) then
+            result__ = succeed( &
+                    "'" // string // "' included '" // search_for // "'")
+        else
+            result__ = fail( &
+                    "Expected '" // string &
+                    // "' to include '" // search_for // "'")
+        end if
+    end function assertStringIncludesString
+
+    pure function assertThat(condition) result(result__)
         logical, intent(in) :: condition
-        type(Result_t) :: result_
+        type(Result_t) :: result__
 
         if (condition) then
-            result_ = succeed()
+            result__ = succeed("Was true")
         else
-            result_ = fail("Expected to be TRUE")
+            result__ = fail("Expected to be true")
         end if
     end function assertThat
 
-    function combineResults(lhs, rhs) result(combined)
-        type(Result_t), intent(in) :: lhs
+    pure function charsToString(chars) result(string)
+        character(len=*), intent(in) :: chars
+        type(VegetableString_t) :: string
+
+        string%string = chars
+    end function charsToString
+
+    pure function combineResults(lhs, rhs) result(combined)
+        class(Result_t), intent(in) :: lhs
         type(Result_t), intent(in) :: rhs
         type(Result_t) :: combined
 
-        interface
-            function cCombineResults( &
-                    lhs, rhs) result(combined) bind(C, name="cCombineResults")
-                use iso_c_binding, only: c_ptr
-
-                type(c_ptr), value, intent(in) :: lhs
-                type(c_ptr), value, intent(in) :: rhs
-                type(c_ptr) :: combined
-            end function cCombineResults
-        end interface
-
-        combined%contents = cCombineResults(lhs%contents, rhs%contents)
+        combined = Result_( &
+                all_message = lhs%all_message // NEWLINE // rhs%all_message, &
+                failing_message = lhs%failing_message // NEWLINE // rhs%failing_message, &
+                passed = lhs%passed_ .and. rhs%passed_, &
+                num_failling_asserts = lhs%num_failling_asserts + rhs%num_failling_asserts, &
+                num_passing_asserts = lhs%num_passing_asserts + rhs%num_passing_asserts)
     end function combineResults
 
-    function cStringToF(c_string) result(f_string)
-        character(len=*), intent(in) :: c_string
-        character(len=:), allocatable :: f_string
+    pure function concatCharsAndString(chars, string) result(combined)
+        character(len=*), intent(in) :: chars
+        class(VegetableString_t), intent(in) :: string
+        type(VegetableString_t) :: combined
 
-        integer :: terminator_position
+        combined = toString(chars // string%string)
+    end function concatCharsAndString
 
-        terminator_position = index(c_string, char(0))
-        if (terminator_position == 0) then
-            f_string = c_string
-        else
-            f_string = c_string(1:terminator_position-1)
-        end if
-    end function cStringToF
+    pure function concatStringAndChars(string, chars) result(combined)
+        class(VegetableString_t), intent(in) :: string
+        character(len=*), intent(in) :: chars
+        type(VegetableString_t) :: combined
 
-    function describe(description, tests) result(test_collection)
+        combined = toString(string%string // chars)
+    end function concatStringAndChars
+
+    pure function concatStrings(lhs, rhs) result(combined)
+        class(VegetableString_t), intent(in) :: lhs
+        type(VegetableString_t), intent(in) :: rhs
+        type(VegetableString_t) :: combined
+
+        combined = toString(lhs%string // rhs%string)
+    end function concatStrings
+
+    pure function describe(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
-        type(TestCase_t), intent(in) :: tests(:)
-        type(TestCollection_t) :: test_collection
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
 
-        integer :: i
-
-        test_collection%contents = cTestCollection(fStringToC(description))
-        do i = 1, size(tests)
-            call cAddTest(test_collection%contents, tests(i)%contents)
-        end do
+        allocate(TestCollection_t :: test_collection%test)
+        select type (test => test_collection%test)
+        type is (TestCollection_t)
+            test = TestCollection(description, tests)
+        end select
     end function describe
 
-    function fail(message) result(result_)
+    pure function failWithChars(message) result(failure)
         character(len=*), intent(in) :: message
-        type(Result_t) :: result_
+        type(Result_t) :: failure
 
-        result_%contents = cResult(fStringToC(message), CFALSE)
-    end function fail
+        failure = fail(toString(message))
+    end function failWithChars
 
-    function fStringToC(f_string) result(c_string)
-        character(len=*), intent(in) :: f_string
-        character(len=:), allocatable :: c_string
+    pure function failWithString(message) result(failure)
+        type(VegetableString_t), intent(in) :: message
+        type(Result_t) :: failure
 
-        c_string = f_string // char(0)
-    end function fStringToC
+        failure = Result_( &
+                passed = .false., &
+                all_message = message, &
+                failing_message = message, &
+                num_failling_asserts = 1, &
+                num_passing_asserts = 0)
+    end function failWithString
 
-    function given(description, tests) result(collection)
+    pure function given(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
-        type(TestCollection_t), intent(in) :: tests(:)
-        type(TestCollection_t) :: collection
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
+
+        test_collection = describe("Given " // description, tests)
+    end function given
+
+    pure function hangingIndent(string_) result(indented)
+        type(VegetableString_t), intent(in) :: string_
+        type(VegetableString_t), allocatable :: indented
+
+        type(VegetableString_t), allocatable :: lines(:)
+
+        lines = splitAt(string_, NEWLINE)
+        indented = join(lines, NEWLINE // "    ")
+    end function hangingIndent
+
+    pure function integerToString(int) result(string)
+        integer, intent(in) :: int
+        type(VegetableString_t) :: string
+
+        character(len=12) :: temp
+
+        write(temp, '(I0)') int
+        string = toString(trim(temp))
+    end function integerToString
+
+    function it(description, func) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(test_) :: func
+        type(TestItem_t) :: test_case
+
+        allocate(TestCase_t :: test_case%test)
+        select type (test => test_case%test)
+        type is (TestCase_t)
+            test = TestCase(description, func)
+        end select
+    end function it
+
+    pure function joinWithCharacter(strings, separator) result(string)
+        type(VegetableString_t), intent(in) :: strings(:)
+        character(len=*), intent(in) :: separator
+        type(VegetableString_t) :: string
+
+        string = join(strings, toString(separator))
+    end function joinWithCharacter
+
+    pure function joinWithString(strings, separator) result(string)
+        type(VegetableString_t), intent(in) :: strings(:)
+        type(VegetableString_t), intent(in) :: separator
+        type(VegetableString_t) :: string
 
         integer :: i
 
-        collection%contents = cTestCollection(fStringToC("Given " // description))
-        do i = 1, size(tests)
-            call cAddTest(collection%contents, tests(i)%contents)
+        string = strings(1)
+        do i = 2, size(strings)
+            string = string // separator // strings(i)
         end do
-    end function given
+    end function joinWithString
 
-    pure function includes(string, search_for)
-        character(len=*), intent(in) :: string
-        character(len=*), intent(in) :: search_for
-        logical :: includes
+    pure function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
+        logical, intent(in) :: passed
+        type(VegetableString_t), intent(in) :: all_message
+        type(VegetableString_t), intent(in) :: failing_message
+        integer, intent(in) :: num_failling_asserts
+        integer, intent(in) :: num_passing_asserts
+        type(Result_t) :: Result_
 
-        includes = index(string, search_for) > 0
-    end function includes
+        Result_ = Result_t( &
+                all_message = all_message, &
+                failing_message = failing_message, &
+                num_failling_asserts = num_failling_asserts, &
+                num_passing_asserts = num_passing_asserts, &
+                passed_ = passed)
+    end function Result_
 
-    function it(description, test) result(test_case)
-        character(len=*), intent(in) :: description
-        procedure(test_) :: test
-        type(TestCase_t) :: test_case
+    pure function resultFailureDescription(self) result(description)
+        class(Result_t), intent(in) :: self
+        type(VegetableString_t) :: description
 
-        interface
-            function cTestCase(description, test) result(test_case) bind(C, name="cTestCase")
-                use iso_c_binding, only: c_char, c_ptr
+        description = self%failing_message
+    end function resultFailureDescription
 
-                character(len=1, kind=c_char), dimension(*), intent(in) :: description
-                procedure(test_) :: test
-                type(c_ptr) :: test_case
-            end function cTestCase
-        end interface
+    pure function resultNumAsserts(self) result(num_asserts)
+        class(Result_t), intent(in) :: self
+        integer :: num_asserts
 
-        test_case%contents = cTestCase(fStringToC(description), test)
-    end function it
+        num_asserts = self%num_passing_asserts + self%num_failling_asserts
+    end function resultNumAsserts
 
-    function runATest(test) result(result_) bind(C, name="runATest")
-        procedure(test_) :: test
-        type(c_ptr) :: result_
+    pure function resultNumFailing(self) result(num_asserts)
+        class(Result_t), intent(in) :: self
+        integer :: num_asserts
 
-        type(Result_t) :: test_result
+        num_asserts = self%num_failling_asserts
+    end function resultNumFailing
 
-        test_result = test()
-        result_ = test_result%contents
-    end function runATest
+    pure function resultNumPassing(self) result(num_asserts)
+        class(Result_t), intent(in) :: self
+        integer :: num_asserts
 
-    function runTestCase(self) result(test_result)
+        num_asserts = self%num_passing_asserts
+    end function resultNumPassing
+
+    pure function resultPassed(self) result(passed)
+        class(Result_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%passed_
+    end function resultPassed
+
+    pure function resultVerboseDescription(self) result(description)
+        class(Result_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%all_message
+    end function resultVerboseDescription
+
+    function runCase(self) result(result__)
         class(TestCase_t), intent(in) :: self
-        type(TestCaseResult_t) :: test_result
+        type(TestCaseResult_t) :: result__
 
-        interface
-            function cRunTestCase( &
-                    test_case) &
-                    result(result_) &
-                    bind(C, name="cRunTestCase")
-                use iso_c_binding, only: c_ptr
+        result__ = TestCaseResult(self%description_, self%test())
+    end function runCase
 
-                type(c_ptr), value, intent(in) :: test_case
-                type(c_ptr) :: result_
-            end function cRunTestCase
-        end interface
-
-        test_result%contents = cRunTestCase(self%contents)
-    end function runTestCase
-
-    function runTestCollection(self) result(test_result)
+    function runCollection(self) result(result__)
         class(TestCollection_t), intent(in) :: self
-        type(TestCollectionResult_t) :: test_result
+        type(TestCollectionResult_t) :: result__
 
-        interface
-            function cRunTestCollection( &
-                    collection) &
-                    result(results) &
-                    bind(C, name="cRunTestCollection")
-                use iso_c_binding, only: c_ptr
+        integer :: i
+        integer :: num_tests
+        type(TestResultItem_t), allocatable :: results(:)
 
-                type(c_ptr), value, intent(in) :: collection
-                type(c_ptr) :: results
-            end function cRunTestCollection
-        end interface
+        num_tests = size(self%tests)
+        allocate(results(num_tests))
+        do i = 1, num_tests
+            results(i) = self%tests(i)%run()
+        end do
+        result__ = TestCollectionResult(self%description_, results)
+    end function runCollection
 
-        test_result%contents = cRunTestCollection(self%contents)
-    end function runTestCollection
+    function runTestItem(self) result(result_item)
+        class(TestItem_t), intent(in) :: self
+        type(TestResultItem_t) :: result_item
+
+        select type (test => self%test)
+        type is (TestCase_t)
+            allocate(TestCaseResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCaseResult_t)
+                result_ = test%run()
+            end select
+        type is (TestCollection_t)
+            allocate(TestCollectionResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCollectionResult_t)
+                result_ = test%run()
+            end select
+        end select
+    end function runTestItem
 
     subroutine runTests(tests)
         use iso_fortran_env, only: error_unit, output_unit
-        type(TestCollection_t), intent(in) :: tests
 
-        type(TestCollectionResult_t) :: test_results
+        type(TestItem_t) :: tests
+        type(TestResultItem_t) :: results
 
         write(output_unit, '(A)') "Running Tests"
         write(output_unit, '(A)')
-        write(output_unit, '(A)') tests%description()
+        write(output_unit, '(DT)') tests%description()
         write(output_unit, '(A)')
-        write(output_unit, '(A)') &
+        write(output_unit, '(DT)') &
                 "A total of " // toString(tests%numCases()) // " test cases"
-        test_results = tests%run()
-        if (test_results%passed()) then
+        results = tests%run()
+        if (results%passed()) then
             write(output_unit, '(A)')
             write(output_unit, '(A)') "All Passed"
-            write(output_unit, '(A)') &
-                    "A total of " // toString(test_results%numCases()) &
+            write(output_unit, '(DT)') &
+                    "A total of " // toString(results%numCases()) &
                     // " test cases containg a total of " &
-                    // toString(test_results%numAsserts()) // " assertions"
+                    // toString(results%numAsserts()) // " assertions"
             write(output_unit, '(A)')
         else
             write(error_unit, '(A)')
             write(error_unit, '(A)') "Failed"
             write(error_unit, '(A)')
-            write(error_unit, '(A)') &
-                    toString(test_results%numFailingCases()) // " of " &
-                    // toString(test_results%numCases()) // " cases failed"
-            write(error_unit, '(A)') &
-                    toString(test_results%numFailingAsserts()) // " of " &
-                    // toString(test_results%numAsserts()) // " assertions failed"
+            write(error_unit, '(DT)') &
+                    toString(results%numFailingCases()) // " of " &
+                    // toString(results%numCases()) // " cases failed"
+            write(error_unit, '(DT)') &
+                    toString(results%numFailingAsserts()) // " of " &
+                    // toString(results%numAsserts()) // " assertions failed"
             write(error_unit, '(A)')
-            write(error_unit, '(A)') test_results%failureDescription()
+            write(error_unit, '(DT)') results%failureDescription()
             write(error_unit, '(A)')
             call exit(1)
         end if
-    end subroutine runTests
 
-    function succeed() result(result_)
-        type(Result_t) :: result_
+    end subroutine
 
-        result_%contents = cResult(fStringToC(""), CTRUE)
-    end function succeed
+    pure recursive function splitAtBothCharacter(&
+            string_, split_characters) result(strings)
+        character(len=*), intent(in) :: string_
+        character(len=*), intent(in) :: split_characters
+        type(VegetableString_t), allocatable :: strings(:)
 
-    function testCaseDescription(self) result(description)
-        use iso_c_binding, only: c_char
+        if (len(split_characters) > 0) then
+            if (len(string_) > 0) then
+                if (index(split_characters, string_(1:1)) > 0) then
+                    strings = splitAtBothCharacter(string_(2:), split_characters)
+                else if (index(split_characters, string_(len(string_):len(string_))) > 0) then
+                    strings = splitAtBothCharacter(string_(1:len(string_) - 1), split_characters)
+                else
+                    strings = doSplit(string_, split_characters)
+                end if
+            else
+                allocate(strings(1))
+                strings(1) = toString("")
+            end if
+        else
+            allocate(strings(1))
+            strings(1) = toString(string_)
+        end if
+    contains
+        pure function doSplit(string__, split_characters_) result(strings_)
+            character(len=*), intent(in) :: string__
+            character(len=*), intent(in) :: split_characters_
+            type(VegetableString_t), allocatable :: strings_(:)
 
+            integer :: i
+            type(VegetableString_t), allocatable :: rest(:)
+            character(len=:), allocatable :: this_string
+            allocate(character(len=0)::this_string)
+
+            do i = 2, len(string__)
+                if (index(split_characters_, string__(i:i)) > 0) exit
+            end do
+            if (i < len(string__)) then
+                this_string = string__(1:i - 1)
+                rest = splitAtBothCharacter(string__(i + 1:), split_characters_)
+                allocate(strings_(size(rest) + 1))
+                strings_(1) = toString(this_string)
+                strings_(2:) = rest(:)
+            else
+                allocate(strings_(1))
+                strings_(1) = toString(string__)
+            end if
+        end function doSplit
+    end function splitAtBothCharacter
+
+    pure function splitAtStringCharacter(string_, split_characters) result(strings)
+        type(VegetableString_t), intent(in) :: string_
+        character(len=*), intent(in) :: split_characters
+        type(VegetableString_t), allocatable :: strings(:)
+
+        strings = splitAt(string_%string, split_characters)
+    end function splitAtStringCharacter
+
+    pure function stringIncludesString(string, search_for)
+        class(VegetableString_t), intent(in) :: string
+        type(VegetableString_t), intent(in) :: search_for
+        logical :: stringIncludesString
+
+        stringIncludesString = index(string%string, search_for%string) > 0
+    end function stringIncludesString
+
+    subroutine stringWriteFormatted(string, unit, iotype, v_list, iostat, iomsg)
+        class(VegetableString_t), intent(in) :: string
+        integer, intent(in) :: unit
+        character(len=*), intent(in) :: iotype
+        integer, intent(in) :: v_list(:)
+        integer, intent(out) :: iostat
+        character(len=*), intent(inout) :: iomsg
+
+        associate(a => iotype, b => v_list); end associate
+
+        write(unit=unit, iostat=iostat, iomsg=iomsg, fmt='(A)') string%string
+    end subroutine stringWriteFormatted
+
+    pure function succeedWithChars(message) result(success)
+        character(len=*), intent(in) :: message
+        type(Result_t) :: success
+
+        success = succeed(toString(message))
+    end function succeedWithChars
+
+    pure function succeedWithString(message) result(success)
+        type(VegetableString_t), intent(in) :: message
+        type(Result_t) :: success
+
+        success = Result_( &
+                passed = .true., &
+                all_message = message, &
+                failing_message = toString(""), &
+                num_failling_asserts = 0, &
+                num_passing_asserts = 1)
+    end function succeedWithString
+
+    function TestCase(description, func) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(test_) :: func
+        type(TestCase_t) :: test_case
+
+        test_case%description_ = toString(description)
+        test_case%test => func
+    end function TestCase
+
+    pure function testCaseDescription(self) result(description)
         class(TestCase_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VegetableString_t) :: description
 
-        interface
-            subroutine cTestCaseDescription( &
-                    test_case, &
-                    description, &
-                    max_length) &
-                    bind(C, name="cTestCaseDescription")
-                use iso_c_binding, only: c_char, c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: test_case
-                character(kind=c_char), dimension(*) :: description
-                integer(kind=c_int), value, intent(in) :: max_length
-            end subroutine cTestCaseDescription
-        end interface
-
-        integer, parameter :: MAX_STRING_LENGTH = 10000
-        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
-
-        call cTestCaseDescription(self%contents, description_, MAX_STRING_LENGTH)
-        description = cStringToF(description_)
+        description = self%description_
     end function testCaseDescription
 
-    function testCaseFailed(self) result(failed)
+    pure function testCaseFailed(self) result(failed)
         class(TestCaseResult_t), intent(in) :: self
         logical :: failed
 
-        interface
-            function cTestCaseFailed( &
-                    collection) &
-                    result(failed) &
-                    bind(C, name="cTestCaseFailed")
-                use iso_c_binding, only: c_bool, c_ptr
-
-                type(c_ptr), value, intent(in) :: collection
-                logical(kind=c_bool) :: failed
-            end function cTestCaseFailed
-        end interface
-
-        failed = cTestCaseFailed(self%contents)
+        failed = .not.self%passed()
     end function testCaseFailed
 
-    function testCaseFailureDescription(self) result(description)
-        use iso_c_binding, only: c_char
-
+    pure function testCaseFailureDescription(self) result(description)
         class(TestCaseResult_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VegetableString_t) :: description
 
-        interface
-            subroutine cTestCaseResultFailureDescription( &
-                    test_case, &
-                    description, &
-                    max_length) &
-                    bind(C, name="cTestCaseResultFailureDescription")
-                use iso_c_binding, only: c_char, c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: test_case
-                character(kind=c_char), dimension(*) :: description
-                integer(kind=c_int), value, intent(in) :: max_length
-            end subroutine cTestCaseResultFailureDescription
-        end interface
-
-        integer, parameter :: MAX_STRING_LENGTH = 10000
-        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
-
-        call cTestCaseResultFailureDescription(self%contents, description_, MAX_STRING_LENGTH)
-        description = cStringToF(description_)
+        if (self%passed()) then
+            description = toString("")
+        else
+            description = hangingIndent( &
+                    self%description // NEWLINE // self%result_%failureDescription())
+        end if
     end function testCaseFailureDescription
 
-    function testCaseNumAsserts(self) result(num_asserts)
+    pure function testCaseNumAsserts(self) result(num_asserts)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_asserts
 
-        interface
-            function cTestCaseNumAsserts( &
-                    test_case) &
-                    result(num_asserts) &
-                    bind(C, name="cTestCaseNumAsserts")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: test_case
-                integer(kind=c_int) :: num_asserts
-            end function cTestCaseNumAsserts
-        end interface
-
-        num_asserts = cTestCaseNumAsserts(self%contents)
+        num_asserts = self%result_%numAsserts()
     end function testCaseNumAsserts
 
-    function testCaseNumCases(self) result(num_cases)
+    pure function testCaseNumCases(self) result(num_cases)
         class(TestCase_t), intent(in) :: self
         integer :: num_cases
 
-        interface
-            function cTestCaseNumCases( &
-                    test_case) &
-                    result(num_cases) &
-                    bind(C, name="cTestCaseNumCases")
-                use iso_c_binding, only: c_int, c_ptr
+        associate(a => self)
+        end associate
+        num_cases = 1
+    end function testCaseNumCases
 
-                type(c_ptr), value, intent(in) :: test_case
-                integer(kind=c_int) :: num_cases
-            end function cTestCaseNumCases
-        end interface
-
-        num_cases = cTestCaseNumCases(self%contents)
-    end function
-
-    function testCaseNumFailingAsserts(self) result(num_failing)
-        class(TestCaseResult_t), intent(in) :: self
-        integer :: num_failing
-
-        interface
-            function cTestCaseNumFailingAsserts( &
-                    test_case) &
-                    result(num_failing) &
-                    bind(C, name="cTestCaseNumFailingAsserts")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: test_case
-                integer(kind=c_int) :: num_failing
-            end function cTestCaseNumFailingAsserts
-        end interface
-
-        num_failing = cTestCaseNumFailingAsserts(self%contents)
-    end function testCaseNumFailingAsserts
-
-    function testCaseNumFailingCases(self) result(num_passing)
-        class(TestCaseResult_t), intent(in) :: self
-        integer :: num_passing
-
-        interface
-            function cTestCaseNumFailingCases( &
-                    test_case) &
-                    result(num_passing) &
-                    bind(C, name="cTestCaseNumFailingCases")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: test_case
-                integer(kind=c_int) :: num_passing
-            end function cTestCaseNumFailingCases
-        end interface
-
-        num_passing = cTestCaseNumFailingCases(self%contents)
-    end function testCaseNumFailingCases
-
-    function testCaseNumPassingAsserts(self) result(num_passing)
-        class(TestCaseResult_t), intent(in) :: self
-        integer :: num_passing
-
-        interface
-            function cTestCaseNumPassingAsserts( &
-                    test_case) &
-                    result(num_passing) &
-                    bind(C, name="cTestCaseNumPassingAsserts")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: test_case
-                integer(kind=c_int) :: num_passing
-            end function cTestCaseNumPassingAsserts
-        end interface
-
-        num_passing = cTestCaseNumPassingAsserts(self%contents)
-    end function testCaseNumPassingAsserts
-
-    function testCaseNumPassingCases(self) result(num_passing)
-        class(TestCaseResult_t), intent(in) :: self
-        integer :: num_passing
-
-        interface
-            function cTestCaseNumPassingCases( &
-                    test_case) &
-                    result(num_passing) &
-                    bind(C, name="cTestCaseNumPassingCases")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: test_case
-                integer(kind=c_int) :: num_passing
-            end function cTestCaseNumPassingCases
-        end interface
-
-        num_passing = cTestCaseNumPassingCases(self%contents)
-    end function testCaseNumPassingCases
-
-    function testCasePassed(self) result(passed)
-        class(TestCaseResult_t), intent(in) :: self
-        logical :: passed
-
-        interface
-            function cTestCasePassed( &
-                    collection) &
-                    result(passed) &
-                    bind(C, name="cTestCasePassed")
-                use iso_c_binding, only: c_bool, c_ptr
-
-                type(c_ptr), value, intent(in) :: collection
-                logical(kind=c_bool) :: passed
-            end function cTestCasePassed
-        end interface
-
-        passed = cTestCasePassed(self%contents)
-    end function testCasePassed
-
-    function testCaseResultNumCases(self) result(num_cases)
+    pure function testCaseNumFailing(self) result(num_cases)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_cases
 
-        interface
-            function cTestCaseResultNumCases( &
-                    test_case) &
-                    result(num_cases) &
-                    bind(C, name="cTestCaseResultNumCases")
-                use iso_c_binding, only: c_int, c_ptr
+        if (self%passed()) then
+            num_cases = 0
+        else
+            num_cases = 1
+        end if
+    end function testCaseNumFailing
 
-                type(c_ptr), value, intent(in) :: test_case
-                integer(kind=c_int) :: num_cases
-            end function cTestCaseResultNumCases
-        end interface
+    pure function testCaseNumFailingAsserts(self) result(num_asserts)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_asserts
 
-        num_cases = cTestCaseResultNumCases(self%contents)
+        num_asserts = self%result_%numFailing()
+    end function testCaseNumFailingAsserts
+
+    pure function testCaseNumPassing(self) result(num_cases)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_cases
+
+        if (self%passed()) then
+            num_cases = 1
+        else
+            num_cases = 0
+        end if
+    end function testCaseNumPassing
+
+    pure function testCaseNumPassingAsserts(self) result(num_asserts)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numPassing()
+    end function testCaseNumPassingAsserts
+
+    pure function testCasePassed(self) result(passed)
+        class(TestCaseResult_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%result_%passed()
+    end function testCasePassed
+
+    pure function TestCaseResult(description, result__) result(test_case_result)
+        type(VegetableString_t), intent(in) :: description
+        type(Result_t), intent(in) :: result__
+        type(TestCaseResult_t) :: test_case_result
+
+        test_case_result%description = description
+        test_case_result%result_ = result__
+    end function TestCaseResult
+
+    pure function testCaseResultNumCases(self) result(num_cases)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self)
+        end associate
+        num_cases = 1
     end function testCaseResultNumCases
 
-    function testCaseVerboseDescription(self) result(description)
-        use iso_c_binding, only: c_char
-
+    pure function testCaseVerboseDescription(self) result(description)
         class(TestCaseResult_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VegetableString_t) :: description
 
-        interface
-            subroutine cTestCaseResultVerboseDescription( &
-                    test_case, &
-                    description, &
-                    max_length) &
-                    bind(C, name="cTestCaseResultVerboseDescription")
-                use iso_c_binding, only: c_char, c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: test_case
-                character(kind=c_char), dimension(*) :: description
-                integer(kind=c_int), value, intent(in) :: max_length
-            end subroutine cTestCaseResultVerboseDescription
-        end interface
-
-        integer, parameter :: MAX_STRING_LENGTH = 10000
-        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
-
-        call cTestCaseResultVerboseDescription(self%contents, description_, MAX_STRING_LENGTH)
-        description = cStringToF(description_)
+        description = hangingIndent( &
+                self%description // NEWLINE // self%result_%verboseDescription())
     end function testCaseVerboseDescription
 
+    pure function TestCollection(description, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestCollection_t) :: test_collection
+
+        test_collection%description_ = toString(description)
+        allocate(test_collection%tests(size(tests)))
+        test_collection%tests = tests
+    end function TestCollection
+
     function testCollectionDescription(self) result(description)
-        use iso_c_binding, only: c_char
-
         class(TestCollection_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VegetableString_t) :: description
 
-        interface
-            subroutine cTestCollectionDescription( &
-                    test_collection, &
-                    description, &
-                    max_length) &
-                    bind(C, name="cTestCollectionDescription")
-                use iso_c_binding, only: c_char, c_int, c_ptr
+        type :: VegStringArray_t
+            type(VegetableString_t), pointer :: strings(:) => null()
+        end type VegStringArray_t
 
-                type(c_ptr), value, intent(in) :: test_collection
-                character(kind=c_char), dimension(*) :: description
-                integer(kind=c_int), value, intent(in) :: max_length
-            end subroutine cTestCollectionDescription
-        end interface
+        integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
+        integer :: descriptions_location
+        integer :: i
+        integer :: num_cases
 
-        integer, parameter :: MAX_STRING_LENGTH = 10000
-        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
-
-        call cTestCollectionDescription( &
-                self%contents, description_, MAX_STRING_LENGTH)
-        description = cStringToF(description_)
+        num_cases = size(self%tests)
+        do i = 1, MAX_STACK_SIZE
+            if (.not.associated(descriptions(i)%strings)) then
+                descriptions_location = i
+                allocate(descriptions(descriptions_location)%strings(num_cases))
+                exit
+            end if
+        end do
+        if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
+        do i = 1, num_cases
+            descriptions(descriptions_location)%strings(i) = self%tests(i)%description()
+        end do
+        description = hangingIndent( &
+                self%description_ // NEWLINE &
+                // join(descriptions(descriptions_location)%strings, NEWLINE))
+        deallocate(descriptions(descriptions_location)%strings)
+        nullify(descriptions(descriptions_location)%strings)
     end function testCollectionDescription
 
-    function testCollectionFailed(self) result(failed)
+    pure function testCollectionFailed(self) result(failed)
         class(TestCollectionResult_t), intent(in) :: self
         logical :: failed
 
-        interface
-            function cTestCollectionFailed( &
-                    collection) &
-                    result(failed) &
-                    bind(C, name="cTestCollectionFailed")
-                use iso_c_binding, only: c_bool, c_ptr
-
-                type(c_ptr), value, intent(in) :: collection
-                logical(kind=c_bool) :: failed
-            end function cTestCollectionFailed
-        end interface
-
-        failed = cTestCollectionFailed(self%contents)
+        failed = .not.self%passed()
     end function testCollectionFailed
 
     function testCollectionFailureDescription(self) result(description)
-        use iso_c_binding, only: c_char
-
         class(TestCollectionResult_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VegetableString_t) :: description
 
-        interface
-            subroutine cTestCollectionResultFailureDescription( &
-                    test_collection, &
-                    description, &
-                    max_length) &
-                    bind(C, name="cTestCollectionResultFailureDescription")
-                use iso_c_binding, only: c_char, c_int, c_ptr
+        type :: VegStringArray_t
+            type(VegetableString_t), pointer :: strings(:) => null()
+        end type VegStringArray_t
 
-                type(c_ptr), value, intent(in) :: test_collection
-                character(kind=c_char), dimension(*) :: description
-                integer(kind=c_int), value, intent(in) :: max_length
-            end subroutine cTestCollectionResultFailureDescription
-        end interface
+        integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
+        integer :: descriptions_location
+        integer :: i
+        integer :: num_cases
 
-        integer, parameter :: MAX_STRING_LENGTH = 10000
-        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
-
-        call cTestCollectionResultFailureDescription(self%contents, description_, MAX_STRING_LENGTH)
-        description = cStringToF(description_)
+        if (self%passed()) then
+            description = toString("")
+        else
+            num_cases = size(self%results)
+            do i = 1, MAX_STACK_SIZE
+                if (.not.associated(descriptions(i)%strings)) then
+                    descriptions_location = i
+                    allocate(descriptions(descriptions_location)%strings(num_cases))
+                    exit
+                end if
+            end do
+            if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
+            do i = 1, num_cases
+                descriptions(descriptions_location)%strings(i) = self%results(i)%failureDescription()
+            end do
+            description = hangingIndent( &
+                    self%description // NEWLINE &
+                    // join(descriptions(descriptions_location)%strings, NEWLINE))
+            deallocate(descriptions(descriptions_location)%strings)
+            nullify(descriptions(descriptions_location)%strings)
+        end if
     end function testCollectionFailureDescription
 
-    function testCollectionNumAsserts(self) result(num_asserts)
+    pure function testCollectionNumAsserts(self) result(num_asserts)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_asserts
 
-        interface
-            function cTestCollectionNumAsserts( &
-                    collection) &
-                    result(num_asserts) &
-                    bind(C, name="cTestCollectionNumAsserts")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: collection
-                integer(kind=c_int) :: num_asserts
-            end function cTestCollectionNumAsserts
-        end interface
-
-        num_asserts = cTestCollectionNumAsserts(self%contents)
+        num_asserts = sum(self%results%numAsserts())
     end function testCollectionNumAsserts
 
-    function testCollectionNumCases(self) result(num_cases)
+    pure function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self
         integer :: num_cases
 
-        interface
-            function cTestCollectionNumCases( &
-                    collection) &
-                    result(num_cases) &
-                    bind(C, name="cTestCollectionNumCases")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: collection
-                integer(kind=c_int) :: num_cases
-            end function cTestCollectionNumCases
-        end interface
-
-        num_cases = cTestCollectionNumCases(self%contents)
+        num_cases = sum(self%tests%numCases())
     end function testCollectionNumCases
 
-    function testCollectionNumFailingAsserts(self) result(num_asserts)
+    pure function testCollectionNumFailing(self) result(num_cases)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = sum(self%results%numFailingCases())
+    end function testCollectionNumFailing
+
+    pure function testCollectionNumFailingAsserts(self) result(num_asserts)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_asserts
 
-        interface
-            function cTestCollectionNumFailingAsserts( &
-                    collection) &
-                    result(num_asserts) &
-                    bind(C, name="cTestCollectionNumFailingAsserts")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: collection
-                integer(kind=c_int) :: num_asserts
-            end function cTestCollectionNumFailingAsserts
-        end interface
-
-        num_asserts = cTestCollectionNumFailingAsserts(self%contents)
+        num_asserts = sum(self%results%numFailingAsserts())
     end function testCollectionNumFailingAsserts
 
-    function testCollectionNumFailingCases(self) result(num_cases)
+    pure function testCollectionNumPassing(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_cases
 
-        interface
-            function cTestCollectionNumFailingCases( &
-                    collection) &
-                    result(num_cases) &
-                    bind(C, name="cTestCollectionNumFailingCases")
-                use iso_c_binding, only: c_int, c_ptr
+        num_cases = sum(self%results%numPassingCases())
+    end function testCollectionNumPassing
 
-                type(c_ptr), value, intent(in) :: collection
-                integer(kind=c_int) :: num_cases
-            end function cTestCollectionNumFailingCases
-        end interface
-
-        num_cases = cTestCollectionNumFailingCases(self%contents)
-    end function testCollectionNumFailingCases
-
-    function testCollectionNumPassingAsserts(self) result(num_asserts)
+    pure function testCollectionNumPassingAsserts(self) result(num_asserts)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_asserts
 
-        interface
-            function cTestCollectionNumPassingAsserts( &
-                    collection) &
-                    result(num_asserts) &
-                    bind(C, name="cTestCollectionNumPassingAsserts")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: collection
-                integer(kind=c_int) :: num_asserts
-            end function cTestCollectionNumPassingAsserts
-        end interface
-
-        num_asserts = cTestCollectionNumPassingAsserts(self%contents)
+        num_asserts = sum(self%results%numPassingAsserts())
     end function testCollectionNumPassingAsserts
 
-    function testCollectionNumPassingCases(self) result(num_cases)
-        class(TestCollectionResult_t), intent(in) :: self
-        integer :: num_cases
-
-        interface
-            function cTestCollectionNumPassingCases( &
-                    collection) &
-                    result(num_cases) &
-                    bind(C, name="cTestCollectionNumPassingCases")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: collection
-                integer(kind=c_int) :: num_cases
-            end function cTestCollectionNumPassingCases
-        end interface
-
-        num_cases = cTestCollectionNumPassingCases(self%contents)
-    end function testCollectionNumPassingCases
-
-    function testCollectionPassed(self) result(passed)
+    pure function testCollectionPassed(self) result(passed)
         class(TestCollectionResult_t), intent(in) :: self
         logical :: passed
 
-        interface
-            function cTestCollectionPassed( &
-                    collection) &
-                    result(passed) &
-                    bind(C, name="cTestCollectionPassed")
-                use iso_c_binding, only: c_bool, c_ptr
-
-                type(c_ptr), value, intent(in) :: collection
-                logical(kind=c_bool) :: passed
-            end function cTestCollectionPassed
-        end interface
-
-        passed = cTestCollectionPassed(self%contents)
+        passed = all(self%results%passed())
     end function testCollectionPassed
 
-    function testCollectionVerboseDescription(self) result(description)
-        use iso_c_binding, only: c_char
+    pure function TestCollectionResult(description, results) result(test_collection_result)
+        type(VegetableString_t), intent(in) :: description
+        type(TestResultItem_t), intent(in) :: results(:)
+        type(TestCollectionResult_t) :: test_collection_result
 
-        class(TestCollectionResult_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        test_collection_result%description = description
+        allocate(test_collection_result%results(size(results)))
+        test_collection_result%results = results
+    end function TestCollectionResult
 
-        interface
-            subroutine cTestCollectionResultVerboseDescription( &
-                    test_case, &
-                    description, &
-                    max_length) &
-                    bind(C, name="cTestCollectionResultVerboseDescription")
-                use iso_c_binding, only: c_char, c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: test_case
-                character(kind=c_char), dimension(*) :: description
-                integer(kind=c_int), value, intent(in) :: max_length
-            end subroutine cTestCollectionResultVerboseDescription
-        end interface
-
-        integer, parameter :: MAX_STRING_LENGTH = 10000
-        character(len=MAX_STRING_LENGTH, kind=c_char) :: description_
-
-        call cTestCollectionResultVerboseDescription( &
-                self%contents, description_, MAX_STRING_LENGTH)
-        description = cStringToF(description_)
-    end function testCollectionVerboseDescription
-
-    function testCollectionResultNumCases(self) result(num_cases)
+    pure function testCollectionResultNumCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_cases
 
-        interface
-            function cTestCollectionResultNumCases( &
-                    test_case) &
-                    result(num_cases) &
-                    bind(C, name="cTestCollectionResultNumCases")
-                use iso_c_binding, only: c_int, c_ptr
-
-                type(c_ptr), value, intent(in) :: test_case
-                integer(kind=c_int) :: num_cases
-            end function cTestCollectionResultNumCases
-        end interface
-
-        num_cases = cTestCollectionResultNumCases(self%contents)
+        num_cases = sum(self%results%numCases())
     end function testCollectionResultNumCases
 
-    function testThat(tests) result(test_collection)
-        type(TestCollection_t), intent(in) :: tests(:)
-        type(TestCollection_t) :: test_collection
+    function testCollectionVerboseDescription(self) result(description)
+        class(TestCollectionResult_t), intent(in) :: self
+        type(VegetableString_t) :: description
 
+        type :: VegStringArray_t
+            type(VegetableString_t), pointer :: strings(:) => null()
+        end type VegStringArray_t
+
+        integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
+        integer :: descriptions_location
         integer :: i
+        integer :: num_cases
 
-        test_collection%contents = cTestCollection(fStringToC("Test that"))
-        do i = 1, size(tests)
-            call cAddTest(test_collection%contents, tests(i)%contents)
+        num_cases = size(self%results)
+        do i = 1, MAX_STACK_SIZE
+            if (.not.associated(descriptions(i)%strings)) then
+                descriptions_location = i
+                allocate(descriptions(descriptions_location)%strings(num_cases))
+                exit
+            end if
         end do
+        if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
+        do i = 1, num_cases
+            descriptions(descriptions_location)%strings(i) = self%results(i)%verboseDescription()
+        end do
+        description = hangingIndent( &
+                self%description // NEWLINE &
+                // join(descriptions(descriptions_location)%strings, NEWLINE))
+        deallocate(descriptions(descriptions_location)%strings)
+        nullify(descriptions(descriptions_location)%strings)
+    end function testCollectionVerboseDescription
+
+    function testItemDescription(self) result(description)
+        class(TestItem_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%test%description()
+    end function testItemDescription
+
+    elemental function testItemNumCases(self) result(num_cases)
+        class(TestItem_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%test%numCases()
+    end function testItemNumCases
+
+    elemental function testItemPassed(self) result(passed)
+        class(TestResultItem_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%result_%passed()
+    end function testItemPassed
+
+    function testResultItemFailureDescription(self) result(description)
+        class(TestResultItem_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%result_%failureDescription()
+    end function testResultItemFailureDescription
+
+    elemental function testResultItemNumAsserts(self) result(num_asserts)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numAsserts()
+    end function testResultItemNumAsserts
+
+    elemental function testResultItemNumCases(self) result(num_cases)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%result_%numCases()
+    end function testResultItemNumCases
+
+    elemental function testResultItemNumFailing(self) result(num_cases)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%result_%numFailingCases()
+    end function testResultItemNumFailing
+
+    elemental function testResultItemNumFailingAsserts(self) result(num_asserts)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numFailingAsserts()
+    end function testResultItemNumFailingAsserts
+
+    elemental function testResultItemNumPassing(self) result(num_cases)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%result_%numPassingCases()
+    end function testResultItemNumPassing
+
+    elemental function testResultItemNumPassingAsserts(self) result(num_asserts)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numPassingAsserts()
+    end function testResultItemNumPassingAsserts
+
+    function testResultItemVerboseDescription(self) result(description)
+        class(TestResultItem_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%result_%verboseDescription()
+    end function testResultItemVerboseDescription
+
+    pure function testThat(tests) result(test_collection)
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
+
+        allocate(TestCollection_t :: test_collection%test)
+        select type (test => test_collection%test)
+        type is (TestCollection_t)
+            test = TestCollection("Test that", tests)
+        end select
     end function testThat
 
-    function then(description, test) result(test_case)
+    function then(description, func) result(test_case)
         character(len=*), intent(in) :: description
-        procedure(test_) :: test
-        type(TestCase_t) :: test_case
+        procedure(test_) :: func
+        type(TestItem_t) :: test_case
 
-        test_case = it("Then " // description, test)
+        test_case = it("Then " // description, func)
     end function then
 
-    function toStringInteger(int) result(string)
-        integer, intent(in) :: int
-        character(len=:), allocatable :: string
-
-        character(len=12) :: temp
-
-        write(temp, '(I0)') int
-        string = trim(temp)
-    end function toStringInteger
-
-    function when(description, tests) result(collection)
+    pure function when(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
-        type(TestCase_t), intent(in) :: tests(:)
-        type(TestCollection_t) :: collection
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
 
-        collection = describe("When " // description, tests)
+        test_collection = describe("When " // description, tests)
     end function when
 end module Vegetables_m

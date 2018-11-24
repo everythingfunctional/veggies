@@ -5,9 +5,9 @@ module failing_collection_test
     public :: test_failing_collection_behaviors
 contains
     function test_failing_collection_behaviors() result(tests)
-        use Vegetables_m, only: TestCollection_t, given, then, when
+        use Vegetables_m, only: TestItem_t, given, then, when
 
-        type(TestCollection_t) :: tests
+        type(TestItem_t) :: tests
 
         tests = given("a failing test collection", &
                 [when("it is run", &
@@ -18,12 +18,16 @@ contains
                         then("it's verbose description includes the given description", checkVerboseTopDescription), &
                         then("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
                         then("it's verbose description includes the failure message", checkVerboseForFailureMessage), &
+                        then("it's verbose description includes the success message", checkVerboseForSuccessMessage), &
                         then("it's failure description includes the given description", checkFailureForTopDescription), &
                         then("it's failure description includes the failing case description", checkFailureCaseDescription), &
                         then( &
                                 "it's failure description does not include the passing case descriptions", &
                                 checkFailureNoPassingDescriptions), &
                         then("it's failure description includes the failure message", checkFailureForMessage), &
+                        then( &
+                                "it's failure description does not include the success message", &
+                                checkFailureNoSuccessMessage), &
                         then("it's failure description does not include blank lines", checkFailureNoBlankLines), &
                         then("it knows how many asserts there were", checkNumAsserts), &
                         then("it knows how many asserts failed", checkNumFailingAsserts), &
@@ -36,7 +40,6 @@ contains
                 Result_t, &
                 TestCollection_t, &
                 TestCollectionResult_t, &
-                operator(.and.), &
                 assertNot, &
                 assertThat
 
@@ -126,7 +129,6 @@ contains
                 Result_t, &
                 TestCollection_t, &
                 TestCollectionResult_t, &
-                operator(.and.), &
                 assertIncludes
 
         type(Result_t) :: result_
@@ -169,6 +171,27 @@ contains
                 FAILURE_MESSAGE, &
                 test_results%verboseDescription())
     end function checkVerboseForFailureMessage
+
+    function checkVerboseForSuccessMessage() result(result_)
+        use example_asserts_m, only: SUCCESS_MESSAGE
+        use example_collections_m, only: exampleFailingCollection
+        use Vegetables_m, only: &
+                Result_t, &
+                TestCollection_t, &
+                TestCollectionResult_t, &
+                assertIncludes
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = exampleFailingCollection()
+        test_results = test_collection%run()
+        result_ = assertIncludes( &
+                SUCCESS_MESSAGE, &
+                test_results%verboseDescription())
+    end function checkVerboseForSuccessMessage
 
     function checkFailureForTopDescription() result(result_)
         use example_collections_m, only: &
@@ -215,7 +238,6 @@ contains
                 Result_t, &
                 TestCollection_t, &
                 TestCollectionResult_t, &
-                operator(.and.), &
                 assertDoesntInclude
 
         type(Result_t) :: result_
@@ -251,6 +273,27 @@ contains
                 FAILURE_MESSAGE, &
                 test_results%failureDescription())
     end function checkFailureForMessage
+
+    function checkFailureNoSuccessMessage() result(result_)
+        use example_asserts_m, only: SUCCESS_MESSAGE
+        use example_collections_m, only: exampleFailingCollection
+        use Vegetables_m, only: &
+                Result_t, &
+                TestCollection_t, &
+                TestCollectionResult_t, &
+                assertDoesntInclude
+
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: test_collection
+        type(TestCollectionResult_t) :: test_results
+
+        test_collection = exampleFailingCollection()
+        test_results = test_collection%run()
+        result_ = assertDoesntInclude( &
+                SUCCESS_MESSAGE, &
+                test_results%failureDescription())
+    end function checkFailureNoSuccessMessage
 
     function checkFailureNoBlankLines() result(result_)
         use example_collections_m, only: exampleFailingCollection

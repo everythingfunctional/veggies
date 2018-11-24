@@ -5,9 +5,9 @@ module passing_case_test
     public :: test_passing_case_behaviors
 contains
     function test_passing_case_behaviors() result(test)
-        use Vegetables_m, only: TestCollection_t, given, then, when
+        use Vegetables_m, only: TestItem_t, given, then, when
 
-        type(TestCollection_t) :: test
+        type(TestItem_t) :: test
 
         test = given("a passing test case", &
                 [when("it is run", &
@@ -16,6 +16,7 @@ contains
                         then("it has 1 passing case", checkNumPassingCases), &
                         then("it has no failing case", checkNumFailingCases), &
                         then("it's verbose description still includes the given description", checkVerboseDescription), &
+                        then("it's verbose description includes the assertion message", checkVerboseDescriptionAssertion), &
                         then("it's failure description is empty", checkFailureDescriptionEmpty), &
                         then("it knows how many asserts there were", checkNumAsserts), &
                         then("it has no failing asserts", checkNumFailingAsserts), &
@@ -28,7 +29,6 @@ contains
                 Result_t, &
                 TestCase_t, &
                 TestCaseResult_t, &
-                operator(.and.), &
                 assertNot, &
                 assertThat
 
@@ -98,6 +98,21 @@ contains
         result_ = assertIncludes(EXAMPLE_DESCRIPTION, test_result%verboseDescription())
     end function checkVerboseDescription
 
+    function checkVerboseDescriptionAssertion() result(result_)
+        use example_asserts_m, only: SUCCESS_MESSAGE
+        use example_cases_m, only: examplePassingTestCase
+        use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertIncludes
+
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: test_case
+        type(TestCaseResult_t) :: test_result
+
+        test_case = examplePassingTestCase()
+        test_result = test_case%run()
+        result_ = assertIncludes(SUCCESS_MESSAGE, test_result%verboseDescription())
+    end function checkVerboseDescriptionAssertion
+
     function checkFailureDescriptionEmpty() result(result_)
         use example_cases_m, only: examplePassingTestCase
         use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEmpty
@@ -113,7 +128,8 @@ contains
     end function checkFailureDescriptionEmpty
 
     function checkNumAsserts() result(result_)
-        use example_cases_m, only: examplePassingTestCase, NUM_ASSERTS_IN_PASSING
+        use example_asserts_m, only: NUM_ASSERTS_IN_PASSING
+        use example_cases_m, only: examplePassingTestCase
         use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
 
         type(Result_t) :: result_
@@ -141,7 +157,8 @@ contains
     end function checkNumFailingAsserts
 
     function checkNumPassingAsserts() result(result_)
-        use example_cases_m, only: examplePassingTestCase, NUM_ASSERTS_IN_PASSING
+        use example_asserts_m, only: NUM_ASSERTS_IN_PASSING
+        use example_cases_m, only: examplePassingTestCase
         use Vegetables_m, only: Result_t, TestCase_t, TestCaseResult_t, assertEquals
 
         type(Result_t) :: result_
