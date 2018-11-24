@@ -75,13 +75,13 @@ module Vegetables_m
             type(VegetableString_t) :: description
         end function testDescription
 
-        function testNum(self) result(num)
+        pure function testNum(self) result(num)
             import :: Test_t
             class(Test_t), intent(in) :: self
             integer :: num
         end function testNum
 
-        function testQuestion(self) result(answer)
+        pure function testQuestion(self) result(answer)
             import :: TestResult_t
             class(TestResult_t), intent(in) :: self
             logical :: answer
@@ -93,7 +93,7 @@ module Vegetables_m
             type(VegetableString_t) :: description
         end function testResultDescription
 
-        function testResultNum(self) result(num)
+        pure function testResultNum(self) result(num)
             import :: TestResult_t
             class(TestResult_t), intent(in) :: self
             integer :: num
@@ -246,7 +246,7 @@ module Vegetables_m
             toString, &
             when
 contains
-    function assertEmptyChars(string) result(result__)
+    pure function assertEmptyChars(string) result(result__)
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
@@ -257,14 +257,14 @@ contains
         end if
     end function assertEmptyChars
 
-    function assertEmptyString(string) result(result__)
+    pure function assertEmptyString(string) result(result__)
         type(VegetableString_t), intent(in) :: string
         type(Result_t) :: result__
 
         result__ = assertEmpty(string%string)
     end function assertEmptyString
 
-    function assertEqualsInteger(expected, actual) result(result__)
+    pure function assertEqualsInteger(expected, actual) result(result__)
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(Result_t) :: result__
@@ -278,7 +278,7 @@ contains
         end if
     end function assertEqualsInteger
 
-    function assertNot(condition) result(result__)
+    pure function assertNot(condition) result(result__)
         logical, intent(in) :: condition
         type(Result_t) :: result__
 
@@ -289,7 +289,7 @@ contains
         end if
     end function assertNot
 
-    function assertStringDoesntIncludeChars(search_for, string) result(result__)
+    pure function assertStringDoesntIncludeChars(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
         type(VegetableString_t), intent(in) :: string
         type(Result_t) :: result__
@@ -297,7 +297,7 @@ contains
         result__ = assertDoesntInclude(toString(search_for), string)
     end function assertStringDoesntIncludeChars
 
-    function assertStringDoesntIncludeString(search_for, string) result(result__)
+    pure function assertStringDoesntIncludeString(search_for, string) result(result__)
         type(VegetableString_t), intent(in) :: search_for
         type(VegetableString_t), intent(in) :: string
         type(Result_t) :: result__
@@ -312,7 +312,7 @@ contains
         end if
     end function assertStringDoesntIncludeString
 
-    function assertStringIncludesChars(search_for, string) result(result__)
+    pure function assertStringIncludesChars(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
         type(VegetableString_t), intent(in) :: string
         type(Result_t) :: result__
@@ -320,7 +320,7 @@ contains
         result__ = assertIncludes(toString(search_for), string)
     end function assertStringIncludesChars
 
-    function assertStringIncludesString(search_for, string) result(result__)
+    pure function assertStringIncludesString(search_for, string) result(result__)
         type(VegetableString_t), intent(in) :: search_for
         type(VegetableString_t), intent(in) :: string
         type(Result_t) :: result__
@@ -335,7 +335,7 @@ contains
         end if
     end function assertStringIncludesString
 
-    function assertThat(condition) result(result__)
+    pure function assertThat(condition) result(result__)
         logical, intent(in) :: condition
         type(Result_t) :: result__
 
@@ -346,14 +346,14 @@ contains
         end if
     end function assertThat
 
-    function charsToString(chars) result(string)
+    pure function charsToString(chars) result(string)
         character(len=*), intent(in) :: chars
         type(VegetableString_t) :: string
 
         string%string = chars
     end function charsToString
 
-    function combineResults(lhs, rhs) result(combined)
+    pure function combineResults(lhs, rhs) result(combined)
         class(Result_t), intent(in) :: lhs
         type(Result_t), intent(in) :: rhs
         type(Result_t) :: combined
@@ -366,7 +366,7 @@ contains
                 num_passing_asserts = lhs%num_passing_asserts + rhs%num_passing_asserts)
     end function combineResults
 
-    function concatCharsAndString(chars, string) result(combined)
+    pure function concatCharsAndString(chars, string) result(combined)
         character(len=*), intent(in) :: chars
         class(VegetableString_t), intent(in) :: string
         type(VegetableString_t) :: combined
@@ -374,7 +374,7 @@ contains
         combined = toString(chars // string%string)
     end function concatCharsAndString
 
-    function concatStringAndChars(string, chars) result(combined)
+    pure function concatStringAndChars(string, chars) result(combined)
         class(VegetableString_t), intent(in) :: string
         character(len=*), intent(in) :: chars
         type(VegetableString_t) :: combined
@@ -382,7 +382,7 @@ contains
         combined = toString(string%string // chars)
     end function concatStringAndChars
 
-    function concatStrings(lhs, rhs) result(combined)
+    pure function concatStrings(lhs, rhs) result(combined)
         class(VegetableString_t), intent(in) :: lhs
         type(VegetableString_t), intent(in) :: rhs
         type(VegetableString_t) :: combined
@@ -390,7 +390,7 @@ contains
         combined = toString(lhs%string // rhs%string)
     end function concatStrings
 
-    function describe(description, tests) result(test_collection)
+    pure function describe(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
@@ -402,14 +402,14 @@ contains
         end select
     end function describe
 
-    function failWithChars(message) result(failure)
+    pure function failWithChars(message) result(failure)
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
 
         failure = fail(toString(message))
     end function failWithChars
 
-    function failWithString(message) result(failure)
+    pure function failWithString(message) result(failure)
         type(VegetableString_t), intent(in) :: message
         type(Result_t) :: failure
 
@@ -421,7 +421,7 @@ contains
                 num_passing_asserts = 0)
     end function failWithString
 
-    function given(description, tests) result(test_collection)
+    pure function given(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
@@ -429,7 +429,7 @@ contains
         test_collection = describe("Given " // description, tests)
     end function given
 
-    function hangingIndent(string_) result(indented)
+    pure function hangingIndent(string_) result(indented)
         type(VegetableString_t), intent(in) :: string_
         type(VegetableString_t), allocatable :: indented
 
@@ -439,7 +439,7 @@ contains
         indented = join(lines, NEWLINE // "    ")
     end function hangingIndent
 
-    function integerToString(int) result(string)
+    pure function integerToString(int) result(string)
         integer, intent(in) :: int
         type(VegetableString_t) :: string
 
@@ -461,7 +461,7 @@ contains
         end select
     end function it
 
-    function joinWithCharacter(strings, separator) result(string)
+    pure function joinWithCharacter(strings, separator) result(string)
         type(VegetableString_t), intent(in) :: strings(:)
         character(len=*), intent(in) :: separator
         type(VegetableString_t) :: string
@@ -469,7 +469,7 @@ contains
         string = join(strings, toString(separator))
     end function joinWithCharacter
 
-    function joinWithString(strings, separator) result(string)
+    pure function joinWithString(strings, separator) result(string)
         type(VegetableString_t), intent(in) :: strings(:)
         type(VegetableString_t), intent(in) :: separator
         type(VegetableString_t) :: string
@@ -482,7 +482,7 @@ contains
         end do
     end function joinWithString
 
-    function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
+    pure function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
         logical, intent(in) :: passed
         type(VegetableString_t), intent(in) :: all_message
         type(VegetableString_t), intent(in) :: failing_message
@@ -498,42 +498,42 @@ contains
                 passed_ = passed)
     end function Result_
 
-    function resultFailureDescription(self) result(description)
+    pure function resultFailureDescription(self) result(description)
         class(Result_t), intent(in) :: self
         type(VegetableString_t) :: description
 
         description = self%failing_message
     end function resultFailureDescription
 
-    function resultNumAsserts(self) result(num_asserts)
+    pure function resultNumAsserts(self) result(num_asserts)
         class(Result_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%num_passing_asserts + self%num_failling_asserts
     end function resultNumAsserts
 
-    function resultNumFailing(self) result(num_asserts)
+    pure function resultNumFailing(self) result(num_asserts)
         class(Result_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%num_failling_asserts
     end function resultNumFailing
 
-    function resultNumPassing(self) result(num_asserts)
+    pure function resultNumPassing(self) result(num_asserts)
         class(Result_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%num_passing_asserts
     end function resultNumPassing
 
-    function resultPassed(self) result(passed)
+    pure function resultPassed(self) result(passed)
         class(Result_t), intent(in) :: self
         logical :: passed
 
         passed = self%passed_
     end function resultPassed
 
-    function resultVerboseDescription(self) result(description)
+    pure function resultVerboseDescription(self) result(description)
         class(Result_t), intent(in) :: self
         type(VegetableString_t) :: description
 
@@ -622,7 +622,7 @@ contains
 
     end subroutine
 
-    recursive function splitAtBothCharacter(&
+    pure recursive function splitAtBothCharacter(&
             string_, split_characters) result(strings)
         character(len=*), intent(in) :: string_
         character(len=*), intent(in) :: split_characters
@@ -646,7 +646,7 @@ contains
             strings(1) = toString(string_)
         end if
     contains
-        function doSplit(string__, split_characters_) result(strings_)
+        pure function doSplit(string__, split_characters_) result(strings_)
             character(len=*), intent(in) :: string__
             character(len=*), intent(in) :: split_characters_
             type(VegetableString_t), allocatable :: strings_(:)
@@ -672,7 +672,7 @@ contains
         end function doSplit
     end function splitAtBothCharacter
 
-    function splitAtStringCharacter(string_, split_characters) result(strings)
+    pure function splitAtStringCharacter(string_, split_characters) result(strings)
         type(VegetableString_t), intent(in) :: string_
         character(len=*), intent(in) :: split_characters
         type(VegetableString_t), allocatable :: strings(:)
@@ -680,7 +680,7 @@ contains
         strings = splitAt(string_%string, split_characters)
     end function splitAtStringCharacter
 
-    function stringIncludesString(string, search_for)
+    pure function stringIncludesString(string, search_for)
         class(VegetableString_t), intent(in) :: string
         type(VegetableString_t), intent(in) :: search_for
         logical :: stringIncludesString
@@ -701,14 +701,14 @@ contains
         write(unit=unit, iostat=iostat, iomsg=iomsg, fmt='(A)') string%string
     end subroutine stringWriteFormatted
 
-    function succeedWithChars(message) result(success)
+    pure function succeedWithChars(message) result(success)
         character(len=*), intent(in) :: message
         type(Result_t) :: success
 
         success = succeed(toString(message))
     end function succeedWithChars
 
-    function succeedWithString(message) result(success)
+    pure function succeedWithString(message) result(success)
         type(VegetableString_t), intent(in) :: message
         type(Result_t) :: success
 
@@ -729,21 +729,21 @@ contains
         test_case%test => func
     end function TestCase
 
-    function testCaseDescription(self) result(description)
+    pure function testCaseDescription(self) result(description)
         class(TestCase_t), intent(in) :: self
         type(VegetableString_t) :: description
 
         description = self%description_
     end function testCaseDescription
 
-    function testCaseFailed(self) result(failed)
+    pure function testCaseFailed(self) result(failed)
         class(TestCaseResult_t), intent(in) :: self
         logical :: failed
 
         failed = .not.self%passed()
     end function testCaseFailed
 
-    function testCaseFailureDescription(self) result(description)
+    pure function testCaseFailureDescription(self) result(description)
         class(TestCaseResult_t), intent(in) :: self
         type(VegetableString_t) :: description
 
@@ -755,14 +755,14 @@ contains
         end if
     end function testCaseFailureDescription
 
-    function testCaseNumAsserts(self) result(num_asserts)
+    pure function testCaseNumAsserts(self) result(num_asserts)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%result_%numAsserts()
     end function testCaseNumAsserts
 
-    function testCaseNumCases(self) result(num_cases)
+    pure function testCaseNumCases(self) result(num_cases)
         class(TestCase_t), intent(in) :: self
         integer :: num_cases
 
@@ -771,7 +771,7 @@ contains
         num_cases = 1
     end function testCaseNumCases
 
-    function testCaseNumFailing(self) result(num_cases)
+    pure function testCaseNumFailing(self) result(num_cases)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_cases
 
@@ -782,14 +782,14 @@ contains
         end if
     end function testCaseNumFailing
 
-    function testCaseNumFailingAsserts(self) result(num_asserts)
+    pure function testCaseNumFailingAsserts(self) result(num_asserts)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%result_%numFailing()
     end function testCaseNumFailingAsserts
 
-    function testCaseNumPassing(self) result(num_cases)
+    pure function testCaseNumPassing(self) result(num_cases)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_cases
 
@@ -800,21 +800,21 @@ contains
         end if
     end function testCaseNumPassing
 
-    function testCaseNumPassingAsserts(self) result(num_asserts)
+    pure function testCaseNumPassingAsserts(self) result(num_asserts)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%result_%numPassing()
     end function testCaseNumPassingAsserts
 
-    function testCasePassed(self) result(passed)
+    pure function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
         logical :: passed
 
         passed = self%result_%passed()
     end function testCasePassed
 
-    function TestCaseResult(description, result__) result(test_case_result)
+    pure function TestCaseResult(description, result__) result(test_case_result)
         type(VegetableString_t), intent(in) :: description
         type(Result_t), intent(in) :: result__
         type(TestCaseResult_t) :: test_case_result
@@ -823,7 +823,7 @@ contains
         test_case_result%result_ = result__
     end function TestCaseResult
 
-    function testCaseResultNumCases(self) result(num_cases)
+    pure function testCaseResultNumCases(self) result(num_cases)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_cases
 
@@ -832,7 +832,7 @@ contains
         num_cases = 1
     end function testCaseResultNumCases
 
-    function testCaseVerboseDescription(self) result(description)
+    pure function testCaseVerboseDescription(self) result(description)
         class(TestCaseResult_t), intent(in) :: self
         type(VegetableString_t) :: description
 
@@ -840,7 +840,7 @@ contains
                 self%description // NEWLINE // self%result_%verboseDescription())
     end function testCaseVerboseDescription
 
-    function TestCollection(description, tests) result(test_collection)
+    pure function TestCollection(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
@@ -883,7 +883,7 @@ contains
         nullify(descriptions(descriptions_location)%strings)
     end function testCollectionDescription
 
-    function testCollectionFailed(self) result(failed)
+    pure function testCollectionFailed(self) result(failed)
         class(TestCollectionResult_t), intent(in) :: self
         logical :: failed
 
@@ -927,116 +927,53 @@ contains
         end if
     end function testCollectionFailureDescription
 
-    function testCollectionNumAsserts(self) result(num_asserts)
+    pure function testCollectionNumAsserts(self) result(num_asserts)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_asserts
 
-        integer :: i
-        integer, allocatable :: individual_nums(:)
-        integer :: num_individual
-
-        num_individual = size(self%results)
-        allocate(individual_nums(num_individual))
-        do i = 1, num_individual
-            individual_nums(i) = self%results(i)%numAsserts()
-        end do
-        num_asserts = sum(individual_nums)
+        num_asserts = sum(self%results%numAsserts())
     end function testCollectionNumAsserts
 
-    function testCollectionNumCases(self) result(num_cases)
+    pure function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self
         integer :: num_cases
 
-        integer :: i
-        integer, allocatable :: individual_nums(:)
-        integer :: num_individual
-
-        num_individual = size(self%tests)
-        allocate(individual_nums(num_individual))
-        do i = 1, num_individual
-            individual_nums(i) = self%tests(i)%numCases()
-        end do
-        num_cases = sum(individual_nums)
+        num_cases = sum(self%tests%numCases())
     end function testCollectionNumCases
 
-    function testCollectionNumFailing(self) result(num_cases)
+    pure function testCollectionNumFailing(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_cases
 
-        integer :: i
-        integer, allocatable :: individual_nums(:)
-        integer :: num_individual
-
-        num_individual = size(self%results)
-        allocate(individual_nums(num_individual))
-        do i = 1, num_individual
-            individual_nums(i) = self%results(i)%numFailingCases()
-        end do
-        num_cases = sum(individual_nums)
+        num_cases = sum(self%results%numFailingCases())
     end function testCollectionNumFailing
 
-    function testCollectionNumFailingAsserts(self) result(num_asserts)
+    pure function testCollectionNumFailingAsserts(self) result(num_asserts)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_asserts
 
-        integer :: i
-        integer, allocatable :: individual_nums(:)
-        integer :: num_individual
-
-        num_individual = size(self%results)
-        allocate(individual_nums(num_individual))
-        do i = 1, num_individual
-            individual_nums(i) = self%results(i)%numFailingAsserts()
-        end do
-        num_asserts = sum(individual_nums)
+        num_asserts = sum(self%results%numFailingAsserts())
     end function testCollectionNumFailingAsserts
 
-    function testCollectionNumPassing(self) result(num_cases)
+    pure function testCollectionNumPassing(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_cases
 
-        integer :: i
-        integer, allocatable :: individual_nums(:)
-        integer :: num_individual
-
-        num_individual = size(self%results)
-        allocate(individual_nums(num_individual))
-        do i = 1, num_individual
-            individual_nums(i) = self%results(i)%numPassingCases()
-        end do
-        num_cases = sum(individual_nums)
+        num_cases = sum(self%results%numPassingCases())
     end function testCollectionNumPassing
 
-    function testCollectionNumPassingAsserts(self) result(num_asserts)
+    pure function testCollectionNumPassingAsserts(self) result(num_asserts)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_asserts
 
-        integer :: i
-        integer, allocatable :: individual_nums(:)
-        integer :: num_individual
-
-        num_individual = size(self%results)
-        allocate(individual_nums(num_individual))
-        do i = 1, num_individual
-            individual_nums(i) = self%results(i)%numPassingAsserts()
-        end do
-        num_asserts = sum(individual_nums)
+        num_asserts = sum(self%results%numPassingAsserts())
     end function testCollectionNumPassingAsserts
 
-    function testCollectionPassed(self) result(passed)
+    pure function testCollectionPassed(self) result(passed)
         class(TestCollectionResult_t), intent(in) :: self
         logical :: passed
 
-        integer :: i
-        logical, allocatable :: individual_passed(:)
-        integer :: num_individual
-
-        num_individual = size(self%results)
-        allocate(individual_passed(num_individual))
-        do i = 1, num_individual
-            individual_passed(i) = self%results(i)%passed()
-        end do
-        passed = all(individual_passed)
+        passed = all(self%results%passed())
     end function testCollectionPassed
 
     function TestCollectionResult(description, results) result(test_collection_result)
@@ -1049,20 +986,11 @@ contains
         test_collection_result%results = results
     end function TestCollectionResult
 
-    function testCollectionResultNumCases(self) result(num_cases)
+    pure function testCollectionResultNumCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_cases
 
-        integer :: i
-        integer, allocatable :: individual_nums(:)
-        integer :: num_individual
-
-        num_individual = size(self%results)
-        allocate(individual_nums(num_individual))
-        do i = 1, num_individual
-            individual_nums(i) = self%results(i)%numCases()
-        end do
-        num_cases = sum(individual_nums)
+        num_cases = sum(self%results%numCases())
     end function testCollectionResultNumCases
 
     function testCollectionVerboseDescription(self) result(description)
@@ -1105,14 +1033,14 @@ contains
         description = self%test%description()
     end function testItemDescription
 
-    function testItemNumCases(self) result(num_cases)
+    elemental function testItemNumCases(self) result(num_cases)
         class(TestItem_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%test%numCases()
     end function testItemNumCases
 
-    function testItemPassed(self) result(passed)
+    elemental function testItemPassed(self) result(passed)
         class(TestResultItem_t), intent(in) :: self
         logical :: passed
 
@@ -1126,42 +1054,42 @@ contains
         description = self%result_%failureDescription()
     end function testResultItemFailureDescription
 
-    function testResultItemNumAsserts(self) result(num_asserts)
+    elemental function testResultItemNumAsserts(self) result(num_asserts)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%result_%numAsserts()
     end function testResultItemNumAsserts
 
-    function testResultItemNumCases(self) result(num_cases)
+    elemental function testResultItemNumCases(self) result(num_cases)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%result_%numCases()
     end function testResultItemNumCases
 
-    function testResultItemNumFailing(self) result(num_cases)
+    elemental function testResultItemNumFailing(self) result(num_cases)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%result_%numFailingCases()
     end function testResultItemNumFailing
 
-    function testResultItemNumFailingAsserts(self) result(num_asserts)
+    elemental function testResultItemNumFailingAsserts(self) result(num_asserts)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%result_%numFailingAsserts()
     end function testResultItemNumFailingAsserts
 
-    function testResultItemNumPassing(self) result(num_cases)
+    elemental function testResultItemNumPassing(self) result(num_cases)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%result_%numPassingCases()
     end function testResultItemNumPassing
 
-    function testResultItemNumPassingAsserts(self) result(num_asserts)
+    elemental function testResultItemNumPassingAsserts(self) result(num_asserts)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_asserts
 
@@ -1175,7 +1103,7 @@ contains
         description = self%result_%verboseDescription()
     end function testResultItemVerboseDescription
 
-    function testThat(tests) result(test_collection)
+    pure function testThat(tests) result(test_collection)
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
 
@@ -1194,7 +1122,7 @@ contains
         test_case = it("Then " // description, func)
     end function then
 
-    function when(description, tests) result(test_collection)
+    pure function when(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
