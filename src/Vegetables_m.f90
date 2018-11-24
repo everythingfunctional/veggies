@@ -180,10 +180,15 @@ module Vegetables_m
         procedure, public :: verboseDescription => testCollectionVerboseDescription
     end type TestCollectionResult_t
 
+    interface assertDoesntInclude
+        module procedure assertStringDoesntIncludeChars
+        module procedure assertStringDoesntIncludeString
+    end interface assertDoesntInclude
+
     interface assertEmpty
         module procedure assertEmptyChars
         module procedure assertEmptyString
-    end interface
+    end interface assertEmpty
 
     interface assertEquals
         module procedure assertEqualsInteger
@@ -202,12 +207,12 @@ module Vegetables_m
     interface join
         module procedure joinWithCharacter
         module procedure joinWithString
-    end interface
+    end interface join
 
     interface splitAt
         module procedure splitAtBothCharacter
         module procedure splitAtStringCharacter
-    end interface
+    end interface splitAt
 
     interface succeed
         module procedure succeedWithChars
@@ -222,6 +227,7 @@ module Vegetables_m
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
 
     public :: &
+            assertDoesntInclude, &
             assertEmpty, &
             assertEquals, &
             assertIncludes, &
@@ -282,6 +288,29 @@ contains
             result__ = fail("Expected to not be true")
         end if
     end function assertNot
+
+    function assertStringDoesntIncludeChars(search_for, string) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(toString(search_for), string)
+    end function assertStringDoesntIncludeChars
+
+    function assertStringDoesntIncludeString(search_for, string) result(result__)
+        type(VegetableString_t), intent(in) :: search_for
+        type(VegetableString_t), intent(in) :: string
+        type(Result_t) :: result__
+
+        if (.not.(string.includes.search_for)) then
+            result__ = succeed( &
+                    "'" // string // "' did not include '" // search_for // "'")
+        else
+            result__ = fail( &
+                    "Expected '" // string &
+                    // "' to not include '" // search_for // "'")
+        end if
+    end function assertStringDoesntIncludeString
 
     function assertStringIncludesChars(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
