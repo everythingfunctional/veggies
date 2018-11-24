@@ -132,7 +132,7 @@ module Vegetables_m
 
     type, public :: TestResultItem_t
         private
-        class(TestResult_t), pointer :: result_
+        class(TestResult_t), allocatable :: result_
     contains
         private
         procedure, public :: failureDescription => testResultItemFailureDescription
@@ -976,7 +976,7 @@ contains
         passed = all(self%results%passed())
     end function testCollectionPassed
 
-    function TestCollectionResult(description, results) result(test_collection_result)
+    pure function TestCollectionResult(description, results) result(test_collection_result)
         type(VegetableString_t), intent(in) :: description
         type(TestResultItem_t), intent(in) :: results(:)
         type(TestCollectionResult_t) :: test_collection_result
