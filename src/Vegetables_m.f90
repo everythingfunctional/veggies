@@ -570,13 +570,27 @@ contains
         if (results%passed()) then
             write(output_unit, '(A)')
             write(output_unit, '(A)') "All Passed"
+            write(output_unit, '(DT)') &
+                    "A total of " // toString(results%numCases()) &
+                    // " test cases containg a total of " &
+                    // toString(results%numAsserts()) // " assertions"
             write(output_unit, '(A)')
         else
             write(error_unit, '(A)')
             write(error_unit, '(A)') "Failed"
             write(error_unit, '(A)')
+            write(error_unit, '(DT)') &
+                    toString(results%numFailingCases()) // " of " &
+                    // toString(results%numCases()) // " cases failed"
+            write(error_unit, '(DT)') &
+                    toString(results%numFailingAsserts()) // " of " &
+                    // toString(results%numAsserts()) // " assertions failed"
+            write(error_unit, '(A)')
+            write(error_unit, '(DT)') results%failureDescription()
+            write(error_unit, '(A)')
             call exit(1)
         end if
+
     end subroutine
 
     recursive function splitAtBothCharacter(&
@@ -851,21 +865,36 @@ contains
         class(TestCollectionResult_t), intent(in) :: self
         type(VegetableString_t) :: description
 
+        type :: VegStringArray_t
+            type(VegetableString_t), pointer :: strings(:) => null()
+        end type VegStringArray_t
+
+        integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
+        integer :: descriptions_location
         integer :: i
-        type(VegetableString_t), allocatable :: individual_descriptions(:)
-        integer :: num_individual
+        integer :: num_cases
 
         if (self%passed()) then
             description = toString("")
         else
-            num_individual = size(self%results)
-            allocate(individual_descriptions(num_individual))
-            do i = 1, num_individual
-                individual_descriptions(i) = self%results(i)%failureDescription()
+            num_cases = size(self%results)
+            do i = 1, MAX_STACK_SIZE
+                if (.not.associated(descriptions(i)%strings)) then
+                    descriptions_location = i
+                    allocate(descriptions(descriptions_location)%strings(num_cases))
+                    exit
+                end if
+            end do
+            if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
+            do i = 1, num_cases
+                descriptions(descriptions_location)%strings(i) = self%results(i)%failureDescription()
             end do
             description = hangingIndent( &
                     self%description // NEWLINE &
-                    // join(individual_descriptions, NEWLINE))
+                    // join(descriptions(descriptions_location)%strings, NEWLINE))
+            deallocate(descriptions(descriptions_location)%strings)
+            nullify(descriptions(descriptions_location)%strings)
         end if
     end function testCollectionFailureDescription
 
@@ -1011,18 +1040,33 @@ contains
         class(TestCollectionResult_t), intent(in) :: self
         type(VegetableString_t) :: description
 
-        integer :: i
-        type(VegetableString_t), allocatable :: individual_descriptions(:)
-        integer :: num_individual
+        type :: VegStringArray_t
+            type(VegetableString_t), pointer :: strings(:) => null()
+        end type VegStringArray_t
 
-        num_individual = size(self%results)
-        allocate(individual_descriptions(num_individual))
-        do i = 1, num_individual
-            individual_descriptions(i) = self%results(i)%verboseDescription()
+        integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
+        integer :: descriptions_location
+        integer :: i
+        integer :: num_cases
+
+        num_cases = size(self%results)
+        do i = 1, MAX_STACK_SIZE
+            if (.not.associated(descriptions(i)%strings)) then
+                descriptions_location = i
+                allocate(descriptions(descriptions_location)%strings(num_cases))
+                exit
+            end if
+        end do
+        if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
+        do i = 1, num_cases
+            descriptions(descriptions_location)%strings(i) = self%results(i)%verboseDescription()
         end do
         description = hangingIndent( &
                 self%description // NEWLINE &
-                // join(individual_descriptions, NEWLINE))
+                // join(descriptions(descriptions_location)%strings, NEWLINE))
+        deallocate(descriptions(descriptions_location)%strings)
+        nullify(descriptions(descriptions_location)%strings)
     end function testCollectionVerboseDescription
 
     function testItemDescription(self) result(description)
