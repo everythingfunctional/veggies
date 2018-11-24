@@ -1,5 +1,8 @@
 Vegetables
 ==========
+
+[![pipeline status](https://gitlab.com/everythingfunctional/vegetables/badges/master/pipeline.svg)](https://gitlab.com/everythingfunctional/vegetables/commits/master)
+
 For a healthier code base, eat your vegetables.
 
 ## Environment
