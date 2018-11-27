@@ -5,60 +5,69 @@ module collection_properties_test
     public :: test_collection_properties
 contains
     function test_collection_properties() result(test)
-        use Vegetables_m, only: TestItem_t, describe, it
+        use example_collections_m, only: examplePassingCollection
+        use Vegetables_m, only: TestCollection_t, TestItem_t, describe, it_
 
         type(TestItem_t) :: test
 
-        test = describe("A test collection", &
-                [it("can tell how many tests it has", checkNumCases), &
-                it("includes the given description", checkCollectionTopDescription), &
-                it("includes the individual test descriptions", checkCollectionDescriptions)])
+        type(TestCollection_t) :: example_collection
+
+        example_collection = examplePassingCollection()
+        test = describe("A test collection", example_collection, &
+                [it_("can tell how many tests it has", checkNumCases), &
+                it_("includes the given description", checkCollectionTopDescription), &
+                it_("includes the individual test descriptions", checkCollectionDescriptions)])
     end function test_collection_properties
 
-    function checkNumCases() result(result_)
-        use example_collections_m, only: &
-                examplePassingCollection, NUM_CASES_IN_PASSING
-        use Vegetables_m, only: Result_t, TestCollection_t, assertEquals
+    function checkNumCases(example_collection) result(result_)
+        use example_collections_m, only: NUM_CASES_IN_PASSING
+        use Vegetables_m, only: Result_t, TestCollection_t, assertEquals, fail
 
+        class(*), intent(in) :: example_collection
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-
-        test_collection = examplePassingCollection()
-        result_ = assertEquals(NUM_CASES_IN_PASSING, test_collection%numCases())
+        select type (example_collection)
+        type is (TestCollection_t)
+            result_ = assertEquals(NUM_CASES_IN_PASSING, example_collection%numCases())
+        class default
+            result_ = fail("Expected to get a TestCollection_t")
+        end select
     end function checkNumCases
 
-    function checkCollectionTopDescription() result(result_)
-        use example_collections_m, only: &
-                examplePassingCollection, EXAMPLE_COLLECTION_DESCRIPTION
-        use Vegetables_m, only: Result_t, TestCollection_t, assertIncludes
+    function checkCollectionTopDescription(example_collection) result(result_)
+        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
+        use Vegetables_m, only: Result_t, TestCollection_t, assertIncludes, fail
 
+        class(*), intent(in) :: example_collection
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-
-        test_collection = examplePassingCollection()
-        result_ = assertIncludes( &
-                EXAMPLE_COLLECTION_DESCRIPTION, test_collection%description())
+        select type (example_collection)
+        type is (TestCollection_t)
+            result_ = assertIncludes( &
+                    EXAMPLE_COLLECTION_DESCRIPTION, example_collection%description())
+        class default
+            result_ = fail("Expected to get a TestCollection_t")
+        end select
     end function checkCollectionTopDescription
 
-    function checkCollectionDescriptions() result(result_)
+    function checkCollectionDescriptions(example_collection) result(result_)
         use example_collections_m, only: &
-                examplePassingCollection, &
-                EXAMPLE_CASE_DESCRIPTION_1, &
-                EXAMPLE_CASE_DESCRIPTION_2
+                EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, assertIncludes
+                Result_t, TestCollection_t, assertIncludes, fail
 
+        class(*), intent(in) :: example_collection
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-
-        test_collection = examplePassingCollection()
-        result_ = &
-                assertIncludes( &
-                        EXAMPLE_CASE_DESCRIPTION_1, test_collection%description()) &
-                .and.assertIncludes( &
-                        EXAMPLE_CASE_DESCRIPTION_2, test_collection%description())
+        select type (example_collection)
+        type is (TestCollection_t)
+            result_ = &
+                    assertIncludes( &
+                            EXAMPLE_CASE_DESCRIPTION_1, example_collection%description()) &
+                    .and.assertIncludes( &
+                            EXAMPLE_CASE_DESCRIPTION_2, example_collection%description())
+        class default
+            result_ = fail("Expected to get a TestCollection_t")
+        end select
     end function checkCollectionDescriptions
 end module collection_properties_test
