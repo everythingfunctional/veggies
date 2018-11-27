@@ -64,6 +64,12 @@ module Vegetables_m
     end type TestResult_t
 
     abstract interface
+        function inputTest(input) result(result_)
+            import :: Result_t
+            class(*), intent(in) :: input
+            type(Result_t) :: result_
+        end function inputTest
+
         function test_() result(result_)
             import :: Result_t
             type(Result_t) :: result_
@@ -108,6 +114,7 @@ module Vegetables_m
         procedure, public :: description => testItemDescription
         procedure, public :: numCases => testItemNumCases
         procedure, public :: run => runTestItem
+        procedure, public :: runWithInput => runTestItemWithInput
     end type TestItem_t
 
     type, extends(Test_t), public :: TestCase_t
@@ -120,6 +127,16 @@ module Vegetables_m
         procedure, public :: run => runCase
     end type TestCase_t
 
+    type, extends(Test_t), public :: InputTestCase_t
+        private
+        procedure(inputTest), nopass, pointer :: test
+    contains
+        private
+        procedure, public :: description => inputTestCaseDescription
+        procedure, public :: numCases => inputTestCaseNumCases
+        procedure, public :: run => runCaseWithInput
+    end type InputTestCase_t
+
     type, extends(Test_t), public :: TestCollection_t
         private
         type(TestItem_t), allocatable :: tests(:)
@@ -129,6 +146,17 @@ module Vegetables_m
         procedure, public :: numCases => testCollectionNumCases
         procedure, public :: run => runCollection
     end type TestCollection_t
+
+    type, extends(Test_t), public :: TestCollectionWithInput_t
+        private
+        type(TestItem_t), allocatable :: tests(:)
+        class(*), allocatable :: input
+    contains
+        private
+        procedure, public :: description => testCollectionWithInputDescription
+        procedure, public :: numCases => testCollectionWithInputNumCases
+        procedure, public :: run => runCollectionThatHasInput
+    end type TestCollectionWithInput_t
 
     type, public :: TestResultItem_t
         private
@@ -199,6 +227,11 @@ module Vegetables_m
         module procedure assertStringIncludesString
     end interface assertIncludes
 
+    interface describe
+        module procedure describeBasic
+        module procedure describeWithInput
+    end interface describe
+
     interface fail
         module procedure failWithChars
         module procedure failWithString
@@ -237,12 +270,14 @@ module Vegetables_m
             fail, &
             given, &
             it, &
+            it_, &
             runTests, &
             succeed, &
             TestCase, &
             TestCollection, &
             testThat, &
             then, &
+            then_, &
             toString, &
             when
 contains
@@ -390,7 +425,7 @@ contains
         combined = toString(lhs%string // rhs%string)
     end function concatStrings
 
-    pure function describe(description, tests) result(test_collection)
+    pure function describeBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
@@ -400,7 +435,20 @@ contains
         type is (TestCollection_t)
             test = TestCollection(description, tests)
         end select
-    end function describe
+    end function describeBasic
+
+    pure function describeWithInput(description, input, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        class(*), intent(in) :: input
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
+
+        allocate(TestCollectionWithInput_t :: test_collection%test)
+        select type (test => test_collection%test)
+        type is (TestCollectionWithInput_t)
+            test = TestCollectionWithInput(description, input, tests)
+        end select
+    end function describeWithInput
 
     pure function failWithChars(message) result(failure)
         character(len=*), intent(in) :: message
@@ -439,6 +487,31 @@ contains
         indented = join(lines, NEWLINE // "    ")
     end function hangingIndent
 
+    function InputTestCase(description, func) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(inputTest) :: func
+        type(InputTestCase_t) :: test_case
+
+        test_case%description_ = toString(description)
+        test_case%test => func
+    end function InputTestCase
+
+    pure function inputTestCaseDescription(self) result(description)
+        class(InputTestCase_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        description = self%description_
+    end function inputTestCaseDescription
+
+    pure function inputTestCaseNumCases(self) result(num_cases)
+        class(InputTestCase_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self)
+        end associate
+        num_cases = 1
+    end function inputTestCaseNumCases
+
     pure function integerToString(int) result(string)
         integer, intent(in) :: int
         type(VegetableString_t) :: string
@@ -460,6 +533,18 @@ contains
             test = TestCase(description, func)
         end select
     end function it
+
+    function it_(description, func) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(inputTest) :: func
+        type(TestItem_t) :: test_case
+
+        allocate(InputTestCase_t :: test_case%test)
+        select type (test => test_case%test)
+        type is (InputTestCase_t)
+            test = InputTestCase(description, func)
+        end select
+    end function it_
 
     pure function joinWithCharacter(strings, separator) result(string)
         type(VegetableString_t), intent(in) :: strings(:)
@@ -547,6 +632,14 @@ contains
         result__ = TestCaseResult(self%description_, self%test())
     end function runCase
 
+    function runCaseWithInput(self, input) result(result__)
+        class(InputTestCase_t), intent(in) :: self
+        class(*), intent(in) :: input
+        type(TestCaseResult_t) :: result__
+
+        result__ = TestCaseResult(self%description_, self%test(input))
+    end function runCaseWithInput
+
     function runCollection(self) result(result__)
         class(TestCollection_t), intent(in) :: self
         type(TestCollectionResult_t) :: result__
@@ -562,6 +655,22 @@ contains
         end do
         result__ = TestCollectionResult(self%description_, results)
     end function runCollection
+
+    function runCollectionThatHasInput(self) result(result__)
+        class(TestCollectionWithInput_t), intent(in) :: self
+        type(TestCollectionResult_t) :: result__
+
+        integer :: i
+        integer :: num_tests
+        type(TestResultItem_t), allocatable :: results(:)
+
+        num_tests = size(self%tests)
+        allocate(results(num_tests))
+        do i = 1, num_tests
+            results(i) = self%tests(i)%runWithInput(self%input)
+        end do
+        result__ = TestCollectionResult(self%description_, results)
+    end function runCollectionThatHasInput
 
     function runTestItem(self) result(result_item)
         class(TestItem_t), intent(in) :: self
@@ -580,8 +689,29 @@ contains
             type is (TestCollectionResult_t)
                 result_ = test%run()
             end select
+        type is (TestCollectionWithInput_t)
+            allocate(TestCollectionResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCollectionResult_t)
+                result_ = test%run()
+            end select
         end select
     end function runTestItem
+
+    function runTestItemWithInput(self, input) result(result_item)
+        class(TestItem_t), intent(in) :: self
+        class(*), intent(in) :: input
+        type(TestResultItem_t) :: result_item
+
+        select type (test => self%test)
+        type is (InputTestCase_t)
+            allocate(TestCaseResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCaseResult_t)
+                result_ = test%run(input)
+            end select
+        end select
+    end function runTestItemWithInput
 
     subroutine runTests(tests)
         use iso_fortran_env, only: error_unit, output_unit
@@ -1026,6 +1156,58 @@ contains
         nullify(descriptions(descriptions_location)%strings)
     end function testCollectionVerboseDescription
 
+    pure function TestCollectionWithInput(description, input, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        class(*), intent(in) :: input
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestCollectionWithInput_t) :: test_collection
+
+        test_collection%description_ = toString(description)
+        test_collection%input = input
+        allocate(test_collection%tests(size(tests)))
+        test_collection%tests = tests
+    end function TestCollectionWithInput
+
+    function testCollectionWithInputDescription(self) result(description)
+        class(TestCollectionWithInput_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        type :: VegStringArray_t
+            type(VegetableString_t), pointer :: strings(:) => null()
+        end type VegStringArray_t
+
+        integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
+        integer :: descriptions_location
+        integer :: i
+        integer :: num_cases
+
+        num_cases = size(self%tests)
+        do i = 1, MAX_STACK_SIZE
+            if (.not.associated(descriptions(i)%strings)) then
+                descriptions_location = i
+                allocate(descriptions(descriptions_location)%strings(num_cases))
+                exit
+            end if
+        end do
+        if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
+        do i = 1, num_cases
+            descriptions(descriptions_location)%strings(i) = self%tests(i)%description()
+        end do
+        description = hangingIndent( &
+                self%description_ // NEWLINE &
+                // join(descriptions(descriptions_location)%strings, NEWLINE))
+        deallocate(descriptions(descriptions_location)%strings)
+        nullify(descriptions(descriptions_location)%strings)
+    end function testCollectionWithInputDescription
+
+    pure function testCollectionWithInputNumCases(self) result(num_cases)
+        class(TestCollectionWithInput_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = sum(self%tests%numCases())
+    end function testCollectionWithInputNumCases
+
     function testItemDescription(self) result(description)
         class(TestItem_t), intent(in) :: self
         type(VegetableString_t) :: description
@@ -1121,6 +1303,14 @@ contains
 
         test_case = it("Then " // description, func)
     end function then
+
+    function then_(description, func) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(inputTest) :: func
+        type(TestItem_t) :: test_case
+
+        test_case = it_("Then " // description, func)
+    end function then_
 
     pure function when(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
