@@ -257,6 +257,11 @@ module Vegetables_m
         module procedure integerToString
     end interface toString
 
+    interface when
+        module procedure whenBasic
+        module procedure whenWithInput
+    end interface
+
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
 
     public :: &
@@ -1312,11 +1317,20 @@ contains
         test_case = it_("Then " // description, func)
     end function then_
 
-    pure function when(description, tests) result(test_collection)
+    pure function whenBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
 
         test_collection = describe("When " // description, tests)
-    end function when
+    end function whenBasic
+
+    pure function whenWithInput(description, input, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        class(*), intent(in) :: input
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
+
+        test_collection = describe("When " // description, input, tests)
+    end function whenWithInput
 end module Vegetables_m

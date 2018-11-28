@@ -5,213 +5,217 @@ module passing_collection_test
     public :: test_passing_collection_behaviors
 contains
     function test_passing_collection_behaviors() result(tests)
-        use Vegetables_m, only: TestItem_t, given, then, when
+        use example_collections_m, only: examplePassingCollection
+        use Vegetables_m, only: &
+                TestCollection_t, &
+                TestCollectionResult_t, &
+                TestItem_t, &
+                given, &
+                then_, &
+                when
 
         type(TestItem_t) :: tests
 
+        type(TestCollection_t) :: example_collection
+        type(TestCollectionResult_t) :: example_results
+
+        example_collection = examplePassingCollection()
+        example_results = example_collection%run()
         tests = given("a passing test collection", &
-                [when("it is run", &
-                        [then("it knows it passed", checkCollectionPasses), &
-                        then("it knows how many cases there were", checkNumCases), &
-                        then("it knows how many cases passed", checkNumPassingCases), &
-                        then("it has no failing cases", checkNumFailingCases), &
-                        then("it's verbose description includes the given description", checkVerboseTopDescription), &
-                        then("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
-                        then("it's verbose description includes the assertion message", checkVerboseDescriptionAssertion), &
-                        then("it's failure description is empty", checkFailureDescriptionEmpty), &
-                        then("it knows how many asserts there were", checkNumAsserts), &
-                        then("it knows how many asserts passed", checkNumPassingAsserts), &
-                        then("it has no failing asserts", checkNumFailingAsserts)])])
+                [when("it is run", example_results, &
+                        [then_("it knows it passed", checkCollectionPasses), &
+                        then_("it knows how many cases there were", checkNumCases), &
+                        then_("it knows how many cases passed", checkNumPassingCases), &
+                        then_("it has no failing cases", checkNumFailingCases), &
+                        then_("it's verbose description includes the given description", checkVerboseTopDescription), &
+                        then_("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
+                        then_("it's verbose description includes the assertion message", checkVerboseDescriptionAssertion), &
+                        then_("it's failure description is empty", checkFailureDescriptionEmpty), &
+                        then_("it knows how many asserts there were", checkNumAsserts), &
+                        then_("it knows how many asserts passed", checkNumPassingAsserts), &
+                        then_("it has no failing asserts", checkNumFailingAsserts)])])
     end function test_passing_collection_behaviors
 
-    function checkCollectionPasses() result(result_)
-        use example_collections_m, only: examplePassingCollection
+    function checkCollectionPasses(example_results) result(result_)
         use Vegetables_m, only: &
-                Result_t, &
-                TestCollection_t, &
-                TestCollectionResult_t, &
-                assertNot, &
-                assertThat
+                Result_t, TestCollectionResult_t, assertNot, assertThat, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = assertThat(test_results%passed()).and.assertNot(test_results%failed())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = assertThat(example_results%passed()).and.assertNot(example_results%failed())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkCollectionPasses
 
-    function checkNumCases() result(result_)
-        use example_collections_m, only: &
-                examplePassingCollection, NUM_CASES_IN_PASSING
+    function checkNumCases(example_results) result(result_)
+        use example_collections_m, only: NUM_CASES_IN_PASSING
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, TestCollectionResult_t, assertEquals
+                Result_t, TestCollectionResult_t, assertEquals, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = assertEquals(NUM_CASES_IN_PASSING, test_results%numCases())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = assertEquals(NUM_CASES_IN_PASSING, example_results%numCases())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkNumCases
 
-    function checkNumPassingCases() result(result_)
-        use example_collections_m, only: &
-                examplePassingCollection, NUM_CASES_IN_PASSING
+    function checkNumPassingCases(example_results) result(result_)
+        use example_collections_m, only: NUM_CASES_IN_PASSING
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, TestCollectionResult_t, assertEquals
+                Result_t, TestCollectionResult_t, assertEquals, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = assertEquals(NUM_CASES_IN_PASSING, test_results%numPassingCases())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = assertEquals(NUM_CASES_IN_PASSING, example_results%numPassingCases())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkNumPassingCases
 
-    function checkNumFailingCases() result(result_)
-        use example_collections_m, only: examplePassingCollection
+    function checkNumFailingCases(example_results) result(result_)
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, TestCollectionResult_t, assertEquals
+                Result_t, TestCollectionResult_t, assertEquals, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = assertEquals(0, test_results%numFailingCases())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = assertEquals(0, example_results%numFailingCases())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkNumFailingCases
 
-    function checkVerboseTopDescription() result(result_)
-        use example_collections_m, only: &
-                examplePassingCollection, EXAMPLE_COLLECTION_DESCRIPTION
+    function checkVerboseTopDescription(example_results) result(result_)
+        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, TestCollectionResult_t, assertIncludes
+                Result_t, TestCollectionResult_t, assertIncludes, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = assertIncludes( &
-                EXAMPLE_COLLECTION_DESCRIPTION, &
-                test_results%verboseDescription())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = assertIncludes( &
+                    EXAMPLE_COLLECTION_DESCRIPTION, &
+                    example_results%verboseDescription())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkVerboseTopDescription
 
-    function checkVerboseCaseDescriptions() result(result_)
+    function checkVerboseCaseDescriptions(example_results) result(result_)
         use example_collections_m, only: &
-                examplePassingCollection, &
-                EXAMPLE_CASE_DESCRIPTION_1, &
-                EXAMPLE_CASE_DESCRIPTION_2
+                EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
         use Vegetables_m, only: &
-                Result_t, &
-                TestCollection_t, &
-                TestCollectionResult_t, &
-                assertIncludes
+                Result_t, TestCollectionResult_t, assertIncludes, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = &
-                assertIncludes( &
-                        EXAMPLE_CASE_DESCRIPTION_1, &
-                        test_results%verboseDescription()) &
-                .and.assertIncludes( &
-                        EXAMPLE_CASE_DESCRIPTION_2, &
-                        test_results%verboseDescription())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = &
+                    assertIncludes( &
+                            EXAMPLE_CASE_DESCRIPTION_1, &
+                            example_results%verboseDescription()) &
+                    .and.assertIncludes( &
+                            EXAMPLE_CASE_DESCRIPTION_2, &
+                            example_results%verboseDescription())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkVerboseCaseDescriptions
 
-    function checkVerboseDescriptionAssertion() result(result_)
+    function checkVerboseDescriptionAssertion(example_results) result(result_)
         use example_asserts_m, only: SUCCESS_MESSAGE
-        use example_collections_m, only: examplePassingCollection
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, TestCollectionResult_t, assertIncludes
+                Result_t, TestCollectionResult_t, assertIncludes, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = assertIncludes( &
-                SUCCESS_MESSAGE, &
-                test_results%verboseDescription())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = assertIncludes( &
+                    SUCCESS_MESSAGE, &
+                    example_results%verboseDescription())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkVerboseDescriptionAssertion
 
-    function checkFailureDescriptionEmpty() result(result_)
-        use example_collections_m, only: examplePassingCollection
+    function checkFailureDescriptionEmpty(example_results) result(result_)
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, TestCollectionResult_t, assertEmpty
+                Result_t, TestCollectionResult_t, assertEmpty, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = assertEmpty(test_results%failureDescription())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = assertEmpty(example_results%failureDescription())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkFailureDescriptionEmpty
 
-    function checkNumAsserts() result(result_)
-        use example_collections_m, only: &
-                examplePassingCollection, NUM_ASSERTS_IN_PASSING
+    function checkNumAsserts(example_results) result(result_)
+        use example_collections_m, only: NUM_ASSERTS_IN_PASSING
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, TestCollectionResult_t, assertEquals
+                Result_t, TestCollectionResult_t, assertEquals, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = assertEquals(NUM_ASSERTS_IN_PASSING, test_results%numAsserts())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = assertEquals(NUM_ASSERTS_IN_PASSING, example_results%numAsserts())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkNumAsserts
 
-    function checkNumPassingAsserts() result(result_)
-        use example_collections_m, only: &
-                examplePassingCollection, NUM_ASSERTS_IN_PASSING
+    function checkNumPassingAsserts(example_results) result(result_)
+        use example_collections_m, only: NUM_ASSERTS_IN_PASSING
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, TestCollectionResult_t, assertEquals
+                Result_t, TestCollectionResult_t, assertEquals, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = assertEquals(NUM_ASSERTS_IN_PASSING, test_results%numPassingAsserts())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = assertEquals(NUM_ASSERTS_IN_PASSING, example_results%numPassingAsserts())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkNumPassingAsserts
 
-    function checkNumFailingAsserts() result(result_)
-        use example_collections_m, only: examplePassingCollection
+    function checkNumFailingAsserts(example_results) result(result_)
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, TestCollectionResult_t, assertEquals
+                Result_t, TestCollectionResult_t, assertEquals, fail
 
+        class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: test_collection
-        type(TestCollectionResult_t) :: test_results
-
-        test_collection = examplePassingCollection()
-        test_results = test_collection%run()
-        result_ = assertEquals(0, test_results%numFailingAsserts())
+        select type (example_results)
+        type is (TestCollectionResult_t)
+            result_ = assertEquals(0, example_results%numFailingAsserts())
+        class default
+            result_ = fail("Expected to get a TestCollectionResult_t")
+        end select
     end function checkNumFailingAsserts
 end module passing_collection_test
