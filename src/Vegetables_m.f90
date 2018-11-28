@@ -63,6 +63,11 @@ module Vegetables_m
         procedure(testResultDescription), deferred, public :: verboseDescription
     end type TestResult_t
 
+    type, public :: Transformed_t
+        private
+        class(*), allocatable :: value_
+    end type Transformed_t
+
     abstract interface
         function inputTest(input) result(result_)
             import :: Result_t
@@ -104,6 +109,12 @@ module Vegetables_m
             class(TestResult_t), intent(in) :: self
             integer :: num
         end function testResultNum
+
+        function transformer_(input) result(output)
+            import Transformed_t
+            class(*), intent(in) :: input
+            type(Transformed_t) :: output
+        end function transformer_
     end interface
 
     type, public :: TestItem_t
@@ -157,6 +168,17 @@ module Vegetables_m
         procedure, public :: numCases => testCollectionWithInputNumCases
         procedure, public :: run => runCollectionThatHasInput
     end type TestCollectionWithInput_t
+
+    type, extends(Test_t), public :: TransformingTestCollection_t
+        private
+        type(TestItem_t), allocatable :: tests(:)
+        procedure(transformer_), nopass, pointer :: transformer
+    contains
+        private
+        procedure, public :: description => transformingTestCollectionDescription
+        procedure, public :: numCases => transformingTestCollectionNumCases
+        procedure, public :: run => runTransformingCollection
+    end type TransformingTestCollection_t
 
     type, public :: TestResultItem_t
         private
@@ -237,6 +259,11 @@ module Vegetables_m
         module procedure failWithString
     end interface fail
 
+    interface given
+        module procedure givenBasic
+        module procedure givenWithInput
+    end interface given
+
     interface join
         module procedure joinWithCharacter
         module procedure joinWithString
@@ -260,6 +287,7 @@ module Vegetables_m
     interface when
         module procedure whenBasic
         module procedure whenWithInput
+        module procedure whenWithTransformer
     end interface
 
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
@@ -284,6 +312,7 @@ module Vegetables_m
             then, &
             then_, &
             toString, &
+            Transformed, &
             when
 contains
     pure function assertEmptyChars(string) result(result__)
@@ -474,13 +503,22 @@ contains
                 num_passing_asserts = 0)
     end function failWithString
 
-    pure function given(description, tests) result(test_collection)
+    pure function givenBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
 
         test_collection = describe("Given " // description, tests)
-    end function given
+    end function givenBasic
+
+    pure function givenWithInput(description, input, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        class(*), intent(in) :: input
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
+
+        test_collection = describe("Given " // description, input, tests)
+    end function givenWithInput
 
     pure function hangingIndent(string_) result(indented)
         type(VegetableString_t), intent(in) :: string_
@@ -715,6 +753,12 @@ contains
             type is (TestCaseResult_t)
                 result_ = test%run(input)
             end select
+        type is (TransformingTestCollection_t)
+            allocate(TestCollectionResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCollectionResult_t)
+                result_ = test%run(input)
+            end select
         end select
     end function runTestItemWithInput
 
@@ -754,8 +798,37 @@ contains
             write(error_unit, '(A)')
             call exit(1)
         end if
-
     end subroutine
+
+    function runTransformingCollection(self, input) result(result__)
+        class(TransformingTestCollection_t), intent(in) :: self
+        class(*), intent(in) :: input
+        type(TestCollectionResult_t) :: result__
+
+        integer :: i
+        integer :: num_tests
+        type(TestResultItem_t), allocatable :: results(:)
+        type(Transformed_t) :: transformed
+
+        transformed = self%transformer(input)
+        select type (next_input => transformed%value_)
+        type is (Result_t)
+            allocate(results(1))
+            allocate(TestCaseResult_t :: results(1)%result_)
+            select type (the_result => results(1)%result_)
+            type is (TestCaseResult_t)
+                the_result = TestCaseResult(toString("Transformation Failed"), next_input)
+            end select
+            result__ = TestCollectionResult(self%description_, results)
+        class default
+            num_tests = size(self%tests)
+            allocate(results(num_tests))
+            do i = 1, num_tests
+                results(i) = self%tests(i)%runWithInput(next_input)
+            end do
+            result__ = TestCollectionResult(self%description_, results)
+        end select
+    end function runTransformingCollection
 
     pure recursive function splitAtBothCharacter(&
             string_, split_characters) result(strings)
@@ -1317,6 +1390,65 @@ contains
         test_case = it_("Then " // description, func)
     end function then_
 
+    pure function Transformed(input)
+        class(*), intent(in) :: input
+        type(Transformed_t) :: Transformed
+
+        Transformed%value_ = input
+    end function
+
+    function TransformingTestCollection(description, func, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        procedure(transformer_) :: func
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TransformingTestCollection_t) :: test_collection
+
+        test_collection%description_ = toString(description)
+        test_collection%transformer => func
+        allocate(test_collection%tests(size(tests)))
+        test_collection%tests = tests
+    end function TransformingTestCollection
+
+    function transformingTestCollectionDescription(self) result(description)
+        class(TransformingTestCollection_t), intent(in) :: self
+        type(VegetableString_t) :: description
+
+        type :: VegStringArray_t
+            type(VegetableString_t), pointer :: strings(:) => null()
+        end type VegStringArray_t
+
+        integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
+        integer :: descriptions_location
+        integer :: i
+        integer :: num_cases
+
+        num_cases = size(self%tests)
+        do i = 1, MAX_STACK_SIZE
+            if (.not.associated(descriptions(i)%strings)) then
+                descriptions_location = i
+                allocate(descriptions(descriptions_location)%strings(num_cases))
+                exit
+            end if
+        end do
+        if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
+        do i = 1, num_cases
+            descriptions(descriptions_location)%strings(i) = self%tests(i)%description()
+        end do
+        description = hangingIndent( &
+                self%description_ // NEWLINE &
+                // join(descriptions(descriptions_location)%strings, NEWLINE))
+        deallocate(descriptions(descriptions_location)%strings)
+        nullify(descriptions(descriptions_location)%strings)
+    end function transformingTestCollectionDescription
+
+    pure function transformingTestCollectionNumCases(self) result(num_cases)
+        class(TransformingTestCollection_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = sum(self%tests%numCases())
+    end function transformingTestCollectionNumCases
+
     pure function whenBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
@@ -1333,4 +1465,17 @@ contains
 
         test_collection = describe("When " // description, input, tests)
     end function whenWithInput
+
+    function whenWithTransformer(description, func, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        procedure(transformer_) :: func
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: test_collection
+
+        allocate(TransformingTestCollection_t :: test_collection%test)
+        select type (test => test_collection%test)
+        type is (TransformingTestCollection_t)
+            test = TransformingTestCollection("When " // description, func, tests)
+        end select
+    end function whenWithTransformer
 end module Vegetables_m

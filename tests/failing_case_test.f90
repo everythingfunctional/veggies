@@ -5,19 +5,16 @@ module failing_case_test
     public :: test_failing_case_behaviors
 contains
     function test_failing_case_behaviors() result(test)
-        use example_cases_m, only: exampleFailingTestCase
-        use Vegetables_m, only: &
-                TestCase_t, TestCaseResult_t, TestItem_t, given, then_, when
+        use example_cases_m, only: exampleFailingTestCase, runCase
+        use Vegetables_m, only: TestCase_t, TestItem_t, given, then_, when
 
         type(TestItem_t) :: test
 
         type(TestCase_t) :: example_case
-        type(TestCaseResult_t) :: example_result
 
         example_case = exampleFailingTestCase()
-        example_result = example_case%run()
-        test = given("a failing test case", &
-                [when("it is run", example_result, &
+        test = given("a failing test case", example_case, &
+                [when("it is run", runCase, &
                         [then_("it knows it failed", checkCaseFails), &
                         then_("it has 1 test case", checkNumCases), &
                         then_("it has no passing case", checkNumPassingCases), &

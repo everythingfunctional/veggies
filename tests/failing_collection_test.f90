@@ -5,24 +5,16 @@ module failing_collection_test
     public :: test_failing_collection_behaviors
 contains
     function test_failing_collection_behaviors() result(tests)
-        use example_collections_m, only: exampleFailingCollection
-        use Vegetables_m, only: &
-                TestCollection_t, &
-                TestCollectionResult_t, &
-                TestItem_t, &
-                given, &
-                then_, &
-                when
+        use example_collections_m, only: exampleFailingCollection, runCollection
+        use Vegetables_m, only: TestCollection_t, TestItem_t, given, then_, when
 
         type(TestItem_t) :: tests
 
         type(TestCollection_t) :: example_collection
-        type(TestCollectionResult_t) :: example_results
 
         example_collection = exampleFailingCollection()
-        example_results = example_collection%run()
-        tests = given("a failing test collection", &
-                [when("it is run", example_results, &
+        tests = given("a failing test collection", example_collection, &
+                [when("it is run", runCollection, &
                         [then_("it knows it failed", checkCollectionFails), &
                         then_("it knows how many cases there were", checkNumCases), &
                         then_("it knows how many cases passed", checkNumPassingCases), &
