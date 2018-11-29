@@ -230,6 +230,12 @@ module Vegetables_m
         procedure, public :: verboseDescription => testCollectionVerboseDescription
     end type TestCollectionResult_t
 
+    type :: Options_t
+        private
+        logical :: quiet
+        logical :: verbose
+    end type Options_t
+
     interface assertDoesntInclude
         module procedure assertStringDoesntIncludeChars
         module procedure assertStringDoesntIncludeString
@@ -503,6 +509,36 @@ contains
                 num_passing_asserts = 0)
     end function failWithString
 
+    function getOptions() result(options)
+        use iso_fortran_env, only: error_unit
+
+        type(Options_t) :: options
+
+        character(len=100) :: argument
+        integer :: i
+        integer :: num_arguments
+
+        options%quiet = .false.
+        options%verbose = .false.
+
+        num_arguments = command_argument_count()
+        i = 1
+        do while (i <= num_arguments)
+            call get_command_argument(i, argument)
+            select case (trim(argument))
+            case ("-q", "--quiet")
+                options%quiet = .true.
+            case ("-v", "--verbose")
+                options%verbose = .true.
+            case default
+                write(error_unit, '(A)') &
+                        "Unknown argument: '" // trim(argument) // "'"
+                call exit(1)
+            end select
+            i = i + 1
+        end do
+    end function getOptions
+
     pure function givenBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
@@ -766,18 +802,27 @@ contains
         use iso_fortran_env, only: error_unit, output_unit
 
         type(TestItem_t) :: tests
+
+        type(Options_t) :: options
         type(TestResultItem_t) :: results
+
+        options = getOptions()
 
         write(output_unit, '(A)') "Running Tests"
         write(output_unit, '(A)')
-        write(output_unit, '(DT)') tests%description()
-        write(output_unit, '(A)')
+        if (.not.options%quiet) then
+            write(output_unit, '(DT)') tests%description()
+            write(output_unit, '(A)')
+        end if
         write(output_unit, '(DT)') &
                 "A total of " // toString(tests%numCases()) // " test cases"
         results = tests%run()
         if (results%passed()) then
             write(output_unit, '(A)')
             write(output_unit, '(A)') "All Passed"
+            if (options%verbose) then
+                write(output_unit, '(DT)') results%verboseDescription()
+            end if
             write(output_unit, '(DT)') &
                     "A total of " // toString(results%numCases()) &
                     // " test cases containg a total of " &
@@ -794,7 +839,11 @@ contains
                     toString(results%numFailingAsserts()) // " of " &
                     // toString(results%numAsserts()) // " assertions failed"
             write(error_unit, '(A)')
-            write(error_unit, '(DT)') results%failureDescription()
+            if (options%verbose) then
+                write(error_unit, '(DT)') results%verboseDescription()
+            else
+                write(error_unit, '(DT)') results%failureDescription()
+            end if
             write(error_unit, '(A)')
             call exit(1)
         end if
