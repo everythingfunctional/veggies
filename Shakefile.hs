@@ -2,11 +2,11 @@ import           Control.Applicative          ((<|>))
 import           Control.Exception            (catch, throwIO)
 import           Control.Monad                (filterM, foldM, liftM)
 import           Data.Char                    (isAsciiLower, isDigit, toLower)
-import           Data.List                    (sort)
+import           Data.List                    (intercalate, sort)
 import           Data.List.Split              (splitOn)
 import qualified Data.Map                     as Map
 import qualified Data.Set                     as Set
-import           Data.String.Utils            (endswith)
+import           Data.String.Utils            (endswith, replace, startswith)
 import           Development.Shake            (Action,
                                                Change (ChangeModtimeAndDigest),
                                                CmdOption (Cwd), Exit (Exit),
@@ -37,6 +37,7 @@ import           Text.ParserCombinators.ReadP (ReadP, char, eof, many, many1,
 
 -- All the extra type declarations we need
 type ModuleName = String
+type FunctionName = String
 type ProgramName = String
 type ModuleNames = Set.Set ModuleName
 type SpecialCommands = Map.Map FilePath String
@@ -104,6 +105,9 @@ buildDir = "build"
 testDir = "tests"
 testBuildDir = "test_build"
 
+testDriverName = "vegetable_driver"
+testDriverSourceFile = testBuildDir </> testDriverName <.> "f90"
+
 -- The main routine that executes the build system
 main :: IO ()
 main = do
@@ -117,8 +121,14 @@ main = do
     let sourceSearchTree = Node buildDir modules Set.empty
 
     testSourceFiles <- getDirectoriesFiles [testDir] sourceExts
-    (testSources, testModules, testPrograms) <-
+    let testCollectionFiles = filter (endswith "_test.f90") testSourceFiles
+    let testCollectionModules = Set.fromList $ map (takeFileName . dropExtension) testCollectionFiles
+    let testDriverSource = FortranSourceFile testDriverSourceFile ("vegetables_m" `Set.insert` testCollectionModules) Set.empty Set.empty
+    let testDriverProgram = Program testDriverName testDriverSource
+    (testSources', testModules, testPrograms') <-
         scanSourceFiles modules testSourceFiles
+    let testSources = testDriverSource `Set.insert` testSources'
+    let testPrograms = testDriverProgram `Set.insert` testPrograms'
     let testSearchTree = Node testBuildDir testModules (Set.singleton sourceSearchTree)
 
     shakeArgs shakeOptions{shakeFiles="_shake", shakeChange=ChangeModtimeAndDigest, shakeThreads=0, shakeProgress=progressSimple} $ do
@@ -130,6 +140,10 @@ main = do
             let progs = [testBuildDir </> getProgramName prog <.> exe | prog <- Set.toList testPrograms]
             need progs
             mapM_ (cmd :: FilePath -> Action ()) progs
+
+        testDriverSourceFile %> \driver -> do
+            need testCollectionFiles
+            createDriver driver testCollectionFiles
 
         mapM_ (makeSourceRule fDevelFlags cDevelFlags cIncludeFlags testSearchTree) testSources
         mapM_ (makeExecutableRule develLinkFlags cIncludeFlags testSearchTree) testPrograms
@@ -536,3 +550,90 @@ removeIfExists file = removeFile file `catch` handleExists
     where handleExists e
             | isDoesNotExistError e = return ()
             | otherwise = throwIO e
+
+createDriver :: FilePath -> [FilePath] -> Action ()
+createDriver driverFile collectionFiles = liftIO $ do
+    used <- getTestInfo collectionFiles
+    let program = makeProgram used
+    writeFile driverFile program
+
+getTestInfo :: [FilePath] -> IO [(ModuleName, [FunctionName])]
+getTestInfo = mapM getIndividualTestInfo
+
+getIndividualTestInfo :: FilePath -> IO (ModuleName, [FunctionName])
+getIndividualTestInfo testFile = do
+    let moduleName = (takeFileName . dropExtension) testFile
+    functions <- scanTestFile testFile
+    return (moduleName, functions)
+
+scanTestFile :: FilePath -> IO [FunctionName]
+scanTestFile testFile = do
+    fileLines <- readFileLinesIO testFile
+    let maybeFuncs = map parseTestLine fileLines
+    return $ foldl (\fs f -> case f of Nothing -> fs; Just f' -> f':fs) [] maybeFuncs
+
+makeProgram :: [(ModuleName, [FunctionName])] -> String
+makeProgram testInfo = unlines $
+    ("program " ++ testDriverName) :
+    (makeUseStatements testInfo) ++
+    ["    use Vegetables_m, only: TestItem_t, testThat, runTests",
+    "",
+    "    implicit none",
+    "",
+    "    type(TestItem_t) :: tests",
+    ""]
+    ++ (makeTestArray testInfo) ++ [
+    "",
+    "    call runTests(tests)",
+    "end program " ++ testDriverName
+    ]
+
+makeUseStatements :: [(ModuleName, [FunctionName])] -> [String]
+makeUseStatements testInfo = map makeUseStatement testInfo
+
+makeUseStatement :: (ModuleName, [FunctionName]) -> String
+makeUseStatement testInfo = case testInfo of
+    (_, [])    -> ""
+    (modName, funcs) -> "    use " ++ modName ++ ", only: &\n" ++ funcParts
+        where funcParts = intercalate ", &\n" (map rename funcs)
+              rename func = "        " ++ renamed modName func ++ " => " ++ func
+
+makeTestArray :: [(ModuleName, [FunctionName])] -> [String]
+makeTestArray testInfo = ["    tests = testThat( &\n        [" ++ arrayParts ++ "])"]
+    where arrayParts = intercalate ", &\n        " $ concatMap theFuncs testInfo
+          theFuncs info = case info of
+              (_, [])          -> []
+              (modName, funcs) -> map (\f -> renamed modName f ++ "()") funcs
+
+renamed :: String -> String -> String
+renamed modName funcName = replace "test_test_" "" (modName ++ "_" ++ funcName)
+
+parseTestLine :: String -> Maybe FunctionName
+parseTestLine line =
+    let line' = map toLower line
+        result = readP_to_S doTestLineParse line' in
+    getResult result
+    where
+        getResult (_:(contents, _):_) = contents
+        getResult [(contents, _)]     = contents
+        getResult []                  = Nothing
+
+doTestLineParse :: ReadP (Maybe FunctionName)
+doTestLineParse = do
+    skipSpaces
+    _ <- string "function"
+    skipAtLeastOneWhiteSpace
+    funName <- validIdentifier
+    skipSpaceOrOpenParen
+    if startswith "test_" funName then
+        return $ Just funName
+    else
+        return Nothing
+
+skipSpaceOrOpenParen :: ReadP ()
+skipSpaceOrOpenParen = skipAtLeastOneWhiteSpace <|> skipOpenParen
+
+skipOpenParen :: ReadP ()
+skipOpenParen = do
+    _ <- char '('
+    return ()
