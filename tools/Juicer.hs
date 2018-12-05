@@ -1,4 +1,4 @@
-module Tools.Juicer
+module Juicer
 (makeDriver)
 where
 

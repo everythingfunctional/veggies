@@ -26,6 +26,7 @@ import           Development.Shake.FilePath   (dropExtension, exe,
                                                takeDirectory, takeExtension,
                                                takeFileName, (-<.>), (<.>),
                                                (</>))
+import           Juicer                       (makeDriver)
 import           System.Directory             (doesFileExist, removeFile)
 import           System.Exit                  (ExitCode (ExitFailure, ExitSuccess))
 import           System.IO.Error              (isDoesNotExistError)
@@ -33,7 +34,6 @@ import           System.Process               (readProcessWithExitCode)
 import           Text.ParserCombinators.ReadP (ReadP, char, eof, many, many1,
                                                option, pfail, readP_to_S,
                                                satisfy, skipSpaces, string)
-import           Tools.Juicer                 (makeDriver)
 
 
 -- All the extra type declarations we need
