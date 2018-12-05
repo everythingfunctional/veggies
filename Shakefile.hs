@@ -33,6 +33,7 @@ import           System.Process               (readProcessWithExitCode)
 import           Text.ParserCombinators.ReadP (ReadP, char, eof, many, many1,
                                                option, pfail, readP_to_S,
                                                satisfy, skipSpaces, string)
+import           Tools.Juicer                 (makeDriver)
 
 
 -- All the extra type declarations we need
@@ -552,88 +553,4 @@ removeIfExists file = removeFile file `catch` handleExists
             | otherwise = throwIO e
 
 createDriver :: FilePath -> [FilePath] -> Action ()
-createDriver driverFile collectionFiles = liftIO $ do
-    used <- getTestInfo collectionFiles
-    let program = makeProgram used
-    writeFile driverFile program
-
-getTestInfo :: [FilePath] -> IO [(ModuleName, [FunctionName])]
-getTestInfo = mapM getIndividualTestInfo
-
-getIndividualTestInfo :: FilePath -> IO (ModuleName, [FunctionName])
-getIndividualTestInfo testFile = do
-    let moduleName = (takeFileName . dropExtension) testFile
-    functions <- scanTestFile testFile
-    return (moduleName, functions)
-
-scanTestFile :: FilePath -> IO [FunctionName]
-scanTestFile testFile = do
-    fileLines <- readFileLinesIO testFile
-    let maybeFuncs = map parseTestLine fileLines
-    return $ foldl (\fs f -> case f of Nothing -> fs; Just f' -> f':fs) [] maybeFuncs
-
-makeProgram :: [(ModuleName, [FunctionName])] -> String
-makeProgram testInfo = unlines $
-    ("program " ++ testDriverName) :
-    (makeUseStatements testInfo) ++
-    ["    use Vegetables_m, only: TestItem_t, testThat, runTests",
-    "",
-    "    implicit none",
-    "",
-    "    type(TestItem_t) :: tests",
-    ""]
-    ++ (makeTestArray testInfo) ++ [
-    "",
-    "    call runTests(tests)",
-    "end program " ++ testDriverName
-    ]
-
-makeUseStatements :: [(ModuleName, [FunctionName])] -> [String]
-makeUseStatements testInfo = map makeUseStatement testInfo
-
-makeUseStatement :: (ModuleName, [FunctionName]) -> String
-makeUseStatement testInfo = case testInfo of
-    (_, [])    -> ""
-    (modName, funcs) -> "    use " ++ modName ++ ", only: &\n" ++ funcParts
-        where funcParts = intercalate ", &\n" (map rename funcs)
-              rename func = "        " ++ renamed modName func ++ " => " ++ func
-
-makeTestArray :: [(ModuleName, [FunctionName])] -> [String]
-makeTestArray testInfo = ["    tests = testThat( &\n        [" ++ arrayParts ++ "])"]
-    where arrayParts = intercalate ", &\n        " $ concatMap theFuncs testInfo
-          theFuncs info = case info of
-              (_, [])          -> []
-              (modName, funcs) -> map (\f -> renamed modName f ++ "()") funcs
-
-renamed :: String -> String -> String
-renamed modName funcName = replace "test_test_" "" (modName ++ "_" ++ funcName)
-
-parseTestLine :: String -> Maybe FunctionName
-parseTestLine line =
-    let line' = map toLower line
-        result = readP_to_S doTestLineParse line' in
-    getResult result
-    where
-        getResult (_:(contents, _):_) = contents
-        getResult [(contents, _)]     = contents
-        getResult []                  = Nothing
-
-doTestLineParse :: ReadP (Maybe FunctionName)
-doTestLineParse = do
-    skipSpaces
-    _ <- string "function"
-    skipAtLeastOneWhiteSpace
-    funName <- validIdentifier
-    skipSpaceOrOpenParen
-    if startswith "test_" funName then
-        return $ Just funName
-    else
-        return Nothing
-
-skipSpaceOrOpenParen :: ReadP ()
-skipSpaceOrOpenParen = skipAtLeastOneWhiteSpace <|> skipOpenParen
-
-skipOpenParen :: ReadP ()
-skipOpenParen = do
-    _ <- char '('
-    return ()
+createDriver driverFile collectionFiles = liftIO $ makeDriver driverFile collectionFiles
