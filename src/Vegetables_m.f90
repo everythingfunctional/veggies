@@ -247,6 +247,7 @@ module Vegetables_m
     end interface assertEmpty
 
     interface assertEquals
+        module procedure assertEqualsCharacters
         module procedure assertEqualsInteger
     end interface assertEquals
 
@@ -338,6 +339,20 @@ contains
 
         result__ = assertEmpty(string%string)
     end function assertEmptyString
+
+    pure function assertEqualsCharacters(expected, actual) result(result__)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(Result_t) :: result__
+
+        if (expected == actual) then
+            result__ = succeed("Expected and got '" // toString(expected) // "'")
+        else
+            result__ = fail( &
+                    "Expected '" // toString(expected) &
+                    // "' but got '" // toString(actual) // "'")
+        end if
+    end function assertEqualsCharacters
 
     pure function assertEqualsInteger(expected, actual) result(result__)
         integer, intent(in) :: expected
