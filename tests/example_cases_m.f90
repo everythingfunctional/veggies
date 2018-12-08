@@ -3,6 +3,7 @@ module example_cases_m
     private
 
     character(len=*), parameter, public :: EXAMPLE_DESCRIPTION = "Example Description"
+    character(len=*), parameter, public :: NOT_IN_DESCRIPTION = "NOT"
 
     public :: exampleFailingTestCase, examplePassingTestCase, runCase
 contains

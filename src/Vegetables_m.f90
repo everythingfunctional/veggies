@@ -18,6 +18,12 @@ module Vegetables_m
         procedure :: stringWriteFormatted
     end type VegetableString_t
 
+    type, public, abstract :: Maybe_t
+    end type Maybe_t
+
+    type, public, extends(Maybe_t) :: Nothing_t
+    end type Nothing_t
+
     type, public :: Result_t
         private
         type(VegetableString_t) :: all_message
@@ -134,6 +140,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: description => testCaseDescription
+        procedure, public :: filter => filterTestCase
         procedure, public :: numCases => testCaseNumCases
         procedure, public :: run => runCase
     end type TestCase_t
@@ -236,6 +243,14 @@ module Vegetables_m
         logical :: verbose
     end type Options_t
 
+    type, public, extends(Maybe_t) :: JustTestCase_t
+        private
+        type(TestCase_t) :: value_
+    contains
+        private
+        procedure, public :: getValue => getValueTestCase
+    end type JustTestCase_t
+
     interface assertDoesntInclude
         module procedure assertStringDoesntIncludeChars
         module procedure assertStringDoesntIncludeString
@@ -247,6 +262,7 @@ module Vegetables_m
     end interface assertEmpty
 
     interface assertEquals
+        module procedure assertEqualsCharacterAndString
         module procedure assertEqualsCharacters
         module procedure assertEqualsInteger
     end interface assertEquals
@@ -276,6 +292,10 @@ module Vegetables_m
         module procedure joinWithString
     end interface join
 
+    interface Just
+        module procedure JustTestCase
+    end interface Just
+
     interface splitAt
         module procedure splitAtBothCharacter
         module procedure splitAtStringCharacter
@@ -298,6 +318,7 @@ module Vegetables_m
     end interface
 
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
+    type(Nothing_t), parameter :: NOTHING = Nothing_t()
 
     public :: &
             assertDoesntInclude, &
@@ -339,6 +360,14 @@ contains
 
         result__ = assertEmpty(string%string)
     end function assertEmptyString
+
+    pure function assertEqualsCharacterAndString(expected, actual) result(result__)
+        character(len=*), intent(in) :: expected
+        type(VegetableString_t), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual%string)
+    end function assertEqualsCharacterAndString
 
     pure function assertEqualsCharacters(expected, actual) result(result__)
         character(len=*), intent(in) :: expected
@@ -524,6 +553,18 @@ contains
                 num_passing_asserts = 0)
     end function failWithString
 
+    pure function filterTestCase(self, filter_string) result(maybe)
+        class(TestCase_t), intent(in) :: self
+        character(len=*), intent(in) :: filter_string
+        class(Maybe_t), allocatable :: maybe
+
+        if (self%description_.includes.toString(filter_string)) then
+            maybe = Just(self)
+        else
+            maybe = NOTHING
+        end if
+    end function filterTestCase
+
     function getOptions() result(options)
         use iso_fortran_env, only: error_unit
 
@@ -553,6 +594,13 @@ contains
             i = i + 1
         end do
     end function getOptions
+
+    pure function getValueTestCase(just_) result(value_)
+        class(JustTestCase_t), intent(in) :: just_
+        type(TestCase_t) :: value_
+
+        value_ = just_%value_
+    end function getValueTestCase
 
     pure function givenBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -660,6 +708,13 @@ contains
             string = string // separator // strings(i)
         end do
     end function joinWithString
+
+    pure function JustTestCase(value_) result(just_)
+        type(TestCase_t), intent(in) :: value_
+        type(JustTestCase_t) :: just_
+
+        just_ = JustTestCase_t(value_)
+    end function JustTestCase
 
     pure function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
         logical, intent(in) :: passed
