@@ -33,7 +33,9 @@ contains
                 [When("it is filtered with a string it doesn't contain", filterCollectionNotMatching, &
                         [Then_("it returns nothing", checkCollectionForNothing)]), &
                 When("it is filtered with a string matching it's description", filterCollectionMatchingDescription, &
-                        [Then_("it returns itself", checkCollectionIsSame)])])
+                        [Then_("it returns itself", checkCollectionIsSame)]), &
+                When("it is filtered with a string matching only 1 of its cases", filterCollectionMatchingCase, &
+                        [Then_("it returns a collection with only that case", checkCollectionSingleCase)])])
     end function test_filter_collection
 
     function filterCaseNotMatching(example_case) result(filtered)
@@ -95,6 +97,21 @@ contains
             filtered = Transformed(fail("Expected to get a TestCollection_t"))
         end select
     end function filterCollectionMatchingDescription
+
+    function filterCollectionMatchingCase(example_collection) result(filtered)
+        use example_collections_m, only: EXAMPLE_CASE_DESCRIPTION_1
+        use Vegetables_m, only: TestCollection_t, Transformed_t, fail, Transformed
+
+        class(*), intent(in) :: example_collection
+        type(Transformed_t) :: filtered
+
+        select type (example_collection)
+        type is (TestCollection_t)
+            filtered = Transformed(example_collection%filter(EXAMPLE_CASE_DESCRIPTION_1))
+        class default
+            filtered = Transformed(fail("Expected to get a TestCollection_t"))
+        end select
+    end function filterCollectionMatchingCase
 
     function checkCaseForNothing(filtered) result(result_)
         use Vegetables_m, only: Result_t, Nothing_t, fail, succeed
@@ -167,4 +184,26 @@ contains
             result_ = fail("Expected to get JustTestCollection_t")
         end select
     end function checkCollectionIsSame
+
+    function checkCollectionSingleCase(filtered) result(result_)
+        use Vegetables_m, only: &
+                Result_t, &
+                JustTestCollection_t, &
+                TestCollection_t, &
+                assertEquals, &
+                fail
+
+        class(*), intent(in) :: filtered
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: filtered_collection
+
+        select type (filtered)
+        type is (JustTestCollection_t)
+            filtered_collection = filtered%getValue()
+            result_ = assertEquals(1, filtered_collection%numCases())
+        class default
+            result_ = fail("Expected to get JustTestCollection_t")
+        end select
+    end function checkCollectionSingleCase
 end module filter_test

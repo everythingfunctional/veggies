@@ -21,6 +21,14 @@ module Vegetables_m
     type, public, abstract :: Maybe_t
     end type Maybe_t
 
+    type :: MaybeItem_t
+        private
+        class(Maybe_t), allocatable :: maybe
+    contains
+        private
+        procedure, public :: hasValue
+    end type MaybeItem_t
+
     type, public, extends(Maybe_t) :: Nothing_t
     end type Nothing_t
 
@@ -49,6 +57,7 @@ module Vegetables_m
     contains
         private
         procedure(testDescription), deferred, public :: description
+        procedure(filter_), deferred, public :: filter
         procedure(testNum), deferred, public :: numCases
     end type Test_t
 
@@ -75,6 +84,13 @@ module Vegetables_m
     end type Transformed_t
 
     abstract interface
+        pure function filter_(self, filter_string) result(maybe)
+            import :: Test_t, Maybe_t
+            class(Test_t), intent(in) :: self
+            character(len=*), intent(in) :: filter_string
+            class(Maybe_t), allocatable :: maybe
+        end function filter_
+
         function inputTest(input) result(result_)
             import :: Result_t
             class(*), intent(in) :: input
@@ -129,6 +145,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: description => testItemDescription
+        procedure, public :: filter => filterTestItem
         procedure, public :: numCases => testItemNumCases
         procedure, public :: run => runTestItem
         procedure, public :: runWithInput => runTestItemWithInput
@@ -151,6 +168,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: description => inputTestCaseDescription
+        procedure, public :: filter => filterInputTestCase
         procedure, public :: numCases => inputTestCaseNumCases
         procedure, public :: run => runCaseWithInput
     end type InputTestCase_t
@@ -173,6 +191,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: description => testCollectionWithInputDescription
+        procedure, public :: filter => filterTestCollectionWithInput
         procedure, public :: numCases => testCollectionWithInputNumCases
         procedure, public :: run => runCollectionThatHasInput
     end type TestCollectionWithInput_t
@@ -184,6 +203,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: description => transformingTestCollectionDescription
+        procedure, public :: filter => filterTransformingTestCollection
         procedure, public :: numCases => transformingTestCollectionNumCases
         procedure, public :: run => runTransformingCollection
     end type TransformingTestCollection_t
@@ -244,6 +264,14 @@ module Vegetables_m
         logical :: verbose
     end type Options_t
 
+    type, public, extends(Maybe_t) :: JustInputTestCase_t
+        private
+        type(InputTestCase_t) :: value_
+    contains
+        private
+        procedure, public :: getValue => getValueInputTestCase
+    end type JustInputTestCase_t
+
     type, public, extends(Maybe_t) :: JustTestCase_t
         private
         type(TestCase_t) :: value_
@@ -259,6 +287,30 @@ module Vegetables_m
         private
         procedure, public :: getValue => getValueTestCollection
     end type JustTestCollection_t
+
+    type, public, extends(Maybe_t) :: JustTestCollectionWithInput_t
+        private
+        type(TestCollectionWithInput_t) :: value_
+    contains
+        private
+        procedure, public :: getValue => getValueTestCollectionWithInput
+    end type JustTestCollectionWithInput_t
+
+    type, public, extends(Maybe_t) :: JustTestItem_t
+        private
+        type(TestItem_t) :: value_
+    contains
+        private
+        procedure, public :: getValue => getValueTestItem
+    end type JustTestItem_t
+
+    type, public, extends(Maybe_t) :: JustTransformingTestCollection_t
+        private
+        type(TransformingTestCollection_t) :: value_
+    contains
+        private
+        procedure, public :: getValue => getValueTransformingTestCollection
+    end type JustTransformingTestCollection_t
 
     interface assertDoesntInclude
         module procedure assertStringDoesntIncludeChars
@@ -303,8 +355,12 @@ module Vegetables_m
     end interface join
 
     interface Just
+        module procedure JustInputTestCase
         module procedure JustTestCase
         module procedure JustTestCollection
+        module procedure JustTestCollectionWithInput
+        module procedure JustTestItem
+        module procedure JustTransformingTestCollection
     end interface Just
 
     interface splitAt
@@ -572,6 +628,18 @@ contains
                 num_passing_asserts = 0)
     end function failWithString
 
+    pure function filterInputTestCase(self, filter_string) result(maybe)
+        class(InputTestCase_t), intent(in) :: self
+        character(len=*), intent(in) :: filter_string
+        class(Maybe_t), allocatable :: maybe
+
+        if (self%description_.includes.toString(filter_string)) then
+            maybe = Just(self)
+        else
+            maybe = NOTHING
+        end if
+    end function filterInputTestCase
+
     pure function filterTestCase(self, filter_string) result(maybe)
         class(TestCase_t), intent(in) :: self
         character(len=*), intent(in) :: filter_string
@@ -589,12 +657,140 @@ contains
         character(len=*), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
+        type(MaybeItem_t), allocatable :: filtered_tests(:)
+        type(TestCollection_t) :: new_collection
+        integer :: num_input_tests
+        logical, allocatable :: passed_filter(:)
+
         if (self%description_.includes.toString(filter_string)) then
             maybe = Just(self)
         else
-            maybe = NOTHING
+            num_input_tests = size(self%tests)
+            allocate(filtered_tests(num_input_tests))
+            filtered_tests = self%tests%filter(filter_string)
+            allocate(passed_filter(num_input_tests))
+            passed_filter = filtered_tests%hasValue()
+            if (any(passed_filter)) then
+                new_collection%description_ = self%description_
+                allocate(new_collection%tests(count(passed_filter)))
+                new_collection%tests = getTestItems(filtered_tests)
+                maybe = Just(new_collection)
+            else
+                maybe = NOTHING
+            end if
         end if
     end function filterTestCollection
+
+    pure function filterTestCollectionWithInput(self, filter_string) result(maybe)
+        class(TestCollectionWithInput_t), intent(in) :: self
+        character(len=*), intent(in) :: filter_string
+        class(Maybe_t), allocatable :: maybe
+
+        type(MaybeItem_t), allocatable :: filtered_tests(:)
+        type(TestCollectionWithInput_t) :: new_collection
+        integer :: num_input_tests
+        logical, allocatable :: passed_filter(:)
+
+        if (self%description_.includes.toString(filter_string)) then
+            maybe = Just(self)
+        else
+            num_input_tests = size(self%tests)
+            allocate(filtered_tests(num_input_tests))
+            filtered_tests = self%tests%filter(filter_string)
+            allocate(passed_filter(num_input_tests))
+            passed_filter = filtered_tests%hasValue()
+            if (any(passed_filter)) then
+                new_collection%description_ = self%description_
+                new_collection%input = self%input
+                allocate(new_collection%tests(count(passed_filter)))
+                new_collection%tests = getTestItems(filtered_tests)
+                maybe = Just(new_collection)
+            else
+                maybe = NOTHING
+            end if
+        end if
+    end function filterTestCollectionWithInput
+
+    elemental function filterTestItem(self, filter_string) result(maybe)
+        class(TestItem_t), intent(in) :: self
+        character(len=*), intent(in) :: filter_string
+        type(MaybeItem_t) :: maybe
+
+        class(Maybe_t), allocatable :: filtered
+        type(TestItem_t) :: test_item
+
+        filtered = self%test%filter(filter_string)
+
+        select type (filtered)
+        type is (JustInputTestCase_t)
+            allocate(InputTestCase_t :: test_item%test)
+            select type (test => test_item%test)
+            type is (InputTestCase_t)
+                test = filtered%getValue()
+                maybe%maybe = Just(test_item)
+            end select
+        type is (JustTestCase_t)
+            allocate(TestCase_t :: test_item%test)
+            select type (test => test_item%test)
+            type is (TestCase_t)
+                test = filtered%getValue()
+                maybe%maybe = Just(test_item)
+            end select
+        type is (JustTestCollection_t)
+            allocate(TestCollection_t :: test_item%test)
+            select type (test => test_item%test)
+            type is (TestCollection_t)
+                test = filtered%getValue()
+                maybe%maybe = Just(test_item)
+            end select
+        type is (JustTestCollectionWithInput_t)
+            allocate(TestCollectionWithInput_t :: test_item%test)
+            select type (test => test_item%test)
+            type is (TestCollectionWithInput_t)
+                test = filtered%getValue()
+                maybe%maybe = Just(test_item)
+            end select
+        type is (JustTransformingTestCollection_t)
+            allocate(TransformingTestCollection_t :: test_item%test)
+            select type (test => test_item%test)
+            type is (TransformingTestCollection_t)
+                test = filtered%getValue()
+                maybe%maybe = Just(test_item)
+            end select
+        type is (Nothing_t)
+            maybe%maybe = NOTHING
+        end select
+    end function filterTestItem
+
+    pure function filterTransformingTestCollection(self, filter_string) result(maybe)
+        class(TransformingTestCollection_t), intent(in) :: self
+        character(len=*), intent(in) :: filter_string
+        class(Maybe_t), allocatable :: maybe
+
+        type(MaybeItem_t), allocatable :: filtered_tests(:)
+        type(TransformingTestCollection_t) :: new_collection
+        integer :: num_input_tests
+        logical, allocatable :: passed_filter(:)
+
+        if (self%description_.includes.toString(filter_string)) then
+            maybe = Just(self)
+        else
+            num_input_tests = size(self%tests)
+            allocate(filtered_tests(num_input_tests))
+            filtered_tests = self%tests%filter(filter_string)
+            allocate(passed_filter(num_input_tests))
+            passed_filter = filtered_tests%hasValue()
+            if (any(passed_filter)) then
+                new_collection%description_ = self%description_
+                new_collection%transformer => self%transformer
+                allocate(new_collection%tests(count(passed_filter)))
+                new_collection%tests = getTestItems(filtered_tests)
+                maybe = Just(new_collection)
+            else
+                maybe = NOTHING
+            end if
+        end if
+    end function filterTransformingTestCollection
 
     function getOptions() result(options)
         use iso_fortran_env, only: error_unit
@@ -626,6 +822,38 @@ contains
         end do
     end function getOptions
 
+    pure function getTestItems(maybes) result(test_items)
+        type(MaybeItem_t), intent(in) :: maybes(:)
+        type(TestItem_t), allocatable :: test_items(:)
+
+        logical, allocatable :: are_values(:)
+        integer :: i
+        type(MaybeItem_t), allocatable :: maybe_outputs(:)
+        integer :: num_inputs
+        integer :: num_outputs
+
+        num_inputs = size(maybes)
+        allocate(are_values(num_inputs))
+        are_values = maybes%hasValue()
+        num_outputs = count(are_values)
+        allocate(maybe_outputs(num_outputs))
+        maybe_outputs = pack(maybes, are_values)
+        allocate(test_items(num_outputs))
+        do i = 1, num_outputs
+            select type (maybe => maybe_outputs(i)%maybe)
+            type is (JustTestItem_t)
+                test_items(i) = maybe%getValue()
+            end select
+        end do
+    end function getTestItems
+
+    pure function getValueInputTestCase(just_) result(value_)
+        class(JustInputTestCase_t), intent(in) :: just_
+        type(InputTestCase_t) :: value_
+
+        value_ = just_%value_
+    end function getValueInputTestCase
+
     pure function getValueTestCase(just_) result(value_)
         class(JustTestCase_t), intent(in) :: just_
         type(TestCase_t) :: value_
@@ -639,6 +867,27 @@ contains
 
         value_ = just_%value_
     end function getValueTestCollection
+
+    pure function getValueTestCollectionWithInput(just_) result(value_)
+        class(JustTestCollectionWithInput_t), intent(in) :: just_
+        type(TestCollectionWithInput_t) :: value_
+
+        value_ = just_%value_
+    end function getValueTestCollectionWithInput
+
+    pure function getValueTestItem(just_) result(value_)
+        class(JustTestItem_t), intent(in) :: just_
+        type(TestItem_t) :: value_
+
+        value_ = just_%value_
+    end function getValueTestItem
+
+    pure function getValueTransformingTestCollection(just_) result(value_)
+        class(JustTransformingTestCollection_t), intent(in) :: just_
+        type(TransformingTestCollection_t) :: value_
+
+        value_ = just_%value_
+    end function getValueTransformingTestCollection
 
     pure function givenBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -666,6 +915,18 @@ contains
         lines = splitAt(string_, NEWLINE)
         indented = join(lines, NEWLINE // "    ")
     end function hangingIndent
+
+    elemental function hasValue(self)
+        class(MaybeItem_t), intent(in) :: self
+        logical :: hasValue
+
+        select type (maybe => self%maybe)
+        type is (Nothing_t)
+            hasValue = .false.
+        class default
+            hasValue = .true.
+        end select
+    end function hasValue
 
     function InputTestCase(description, func) result(test_case)
         character(len=*), intent(in) :: description
@@ -747,6 +1008,13 @@ contains
         end do
     end function joinWithString
 
+    pure function JustInputTestCase(value_) result(just_)
+        type(InputTestCase_t), intent(in) :: value_
+        type(JustInputTestCase_t) :: just_
+
+        just_ = JustInputTestCase_t(value_)
+    end function JustInputTestCase
+
     pure function JustTestCase(value_) result(just_)
         type(TestCase_t), intent(in) :: value_
         type(JustTestCase_t) :: just_
@@ -760,6 +1028,27 @@ contains
 
         just_ = JustTestCollection_t(value_)
     end function JustTestCollection
+
+    pure function JustTestCollectionWithInput(value_) result(just_)
+        type(TestCollectionWithInput_t), intent(in) :: value_
+        type(JustTestCollectionWithInput_t) :: just_
+
+        just_ = JustTestCollectionWithInput_t(value_)
+    end function JustTestCollectionWithInput
+
+    pure function JustTestItem(value_) result(just_)
+        type(TestItem_t), intent(in) :: value_
+        type(JustTestItem_t) :: just_
+
+        just_ = JustTestItem_t(value_)
+    end function JustTestItem
+
+    pure function JustTransformingTestCollection(value_) result(just_)
+        type(TransformingTestCollection_t), intent(in) :: value_
+        type(JustTransformingTestCollection_t) :: just_
+
+        just_ = JustTransformingTestCollection_t(value_)
+    end function JustTransformingTestCollection
 
     pure function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
         logical, intent(in) :: passed
