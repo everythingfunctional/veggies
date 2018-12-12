@@ -13,6 +13,7 @@ module example_collections_m
     character(len=*), parameter, public :: EXAMPLE_FAILING_CASE_DESCRIPTION = &
             "Example Failing Case Description"
     character(len=*), parameter, public :: FAILURE_MESSAGE = "Failure Message"
+    character(len=*), parameter, public :: NOT_IN_DESCRIPTIONS = "NOT IN DESCRIPTION"
     integer, parameter, public :: NUM_ASSERTS_IN_PASSING = NUM_PASSING_FROM_EXAMPLE * 2
     integer, parameter, public :: NUM_ASSERTS_IN_FAILING = NUM_ASSERTS_IN_PASSING + 1
     integer, parameter, public :: NUM_CASES_IN_PASSING = 2

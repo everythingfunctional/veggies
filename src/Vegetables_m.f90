@@ -161,6 +161,7 @@ module Vegetables_m
     contains
         private
         procedure, public :: description => testCollectionDescription
+        procedure, public :: filter => filterTestCollection
         procedure, public :: numCases => testCollectionNumCases
         procedure, public :: run => runCollection
     end type TestCollection_t
@@ -564,6 +565,16 @@ contains
             maybe = NOTHING
         end if
     end function filterTestCase
+
+    pure function filterTestCollection(self, filter_string) result(maybe)
+        class(TestCollection_t), intent(in) :: self
+        character(len=*), intent(in) :: filter_string
+        class(Maybe_t), allocatable :: maybe
+
+        associate(a => self, b => filter_string)
+        end associate
+        maybe = NOTHING
+    end function filterTestCollection
 
     function getOptions() result(options)
         use iso_fortran_env, only: error_unit
