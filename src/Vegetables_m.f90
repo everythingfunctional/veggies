@@ -252,6 +252,14 @@ module Vegetables_m
         procedure, public :: getValue => getValueTestCase
     end type JustTestCase_t
 
+    type, public, extends(Maybe_t) :: JustTestCollection_t
+        private
+        type(TestCollection_t) :: value_
+    contains
+        private
+        procedure, public :: getValue => getValueTestCollection
+    end type JustTestCollection_t
+
     interface assertDoesntInclude
         module procedure assertStringDoesntIncludeChars
         module procedure assertStringDoesntIncludeString
@@ -266,6 +274,7 @@ module Vegetables_m
         module procedure assertEqualsCharacterAndString
         module procedure assertEqualsCharacters
         module procedure assertEqualsInteger
+        module procedure assertEqualsStrings
     end interface assertEquals
 
     interface assertIncludes
@@ -295,6 +304,7 @@ module Vegetables_m
 
     interface Just
         module procedure JustTestCase
+        module procedure JustTestCollection
     end interface Just
 
     interface splitAt
@@ -397,6 +407,14 @@ contains
                     // "' but got '" // toString(actual) // "'")
         end if
     end function assertEqualsInteger
+
+    pure function assertEqualsStrings(expected, actual) result(result__)
+        type(VegetableString_t), intent(in) :: expected
+        type(VegetableString_t), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected%string, actual%string)
+    end function assertEqualsStrings
 
     pure function assertNot(condition) result(result__)
         logical, intent(in) :: condition
@@ -571,9 +589,11 @@ contains
         character(len=*), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
-        associate(a => self, b => filter_string)
-        end associate
-        maybe = NOTHING
+        if (self%description_.includes.toString(filter_string)) then
+            maybe = Just(self)
+        else
+            maybe = NOTHING
+        end if
     end function filterTestCollection
 
     function getOptions() result(options)
@@ -612,6 +632,13 @@ contains
 
         value_ = just_%value_
     end function getValueTestCase
+
+    pure function getValueTestCollection(just_) result(value_)
+        class(JustTestCollection_t), intent(in) :: just_
+        type(TestCollection_t) :: value_
+
+        value_ = just_%value_
+    end function getValueTestCollection
 
     pure function givenBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -726,6 +753,13 @@ contains
 
         just_ = JustTestCase_t(value_)
     end function JustTestCase
+
+    pure function JustTestCollection(value_) result(just_)
+        type(TestCollection_t), intent(in) :: value_
+        type(JustTestCollection_t) :: just_
+
+        just_ = JustTestCollection_t(value_)
+    end function JustTestCollection
 
     pure function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
         logical, intent(in) :: passed

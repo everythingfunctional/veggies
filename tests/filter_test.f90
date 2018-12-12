@@ -31,7 +31,9 @@ contains
         example_collection = examplePassingCollection()
         tests = Given("a test collection", example_collection, &
                 [When("it is filtered with a string it doesn't contain", filterCollectionNotMatching, &
-                        [Then_("it returns nothing", checkCollectionForNothing)])])
+                        [Then_("it returns nothing", checkCollectionForNothing)]), &
+                When("it is filtered with a string matching it's description", filterCollectionMatchingDescription, &
+                        [Then_("it returns itself", checkCollectionIsSame)])])
     end function test_filter_collection
 
     function filterCaseNotMatching(example_case) result(filtered)
@@ -79,6 +81,21 @@ contains
         end select
     end function filterCaseMatching
 
+    function filterCollectionMatchingDescription(example_collection) result(filtered)
+        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
+        use Vegetables_m, only: TestCollection_t, Transformed_t, fail, Transformed
+
+        class(*), intent(in) :: example_collection
+        type(Transformed_t) :: filtered
+
+        select type (example_collection)
+        type is (TestCollection_t)
+            filtered = Transformed(example_collection%filter(EXAMPLE_COLLECTION_DESCRIPTION))
+        class default
+            filtered = Transformed(fail("Expected to get a TestCollection_t"))
+        end select
+    end function filterCollectionMatchingDescription
+
     function checkCaseForNothing(filtered) result(result_)
         use Vegetables_m, only: Result_t, Nothing_t, fail, succeed
 
@@ -125,4 +142,29 @@ contains
             result_ = fail("Expected to get JustTestCase_t")
         end select
     end function checkCaseIsSame
+
+    function checkCollectionIsSame(filtered) result(result_)
+        use example_collections_m, only: examplePassingCollection
+        use Vegetables_m, only: &
+                Result_t, &
+                JustTestCollection_t, &
+                TestCollection_t, &
+                assertEquals, &
+                fail
+
+        class(*), intent(in) :: filtered
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: filtered_collection
+        type(TestCollection_t) :: example_collection
+
+        select type (filtered)
+        type is (JustTestCollection_t)
+            example_collection = examplePassingCollection()
+            filtered_collection = filtered%getValue()
+            result_ = assertEquals(example_collection%description(), filtered_collection%description())
+        class default
+            result_ = fail("Expected to get JustTestCollection_t")
+        end select
+    end function checkCollectionIsSame
 end module filter_test
