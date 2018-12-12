@@ -262,6 +262,8 @@ module Vegetables_m
         private
         logical :: quiet
         logical :: verbose
+        logical :: filter_tests
+        character(len=:), allocatable :: filter_string
     end type Options_t
 
     type, public, extends(Maybe_t) :: JustInputTestCase_t
@@ -803,12 +805,19 @@ contains
 
         options%quiet = .false.
         options%verbose = .false.
+        options%filter_tests = .false.
+        options%filter_string = ""
 
         num_arguments = command_argument_count()
         i = 1
         do while (i <= num_arguments)
             call get_command_argument(i, argument)
             select case (trim(argument))
+            case ("-f", "--filter")
+                options%filter_tests = .true.
+                i = i + 1
+                call get_command_argument(i, argument)
+                options%filter_string = trim(argument)
             case ("-q", "--quiet")
                 options%quiet = .true.
             case ("-v", "--verbose")
@@ -1207,20 +1216,34 @@ contains
 
         type(TestItem_t) :: tests
 
+        type(MaybeItem_t) :: maybe_tests
         type(Options_t) :: options
         type(TestResultItem_t) :: results
+        type(TestItem_t) :: tests_to_run
 
         options = getOptions()
 
+        if (options%filter_tests) then
+            maybe_tests = tests%filter(options%filter_string)
+            select type (maybe => maybe_tests%maybe)
+            type is (JustTestItem_t)
+                tests_to_run = maybe%getValue()
+            type is (Nothing_t)
+                write(error_unit, '(A)') "No matching tests found"
+                call exit(1)
+            end select
+        else
+            tests_to_run = tests
+        end if
         write(output_unit, '(A)') "Running Tests"
         write(output_unit, '(A)')
         if (.not.options%quiet) then
-            write(output_unit, '(DT)') tests%description()
+            write(output_unit, '(DT)') tests_to_run%description()
             write(output_unit, '(A)')
         end if
         write(output_unit, '(DT)') &
-                "A total of " // toString(tests%numCases()) // " test cases"
-        results = tests%run()
+                "A total of " // toString(tests_to_run%numCases()) // " test cases"
+        results = tests_to_run%run()
         if (results%passed()) then
             write(output_unit, '(A)')
             write(output_unit, '(A)') "All Passed"
