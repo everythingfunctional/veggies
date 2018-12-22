@@ -328,6 +328,7 @@ module Vegetables_m
         module procedure assertEqualsCharacterAndString
         module procedure assertEqualsCharacters
         module procedure assertEqualsInteger
+        module procedure assertEqualsStringAndCharacters
         module procedure assertEqualsStrings
     end interface assertEquals
 
@@ -471,6 +472,14 @@ contains
                     // "' but got '" // toString(actual) // "'")
         end if
     end function assertEqualsInteger
+
+    pure function assertEqualsStringAndCharacters(expected, actual) result(result__)
+        type(VegetableString_t), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected%string, actual)
+    end function assertEqualsStringAndCharacters
 
     pure function assertEqualsStrings(expected, actual) result(result__)
         type(VegetableString_t), intent(in) :: expected
