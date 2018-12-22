@@ -451,11 +451,11 @@ contains
         type(Result_t) :: result__
 
         if (expected == actual) then
-            result__ = succeed("Expected and got '" // toString(expected) // "'")
+            result__ = succeed("Expected and got '" // replaceNewlines(expected) // "'")
         else
             result__ = fail( &
-                    "Expected '" // toString(expected) &
-                    // "' but got '" // toString(actual) // "'")
+                    "Expected '" // replaceNewlines(expected) &
+                    // "' but got '" // replaceNewlines(actual) // "'")
         end if
     end function assertEqualsCharacters
 
