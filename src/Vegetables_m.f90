@@ -365,6 +365,11 @@ module Vegetables_m
         module procedure JustTransformingTestCollection
     end interface Just
 
+    interface replaceNewlines
+        module procedure replaceNewlinesInCharacters
+        module procedure replaceNewlinesInString
+    end interface replaceNewlines
+
     interface splitAt
         module procedure splitAtBothCharacter
         module procedure splitAtStringCharacter
@@ -401,6 +406,7 @@ module Vegetables_m
             given, &
             it, &
             it_, &
+            replaceNewlines, &
             runTests, &
             succeed, &
             TestCase, &
@@ -419,7 +425,7 @@ contains
         if (string == "") then
             result__ = succeed("String was empty")
         else
-            result__ = fail("String '" // string // "' wasn't empty")
+            result__ = fail("String '" // replaceNewlines(string) // "' wasn't empty")
         end if
     end function assertEmptyChars
 
@@ -1058,6 +1064,20 @@ contains
 
         just_ = JustTransformingTestCollection_t(value_)
     end function JustTransformingTestCollection
+
+    pure function replaceNewlinesInCharacters(chars) result(without_newlines)
+        character(len=*), intent(in) :: chars
+        type(VegetableString_t) :: without_newlines
+
+        without_newlines = join(splitAt(chars, NEWLINE), "\n")
+    end function replaceNewlinesInCharacters
+
+    pure function replaceNewlinesInString(string) result(without_newlines)
+        type(VegetableString_t), intent(in) :: string
+        type(VegetableString_t) :: without_newlines
+
+        without_newlines = join(splitAt(string, NEWLINE), "\n")
+    end function replaceNewlinesInString
 
     pure function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
         logical, intent(in) :: passed
