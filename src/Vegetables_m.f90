@@ -333,6 +333,8 @@ module Vegetables_m
     end interface assertEquals
 
     interface assertIncludes
+        module procedure assertCharsIncludeChars
+        module procedure assertCharsIncludeString
         module procedure assertStringIncludesChars
         module procedure assertStringIncludesString
     end interface assertIncludes
@@ -419,6 +421,22 @@ module Vegetables_m
             Transformed, &
             when
 contains
+    pure function assertCharsIncludeChars(search_for, string) result(result__)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(toString(search_for), toString(string))
+    end function assertCharsIncludeChars
+
+    pure function assertCharsIncludeString(search_for, string) result(result__)
+        type(VegetableString_t), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(search_for, toString(string))
+    end function assertCharsIncludeString
+
     pure function assertEmptyChars(string) result(result__)
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
