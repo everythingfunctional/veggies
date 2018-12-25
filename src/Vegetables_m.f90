@@ -556,11 +556,12 @@ contains
 
         if (string.includes.search_for) then
             result__ = succeed( &
-                    "'" // string // "' included '" // search_for // "'")
+                    "'" // replaceNewlines(string) // "' included '" &
+                    // replaceNewlines(search_for) // "'")
         else
             result__ = fail( &
-                    "Expected '" // string &
-                    // "' to include '" // search_for // "'")
+                    "Expected '" // replaceNewlines(string) &
+                    // "' to include '" // replaceNewlines(search_for) // "'")
         end if
     end function assertStringIncludesString
 
