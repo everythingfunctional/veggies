@@ -1116,14 +1116,26 @@ contains
         character(len=*), intent(in) :: chars
         type(VegetableString_t) :: without_newlines
 
-        without_newlines = join(splitAt(chars, NEWLINE), "\n")
+        integer :: i
+        character(len=:), allocatable :: resulting_string
+
+        allocate(character(len=0)::resulting_string)
+        resulting_string = ""
+        do i = 1, len(chars)
+            if (chars(i:i) == NEWLINE) then
+                resulting_string = resulting_string // "\n"
+            else
+                resulting_string = resulting_string // chars(i:i)
+            end if
+        end do
+        without_newlines = toString(resulting_string)
     end function replaceNewlinesInCharacters
 
     pure function replaceNewlinesInString(string) result(without_newlines)
         type(VegetableString_t), intent(in) :: string
         type(VegetableString_t) :: without_newlines
 
-        without_newlines = join(splitAt(string, NEWLINE), "\n")
+        without_newlines = replaceNewlines(string%string)
     end function replaceNewlinesInString
 
     pure function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
