@@ -315,6 +315,8 @@ module Vegetables_m
     end type JustTransformingTestCollection_t
 
     interface assertDoesntInclude
+        module procedure assertCharsDontIncludeChars
+        module procedure assertCharsDontIncludeString
         module procedure assertStringDoesntIncludeChars
         module procedure assertStringDoesntIncludeString
     end interface assertDoesntInclude
@@ -421,6 +423,22 @@ module Vegetables_m
             Transformed, &
             when
 contains
+    pure function assertCharsDontIncludeChars(search_for, string) result(result__)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(toString(search_for), toString(string))
+    end function assertCharsDontIncludeChars
+
+    pure function assertCharsDontIncludeString(search_for, string) result(result__)
+        type(VegetableString_t), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, toString(string))
+    end function assertCharsDontIncludeString
+
     pure function assertCharsIncludeChars(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -533,11 +551,12 @@ contains
 
         if (.not.(string.includes.search_for)) then
             result__ = succeed( &
-                    "'" // string // "' did not include '" // search_for // "'")
+                    "'" // replaceNewlines(string) // "' did not include '" &
+                    // replaceNewlines(search_for) // "'")
         else
             result__ = fail( &
-                    "Expected '" // string &
-                    // "' to not include '" // search_for // "'")
+                    "Expected '" // replaceNewlines(string) &
+                    // "' to not include '" // replaceNewlines(search_for) // "'")
         end if
     end function assertStringDoesntIncludeString
 
