@@ -22,9 +22,7 @@ contains
 
         character(len=*), parameter :: EXAMPLE_STRING = "Something Without Newlines"
 
-        result_ = &
-                assertEquals(EXAMPLE_STRING, replaceNewlines(EXAMPLE_STRING)) &
-                .and.assertEquals(EXAMPLE_STRING, replaceNewlines(toString(EXAMPLE_STRING)))
+        result_ = assertEquals(EXAMPLE_STRING, replaceNewlines(EXAMPLE_STRING))
     end function checkSameWithoutNewlines
 
     function checkNoNewlines() result(result_)

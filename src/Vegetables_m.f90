@@ -327,11 +327,8 @@ module Vegetables_m
     end interface assertEmpty
 
     interface assertEquals
-        module procedure assertEqualsCharacterAndString
         module procedure assertEqualsCharacters
         module procedure assertEqualsInteger
-        module procedure assertEqualsStringAndCharacters
-        module procedure assertEqualsStrings
     end interface assertEquals
 
     interface assertIncludes
@@ -470,14 +467,6 @@ contains
         end if
     end function assertEmptyBasic
 
-    pure function assertEqualsCharacterAndString(expected, actual) result(result__)
-        character(len=*), intent(in) :: expected
-        type(VegetableString_t), intent(in) :: actual
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, actual%string)
-    end function assertEqualsCharacterAndString
-
     pure function assertEqualsCharacters(expected, actual) result(result__)
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
@@ -507,22 +496,6 @@ contains
                     // " but got " // delimit(toString(actual)))
         end if
     end function assertEqualsInteger
-
-    pure function assertEqualsStringAndCharacters(expected, actual) result(result__)
-        type(VegetableString_t), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected%string, actual)
-    end function assertEqualsStringAndCharacters
-
-    pure function assertEqualsStrings(expected, actual) result(result__)
-        type(VegetableString_t), intent(in) :: expected
-        type(VegetableString_t), intent(in) :: actual
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected%string, actual%string)
-    end function assertEqualsStrings
 
     pure function assertNot(condition) result(result__)
         logical, intent(in) :: condition
