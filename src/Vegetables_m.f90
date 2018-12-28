@@ -34,8 +34,8 @@ module Vegetables_m
 
     type, public :: Result_t
         private
-        type(VegetableString_t) :: all_message
-        type(VegetableString_t) :: failing_message
+        character(len=:), allocatable :: all_message
+        character(len=:), allocatable :: failing_message
         integer :: num_failling_asserts
         integer :: num_passing_asserts
         logical :: passed_
@@ -606,19 +606,19 @@ contains
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
 
-        failure = fail(toString(message))
-    end function failWithChars
-
-    pure function failWithString(message) result(failure)
-        type(VegetableString_t), intent(in) :: message
-        type(Result_t) :: failure
-
         failure = Result_( &
                 passed = .false., &
                 all_message = message, &
                 failing_message = message, &
                 num_failling_asserts = 1, &
                 num_passing_asserts = 0)
+    end function failWithChars
+
+    pure function failWithString(message) result(failure)
+        type(VegetableString_t), intent(in) :: message
+        type(Result_t) :: failure
+
+        failure = fail(message%string)
     end function failWithString
 
     pure function filterInputTestCase(self, filter_string) result(maybe)
@@ -1083,8 +1083,8 @@ contains
 
     pure function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
         logical, intent(in) :: passed
-        type(VegetableString_t), intent(in) :: all_message
-        type(VegetableString_t), intent(in) :: failing_message
+        character(len=*), intent(in) :: all_message
+        character(len=*), intent(in) :: failing_message
         integer, intent(in) :: num_failling_asserts
         integer, intent(in) :: num_passing_asserts
         type(Result_t) :: Result_
@@ -1101,7 +1101,7 @@ contains
         class(Result_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        description = self%failing_message%string
+        description = self%failing_message
     end function resultFailureDescription
 
     pure function resultNumAsserts(self) result(num_asserts)
@@ -1136,7 +1136,7 @@ contains
         class(Result_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        description = self%all_message%string
+        description = self%all_message
     end function resultVerboseDescription
 
     function runCase(self) result(result__)
@@ -1411,19 +1411,19 @@ contains
         character(len=*), intent(in) :: message
         type(Result_t) :: success
 
-        success = succeed(toString(message))
+        success = Result_( &
+                passed = .true., &
+                all_message = message, &
+                failing_message = "", &
+                num_failling_asserts = 0, &
+                num_passing_asserts = 1)
     end function succeedWithChars
 
     pure function succeedWithString(message) result(success)
         type(VegetableString_t), intent(in) :: message
         type(Result_t) :: success
 
-        success = Result_( &
-                passed = .true., &
-                all_message = message, &
-                failing_message = toString(""), &
-                num_failling_asserts = 0, &
-                num_passing_asserts = 1)
+        success = succeed(message%string)
     end function succeedWithString
 
     function TestCase(description, func) result(test_case)
