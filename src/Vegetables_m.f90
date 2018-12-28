@@ -53,7 +53,7 @@ module Vegetables_m
 
     type, abstract, public :: Test_t
         private
-        type(VegetableString_t) :: description_
+        character(len=:), allocatable :: description_
     contains
         private
         procedure(testDescription), deferred, public :: description
@@ -63,7 +63,7 @@ module Vegetables_m
 
     type, abstract, public :: TestResult_t
         private
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
     contains
         private
         procedure(testQuestion), deferred, public :: failed
@@ -355,6 +355,11 @@ module Vegetables_m
         module procedure givenWithInput
     end interface given
 
+    interface hangingIndent
+        module procedure hangingIndentString
+        module procedure hangingIndentCharacter
+    end interface hangingIndent
+
     interface join
         module procedure joinWithCharacter
         module procedure joinWithString
@@ -626,7 +631,7 @@ contains
         character(len=*), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
-        if (self%description_.includes.toString(filter_string)) then
+        if (self%description_.includes.filter_string) then
             maybe = Just(self)
         else
             maybe = NOTHING
@@ -638,7 +643,7 @@ contains
         character(len=*), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
-        if (self%description_.includes.toString(filter_string)) then
+        if (self%description_.includes.filter_string) then
             maybe = Just(self)
         else
             maybe = NOTHING
@@ -655,7 +660,7 @@ contains
         integer :: num_input_tests
         logical, allocatable :: passed_filter(:)
 
-        if (self%description_.includes.toString(filter_string)) then
+        if (self%description_.includes.filter_string) then
             maybe = Just(self)
         else
             num_input_tests = size(self%tests)
@@ -684,7 +689,7 @@ contains
         integer :: num_input_tests
         logical, allocatable :: passed_filter(:)
 
-        if (self%description_.includes.toString(filter_string)) then
+        if (self%description_.includes.filter_string) then
             maybe = Just(self)
         else
             num_input_tests = size(self%tests)
@@ -765,7 +770,7 @@ contains
         integer :: num_input_tests
         logical, allocatable :: passed_filter(:)
 
-        if (self%description_.includes.toString(filter_string)) then
+        if (self%description_.includes.filter_string) then
             maybe = Just(self)
         else
             num_input_tests = size(self%tests)
@@ -906,7 +911,19 @@ contains
         test_collection = describe("Given " // description, input, tests)
     end function givenWithInput
 
-    pure function hangingIndent(string__) result(indented)
+    pure function hangingIndentCharacter(string__) result(indented)
+        character(len=*), intent(in) :: string__
+        character(len=:), allocatable :: indented
+
+        type(VegetableString_t), allocatable :: lines(:)
+        type(VegetableString_t) :: joined
+
+        lines = splitAt(string__, NEWLINE)
+        joined = join(lines, NEWLINE // "    ")
+        indented = joined%string
+    end function hangingIndentCharacter
+
+    pure function hangingIndentString(string__) result(indented)
         type(VegetableString_t), intent(in) :: string__
         type(VegetableString_t), allocatable :: indented
 
@@ -914,7 +931,7 @@ contains
 
         lines = splitAt(string__, NEWLINE)
         indented = join(lines, NEWLINE // "    ")
-    end function hangingIndent
+    end function hangingIndentString
 
     elemental function hasValue(self)
         class(MaybeItem_t), intent(in) :: self
@@ -941,7 +958,7 @@ contains
         procedure(inputTest) :: func
         type(InputTestCase_t) :: test_case
 
-        test_case%description_ = toString(description)
+        test_case%description_ = description
         test_case%test => func
     end function InputTestCase
 
@@ -949,7 +966,7 @@ contains
         class(InputTestCase_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        description = self%description_%string
+        description = self%description_
     end function inputTestCaseDescription
 
     pure function inputTestCaseNumCases(self) result(num_cases)
@@ -1315,7 +1332,7 @@ contains
             allocate(TestCaseResult_t :: results(1)%result_)
             select type (the_result => results(1)%result_)
             type is (TestCaseResult_t)
-                the_result = TestCaseResult(toString("Transformation Failed"), next_input)
+                the_result = TestCaseResult("Transformation Failed", next_input)
             end select
             result__ = TestCollectionResult(self%description_, results)
         class default
@@ -1431,7 +1448,7 @@ contains
         procedure(test_) :: func
         type(TestCase_t) :: test_case
 
-        test_case%description_ = toString(description)
+        test_case%description_ = description
         test_case%test => func
     end function TestCase
 
@@ -1439,7 +1456,7 @@ contains
         class(TestCase_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        description = self%description_%string
+        description = self%description_
     end function testCaseDescription
 
     pure function testCaseFailed(self) result(failed)
@@ -1453,14 +1470,11 @@ contains
         class(TestCaseResult_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        type(VegetableString_t) :: description_string
-
         if (self%passed()) then
             description = ""
         else
-            description_string = hangingIndent( &
+            description = hangingIndent( &
                     self%description // NEWLINE // self%result_%failureDescription())
-            description = description_string%string
         end if
     end function testCaseFailureDescription
 
@@ -1524,7 +1538,7 @@ contains
     end function testCasePassed
 
     pure function TestCaseResult(description, result__) result(test_case_result)
-        type(VegetableString_t), intent(in) :: description
+        character(len=*), intent(in) :: description
         type(Result_t), intent(in) :: result__
         type(TestCaseResult_t) :: test_case_result
 
@@ -1545,11 +1559,8 @@ contains
         class(TestCaseResult_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        type(VegetableString_t) :: description_string
-
-        description_string = hangingIndent( &
+        description = hangingIndent( &
                 self%description // NEWLINE // self%result_%verboseDescription())
-        description = description_string%string
     end function testCaseVerboseDescription
 
     pure function TestCollection(description, tests) result(test_collection)
@@ -1557,7 +1568,7 @@ contains
         type(TestItem_t), intent(in) :: tests(:)
         type(TestCollection_t) :: test_collection
 
-        test_collection%description_ = toString(description)
+        test_collection%description_ = description
         allocate(test_collection%tests(size(tests)))
         test_collection%tests = tests
     end function TestCollection
@@ -1693,7 +1704,7 @@ contains
     end function testCollectionPassed
 
     pure function TestCollectionResult(description, results) result(test_collection_result)
-        type(VegetableString_t), intent(in) :: description
+        character(len=*), intent(in) :: description
         type(TestResultItem_t), intent(in) :: results(:)
         type(TestCollectionResult_t) :: test_collection_result
 
@@ -1750,7 +1761,7 @@ contains
         type(TestItem_t), intent(in) :: tests(:)
         type(TestCollectionWithInput_t) :: test_collection
 
-        test_collection%description_ = toString(description)
+        test_collection%description_ = description
         test_collection%input = input
         allocate(test_collection%tests(size(tests)))
         test_collection%tests = tests
@@ -1915,7 +1926,7 @@ contains
         type(TestItem_t), intent(in) :: tests(:)
         type(TransformingTestCollection_t) :: test_collection
 
-        test_collection%description_ = toString(description)
+        test_collection%description_ = description
         test_collection%transformer => func
         allocate(test_collection%tests(size(tests)))
         test_collection%tests = tests
