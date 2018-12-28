@@ -329,11 +329,6 @@ module Vegetables_m
         module procedure describeWithInput
     end interface describe
 
-    interface fail
-        module procedure failWithChars
-        module procedure failWithString
-    end interface fail
-
     interface given
         module procedure givenBasic
         module procedure givenWithInput
@@ -352,11 +347,6 @@ module Vegetables_m
         module procedure replaceNewlinesInCharacters
         module procedure replaceNewlinesInString
     end interface replaceNewlines
-
-    interface succeed
-        module procedure succeedWithChars
-        module procedure succeedWithString
-    end interface succeed
 
     interface toCharacter
         module procedure integerToCharacter
@@ -536,7 +526,7 @@ contains
         end select
     end function describeWithInput
 
-    pure function failWithChars(message) result(failure)
+    pure function fail(message) result(failure)
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
 
@@ -546,14 +536,7 @@ contains
                 failing_message = message, &
                 num_failling_asserts = 1, &
                 num_passing_asserts = 0)
-    end function failWithChars
-
-    pure function failWithString(message) result(failure)
-        type(VegetableString_t), intent(in) :: message
-        type(Result_t) :: failure
-
-        failure = fail(message%string)
-    end function failWithString
+    end function fail
 
     pure function filterInputTestCase(self, filter_string) result(maybe)
         class(InputTestCase_t), intent(in) :: self
@@ -1304,7 +1287,7 @@ contains
         end function doSplit
     end function splitAt
 
-    pure function succeedWithChars(message) result(success)
+    pure function succeed(message) result(success)
         character(len=*), intent(in) :: message
         type(Result_t) :: success
 
@@ -1314,14 +1297,7 @@ contains
                 failing_message = "", &
                 num_failling_asserts = 0, &
                 num_passing_asserts = 1)
-    end function succeedWithChars
-
-    pure function succeedWithString(message) result(success)
-        type(VegetableString_t), intent(in) :: message
-        type(Result_t) :: success
-
-        success = succeed(message%string)
-    end function succeedWithString
+    end function succeed
 
     function TestCase(description, func) result(test_case)
         character(len=*), intent(in) :: description
