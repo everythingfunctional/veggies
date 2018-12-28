@@ -103,9 +103,9 @@ module Vegetables_m
         end function
 
         function testDescription(self) result(description)
-            import :: Test_t, VegetableString_t
+            import :: Test_t
             class(Test_t), intent(in) :: self
-            type(VegetableString_t) :: description
+            character(len=:), allocatable :: description
         end function testDescription
 
         pure function testNum(self) result(num)
@@ -121,9 +121,9 @@ module Vegetables_m
         end function testQuestion
 
         function testResultDescription(self) result(description)
-            import :: TestResult_t, VegetableString_t
+            import :: TestResult_t
             class(TestResult_t), intent(in) :: self
-            type(VegetableString_t) :: description
+            character(len=:), allocatable :: description
         end function testResultDescription
 
         pure function testResultNum(self) result(num)
@@ -1012,9 +1012,9 @@ contains
 
     pure function inputTestCaseDescription(self) result(description)
         class(InputTestCase_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
-        description = self%description_
+        description = self%description_%string
     end function inputTestCaseDescription
 
     pure function inputTestCaseNumCases(self) result(num_cases)
@@ -1328,7 +1328,7 @@ contains
         write(output_unit, '(A)') "Running Tests"
         write(output_unit, '(A)')
         if (.not.options%quiet) then
-            write(output_unit, '(DT)') tests_to_run%description()
+            write(output_unit, '(A)') tests_to_run%description()
             write(output_unit, '(A)')
         end if
         write(output_unit, '(DT)') &
@@ -1338,7 +1338,7 @@ contains
             write(output_unit, '(A)')
             write(output_unit, '(A)') "All Passed"
             if (options%verbose) then
-                write(output_unit, '(DT)') results%verboseDescription()
+                write(output_unit, '(A)') results%verboseDescription()
             end if
             write(output_unit, '(DT)') &
                     "A total of " // toString(results%numCases()) &
@@ -1357,9 +1357,9 @@ contains
                     // toString(results%numAsserts()) // " assertions failed"
             write(error_unit, '(A)')
             if (options%verbose) then
-                write(error_unit, '(DT)') results%verboseDescription()
+                write(error_unit, '(A)') results%verboseDescription()
             else
-                write(error_unit, '(DT)') results%failureDescription()
+                write(error_unit, '(A)') results%failureDescription()
             end if
             write(error_unit, '(A)')
             call exit(1)
@@ -1505,9 +1505,9 @@ contains
 
     pure function testCaseDescription(self) result(description)
         class(TestCase_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
-        description = self%description_
+        description = self%description_%string
     end function testCaseDescription
 
     pure function testCaseFailed(self) result(failed)
@@ -1519,13 +1519,16 @@ contains
 
     pure function testCaseFailureDescription(self) result(description)
         class(TestCaseResult_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
+
+        type(VegetableString_t) :: description_string
 
         if (self%passed()) then
-            description = toString("")
+            description = ""
         else
-            description = hangingIndent( &
+            description_string = hangingIndent( &
                     self%description // NEWLINE // self%result_%failureDescription())
+            description = description_string%string
         end if
     end function testCaseFailureDescription
 
@@ -1608,10 +1611,13 @@ contains
 
     pure function testCaseVerboseDescription(self) result(description)
         class(TestCaseResult_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
-        description = hangingIndent( &
+        type(VegetableString_t) :: description_string
+
+        description_string = hangingIndent( &
                 self%description // NEWLINE // self%result_%verboseDescription())
+        description = description_string%string
     end function testCaseVerboseDescription
 
     pure function TestCollection(description, tests) result(test_collection)
@@ -1626,13 +1632,14 @@ contains
 
     function testCollectionDescription(self) result(description)
         class(TestCollection_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
         type :: VegStringArray_t
             type(VegetableString_t), pointer :: strings(:) => null()
         end type VegStringArray_t
 
         integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegetableString_t) :: description_string
         type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
         integer :: descriptions_location
         integer :: i
@@ -1648,11 +1655,12 @@ contains
         end do
         if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
         do i = 1, num_cases
-            descriptions(descriptions_location)%strings(i) = self%tests(i)%description()
+            descriptions(descriptions_location)%strings(i) = toString(self%tests(i)%description())
         end do
-        description = hangingIndent( &
+        description_string = hangingIndent( &
                 self%description_ // NEWLINE &
                 // join(descriptions(descriptions_location)%strings, NEWLINE))
+        description = description_string%string
         deallocate(descriptions(descriptions_location)%strings)
         nullify(descriptions(descriptions_location)%strings)
     end function testCollectionDescription
@@ -1666,20 +1674,21 @@ contains
 
     function testCollectionFailureDescription(self) result(description)
         class(TestCollectionResult_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
         type :: VegStringArray_t
             type(VegetableString_t), pointer :: strings(:) => null()
         end type VegStringArray_t
 
         integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegetableString_t) :: description_string
         type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
         integer :: descriptions_location
         integer :: i
         integer :: num_cases
 
         if (self%passed()) then
-            description = toString("")
+            description = ""
         else
             num_cases = size(self%results)
             do i = 1, MAX_STACK_SIZE
@@ -1691,11 +1700,12 @@ contains
             end do
             if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
             do i = 1, num_cases
-                descriptions(descriptions_location)%strings(i) = self%results(i)%failureDescription()
+                descriptions(descriptions_location)%strings(i) = toString(self%results(i)%failureDescription())
             end do
-            description = hangingIndent( &
+            description_string = hangingIndent( &
                     self%description // NEWLINE &
                     // join(descriptions(descriptions_location)%strings, NEWLINE))
+            description = description_string%string
             deallocate(descriptions(descriptions_location)%strings)
             nullify(descriptions(descriptions_location)%strings)
         end if
@@ -1769,13 +1779,14 @@ contains
 
     function testCollectionVerboseDescription(self) result(description)
         class(TestCollectionResult_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
         type :: VegStringArray_t
             type(VegetableString_t), pointer :: strings(:) => null()
         end type VegStringArray_t
 
         integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegetableString_t) :: description_string
         type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
         integer :: descriptions_location
         integer :: i
@@ -1791,11 +1802,12 @@ contains
         end do
         if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
         do i = 1, num_cases
-            descriptions(descriptions_location)%strings(i) = self%results(i)%verboseDescription()
+            descriptions(descriptions_location)%strings(i) = toString(self%results(i)%verboseDescription())
         end do
-        description = hangingIndent( &
+        description_string = hangingIndent( &
                 self%description // NEWLINE &
                 // join(descriptions(descriptions_location)%strings, NEWLINE))
+        description = description_string%string
         deallocate(descriptions(descriptions_location)%strings)
         nullify(descriptions(descriptions_location)%strings)
     end function testCollectionVerboseDescription
@@ -1814,13 +1826,14 @@ contains
 
     function testCollectionWithInputDescription(self) result(description)
         class(TestCollectionWithInput_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
         type :: VegStringArray_t
             type(VegetableString_t), pointer :: strings(:) => null()
         end type VegStringArray_t
 
         integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegetableString_t) :: description_string
         type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
         integer :: descriptions_location
         integer :: i
@@ -1836,11 +1849,12 @@ contains
         end do
         if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
         do i = 1, num_cases
-            descriptions(descriptions_location)%strings(i) = self%tests(i)%description()
+            descriptions(descriptions_location)%strings(i) = toString(self%tests(i)%description())
         end do
-        description = hangingIndent( &
+        description_string = hangingIndent( &
                 self%description_ // NEWLINE &
                 // join(descriptions(descriptions_location)%strings, NEWLINE))
+        description = description_string%string
         deallocate(descriptions(descriptions_location)%strings)
         nullify(descriptions(descriptions_location)%strings)
     end function testCollectionWithInputDescription
@@ -1854,7 +1868,7 @@ contains
 
     function testItemDescription(self) result(description)
         class(TestItem_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
         description = self%test%description()
     end function testItemDescription
@@ -1875,7 +1889,7 @@ contains
 
     function testResultItemFailureDescription(self) result(description)
         class(TestResultItem_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
         description = self%result_%failureDescription()
     end function testResultItemFailureDescription
@@ -1924,7 +1938,7 @@ contains
 
     function testResultItemVerboseDescription(self) result(description)
         class(TestResultItem_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
         description = self%result_%verboseDescription()
     end function testResultItemVerboseDescription
@@ -1977,13 +1991,14 @@ contains
 
     function transformingTestCollectionDescription(self) result(description)
         class(TransformingTestCollection_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
         type :: VegStringArray_t
             type(VegetableString_t), pointer :: strings(:) => null()
         end type VegStringArray_t
 
         integer, parameter :: MAX_STACK_SIZE = 100
+        type(VegetableString_t) :: description_string
         type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
         integer :: descriptions_location
         integer :: i
@@ -1999,11 +2014,12 @@ contains
         end do
         if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
         do i = 1, num_cases
-            descriptions(descriptions_location)%strings(i) = self%tests(i)%description()
+            descriptions(descriptions_location)%strings(i) = toString(self%tests(i)%description())
         end do
-        description = hangingIndent( &
+        description_string = hangingIndent( &
                 self%description_ // NEWLINE &
                 // join(descriptions(descriptions_location)%strings, NEWLINE))
+        description = description_string%string
         deallocate(descriptions(descriptions_location)%strings)
         nullify(descriptions(descriptions_location)%strings)
     end function transformingTestCollectionDescription
