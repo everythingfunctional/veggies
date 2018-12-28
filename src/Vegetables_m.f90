@@ -462,7 +462,9 @@ contains
         if (string == "") then
             result__ = succeed("String was empty")
         else
-            result__ = fail("String '" // replaceNewlines(string) // "' wasn't empty")
+            result__ = fail( &
+                    "String " // delimit(replaceNewlines(string)) &
+                    // " wasn't empty")
         end if
     end function assertEmptyChars
 
@@ -487,11 +489,12 @@ contains
         type(Result_t) :: result__
 
         if (expected == actual) then
-            result__ = succeed("Expected and got '" // replaceNewlines(expected) // "'")
+            result__ = succeed( &
+                    "Expected and got " // delimit(replaceNewlines(expected)))
         else
             result__ = fail( &
-                    "Expected '" // replaceNewlines(expected) &
-                    // "' but got '" // replaceNewlines(actual) // "'")
+                    "Expected " // delimit(replaceNewlines(expected)) &
+                    // " but got " // delimit(replaceNewlines(actual)))
         end if
     end function assertEqualsCharacters
 
@@ -501,11 +504,12 @@ contains
         type(Result_t) :: result__
 
         if (expected == actual) then
-            result__ = succeed("Expected and got '" // toString(expected) // "'")
+            result__ = succeed( &
+                    "Expected and got " // delimit(toString(expected)))
         else
             result__ = fail( &
-                    "Expected '" // toString(expected) &
-                    // "' but got '" // toString(actual) // "'")
+                    "Expected " // delimit(toString(expected)) &
+                    // " but got " // delimit(toString(actual)))
         end if
     end function assertEqualsInteger
 
@@ -551,12 +555,12 @@ contains
 
         if (.not.(string.includes.search_for)) then
             result__ = succeed( &
-                    "'" // replaceNewlines(string) // "' did not include '" &
-                    // replaceNewlines(search_for) // "'")
+                    delimit(replaceNewlines(string)) // " did not include " &
+                    // delimit(replaceNewlines(search_for)))
         else
             result__ = fail( &
-                    "Expected '" // replaceNewlines(string) &
-                    // "' to not include '" // replaceNewlines(search_for) // "'")
+                    "Expected " // delimit(replaceNewlines(string)) &
+                    // " to not include " // delimit(replaceNewlines(search_for)))
         end if
     end function assertStringDoesntIncludeString
 
@@ -575,12 +579,12 @@ contains
 
         if (string.includes.search_for) then
             result__ = succeed( &
-                    "'" // replaceNewlines(string) // "' included '" &
-                    // replaceNewlines(search_for) // "'")
+                    delimit(replaceNewlines(string)) // " included " &
+                    // delimit(replaceNewlines(search_for)))
         else
             result__ = fail( &
-                    "Expected '" // replaceNewlines(string) &
-                    // "' to include '" // replaceNewlines(search_for) // "'")
+                    "Expected " // delimit(replaceNewlines(string)) &
+                    // " to include " // delimit(replaceNewlines(search_for)))
         end if
     end function assertStringIncludesString
 
@@ -638,6 +642,13 @@ contains
 
         combined = toString(lhs%string // rhs%string)
     end function concatStrings
+
+    pure function delimit(string) result(delimited)
+        type(VegetableString_t), intent(in) :: string
+        type(VegetableString_t) :: delimited
+
+        delimited = "[" // string // "]"
+    end function delimit
 
     pure function describeBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
