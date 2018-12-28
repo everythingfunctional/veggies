@@ -358,6 +358,7 @@ module Vegetables_m
         module procedure whenWithTransformer
     end interface
 
+    character(len=*), parameter :: EMPTY_SUCCESS_MESSAGE = "String was empty"
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
     type(Nothing_t), parameter :: NOTHING = Nothing_t()
 
@@ -391,12 +392,10 @@ contains
 
         if (.not.(string.includes.search_for)) then
             result__ = succeed( &
-                    delimit(replaceNewlines(string)) // " did not include " &
-                    // delimit(replaceNewlines(search_for)))
+                    makeDoesntIncludeSuccessMessage(search_for, string))
         else
             result__ = fail( &
-                    "Expected " // delimit(replaceNewlines(string)) &
-                    // " to not include " // delimit(replaceNewlines(search_for)))
+                    makeDoesntIncludeFailureMessage(search_for, string))
         end if
     end function assertDoesntIncludeBasic
 
@@ -407,12 +406,10 @@ contains
 
         if (string.includes.search_for) then
             result__ = succeed( &
-                    delimit(replaceNewlines(string)) // " included " &
-                    // delimit(replaceNewlines(search_for)))
+                    makeIncludesSuccessMessage(search_for, string))
         else
             result__ = fail( &
-                    "Expected " // delimit(replaceNewlines(string)) &
-                    // " to include " // delimit(replaceNewlines(search_for)))
+                    makeIncludesFailureMessage(search_for, string))
         end if
     end function assertIncludesBasic
 
@@ -421,11 +418,9 @@ contains
         type(Result_t) :: result__
 
         if (string == "") then
-            result__ = succeed("String was empty")
+            result__ = succeed(EMPTY_SUCCESS_MESSAGE)
         else
-            result__ = fail( &
-                    "String " // delimit(replaceNewlines(string)) &
-                    // " wasn't empty")
+            result__ = fail(makeEmptyFailureMessage(string))
         end if
     end function assertEmptyBasic
 
@@ -966,6 +961,53 @@ contains
 
         just_ = JustTransformingTestCollection_t(value_)
     end function JustTransformingTestCollection
+
+    pure function makeDoesntIncludeFailureMessage(search_for, string) result(message)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=:), allocatable :: message
+
+        message = &
+                "Expected " // delimit(replaceNewlines(string)) &
+                // " to not include " // delimit(replaceNewlines(search_for))
+    end function makeDoesntIncludeFailureMessage
+
+    pure function makeDoesntIncludeSuccessMessage(search_for, string) result(message)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=:), allocatable :: message
+
+        message = &
+                delimit(replaceNewlines(string)) // " did not include " &
+                // delimit(replaceNewlines(search_for))
+    end function makeDoesntIncludeSuccessMessage
+
+    pure function makeEmptyFailureMessage(string) result(message)
+        character(len=*), intent(in) :: string
+        character(len=:), allocatable :: message
+
+        message = "String " // delimit(replaceNewlines(string)) // " wasn't empty"
+    end function makeEmptyFailureMessage
+
+    pure function makeIncludesFailureMessage(search_for, string) result(message)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=:), allocatable :: message
+
+        message = &
+                "Expected " // delimit(replaceNewlines(string)) &
+                // " to include " // delimit(replaceNewlines(search_for))
+    end function makeIncludesFailureMessage
+
+    pure function makeIncludesSuccessMessage(search_for, string) result(message)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=:), allocatable :: message
+
+        message = &
+                delimit(replaceNewlines(string)) // " included " &
+                // delimit(replaceNewlines(search_for))
+    end function makeIncludesSuccessMessage
 
     pure function replaceNewlinesInCharacters(chars) result(without_newlines)
         character(len=*), intent(in) :: chars
