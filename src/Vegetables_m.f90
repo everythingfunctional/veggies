@@ -336,10 +336,7 @@ module Vegetables_m
     end interface assertEquals
 
     interface assertIncludes
-        module procedure assertCharsIncludeChars
-        module procedure assertCharsIncludeString
-        module procedure assertStringIncludesChars
-        module procedure assertStringIncludesString
+        module procedure assertIncludesBasic
     end interface assertIncludes
 
     interface delimit
@@ -445,21 +442,21 @@ contains
         end if
     end function assertDoesntIncludeBasic
 
-    pure function assertCharsIncludeChars(search_for, string) result(result__)
+    pure function assertIncludesBasic(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertIncludes(toString(search_for), toString(string))
-    end function assertCharsIncludeChars
-
-    pure function assertCharsIncludeString(search_for, string) result(result__)
-        type(VegetableString_t), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(Result_t) :: result__
-
-        result__ = assertIncludes(search_for, toString(string))
-    end function assertCharsIncludeString
+        if (string.includes.search_for) then
+            result__ = succeed( &
+                    delimit(replaceNewlines(string)) // " included " &
+                    // delimit(replaceNewlines(search_for)))
+        else
+            result__ = fail( &
+                    "Expected " // delimit(replaceNewlines(string)) &
+                    // " to include " // delimit(replaceNewlines(search_for)))
+        end if
+    end function assertIncludesBasic
 
     pure function assertEmptyChars(string) result(result__)
         character(len=*), intent(in) :: string
@@ -545,30 +542,6 @@ contains
             result__ = fail("Expected to not be true")
         end if
     end function assertNot
-
-    pure function assertStringIncludesChars(search_for, string) result(result__)
-        character(len=*), intent(in) :: search_for
-        type(VegetableString_t), intent(in) :: string
-        type(Result_t) :: result__
-
-        result__ = assertIncludes(toString(search_for), string)
-    end function assertStringIncludesChars
-
-    pure function assertStringIncludesString(search_for, string) result(result__)
-        type(VegetableString_t), intent(in) :: search_for
-        type(VegetableString_t), intent(in) :: string
-        type(Result_t) :: result__
-
-        if (string.includes.search_for) then
-            result__ = succeed( &
-                    delimit(replaceNewlines(string)) // " included " &
-                    // delimit(replaceNewlines(search_for)))
-        else
-            result__ = fail( &
-                    "Expected " // delimit(replaceNewlines(string)) &
-                    // " to include " // delimit(replaceNewlines(search_for)))
-        end if
-    end function assertStringIncludesString
 
     pure function assertThat(condition) result(result__)
         logical, intent(in) :: condition
