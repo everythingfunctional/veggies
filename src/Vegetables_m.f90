@@ -355,11 +355,6 @@ module Vegetables_m
         module procedure givenWithInput
     end interface given
 
-    interface hangingIndent
-        module procedure hangingIndentString
-        module procedure hangingIndentCharacter
-    end interface hangingIndent
-
     interface join
         module procedure joinWithCharacter
         module procedure joinWithString
@@ -378,11 +373,6 @@ module Vegetables_m
         module procedure replaceNewlinesInCharacters
         module procedure replaceNewlinesInString
     end interface replaceNewlines
-
-    interface splitAt
-        module procedure splitAtBothCharacter
-        module procedure splitAtStringCharacter
-    end interface splitAt
 
     interface succeed
         module procedure succeedWithChars
@@ -547,17 +537,17 @@ contains
     pure function concatCharsAndString(chars, string) result(combined)
         character(len=*), intent(in) :: chars
         class(VegetableString_t), intent(in) :: string
-        type(VegetableString_t) :: combined
+        character(len=:), allocatable :: combined
 
-        combined = toString(chars // string%string)
+        combined = chars // string%string
     end function concatCharsAndString
 
     pure function concatStringAndChars(string, chars) result(combined)
         class(VegetableString_t), intent(in) :: string
         character(len=*), intent(in) :: chars
-        type(VegetableString_t) :: combined
+        character(len=:), allocatable :: combined
 
-        combined = toString(string%string // chars)
+        combined = string%string // chars
     end function concatStringAndChars
 
     pure function concatStrings(lhs, rhs) result(combined)
@@ -579,7 +569,7 @@ contains
         type(VegetableString_t), intent(in) :: string
         type(VegetableString_t) :: delimited
 
-        delimited = "[" // string // "]"
+        delimited = toString("[" // string // "]")
     end function delimitString
 
     pure function describeBasic(description, tests) result(test_collection)
@@ -911,7 +901,7 @@ contains
         test_collection = describe("Given " // description, input, tests)
     end function givenWithInput
 
-    pure function hangingIndentCharacter(string__) result(indented)
+    pure function hangingIndent(string__) result(indented)
         character(len=*), intent(in) :: string__
         character(len=:), allocatable :: indented
 
@@ -921,17 +911,7 @@ contains
         lines = splitAt(string__, NEWLINE)
         joined = join(lines, NEWLINE // "    ")
         indented = joined%string
-    end function hangingIndentCharacter
-
-    pure function hangingIndentString(string__) result(indented)
-        type(VegetableString_t), intent(in) :: string__
-        type(VegetableString_t), allocatable :: indented
-
-        type(VegetableString_t), allocatable :: lines(:)
-
-        lines = splitAt(string__, NEWLINE)
-        indented = join(lines, NEWLINE // "    ")
-    end function hangingIndentString
+    end function hangingIndent
 
     elemental function hasValue(self)
         class(MaybeItem_t), intent(in) :: self
@@ -1280,7 +1260,7 @@ contains
             write(output_unit, '(A)') tests_to_run%description()
             write(output_unit, '(A)')
         end if
-        write(output_unit, '(DT)') &
+        write(output_unit, '(A)') &
                 "A total of " // toString(tests_to_run%numCases()) // " test cases"
         results = tests_to_run%run()
         if (results%passed()) then
@@ -1289,7 +1269,7 @@ contains
             if (options%verbose) then
                 write(output_unit, '(A)') results%verboseDescription()
             end if
-            write(output_unit, '(DT)') &
+            write(output_unit, '(A)') &
                     "A total of " // toString(results%numCases()) &
                     // " test cases containg a total of " &
                     // toString(results%numAsserts()) // " assertions"
@@ -1298,10 +1278,10 @@ contains
             write(error_unit, '(A)')
             write(error_unit, '(A)') "Failed"
             write(error_unit, '(A)')
-            write(error_unit, '(DT)') &
+            write(error_unit, '(A)') &
                     toString(results%numFailingCases()) // " of " &
                     // toString(results%numCases()) // " cases failed"
-            write(error_unit, '(DT)') &
+            write(error_unit, '(A)') &
                     toString(results%numFailingAsserts()) // " of " &
                     // toString(results%numAsserts()) // " assertions failed"
             write(error_unit, '(A)')
@@ -1345,7 +1325,7 @@ contains
         end select
     end function runTransformingCollection
 
-    pure recursive function splitAtBothCharacter(&
+    pure recursive function splitAt(&
             string_, split_characters) result(strings)
         character(len=*), intent(in) :: string_
         character(len=*), intent(in) :: split_characters
@@ -1354,9 +1334,9 @@ contains
         if (len(split_characters) > 0) then
             if (len(string_) > 0) then
                 if (index(split_characters, string_(1:1)) > 0) then
-                    strings = splitAtBothCharacter(string_(2:), split_characters)
+                    strings = splitAt(string_(2:), split_characters)
                 else if (index(split_characters, string_(len(string_):len(string_))) > 0) then
-                    strings = splitAtBothCharacter(string_(1:len(string_) - 1), split_characters)
+                    strings = splitAt(string_(1:len(string_) - 1), split_characters)
                 else
                     strings = doSplit(string_, split_characters)
                 end if
@@ -1384,7 +1364,7 @@ contains
             end do
             if (i < len(string__)) then
                 this_string = string__(1:i - 1)
-                rest = splitAtBothCharacter(string__(i + 1:), split_characters_)
+                rest = splitAt(string__(i + 1:), split_characters_)
                 allocate(strings_(size(rest) + 1))
                 strings_(1) = toString(this_string)
                 strings_(2:) = rest(:)
@@ -1393,15 +1373,7 @@ contains
                 strings_(1) = toString(string__)
             end if
         end function doSplit
-    end function splitAtBothCharacter
-
-    pure function splitAtStringCharacter(string__, split_characters_) result(strings_)
-        type(VegetableString_t), intent(in) :: string__
-        character(len=*), intent(in) :: split_characters_
-        type(VegetableString_t), allocatable :: strings_(:)
-
-        strings_ = splitAt(string__%string, split_characters_)
-    end function splitAtStringCharacter
+    end function splitAt
 
     pure function stringIncludesString(string, search_for)
         class(VegetableString_t), intent(in) :: string
@@ -1582,7 +1554,6 @@ contains
         end type VegStringArray_t
 
         integer, parameter :: MAX_STACK_SIZE = 100
-        type(VegetableString_t) :: description_string
         type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
         integer :: descriptions_location
         integer :: i
@@ -1600,10 +1571,9 @@ contains
         do i = 1, num_cases
             descriptions(descriptions_location)%strings(i) = toString(self%tests(i)%description())
         end do
-        description_string = hangingIndent( &
+        description = hangingIndent( &
                 self%description_ // NEWLINE &
                 // join(descriptions(descriptions_location)%strings, NEWLINE))
-        description = description_string%string
         deallocate(descriptions(descriptions_location)%strings)
         nullify(descriptions(descriptions_location)%strings)
     end function testCollectionDescription
@@ -1624,7 +1594,6 @@ contains
         end type VegStringArray_t
 
         integer, parameter :: MAX_STACK_SIZE = 100
-        type(VegetableString_t) :: description_string
         type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
         integer :: descriptions_location
         integer :: i
@@ -1645,10 +1614,9 @@ contains
             do i = 1, num_cases
                 descriptions(descriptions_location)%strings(i) = toString(self%results(i)%failureDescription())
             end do
-            description_string = hangingIndent( &
+            description = hangingIndent( &
                     self%description // NEWLINE &
                     // join(descriptions(descriptions_location)%strings, NEWLINE))
-            description = description_string%string
             deallocate(descriptions(descriptions_location)%strings)
             nullify(descriptions(descriptions_location)%strings)
         end if
@@ -1729,7 +1697,6 @@ contains
         end type VegStringArray_t
 
         integer, parameter :: MAX_STACK_SIZE = 100
-        type(VegetableString_t) :: description_string
         type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
         integer :: descriptions_location
         integer :: i
@@ -1747,10 +1714,9 @@ contains
         do i = 1, num_cases
             descriptions(descriptions_location)%strings(i) = toString(self%results(i)%verboseDescription())
         end do
-        description_string = hangingIndent( &
+        description = hangingIndent( &
                 self%description // NEWLINE &
                 // join(descriptions(descriptions_location)%strings, NEWLINE))
-        description = description_string%string
         deallocate(descriptions(descriptions_location)%strings)
         nullify(descriptions(descriptions_location)%strings)
     end function testCollectionVerboseDescription
@@ -1776,7 +1742,6 @@ contains
         end type VegStringArray_t
 
         integer, parameter :: MAX_STACK_SIZE = 100
-        type(VegetableString_t) :: description_string
         type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
         integer :: descriptions_location
         integer :: i
@@ -1794,10 +1759,9 @@ contains
         do i = 1, num_cases
             descriptions(descriptions_location)%strings(i) = toString(self%tests(i)%description())
         end do
-        description_string = hangingIndent( &
+        description = hangingIndent( &
                 self%description_ // NEWLINE &
                 // join(descriptions(descriptions_location)%strings, NEWLINE))
-        description = description_string%string
         deallocate(descriptions(descriptions_location)%strings)
         nullify(descriptions(descriptions_location)%strings)
     end function testCollectionWithInputDescription
@@ -1941,7 +1905,6 @@ contains
         end type VegStringArray_t
 
         integer, parameter :: MAX_STACK_SIZE = 100
-        type(VegetableString_t) :: description_string
         type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
         integer :: descriptions_location
         integer :: i
@@ -1959,10 +1922,9 @@ contains
         do i = 1, num_cases
             descriptions(descriptions_location)%strings(i) = toString(self%tests(i)%description())
         end do
-        description_string = hangingIndent( &
+        description = hangingIndent( &
                 self%description_ // NEWLINE &
                 // join(descriptions(descriptions_location)%strings, NEWLINE))
-        description = description_string%string
         deallocate(descriptions(descriptions_location)%strings)
         nullify(descriptions(descriptions_location)%strings)
     end function transformingTestCollectionDescription
