@@ -968,13 +968,13 @@ contains
         test_collection = describe("Given " // description, input, tests)
     end function givenWithInput
 
-    pure function hangingIndent(string_) result(indented)
-        type(VegetableString_t), intent(in) :: string_
+    pure function hangingIndent(string__) result(indented)
+        type(VegetableString_t), intent(in) :: string__
         type(VegetableString_t), allocatable :: indented
 
         type(VegetableString_t), allocatable :: lines(:)
 
-        lines = splitAt(string_, NEWLINE)
+        lines = splitAt(string__, NEWLINE)
         indented = join(lines, NEWLINE // "    ")
     end function hangingIndent
 
@@ -1049,24 +1049,24 @@ contains
         end select
     end function it_
 
-    pure function joinWithCharacter(strings, separator) result(string)
-        type(VegetableString_t), intent(in) :: strings(:)
+    pure function joinWithCharacter(strings_, separator) result(string)
+        type(VegetableString_t), intent(in) :: strings_(:)
         character(len=*), intent(in) :: separator
         type(VegetableString_t) :: string
 
-        string = join(strings, toString(separator))
+        string = join(strings_, toString(separator))
     end function joinWithCharacter
 
-    pure function joinWithString(strings, separator) result(string)
-        type(VegetableString_t), intent(in) :: strings(:)
+    pure function joinWithString(strings_, separator) result(string)
+        type(VegetableString_t), intent(in) :: strings_(:)
         type(VegetableString_t), intent(in) :: separator
         type(VegetableString_t) :: string
 
         integer :: i
 
-        string = strings(1)
-        do i = 2, size(strings)
-            string = string // separator // strings(i)
+        string = strings_(1)
+        do i = 2, size(strings_)
+            string = string // separator // strings_(i)
         end do
     end function joinWithString
 
@@ -1363,10 +1363,10 @@ contains
         integer :: i
         integer :: num_tests
         type(TestResultItem_t), allocatable :: results(:)
-        type(Transformed_t) :: transformed
+        type(Transformed_t) :: transformed_
 
-        transformed = self%transformer(input)
-        select type (next_input => transformed%value_)
+        transformed_ = self%transformer(input)
+        select type (next_input => transformed_%value_)
         type is (Result_t)
             allocate(results(1))
             allocate(TestCaseResult_t :: results(1)%result_)
@@ -1435,12 +1435,12 @@ contains
         end function doSplit
     end function splitAtBothCharacter
 
-    pure function splitAtStringCharacter(string_, split_characters) result(strings)
-        type(VegetableString_t), intent(in) :: string_
-        character(len=*), intent(in) :: split_characters
-        type(VegetableString_t), allocatable :: strings(:)
+    pure function splitAtStringCharacter(string__, split_characters_) result(strings_)
+        type(VegetableString_t), intent(in) :: string__
+        character(len=*), intent(in) :: split_characters_
+        type(VegetableString_t), allocatable :: strings_(:)
 
-        strings = splitAt(string_%string, split_characters)
+        strings_ = splitAt(string__%string, split_characters_)
     end function splitAtStringCharacter
 
     pure function stringIncludesString(string, search_for)
