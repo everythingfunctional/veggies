@@ -12,10 +12,6 @@ module Vegetables_m
         procedure, pass(string) :: concatCharsAndString
         procedure :: concatStringAndChars
         procedure :: concatStrings
-        generic, public :: operator(.includes.) => stringIncludesString
-        procedure :: stringIncludesString
-        generic, public :: WRITE(FORMATTED) => stringWriteFormatted
-        procedure :: stringWriteFormatted
     end type VegetableString_t
 
     type, public, abstract :: Maybe_t
@@ -1359,27 +1355,6 @@ contains
             end if
         end function doSplit
     end function splitAt
-
-    pure function stringIncludesString(string, search_for)
-        class(VegetableString_t), intent(in) :: string
-        type(VegetableString_t), intent(in) :: search_for
-        logical :: stringIncludesString
-
-        stringIncludesString = string%string.includes.search_for%string
-    end function stringIncludesString
-
-    subroutine stringWriteFormatted(string, unit, iotype, v_list, iostat, iomsg)
-        class(VegetableString_t), intent(in) :: string
-        integer, intent(in) :: unit
-        character(len=*), intent(in) :: iotype
-        integer, intent(in) :: v_list(:)
-        integer, intent(out) :: iostat
-        character(len=*), intent(inout) :: iomsg
-
-        associate(a => iotype, b => v_list); end associate
-
-        write(unit=unit, iostat=iostat, iomsg=iomsg, fmt='(A)') string%string
-    end subroutine stringWriteFormatted
 
     pure function succeedWithChars(message) result(success)
         character(len=*), intent(in) :: message
