@@ -5,13 +5,6 @@ module Vegetables_m
     type :: VegetableString_t
         private
         character(len=:), allocatable :: string
-    contains
-        private
-        generic, public :: operator(//) => &
-                concatCharsAndString, concatStringAndChars, concatStrings
-        procedure, pass(string) :: concatCharsAndString
-        procedure :: concatStringAndChars
-        procedure :: concatStrings
     end type VegetableString_t
 
     type, public, abstract :: Maybe_t
@@ -511,30 +504,6 @@ contains
                 num_passing_asserts = lhs%num_passing_asserts + rhs%num_passing_asserts)
     end function combineResults
 
-    pure function concatCharsAndString(chars, string) result(combined)
-        character(len=*), intent(in) :: chars
-        class(VegetableString_t), intent(in) :: string
-        character(len=:), allocatable :: combined
-
-        combined = chars // string%string
-    end function concatCharsAndString
-
-    pure function concatStringAndChars(string, chars) result(combined)
-        class(VegetableString_t), intent(in) :: string
-        character(len=*), intent(in) :: chars
-        character(len=:), allocatable :: combined
-
-        combined = string%string // chars
-    end function concatStringAndChars
-
-    pure function concatStrings(lhs, rhs) result(combined)
-        class(VegetableString_t), intent(in) :: lhs
-        type(VegetableString_t), intent(in) :: rhs
-        type(VegetableString_t) :: combined
-
-        combined = toString(lhs%string // rhs%string)
-    end function concatStrings
-
     pure function delimit(string) result(delimited)
         character(len=*), intent(in) :: string
         character(len=:), allocatable :: delimited
@@ -969,7 +938,7 @@ contains
 
         string = strings_(1)%string
         do i = 2, size(strings_)
-            string = string // separator // strings_(i)
+            string = string // separator // strings_(i)%string
         end do
     end function join
 
