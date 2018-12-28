@@ -323,8 +323,7 @@ module Vegetables_m
     end interface assertDoesntInclude
 
     interface assertEmpty
-        module procedure assertEmptyChars
-        module procedure assertEmptyString
+        module procedure assertEmptyBasic
     end interface assertEmpty
 
     interface assertEquals
@@ -458,7 +457,7 @@ contains
         end if
     end function assertIncludesBasic
 
-    pure function assertEmptyChars(string) result(result__)
+    pure function assertEmptyBasic(string) result(result__)
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
@@ -469,14 +468,7 @@ contains
                     "String " // delimit(replaceNewlines(string)) &
                     // " wasn't empty")
         end if
-    end function assertEmptyChars
-
-    pure function assertEmptyString(string) result(result__)
-        type(VegetableString_t), intent(in) :: string
-        type(Result_t) :: result__
-
-        result__ = assertEmpty(string%string)
-    end function assertEmptyString
+    end function assertEmptyBasic
 
     pure function assertEqualsCharacterAndString(expected, actual) result(result__)
         character(len=*), intent(in) :: expected

@@ -11,9 +11,7 @@ contains
 
         tests = describe("assertEmpty", &
                 [it("passes with an empty character", checkPassForEmptyChars), &
-                it("passes with an empty string", checkPassForEmptyString), &
-                it("fails with a non empty character", checkFailsForNonemptyChars), &
-                it("fails with a non empty string", checkFailsForNonemptyString)])
+                it("fails with a non empty character", checkFailsForNonemptyChars)])
     end function test_assert_empty
 
     function test_with_newlines() result(tests)
@@ -38,18 +36,6 @@ contains
         result_ = assertThat(example_result%passed())
     end function checkPassForEmptyChars
 
-    function checkPassForEmptyString() result(result_)
-        use Vegetables_m, only: Result_t, assertEmpty, assertThat, toString
-
-        type(Result_t) :: result_
-
-        type(Result_t) :: example_result
-
-        example_result = assertEmpty(toString(""))
-
-        result_ = assertThat(example_result%passed())
-    end function checkPassForEmptyString
-
     function checkFailsForNonemptyChars() result(result_)
         use Vegetables_m, only: Result_t, assertEmpty, assertNot
 
@@ -62,18 +48,6 @@ contains
         result_ = assertNot(example_result%passed())
     end function checkFailsForNonemptyChars
 
-    function checkFailsForNonemptyString() result(result_)
-        use Vegetables_m, only: Result_t, assertEmpty, assertNot, toString
-
-        type(Result_t) :: result_
-
-        type(Result_t) :: example_result
-
-        example_result = assertEmpty(toString("Not Empty"))
-
-        result_ = assertNot(example_result%passed())
-    end function checkFailsForNonemptyString
-
     function checkMessageHasNoNewlines() result(result_)
         use Vegetables_m, only: &
                 Result_t, assertEmpty, assertDoesntInclude, toString
@@ -83,16 +57,12 @@ contains
         character(len=*), parameter :: NEWLINE = NEW_LINE('A')
         character(len=*), parameter :: EXAMPLE_STRING = &
                 "Example" // NEWLINE // "With" // NEWLINE // "Newlines"
-        type(Result_t) :: example_chars_result
-        type(Result_t) :: example_string_result
+        type(Result_t) :: example_result
 
-        example_chars_result = assertEmpty(EXAMPLE_STRING)
-        example_string_result = assertEmpty(toString(EXAMPLE_STRING))
+        example_result = assertEmpty(EXAMPLE_STRING)
 
         result_ = &
-                assertDoesntInclude(NEWLINE, example_chars_result%verboseDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_chars_result%failureDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_string_result%verboseDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_string_result%failureDescription())
+                assertDoesntInclude(NEWLINE, example_result%verboseDescription()) &
+                .and.assertDoesntInclude(NEWLINE, example_result%failureDescription())
     end function checkMessageHasNoNewlines
 end module assert_empty_test
