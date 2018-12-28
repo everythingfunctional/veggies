@@ -2,7 +2,7 @@ module Vegetables_m
     implicit none
     private
 
-    type, public :: VegetableString_t
+    type :: VegetableString_t
         private
         character(len=:), allocatable :: string
     contains
@@ -354,11 +354,6 @@ module Vegetables_m
         module procedure givenBasic
         module procedure givenWithInput
     end interface given
-
-    interface join
-        module procedure joinWithCharacter
-        module procedure joinWithString
-    end interface join
 
     interface Just
         module procedure JustInputTestCase
@@ -906,11 +901,9 @@ contains
         character(len=:), allocatable :: indented
 
         type(VegetableString_t), allocatable :: lines(:)
-        type(VegetableString_t) :: joined
 
         lines = splitAt(string__, NEWLINE)
-        joined = join(lines, NEWLINE // "    ")
-        indented = joined%string
+        indented = join(lines, NEWLINE // "    ")
     end function hangingIndent
 
     elemental function hasValue(self)
@@ -992,26 +985,18 @@ contains
         end select
     end function it_
 
-    pure function joinWithCharacter(strings_, separator) result(string)
+    pure function join(strings_, separator) result(string)
         type(VegetableString_t), intent(in) :: strings_(:)
         character(len=*), intent(in) :: separator
-        type(VegetableString_t) :: string
-
-        string = join(strings_, toString(separator))
-    end function joinWithCharacter
-
-    pure function joinWithString(strings_, separator) result(string)
-        type(VegetableString_t), intent(in) :: strings_(:)
-        type(VegetableString_t), intent(in) :: separator
-        type(VegetableString_t) :: string
+        character(len=:), allocatable :: string
 
         integer :: i
 
-        string = strings_(1)
+        string = strings_(1)%string
         do i = 2, size(strings_)
             string = string // separator // strings_(i)
         end do
-    end function joinWithString
+    end function join
 
     pure function JustInputTestCase(value_) result(just_)
         type(InputTestCase_t), intent(in) :: value_
