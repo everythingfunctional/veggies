@@ -331,11 +331,6 @@ module Vegetables_m
         module procedure assertIncludesBasic
     end interface assertIncludes
 
-    interface delimit
-        module procedure delimitCharacters
-        module procedure delimitString
-    end interface delimit
-
     interface describe
         module procedure describeBasic
         module procedure describeWithInput
@@ -370,10 +365,9 @@ module Vegetables_m
         module procedure succeedWithString
     end interface succeed
 
-    interface toString
-        module procedure charsToString
-        module procedure integerToString
-    end interface toString
+    interface toCharacter
+        module procedure integerToCharacter
+    end interface toCharacter
 
     interface when
         module procedure whenBasic
@@ -404,7 +398,6 @@ module Vegetables_m
             testThat, &
             then, &
             then_, &
-            toString, &
             Transformed, &
             when
 contains
@@ -475,11 +468,11 @@ contains
 
         if (expected == actual) then
             result__ = succeed( &
-                    "Expected and got " // delimit(toString(expected)))
+                    "Expected and got " // delimit(toCharacter(expected)))
         else
             result__ = fail( &
-                    "Expected " // delimit(toString(expected)) &
-                    // " but got " // delimit(toString(actual)))
+                    "Expected " // delimit(toCharacter(expected)) &
+                    // " but got " // delimit(toCharacter(actual)))
         end if
     end function assertEqualsInteger
 
@@ -504,13 +497,6 @@ contains
             result__ = fail("Expected to be true")
         end if
     end function assertThat
-
-    pure function charsToString(chars) result(string)
-        character(len=*), intent(in) :: chars
-        type(VegetableString_t) :: string
-
-        string%string = chars
-    end function charsToString
 
     pure function combineResults(lhs, rhs) result(combined)
         class(Result_t), intent(in) :: lhs
@@ -549,19 +535,12 @@ contains
         combined = toString(lhs%string // rhs%string)
     end function concatStrings
 
-    pure function delimitCharacters(string) result(delimited)
+    pure function delimit(string) result(delimited)
         character(len=*), intent(in) :: string
         character(len=:), allocatable :: delimited
 
         delimited = "[" // string // "]"
-    end function delimitCharacters
-
-    pure function delimitString(string) result(delimited)
-        type(VegetableString_t), intent(in) :: string
-        type(VegetableString_t) :: delimited
-
-        delimited = toString("[" // string // "]")
-    end function delimitString
+    end function delimit
 
     pure function describeBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -947,15 +926,15 @@ contains
         num_cases = 1
     end function inputTestCaseNumCases
 
-    pure function integerToString(int) result(string)
+    pure function integerToCharacter(int) result(string)
         integer, intent(in) :: int
-        type(VegetableString_t) :: string
+        character(len=:), allocatable :: string
 
         character(len=12) :: temp
 
         write(temp, '(I0)') int
-        string = toString(trim(temp))
-    end function integerToString
+        string = trim(temp)
+    end function integerToCharacter
 
     function it(description, func) result(test_case)
         character(len=*), intent(in) :: description
@@ -1242,7 +1221,7 @@ contains
             write(output_unit, '(A)')
         end if
         write(output_unit, '(A)') &
-                "A total of " // toString(tests_to_run%numCases()) // " test cases"
+                "A total of " // toCharacter(tests_to_run%numCases()) // " test cases"
         results = tests_to_run%run()
         if (results%passed()) then
             write(output_unit, '(A)')
@@ -1251,20 +1230,20 @@ contains
                 write(output_unit, '(A)') results%verboseDescription()
             end if
             write(output_unit, '(A)') &
-                    "A total of " // toString(results%numCases()) &
+                    "A total of " // toCharacter(results%numCases()) &
                     // " test cases containg a total of " &
-                    // toString(results%numAsserts()) // " assertions"
+                    // toCharacter(results%numAsserts()) // " assertions"
             write(output_unit, '(A)')
         else
             write(error_unit, '(A)')
             write(error_unit, '(A)') "Failed"
             write(error_unit, '(A)')
             write(error_unit, '(A)') &
-                    toString(results%numFailingCases()) // " of " &
-                    // toString(results%numCases()) // " cases failed"
+                    toCharacter(results%numFailingCases()) // " of " &
+                    // toCharacter(results%numCases()) // " cases failed"
             write(error_unit, '(A)') &
-                    toString(results%numFailingAsserts()) // " of " &
-                    // toString(results%numAsserts()) // " assertions failed"
+                    toCharacter(results%numFailingAsserts()) // " of " &
+                    // toCharacter(results%numAsserts()) // " assertions failed"
             write(error_unit, '(A)')
             if (options%verbose) then
                 write(error_unit, '(A)') results%verboseDescription()
@@ -1836,6 +1815,13 @@ contains
 
         test_case = it_("Then " // description, func)
     end function then_
+
+    pure function toString(chars) result(string)
+        character(len=*), intent(in) :: chars
+        type(VegetableString_t) :: string
+
+        string%string = chars
+    end function toString
 
     pure function Transformed(input)
         class(*), intent(in) :: input

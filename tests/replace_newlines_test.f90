@@ -16,7 +16,7 @@ contains
     end function test_replace_newlines
 
     function checkSameWithoutNewlines() result(result_)
-        use Vegetables_m, only: Result_t, assertEquals, replaceNewlines, toString
+        use Vegetables_m, only: Result_t, assertEquals, replaceNewlines
 
         type(Result_t) :: result_
 
@@ -26,8 +26,7 @@ contains
     end function checkSameWithoutNewlines
 
     function checkNoNewlines() result(result_)
-        use Vegetables_m, only: &
-                Result_t, assertDoesntInclude, replaceNewlines, toString
+        use Vegetables_m, only: Result_t, assertDoesntInclude, replaceNewlines
 
         type(Result_t) :: result_
 
@@ -39,7 +38,7 @@ contains
     end function checkNoNewlines
 
     function checkForJustANewline() result(result_)
-        use Vegetables_m, only: Result_t, assertEquals, replaceNewlines, toString
+        use Vegetables_m, only: Result_t, assertEquals, replaceNewlines
 
         type(Result_t) :: result_
 

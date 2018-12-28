@@ -38,7 +38,7 @@ contains
     end function test_not_included_with_newlines
 
     function checkPassForSameStrings() result(result_)
-        use Vegetables_m, only: Result_t, assertIncludes, assertThat, toString
+        use Vegetables_m, only: Result_t, assertIncludes, assertThat
 
         type(Result_t) :: result_
 
@@ -51,7 +51,7 @@ contains
     end function checkPassForSameStrings
 
     function checkFailForDifferentStrings() result(result_)
-        use Vegetables_m, only: Result_t, assertIncludes, assertNot, toString
+        use Vegetables_m, only: Result_t, assertIncludes, assertNot
 
         type(Result_t) :: result_
 
@@ -66,7 +66,7 @@ contains
 
     function checkIncludeStringsNoNewlines() result(result_)
         use Vegetables_m, only: &
-                Result_t, assertDoesntInclude, assertIncludes, toString
+                Result_t, assertDoesntInclude, assertIncludes
 
         type(Result_t) :: result_
 
@@ -84,7 +84,7 @@ contains
 
     function checkNotIncludedStringsNoNewlines() result(result_)
         use Vegetables_m, only: &
-                Result_t, assertDoesntInclude, assertIncludes, toString
+                Result_t, assertDoesntInclude, assertIncludes
 
         type(Result_t) :: result_
 

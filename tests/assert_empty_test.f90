@@ -49,8 +49,7 @@ contains
     end function checkFailsForNonemptyChars
 
     function checkMessageHasNoNewlines() result(result_)
-        use Vegetables_m, only: &
-                Result_t, assertEmpty, assertDoesntInclude, toString
+        use Vegetables_m, only: Result_t, assertEmpty, assertDoesntInclude
 
         type(Result_t) :: result_
 
