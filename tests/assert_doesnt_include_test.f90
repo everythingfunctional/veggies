@@ -45,21 +45,11 @@ contains
 
         character(len=*), parameter :: ONE_STRNIG = "One String"
         character(len=*), parameter :: OTHER_STRING = "Other String"
-        type(Result_t) :: example_result_chars
-        type(Result_t) :: example_result_mix1
-        type(Result_t) :: example_result_mix2
-        type(Result_t) :: example_result_strings
+        type(Result_t) :: example_result
 
-        example_result_chars = assertDoesntInclude(ONE_STRNIG, OTHER_STRING)
-        example_result_mix1 = assertDoesntInclude(toString(ONE_STRNIG), OTHER_STRING)
-        example_result_mix2 = assertDoesntInclude(ONE_STRNIG, toString(OTHER_STRING))
-        example_result_strings = assertDoesntInclude(toString(ONE_STRNIG), toString(OTHER_STRING))
+        example_result = assertDoesntInclude(ONE_STRNIG, OTHER_STRING)
 
-        result_ = &
-                assertThat(example_result_chars%passed()) &
-                .and.assertThat(example_result_mix1%passed()) &
-                .and.assertThat(example_result_mix2%passed()) &
-                .and.assertThat(example_result_strings%passed())
+        result_ = assertThat(example_result%passed())
     end function checkPassForDifferentStrings
 
     function checkFailForSameString() result(result_)
@@ -68,21 +58,12 @@ contains
         type(Result_t) :: result_
 
         character(len=*), parameter :: EXAMPLE_STRING = "Example String"
-        type(Result_t) :: example_result_chars
-        type(Result_t) :: example_result_mix1
-        type(Result_t) :: example_result_mix2
-        type(Result_t) :: example_result_strings
+        type(Result_t) :: example_result
 
-        example_result_chars = assertDoesntInclude(EXAMPLE_STRING, EXAMPLE_STRING)
-        example_result_mix1 = assertDoesntInclude(toString(EXAMPLE_STRING), EXAMPLE_STRING)
-        example_result_mix2 = assertDoesntInclude(EXAMPLE_STRING, toString(EXAMPLE_STRING))
-        example_result_strings = assertDoesntInclude(toString(EXAMPLE_STRING), toString(EXAMPLE_STRING))
+        example_result = assertDoesntInclude(EXAMPLE_STRING, EXAMPLE_STRING)
 
-        result_ = &
-                assertNot(example_result_chars%passed()) &
-                .and.assertNot(example_result_mix1%passed()) &
-                .and.assertNot(example_result_mix2%passed()) &
-                .and.assertNot(example_result_strings%passed())
+
+        result_ = assertNot(example_result%passed())
     end function checkFailForSameString
 
     function checkNotIncludedStringsNoNewlines() result(result_)
@@ -95,25 +76,13 @@ contains
                 "One" // NEWLINE // "With" // NEWLINE // "Newlines"
         character(len=*), parameter :: OTHER_STRING = &
                 "Other" // NEWLINE // "With" // NEWLINE // "Newlines"
-        type(Result_t) :: example_result_chars
-        type(Result_t) :: example_result_mix1
-        type(Result_t) :: example_result_mix2
-        type(Result_t) :: example_result_strings
+        type(Result_t) :: example_result
 
-        example_result_chars = assertDoesntInclude(ONE_STRING, OTHER_STRING)
-        example_result_mix1 = assertDoesntInclude(toString(ONE_STRING), OTHER_STRING)
-        example_result_mix2 = assertDoesntInclude(ONE_STRING, toString(OTHER_STRING))
-        example_result_strings = assertDoesntInclude(toString(ONE_STRING), toString(OTHER_STRING))
+        example_result = assertDoesntInclude(ONE_STRING, OTHER_STRING)
 
         result_ = &
-                assertDoesntInclude(NEWLINE, example_result_chars%failureDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_chars%verboseDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_mix1%failureDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_mix1%verboseDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_mix2%failureDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_mix2%verboseDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_strings%failureDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_strings%verboseDescription())
+                assertDoesntInclude(NEWLINE, example_result%failureDescription()) &
+                .and.assertDoesntInclude(NEWLINE, example_result%verboseDescription())
     end function checkNotIncludedStringsNoNewlines
 
     function checkIncludeStringsNoNewlines() result(result_)
@@ -124,24 +93,12 @@ contains
         character(len=*), parameter :: NEWLINE = NEW_LINE('A')
         character(len=*), parameter :: EXAMPLE_STRING = &
                 "Example" // NEWLINE // "With" // NEWLINE // "Newlines"
-        type(Result_t) :: example_result_chars
-        type(Result_t) :: example_result_mix1
-        type(Result_t) :: example_result_mix2
-        type(Result_t) :: example_result_strings
+        type(Result_t) :: example_result
 
-        example_result_chars = assertDoesntInclude(EXAMPLE_STRING, EXAMPLE_STRING)
-        example_result_mix1 = assertDoesntInclude(toString(EXAMPLE_STRING), EXAMPLE_STRING)
-        example_result_mix2 = assertDoesntInclude(EXAMPLE_STRING, toString(EXAMPLE_STRING))
-        example_result_strings = assertDoesntInclude(toString(EXAMPLE_STRING), toString(EXAMPLE_STRING))
+        example_result = assertDoesntInclude(EXAMPLE_STRING, EXAMPLE_STRING)
 
         result_ = &
-                assertDoesntInclude(NEWLINE, example_result_chars%failureDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_chars%verboseDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_mix1%failureDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_mix1%verboseDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_mix2%failureDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_mix2%verboseDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_strings%failureDescription()) &
-                .and.assertDoesntInclude(NEWLINE, example_result_strings%verboseDescription())
+                assertDoesntInclude(NEWLINE, example_result%failureDescription()) &
+                .and.assertDoesntInclude(NEWLINE, example_result%verboseDescription())
     end function checkIncludeStringsNoNewlines
 end module assert_doesnt_include_test

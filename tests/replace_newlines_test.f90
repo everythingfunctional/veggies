@@ -37,9 +37,7 @@ contains
         character(len=*), parameter :: EXAMPLE_STRING = &
                 "String" // NEWLINE // "With" // NEWLINE // "Newlines"
 
-        result_ = &
-                assertDoesntInclude(NEWLINE, replaceNewlines(EXAMPLE_STRING)) &
-                .and.assertDoesntInclude(NEWLINE, replaceNewlines(toString(EXAMPLE_STRING)))
+        result_ = assertDoesntInclude(NEWLINE, replaceNewlines(EXAMPLE_STRING))
     end function checkNoNewlines
 
     function checkForJustANewline() result(result_)
@@ -47,8 +45,6 @@ contains
 
         type(Result_t) :: result_
 
-        result_ = &
-                assertEquals("\n", replaceNewlines(NEW_LINE('A'))) &
-                .and.assertEquals("\n", replaceNewlines(toString(NEW_LINE('A'))))
+        result_ = assertEquals("\n", replaceNewlines(NEW_LINE('A')))
     end function checkForJustANewline
 end module replace_newlines_test

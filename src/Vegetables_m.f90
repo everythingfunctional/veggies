@@ -314,11 +314,12 @@ module Vegetables_m
         procedure, public :: getValue => getValueTransformingTestCollection
     end type JustTransformingTestCollection_t
 
+    interface operator(.includes.)
+        module procedure includes
+    end interface operator(.includes.)
+
     interface assertDoesntInclude
-        module procedure assertCharsDontIncludeChars
-        module procedure assertCharsDontIncludeString
-        module procedure assertStringDoesntIncludeChars
-        module procedure assertStringDoesntIncludeString
+        module procedure assertDoesntIncludeBasic
     end interface assertDoesntInclude
 
     interface assertEmpty
@@ -340,6 +341,11 @@ module Vegetables_m
         module procedure assertStringIncludesChars
         module procedure assertStringIncludesString
     end interface assertIncludes
+
+    interface delimit
+        module procedure delimitCharacters
+        module procedure delimitString
+    end interface delimit
 
     interface describe
         module procedure describeBasic
@@ -423,21 +429,21 @@ module Vegetables_m
             Transformed, &
             when
 contains
-    pure function assertCharsDontIncludeChars(search_for, string) result(result__)
+    pure function assertDoesntIncludeBasic(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(toString(search_for), toString(string))
-    end function assertCharsDontIncludeChars
-
-    pure function assertCharsDontIncludeString(search_for, string) result(result__)
-        type(VegetableString_t), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(search_for, toString(string))
-    end function assertCharsDontIncludeString
+        if (.not.(string.includes.search_for)) then
+            result__ = succeed( &
+                    delimit(replaceNewlines(string)) // " did not include " &
+                    // delimit(replaceNewlines(search_for)))
+        else
+            result__ = fail( &
+                    "Expected " // delimit(replaceNewlines(string)) &
+                    // " to not include " // delimit(replaceNewlines(search_for)))
+        end if
+    end function assertDoesntIncludeBasic
 
     pure function assertCharsIncludeChars(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
@@ -540,30 +546,6 @@ contains
         end if
     end function assertNot
 
-    pure function assertStringDoesntIncludeChars(search_for, string) result(result__)
-        character(len=*), intent(in) :: search_for
-        type(VegetableString_t), intent(in) :: string
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(toString(search_for), string)
-    end function assertStringDoesntIncludeChars
-
-    pure function assertStringDoesntIncludeString(search_for, string) result(result__)
-        type(VegetableString_t), intent(in) :: search_for
-        type(VegetableString_t), intent(in) :: string
-        type(Result_t) :: result__
-
-        if (.not.(string.includes.search_for)) then
-            result__ = succeed( &
-                    delimit(replaceNewlines(string)) // " did not include " &
-                    // delimit(replaceNewlines(search_for)))
-        else
-            result__ = fail( &
-                    "Expected " // delimit(replaceNewlines(string)) &
-                    // " to not include " // delimit(replaceNewlines(search_for)))
-        end if
-    end function assertStringDoesntIncludeString
-
     pure function assertStringIncludesChars(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
         type(VegetableString_t), intent(in) :: string
@@ -643,12 +625,19 @@ contains
         combined = toString(lhs%string // rhs%string)
     end function concatStrings
 
-    pure function delimit(string) result(delimited)
+    pure function delimitCharacters(string) result(delimited)
+        character(len=*), intent(in) :: string
+        character(len=:), allocatable :: delimited
+
+        delimited = "[" // string // "]"
+    end function delimitCharacters
+
+    pure function delimitString(string) result(delimited)
         type(VegetableString_t), intent(in) :: string
         type(VegetableString_t) :: delimited
 
         delimited = "[" // string // "]"
-    end function delimit
+    end function delimitString
 
     pure function describeBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -1001,6 +990,14 @@ contains
         end select
     end function hasValue
 
+    pure function includes(string, search_for)
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: search_for
+        logical :: includes
+
+        includes = index(string, search_for) > 0
+    end function includes
+
     function InputTestCase(description, func) result(test_case)
         character(len=*), intent(in) :: description
         procedure(inputTest) :: func
@@ -1125,28 +1122,25 @@ contains
 
     pure function replaceNewlinesInCharacters(chars) result(without_newlines)
         character(len=*), intent(in) :: chars
-        type(VegetableString_t) :: without_newlines
+        character(len=:), allocatable :: without_newlines
 
         integer :: i
-        character(len=:), allocatable :: resulting_string
 
-        allocate(character(len=0)::resulting_string)
-        resulting_string = ""
+        without_newlines = ""
         do i = 1, len(chars)
             if (chars(i:i) == NEWLINE) then
-                resulting_string = resulting_string // "\n"
+                without_newlines = without_newlines // "\n"
             else
-                resulting_string = resulting_string // chars(i:i)
+                without_newlines = without_newlines // chars(i:i)
             end if
         end do
-        without_newlines = toString(resulting_string)
     end function replaceNewlinesInCharacters
 
     pure function replaceNewlinesInString(string) result(without_newlines)
         type(VegetableString_t), intent(in) :: string
         type(VegetableString_t) :: without_newlines
 
-        without_newlines = replaceNewlines(string%string)
+        without_newlines = toString(replaceNewlines(string%string))
     end function replaceNewlinesInString
 
     pure function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
@@ -1167,9 +1161,9 @@ contains
 
     pure function resultFailureDescription(self) result(description)
         class(Result_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
-        description = self%failing_message
+        description = self%failing_message%string
     end function resultFailureDescription
 
     pure function resultNumAsserts(self) result(num_asserts)
@@ -1202,9 +1196,9 @@ contains
 
     pure function resultVerboseDescription(self) result(description)
         class(Result_t), intent(in) :: self
-        type(VegetableString_t) :: description
+        character(len=:), allocatable :: description
 
-        description = self%all_message
+        description = self%all_message%string
     end function resultVerboseDescription
 
     function runCase(self) result(result__)
@@ -1459,7 +1453,7 @@ contains
         type(VegetableString_t), intent(in) :: search_for
         logical :: stringIncludesString
 
-        stringIncludesString = index(string%string, search_for%string) > 0
+        stringIncludesString = string%string.includes.search_for%string
     end function stringIncludesString
 
     subroutine stringWriteFormatted(string, unit, iotype, v_list, iostat, iomsg)
