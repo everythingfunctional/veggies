@@ -343,11 +343,6 @@ module Vegetables_m
         module procedure JustTransformingTestCollection
     end interface Just
 
-    interface replaceNewlines
-        module procedure replaceNewlinesInCharacters
-        module procedure replaceNewlinesInString
-    end interface replaceNewlines
-
     interface toCharacter
         module procedure integerToCharacter
     end interface toCharacter
@@ -1026,7 +1021,7 @@ contains
                 // delimit(replaceNewlines(search_for))
     end function makeIncludesSuccessMessage
 
-    pure function replaceNewlinesInCharacters(chars) result(without_newlines)
+    pure function replaceNewlines(chars) result(without_newlines)
         character(len=*), intent(in) :: chars
         character(len=:), allocatable :: without_newlines
 
@@ -1040,14 +1035,7 @@ contains
                 without_newlines = without_newlines // chars(i:i)
             end if
         end do
-    end function replaceNewlinesInCharacters
-
-    pure function replaceNewlinesInString(string) result(without_newlines)
-        type(VegetableString_t), intent(in) :: string
-        type(VegetableString_t) :: without_newlines
-
-        without_newlines = toString(replaceNewlines(string%string))
-    end function replaceNewlinesInString
+    end function replaceNewlines
 
     pure function Result_(passed, all_message, failing_message, num_failling_asserts, num_passing_asserts)
         logical, intent(in) :: passed
