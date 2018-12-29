@@ -13,15 +13,17 @@ module example_collections_m
     character(len=*), parameter, public :: EXAMPLE_FAILING_CASE_DESCRIPTION = &
             "Example Failing Case Description"
     character(len=*), parameter, public :: FAILURE_MESSAGE = "Failure Message"
+    character(len=*), parameter, public :: MIDDLE_COLLECTION_DESCRIPTION = &
+            "Middle Collection Description"
     character(len=*), parameter, public :: NOT_IN_DESCRIPTIONS = "NOT IN DESCRIPTION"
-    integer, parameter, public :: NUM_ASSERTS_IN_PASSING = NUM_PASSING_FROM_EXAMPLE * 2
-    integer, parameter, public :: NUM_ASSERTS_IN_FAILING = NUM_ASSERTS_IN_PASSING + 1
-    integer, parameter, public :: NUM_CASES_IN_PASSING = 2
-    integer, parameter, public :: NUM_CASES_IN_FAILING = NUM_CASES_IN_PASSING + 1
+    integer, parameter, public :: NUM_ASSERTS_IN_PASSING = NUM_PASSING_FROM_EXAMPLE * 3
+    integer, parameter, public :: NUM_ASSERTS_IN_FAILING = NUM_PASSING_FROM_EXAMPLE * 2 + 1
+    integer, parameter, public :: NUM_CASES_IN_PASSING = 3
+    integer, parameter, public :: NUM_CASES_IN_FAILING = 3
     integer, parameter, public :: NUM_FAILING_ASSERTS = 1
     integer, parameter, public :: NUM_FAILING_CASES = 1
-    integer, parameter, public :: NUM_PASSING_ASSERTS_IN_FAILING = NUM_ASSERTS_IN_PASSING
-    integer, parameter, public :: NUM_PASSING_CASES_IN_FAILING = NUM_CASES_IN_PASSING
+    integer, parameter, public :: NUM_PASSING_ASSERTS_IN_FAILING = NUM_PASSING_FROM_EXAMPLE * 2
+    integer, parameter, public :: NUM_PASSING_CASES_IN_FAILING = 2
 
     public :: exampleFailingCollection, examplePassingCollection, runCollection
 contains
@@ -68,13 +70,22 @@ contains
                 [exampleTestCase1(), exampleTestCase2(), exampleFailingTestCase()])
     end function exampleFailingCollection
 
+    function middleCollection() result(test_collection)
+        use Vegetables_m, only: TestItem_t, describe
+
+        type(TestItem_t) :: test_collection
+
+        test_collection = describe(MIDDLE_COLLECTION_DESCRIPTION, &
+                [exampleTestCase1(), exampleTestCase2()])
+    end function middleCollection
+
     function examplePassingCollection() result(test_collection)
         use Vegetables_m, only: TestCollection_t, TestCollection
 
         type(TestCollection_t) :: test_collection
 
         test_collection = TestCollection(EXAMPLE_COLLECTION_DESCRIPTION, &
-                [exampleTestCase1(), exampleTestCase2()])
+                [middleCollection(), exampleTestCase2()])
     end function examplePassingCollection
 
     function runCollection(example_collection) result(example_results)

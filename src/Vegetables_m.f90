@@ -91,7 +91,7 @@ module Vegetables_m
             type(Result_t) :: result_
         end function
 
-        function testDescription(self) result(description)
+        pure function testDescription(self) result(description)
             import :: Test_t
             class(Test_t), intent(in) :: self
             character(len=:), allocatable :: description
@@ -109,7 +109,7 @@ module Vegetables_m
             logical :: answer
         end function testQuestion
 
-        function testResultDescription(self) result(description)
+        pure function testResultDescription(self) result(description)
             import :: TestResult_t
             class(TestResult_t), intent(in) :: self
             character(len=:), allocatable :: description
@@ -1700,37 +1700,22 @@ contains
         test_collection%tests = tests
     end function TestCollection
 
-    function testCollectionDescription(self) result(description)
+    pure function testCollectionDescription(self) result(description)
         class(TestCollection_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        type :: VegStringArray_t
-            type(VegetableString_t), pointer :: strings(:) => null()
-        end type VegStringArray_t
-
-        integer, parameter :: MAX_STACK_SIZE = 100
-        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
-        integer :: descriptions_location
+        type(VegetableString_t), allocatable :: descriptions(:)
         integer :: i
         integer :: num_cases
 
         num_cases = size(self%tests)
-        do i = 1, MAX_STACK_SIZE
-            if (.not.associated(descriptions(i)%strings)) then
-                descriptions_location = i
-                allocate(descriptions(descriptions_location)%strings(num_cases))
-                exit
-            end if
-        end do
-        if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
-        do i = 1, num_cases
-            descriptions(descriptions_location)%strings(i) = toString(self%tests(i)%description())
+        allocate(descriptions(num_cases))
+        do concurrent (i = 1:num_cases)
+            descriptions(i) = toString(self%tests(i)%description())
         end do
         description = hangingIndent( &
                 self%description_ // NEWLINE &
-                // join(descriptions(descriptions_location)%strings, NEWLINE))
-        deallocate(descriptions(descriptions_location)%strings)
-        nullify(descriptions(descriptions_location)%strings)
+                // join(descriptions, NEWLINE))
     end function testCollectionDescription
 
     pure function testCollectionFailed(self) result(failed)
@@ -1740,17 +1725,11 @@ contains
         failed = .not.self%passed()
     end function testCollectionFailed
 
-    function testCollectionFailureDescription(self) result(description)
+    pure function testCollectionFailureDescription(self) result(description)
         class(TestCollectionResult_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        type :: VegStringArray_t
-            type(VegetableString_t), pointer :: strings(:) => null()
-        end type VegStringArray_t
-
-        integer, parameter :: MAX_STACK_SIZE = 100
-        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
-        integer :: descriptions_location
+        type(VegetableString_t), allocatable :: descriptions(:)
         integer :: i
         integer :: num_cases
 
@@ -1758,22 +1737,13 @@ contains
             description = ""
         else
             num_cases = size(self%results)
-            do i = 1, MAX_STACK_SIZE
-                if (.not.associated(descriptions(i)%strings)) then
-                    descriptions_location = i
-                    allocate(descriptions(descriptions_location)%strings(num_cases))
-                    exit
-                end if
-            end do
-            if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
-            do i = 1, num_cases
-                descriptions(descriptions_location)%strings(i) = toString(self%results(i)%failureDescription())
+            allocate(descriptions(num_cases))
+            do concurrent (i = 1:num_cases)
+                descriptions(i) = toString(self%results(i)%failureDescription())
             end do
             description = hangingIndent( &
                     self%description // NEWLINE &
-                    // join(descriptions(descriptions_location)%strings, NEWLINE))
-            deallocate(descriptions(descriptions_location)%strings)
-            nullify(descriptions(descriptions_location)%strings)
+                    // join(descriptions, NEWLINE))
         end if
     end function testCollectionFailureDescription
 
@@ -1843,40 +1813,26 @@ contains
         num_cases = sum(self%results%numCases())
     end function testCollectionResultNumCases
 
-    function testCollectionVerboseDescription(self) result(description)
+    pure function testCollectionVerboseDescription(self) result(description)
         class(TestCollectionResult_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        type :: VegStringArray_t
-            type(VegetableString_t), pointer :: strings(:) => null()
-        end type VegStringArray_t
-
-        integer, parameter :: MAX_STACK_SIZE = 100
-        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
-        integer :: descriptions_location
+        type(VegetableString_t), allocatable :: descriptions(:)
         integer :: i
         integer :: num_cases
 
         num_cases = size(self%results)
-        do i = 1, MAX_STACK_SIZE
-            if (.not.associated(descriptions(i)%strings)) then
-                descriptions_location = i
-                allocate(descriptions(descriptions_location)%strings(num_cases))
-                exit
-            end if
-        end do
-        if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
-        do i = 1, num_cases
-            descriptions(descriptions_location)%strings(i) = toString(self%results(i)%verboseDescription())
+        allocate(descriptions(num_cases))
+        do concurrent (i = 1:num_cases)
+            descriptions(i) = toString(self%results(i)%verboseDescription())
         end do
         description = hangingIndent( &
                 self%description // NEWLINE &
-                // join(descriptions(descriptions_location)%strings, NEWLINE))
-        deallocate(descriptions(descriptions_location)%strings)
-        nullify(descriptions(descriptions_location)%strings)
+                // join(descriptions, NEWLINE))
     end function testCollectionVerboseDescription
 
-    pure function TestCollectionWithInput(description, input, tests) result(test_collection)
+    pure function TestCollectionWithInput( &
+            description, input, tests) result(test_collection)
         character(len=*), intent(in) :: description
         class(*), intent(in) :: input
         type(TestItem_t), intent(in) :: tests(:)
@@ -1888,37 +1844,22 @@ contains
         test_collection%tests = tests
     end function TestCollectionWithInput
 
-    function testCollectionWithInputDescription(self) result(description)
+    pure function testCollectionWithInputDescription(self) result(description)
         class(TestCollectionWithInput_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        type :: VegStringArray_t
-            type(VegetableString_t), pointer :: strings(:) => null()
-        end type VegStringArray_t
-
-        integer, parameter :: MAX_STACK_SIZE = 100
-        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
-        integer :: descriptions_location
+        type(VegetableString_t), allocatable :: descriptions(:)
         integer :: i
         integer :: num_cases
 
         num_cases = size(self%tests)
-        do i = 1, MAX_STACK_SIZE
-            if (.not.associated(descriptions(i)%strings)) then
-                descriptions_location = i
-                allocate(descriptions(descriptions_location)%strings(num_cases))
-                exit
-            end if
-        end do
-        if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
-        do i = 1, num_cases
-            descriptions(descriptions_location)%strings(i) = toString(self%tests(i)%description())
+        allocate(descriptions(num_cases))
+        do concurrent (i = 1:num_cases)
+            descriptions(i) = toString(self%tests(i)%description())
         end do
         description = hangingIndent( &
                 self%description_ // NEWLINE &
-                // join(descriptions(descriptions_location)%strings, NEWLINE))
-        deallocate(descriptions(descriptions_location)%strings)
-        nullify(descriptions(descriptions_location)%strings)
+                // join(descriptions, NEWLINE))
     end function testCollectionWithInputDescription
 
     pure function testCollectionWithInputNumCases(self) result(num_cases)
@@ -1928,7 +1869,7 @@ contains
         num_cases = sum(self%tests%numCases())
     end function testCollectionWithInputNumCases
 
-    function testItemDescription(self) result(description)
+    pure function testItemDescription(self) result(description)
         class(TestItem_t), intent(in) :: self
         character(len=:), allocatable :: description
 
@@ -1949,7 +1890,7 @@ contains
         passed = self%result_%passed()
     end function testItemPassed
 
-    function testResultItemFailureDescription(self) result(description)
+    pure function testResultItemFailureDescription(self) result(description)
         class(TestResultItem_t), intent(in) :: self
         character(len=:), allocatable :: description
 
@@ -1998,7 +1939,7 @@ contains
         num_asserts = self%result_%numPassingAsserts()
     end function testResultItemNumPassingAsserts
 
-    function testResultItemVerboseDescription(self) result(description)
+    pure function testResultItemVerboseDescription(self) result(description)
         class(TestResultItem_t), intent(in) :: self
         character(len=:), allocatable :: description
 
@@ -2046,7 +1987,8 @@ contains
         Transformed%value_ = input
     end function
 
-    function TransformingTestCollection(description, func, tests) result(test_collection)
+    function TransformingTestCollection( &
+            description, func, tests) result(test_collection)
         character(len=*), intent(in) :: description
         procedure(transformer_) :: func
         type(TestItem_t), intent(in) :: tests(:)
@@ -2058,37 +2000,22 @@ contains
         test_collection%tests = tests
     end function TransformingTestCollection
 
-    function transformingTestCollectionDescription(self) result(description)
+    pure function transformingTestCollectionDescription(self) result(description)
         class(TransformingTestCollection_t), intent(in) :: self
         character(len=:), allocatable :: description
 
-        type :: VegStringArray_t
-            type(VegetableString_t), pointer :: strings(:) => null()
-        end type VegStringArray_t
-
-        integer, parameter :: MAX_STACK_SIZE = 100
-        type(VegStringArray_t), save :: descriptions(MAX_STACK_SIZE)
-        integer :: descriptions_location
+        type(VegetableString_t), allocatable :: descriptions(:)
         integer :: i
         integer :: num_cases
 
         num_cases = size(self%tests)
-        do i = 1, MAX_STACK_SIZE
-            if (.not.associated(descriptions(i)%strings)) then
-                descriptions_location = i
-                allocate(descriptions(descriptions_location)%strings(num_cases))
-                exit
-            end if
-        end do
-        if (i > MAX_STACK_SIZE) STOP "Test Collections Nested Too Deep!"
-        do i = 1, num_cases
-            descriptions(descriptions_location)%strings(i) = toString(self%tests(i)%description())
+        allocate(descriptions(num_cases))
+        do concurrent (i = 1:num_cases)
+            descriptions(i) = toString(self%tests(i)%description())
         end do
         description = hangingIndent( &
                 self%description_ // NEWLINE &
-                // join(descriptions(descriptions_location)%strings, NEWLINE))
-        deallocate(descriptions(descriptions_location)%strings)
-        nullify(descriptions(descriptions_location)%strings)
+                // join(descriptions, NEWLINE))
     end function transformingTestCollectionDescription
 
     pure function transformingTestCollectionNumCases(self) result(num_cases)
