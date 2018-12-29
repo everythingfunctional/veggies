@@ -39,7 +39,9 @@ contains
 
         select type (example_result)
         type is (TestCaseResult_t)
-            result_ = assertThat(example_result%failed()).and.assertNot(example_result%passed())
+            result_ = &
+                    assertThat(example_result%failed(), "It failed", "It didn't fail") &
+                    .and.assertNot(example_result%passed(), "It passed", "It didn't pass")
         class default
             result_ = fail("Expected to get a TestCaseResult_t")
         end select

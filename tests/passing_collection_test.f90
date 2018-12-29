@@ -37,7 +37,9 @@ contains
 
         select type (example_results)
         type is (TestCollectionResult_t)
-            result_ = assertThat(example_results%passed()).and.assertNot(example_results%failed())
+            result_ = &
+                    assertThat(example_results%passed(), "It passed", "It didn't pass") &
+                    .and.assertNot(example_results%failed(), "It didn't fail", "It failed")
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select

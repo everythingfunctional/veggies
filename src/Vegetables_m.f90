@@ -1237,7 +1237,7 @@ contains
         character(len=*), intent(in) :: message
         character(len=:), allocatable :: user_message
 
-        user_message = "; User Message :" // delimit(message)
+        user_message = "; User Message: " // delimit(message)
     end function makeUserMessage
 
     pure function replaceNewlines(chars) result(without_newlines)
