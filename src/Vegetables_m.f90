@@ -360,7 +360,11 @@ module Vegetables_m
 
     character(len=*), parameter :: EMPTY_SUCCESS_MESSAGE = "String was empty"
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
+    character(len=*), parameter :: NOT_FAILURE_MESSAGE = "Expected to not be true"
+    character(len=*), parameter :: NOT_SUCCESS_MESSAGE = "Was not true"
     type(Nothing_t), parameter :: NOTHING = Nothing_t()
+    character(len=*), parameter :: THAT_FAILURE_MESSAGE = "Expected to be true"
+    character(len=*), parameter :: THAT_SUCCESS_MESSAGE = "Was true"
 
     public :: &
             assertDoesntInclude, &
@@ -430,12 +434,10 @@ contains
         type(Result_t) :: result__
 
         if (expected == actual) then
-            result__ = succeed( &
-                    "Expected and got " // delimit(replaceNewlines(expected)))
+            result__ = succeed(makeEqualsSuccessMessage(replaceNewlines(expected)))
         else
-            result__ = fail( &
-                    "Expected " // delimit(replaceNewlines(expected)) &
-                    // " but got " // delimit(replaceNewlines(actual)))
+            result__ = fail(makeEqualsFailureMessage( &
+                    replaceNewlines(expected), replaceNewlines(actual)))
         end if
     end function assertEqualsCharacters
 
@@ -445,12 +447,10 @@ contains
         type(Result_t) :: result__
 
         if (expected == actual) then
-            result__ = succeed( &
-                    "Expected and got " // delimit(toCharacter(expected)))
+            result__ = succeed(makeEqualsSuccessMessage(toCharacter(expected)))
         else
-            result__ = fail( &
-                    "Expected " // delimit(toCharacter(expected)) &
-                    // " but got " // delimit(toCharacter(actual)))
+            result__ = fail(makeEqualsFailureMessage( &
+                    toCharacter(expected), toCharacter(actual)))
         end if
     end function assertEqualsInteger
 
@@ -459,9 +459,9 @@ contains
         type(Result_t) :: result__
 
         if (.not. condition) then
-            result__ = succeed("Was not true")
+            result__ = succeed(NOT_SUCCESS_MESSAGE)
         else
-            result__ = fail("Expected to not be true")
+            result__ = fail(NOT_FAILURE_MESSAGE)
         end if
     end function assertNot
 
@@ -470,9 +470,9 @@ contains
         type(Result_t) :: result__
 
         if (condition) then
-            result__ = succeed("Was true")
+            result__ = succeed(THAT_SUCCESS_MESSAGE)
         else
-            result__ = fail("Expected to be true")
+            result__ = fail(THAT_FAILURE_MESSAGE)
         end if
     end function assertThat
 
@@ -988,6 +988,23 @@ contains
 
         message = "String " // delimit(replaceNewlines(string)) // " wasn't empty"
     end function makeEmptyFailureMessage
+
+    pure function makeEqualsFailureMessage(expected, actual) result(message)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=:), allocatable :: message
+
+        message = &
+                "Expected " // delimit(expected) &
+                // " but got " // delimit(actual)
+    end function makeEqualsFailureMessage
+
+    pure function makeEqualsSuccessMessage(expected) result(message)
+        character(len=*), intent(in) :: expected
+        character(len=:), allocatable :: message
+
+        message = "Expected and got " // delimit(expected)
+    end function makeEqualsSuccessMessage
 
     pure function makeIncludesFailureMessage(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
