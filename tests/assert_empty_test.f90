@@ -33,7 +33,8 @@ contains
 
         example_result = assertEmpty("")
 
-        result_ = assertThat(example_result%passed(), "It passed", "It didn't pass")
+        result_ = assertThat( &
+                example_result%passed(), example_result%verboseDescription())
     end function checkPassForEmptyChars
 
     function checkFailsForNonemptyChars() result(result_)
@@ -45,7 +46,8 @@ contains
 
         example_result = assertEmpty("Not Empty")
 
-        result_ = assertNot(example_result%passed(), "It didn't pass", "It passed")
+        result_ = assertNot( &
+                example_result%passed(), example_result%verboseDescription())
     end function checkFailsForNonemptyChars
 
     function checkMessageHasNoNewlines() result(result_)

@@ -24,7 +24,8 @@ contains
 
         example_result = assertEqualsWithinRelative(1.0d0, 1.0d0, TINY(0.0d0))
 
-        result_ = assertThat(example_result%passed(), "It passed", "It didn't pass")
+        result_ = assertThat( &
+                example_result%passed(), example_result%verboseDescription())
     end function checkPassForSameNumber
 
     function checkFailForDifferentNumbers() result(result_)
@@ -36,7 +37,8 @@ contains
 
         example_result = assertEqualsWithinRelative(1.0d0, 2.0d0, 0.1d0)
 
-        result_ = assertNot(example_result%passed(), "It didn't pass", "It passed")
+        result_ = assertNot( &
+                example_result%passed(), example_result%verboseDescription())
     end function checkFailForDifferentNumbers
 
     function checkPassForCloseNumbers() result(result_)
@@ -48,6 +50,7 @@ contains
 
         example_result = assertEqualsWithinRelative(1.0d0, 1.1d0, 0.1d0)
 
-        result_ = assertThat(example_result%passed(), "It passed", "It didn't pass")
+        result_ = assertThat( &
+                example_result%passed(), example_result%verboseDescription())
     end function checkPassForCloseNumbers
 end module assert_equals_within_relative_test

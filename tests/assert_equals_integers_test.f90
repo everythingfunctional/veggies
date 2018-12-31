@@ -23,7 +23,8 @@ contains
 
         example_result = assertEquals(1, 1)
 
-        result_ = assertThat(example_result%passed(), "It passed", "It didn't pass")
+        result_ = assertThat( &
+                example_result%passed(), example_result%verboseDescription())
     end function checkPassForSameInteger
 
     function checkFailForDifferentIntegers() result(result_)
@@ -35,6 +36,7 @@ contains
 
         example_result = assertEquals(1, 2)
 
-        result_ = assertNot(example_result%passed(), "It didn't pass", "It passed")
+        result_ = assertNot( &
+                example_result%passed(), example_result%verboseDescription())
     end function checkFailForDifferentIntegers
 end module assert_equals_integers_test

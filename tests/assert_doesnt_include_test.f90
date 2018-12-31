@@ -48,7 +48,8 @@ contains
 
         example_result = assertDoesntInclude(ONE_STRNIG, OTHER_STRING)
 
-        result_ = assertThat(example_result%passed(), "It passed", "It didn't pass")
+        result_ = assertThat( &
+                example_result%passed(), example_result%verboseDescription())
     end function checkPassForDifferentStrings
 
     function checkFailForSameString() result(result_)
@@ -62,7 +63,8 @@ contains
         example_result = assertDoesntInclude(EXAMPLE_STRING, EXAMPLE_STRING)
 
 
-        result_ = assertNot(example_result%passed(), "It didn't pass", "It passed")
+        result_ = assertNot( &
+                example_result%passed(), example_result%verboseDescription())
     end function checkFailForSameString
 
     function checkNotIncludedStringsNoNewlines() result(result_)
