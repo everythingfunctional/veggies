@@ -11,7 +11,8 @@ contains
 
         tests = describe("assertEqualsWithinRelative", &
                 [it("passes with the same number even with very small tolerance", checkPassForSameNumber), &
-                it("fails with sufficiently different numbers", checkFailForDifferentNumbers)])
+                it("fails with sufficiently different numbers", checkFailForDifferentNumbers), &
+                it("passes with sufficiently close numbers", checkPassForCloseNumbers)])
     end function test_assert_equals_within_relative
 
     function checkPassForSameNumber() result(result_)
@@ -37,4 +38,16 @@ contains
 
         result_ = assertNot(example_result%passed(), "It didn't pass", "It passed")
     end function checkFailForDifferentNumbers
+
+    function checkPassForCloseNumbers() result(result_)
+        use Vegetables_m, only: Result_t, assertEqualsWithinRelative, assertThat
+
+        type(Result_t) :: result_
+
+        type(Result_t) :: example_result
+
+        example_result = assertEqualsWithinRelative(1.0d0, 1.1d0, 0.1d0)
+
+        result_ = assertThat(example_result%passed(), "It passed", "It didn't pass")
+    end function checkPassForCloseNumbers
 end module assert_equals_double_test
