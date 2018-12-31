@@ -311,6 +311,9 @@ module Vegetables_m
         module procedure assertEqualsCharacters
         module procedure assertEqualsCharactersWithMessage
         module procedure assertEqualsCharactersWithMessages
+        module procedure assertEqualsDoublePrecision
+        module procedure assertEqualsDoublePrecisionWithMessage
+        module procedure assertEqualsDoublePrecisionWithMessages
         module procedure assertEqualsInteger
         module procedure assertEqualsIntegerWithMessage
         module procedure assertEqualsIntegerWithMessages
@@ -378,6 +381,7 @@ module Vegetables_m
 
     integer, parameter :: dp = kind(0.0d0)
     character(len=*), parameter :: EMPTY_SUCCESS_MESSAGE = "String was empty"
+    double precision, parameter :: MACHINE_EPSILON = EPSILON(0.0_dp)
     double precision, parameter :: MACHINE_TINY = TINY(0.0_dp)
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
     character(len=*), parameter :: NOT_FAILURE_MESSAGE = "Expected to not be true"
@@ -517,6 +521,36 @@ contains
                     // makeUserMessage(failure_message))
         end if
     end function assertEqualsCharactersWithMessages
+
+    pure function assertEqualsDoublePrecision(expected, actual) result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, "", "")
+    end function assertEqualsDoublePrecision
+
+    pure function assertEqualsDoublePrecisionWithMessage( &
+            expected, actual, message) result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, message, message)
+    end function assertEqualsDoublePrecisionWithMessage
+
+    pure function assertEqualsDoublePrecisionWithMessages( &
+            expected, actual, success_message, failure_message) result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinAbsolute( &
+                expected, actual, MACHINE_EPSILON, success_message, failure_message)
+    end function assertEqualsDoublePrecisionWithMessages
 
     pure function assertEqualsWithinAbsoluteBasic( &
             expected, actual, tolerance) result(result__)
