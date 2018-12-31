@@ -316,6 +316,12 @@ module Vegetables_m
         module procedure assertEqualsIntegerWithMessages
     end interface assertEquals
 
+    interface assertEqualsWithinRelative
+        module procedure assertEqualsWithinRelativeBasic
+        module procedure assertEqualsWithinRelativeWithMessage
+        module procedure assertEqualsWithinRelativeWithMessages
+    end interface assertEqualsWithinRelative
+
     interface assertIncludes
         module procedure assertIncludesBasic
         module procedure assertIncludesWithMessage
@@ -354,6 +360,7 @@ module Vegetables_m
     end interface Just
 
     interface toCharacter
+        module procedure doublePrecisionToCharacter
         module procedure integerToCharacter
     end interface toCharacter
 
@@ -363,7 +370,9 @@ module Vegetables_m
         module procedure whenWithTransformer
     end interface
 
+    integer, parameter :: dp = kind(0.0d0)
     character(len=*), parameter :: EMPTY_SUCCESS_MESSAGE = "String was empty"
+    double precision, parameter :: MACHINE_TINY = TINY(0.0_dp)
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
     character(len=*), parameter :: NOT_FAILURE_MESSAGE = "Expected to not be true"
     character(len=*), parameter :: NOT_SUCCESS_MESSAGE = "Was not true"
@@ -375,6 +384,7 @@ module Vegetables_m
             assertDoesntInclude, &
             assertEmpty, &
             assertEquals, &
+            assertEqualsWithinRelative, &
             assertIncludes, &
             assertNot, &
             assertThat, &
@@ -501,6 +511,59 @@ contains
         end if
     end function assertEqualsCharactersWithMessages
 
+    pure function assertEqualsWithinRelativeBasic( &
+            expected, actual, tolerance) result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative(expected, actual, tolerance, "", "")
+    end function assertEqualsWithinRelativeBasic
+
+    pure function assertEqualsWithinRelativeWithMessage( &
+            expected, actual, tolerance, message) result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, actual, tolerance, message, message)
+    end function assertEqualsWithinRelativeWithMessage
+
+    pure function assertEqualsWithinRelativeWithMessages( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        if (equalsWithinRelative(expected, actual, tolerance)) then
+            result__ = succeed( &
+                    makeWithinSuccesMessage( &
+                            toCharacter(expected), &
+                            toCharacter(actual), &
+                            toCharacter(tolerance * 100.0_dp) // "%") &
+                    // makeUserMessage(success_message))
+        else
+            result__ = fail( &
+                    makeWithinFailureMessage( &
+                            toCharacter(expected), &
+                            toCharacter(actual), &
+                            toCharacter(tolerance * 100.0_dp) // "%") &
+                    // makeUserMessage(failure_message))
+        end if
+    end function assertEqualsWithinRelativeWithMessages
+
     pure function assertEqualsInteger(expected, actual) result(result__)
         integer, intent(in) :: expected
         integer, intent(in) :: actual
@@ -509,7 +572,8 @@ contains
         result__ = assertEquals(expected, actual, "", "")
     end function assertEqualsInteger
 
-    pure function assertEqualsIntegerWithMessage(expected, actual, message) result(result__)
+    pure function assertEqualsIntegerWithMessage( &
+            expected, actual, message) result(result__)
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -650,6 +714,19 @@ contains
                 num_passing_asserts = lhs%num_passing_asserts + rhs%num_passing_asserts)
     end function combineResults
 
+    pure function coverEmptyDecimal(number) result(fixed)
+        character(len=*), intent(in) :: number
+        character(len=:), allocatable :: fixed
+
+        if (lastCharacter(trim(number)) == ".") then
+            fixed = trim(number) // "0"
+        else if (firstCharacter(trim(number)) == ".") then
+            fixed = "0" // trim(number)
+        else
+            fixed = trim(number)
+        end if
+    end function coverEmptyDecimal
+
     pure function delimit(string) result(delimited)
         character(len=*), intent(in) :: string
         character(len=:), allocatable :: delimited
@@ -681,6 +758,59 @@ contains
             test = TestCollectionWithInput(description, input, tests)
         end select
     end function describeWithInput
+
+    pure function doublePrecisionToCharacter(number) result(string)
+        double precision, intent(in) :: number
+        character(len=:), allocatable :: string
+
+        integer, parameter :: C_LEN = 32
+        integer, parameter :: PRECISION = 15
+        double precision :: abs_num
+        character(len=C_LEN) :: exponent_part
+        character(len=C_LEN) :: floating_part
+        character(len=7) :: format_string
+        character(len=C_LEN) :: intermediate
+        integer :: scale_
+
+        abs_num = abs(number)
+        if (abs_num <= MACHINE_TINY) then
+            string = "0.0"
+            return
+        end if
+        scale_ = floor(log10(abs_num))
+        if (scale_ >= PRECISION) then
+            write(format_string, '(A,I0,A)') "(f0.", PRECISION-1, ")"
+            write(floating_part, format_string) abs_num / 10.0_dp**scale_
+            write(exponent_part, '(A,I0)') 'e', scale_
+        else if (scale_ <= -2) then
+            write(format_string, '(A,I0,A)') "(f0.", PRECISION-1, ")"
+            write(floating_part, format_string) abs_num * 10.0_dp**(-scale_)
+            write(exponent_part, '(A,I0)') 'e', scale_
+        else
+            write(format_string, '(A,I0,A)') "(f0.", PRECISION-scale_-1, ")"
+            write(floating_part, format_string) abs_num
+            exponent_part = ""
+        end if
+        floating_part = removeTrailingZeros(floating_part)
+        floating_part = coverEmptyDecimal(floating_part)
+        intermediate = trim(floating_part) // trim(exponent_part)
+        if (number < 0.0_dp) then
+            string = "-" // trim(intermediate)
+        else
+            string = trim(intermediate)
+        end if
+    end function doublePrecisionToCharacter
+
+    pure function equalsWithinRelative(a, b, tolerance)
+        double precision, intent(in) :: a
+        double precision, intent(in) :: b
+        double precision, intent(in) :: tolerance
+        logical :: equalsWithinRelative
+
+        equalsWithinRelative = &
+                (abs(a) <= MACHINE_TINY .and. abs(b) <= MACHINE_TINY) &
+                .or. (abs(a - b) / max(abs(a), abs(b)) < tolerance)
+    end function equalsWithinRelative
 
     pure function fail(message) result(failure)
         character(len=*), intent(in) :: message
@@ -857,6 +987,17 @@ contains
             end if
         end if
     end function filterTransformingTestCollection
+
+    pure function firstCharacter(string) result(first)
+        character(len=*), intent(in) :: string
+        character(len=1) :: first
+
+        character(len=:), allocatable :: trimmed
+
+        allocate(character(len=0) :: trimmed)
+        trimmed = trim(string)
+        first = trimmed(1:1)
+    end function firstCharacter
 
     function getOptions() result(options)
         use iso_fortran_env, only: error_unit
@@ -1123,6 +1264,16 @@ contains
         just_ = JustTransformingTestCollection_t(value_)
     end function JustTransformingTestCollection
 
+    pure function lastCharacter(string) result(char_)
+        character(len=*), intent(in) :: string
+        character(len=1) :: char_
+
+        integer :: length
+
+        length = len(trim(string))
+        char_ = string(length:length)
+    end function lastCharacter
+
     pure function makeDoesntIncludeFailureMessage(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -1197,6 +1348,40 @@ contains
             user_message = "; User Message: " // delimit(message)
         end if
     end function makeUserMessage
+
+    pure function makeWithinFailureMessage( &
+            expected, actual, tolerance) result(message)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        character(len=:), allocatable :: message
+
+        message = &
+                "Expected " // delimit(actual) // " to be  within ±" &
+                // delimit(tolerance) // " of " // delimit(expected)
+    end function makeWithinFailureMessage
+
+    pure function makeWithinSuccesMessage( &
+            expected, actual, tolerance) result(message)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        character(len=:), allocatable :: message
+
+        message = &
+                delimit(actual) // " was within ±" // delimit(tolerance) &
+                // " of " // delimit(expected)
+    end function makeWithinSuccesMessage
+
+    pure function removeTrailingZeros(number) result(trimmed)
+        character(len=*), intent(in) :: number
+        character(len=:), allocatable :: trimmed
+
+        trimmed = trim(number)
+        do while (lastCharacter(trimmed) == "0")
+            trimmed = withoutLastCharacter(trimmed)
+        end do
+    end function removeTrailingZeros
 
     pure function replaceNewlines(chars) result(without_newlines)
         character(len=*), intent(in) :: chars
@@ -1975,4 +2160,15 @@ contains
             test = TransformingTestCollection("When " // description, func, tests)
         end select
     end function whenWithTransformer
+
+    pure function withoutLastCharacter(string)
+        character(len=*), intent(in) :: string
+        character(len=:), allocatable :: withoutLastCharacter
+
+        character(len=:), allocatable :: trimmed
+
+        allocate(character(len=0) :: trimmed)
+        trimmed = trim(string)
+        withoutLastCharacter = trimmed(1:len(trimmed)-1)
+    end function withoutLastCharacter
 end module Vegetables_m
