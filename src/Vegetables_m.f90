@@ -1371,6 +1371,12 @@ contains
         type(TestResultItem_t) :: result_item
 
         select type (test => self%test)
+        type is (InputTestCase_t)
+            allocate(TestCaseResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCaseResult_t)
+                result_ = TestCaseResult(test%description_, fail("No input provided"))
+            end select
         type is (TestCase_t)
             allocate(TestCaseResult_t :: result_item%result_)
             select type (result_ => result_item%result_)
@@ -1389,6 +1395,12 @@ contains
             type is (TestCollectionResult_t)
                 result_ = test%run()
             end select
+        type is (TransformingTestCollection_t)
+            allocate(TestCaseResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCaseResult_t)
+                result_ = TestCaseResult(test%description_, fail("No input provided"))
+            end select
         end select
     end function runTestItem
 
@@ -1403,6 +1415,24 @@ contains
             select type (result_ => result_item%result_)
             type is (TestCaseResult_t)
                 result_ = test%run(input)
+            end select
+        type is (TestCase_t)
+            allocate(TestCaseResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCaseResult_t)
+                result_ = test%run()
+            end select
+        type is (TestCollection_t)
+            allocate(TestCollectionResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCollectionResult_t)
+                result_ = test%run()
+            end select
+        type is (TestCollectionWithInput_t)
+            allocate(TestCollectionResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCollectionResult_t)
+                result_ = test%run()
             end select
         type is (TransformingTestCollection_t)
             allocate(TestCollectionResult_t :: result_item%result_)
