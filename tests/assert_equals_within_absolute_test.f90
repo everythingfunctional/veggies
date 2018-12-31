@@ -48,7 +48,7 @@ contains
 
         type(Result_t) :: example_result
 
-        example_result = assertEqualsWithinAbsolute(1.0d0, 1.1d0, 0.11d0)
+        example_result = assertEqualsWithinAbsolute(1.0d0, 1.099999d0, 0.1d0)
 
         result_ = assertThat( &
                 example_result%passed(), example_result%verboseDescription())

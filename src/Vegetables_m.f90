@@ -861,24 +861,24 @@ contains
         end if
     end function doublePrecisionToCharacter
 
-    pure function equalsWithinAbsolute(a, b, tolerance)
-        double precision, intent(in) :: a
-        double precision, intent(in) :: b
+    pure function equalsWithinAbsolute(expected, actual, tolerance)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
         logical :: equalsWithinAbsolute
 
-        equalsWithinAbsolute = abs(a - b) < tolerance
+        equalsWithinAbsolute = abs(expected - actual) <= tolerance
     end function equalsWithinAbsolute
 
-    pure function equalsWithinRelative(a, b, tolerance)
-        double precision, intent(in) :: a
-        double precision, intent(in) :: b
+    pure function equalsWithinRelative(expected, actual, tolerance)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
         logical :: equalsWithinRelative
 
         equalsWithinRelative = &
-                (abs(a) <= MACHINE_TINY .and. abs(b) <= MACHINE_TINY) &
-                .or. (abs(a - b) / max(abs(a), abs(b)) < tolerance)
+                (abs(expected) <= MACHINE_TINY .and. abs(actual) <= MACHINE_TINY) &
+                .or. (abs(expected - actual) / abs(expected) <= tolerance)
     end function equalsWithinRelative
 
     pure function fail(message) result(failure)
