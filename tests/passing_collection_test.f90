@@ -17,14 +17,12 @@ contains
                 [when("it is run", runCollection, &
                         [then_("it knows it passed", checkCollectionPasses), &
                         then_("it knows how many cases there were", checkNumCases), &
-                        then_("it knows how many cases passed", checkNumPassingCases), &
                         then_("it has no failing cases", checkNumFailingCases), &
                         then_("it's verbose description includes the given description", checkVerboseTopDescription), &
                         then_("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
                         then_("it's verbose description includes the assertion message", checkVerboseDescriptionAssertion), &
                         then_("it's failure description is empty", checkFailureDescriptionEmpty), &
                         then_("it knows how many asserts there were", checkNumAsserts), &
-                        then_("it knows how many asserts passed", checkNumPassingAsserts), &
                         then_("it has no failing asserts", checkNumFailingAsserts)])])
     end function test_passing_collection_behaviors
 
@@ -58,22 +56,6 @@ contains
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
     end function checkNumCases
-
-    function checkNumPassingCases(example_results) result(result_)
-        use example_collections_m, only: NUM_CASES_IN_PASSING
-        use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertEquals, fail
-
-        class(*), intent(in) :: example_results
-        type(Result_t) :: result_
-
-        select type (example_results)
-        type is (TestCollectionResult_t)
-            result_ = assertEquals(NUM_CASES_IN_PASSING, example_results%numPassingCases())
-        class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
-        end select
-    end function checkNumPassingCases
 
     function checkNumFailingCases(example_results) result(result_)
         use Vegetables_m, only: &
@@ -179,22 +161,6 @@ contains
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
     end function checkNumAsserts
-
-    function checkNumPassingAsserts(example_results) result(result_)
-        use example_collections_m, only: NUM_ASSERTS_IN_PASSING
-        use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertEquals, fail
-
-        class(*), intent(in) :: example_results
-        type(Result_t) :: result_
-
-        select type (example_results)
-        type is (TestCollectionResult_t)
-            result_ = assertEquals(NUM_ASSERTS_IN_PASSING, example_results%numPassingAsserts())
-        class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
-        end select
-    end function checkNumPassingAsserts
 
     function checkNumFailingAsserts(example_results) result(result_)
         use Vegetables_m, only: &

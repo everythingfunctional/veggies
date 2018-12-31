@@ -17,7 +17,6 @@ contains
                 [when("it is run", runCase, &
                         [then_("it knows it failed", checkCaseFails), &
                         then_("it has 1 test case", checkNumCases), &
-                        then_("it has no passing case", checkNumPassingCases), &
                         then_("it has 1 failing case", checkNumFailingCases), &
                         then_("it's verbose description includes the given description", checkVerboseForGivenDescription), &
                         then_("it's verbose description includes the success message", checkVerboseForSuccessMessage), &
@@ -26,8 +25,7 @@ contains
                         then_("it's failure description includes the failure message", checkFailureForFailureMessage), &
                         then_("it's failure description doesn't include the success message", checkFailureNoSuccessMessage), &
                         then_("it knows how many asserts there were", checkNumAsserts), &
-                        then_("it knows how many asserts failed", checkNumFailingAsserts), &
-                        then_("it knows how many asserts passed", checkNumPassingAsserts)])])
+                        then_("it knows how many asserts failed", checkNumFailingAsserts)])])
     end function test_failing_case_behaviors
 
     function checkCaseFails(example_result) result(result_)
@@ -58,20 +56,6 @@ contains
             result_ = fail("Expected to get a TestCaseResult_t")
         end select
     end function checkNumCases
-
-    function checkNumPassingCases(example_result) result(result_)
-        use Vegetables_m, only: Result_t, TestCaseResult_t, assertEquals, fail
-
-        class(*), intent(in) :: example_result
-        type(Result_t) :: result_
-
-        select type (example_result)
-        type is (TestCaseResult_t)
-            result_ = assertEquals(0, example_result%numPassingCases())
-        class default
-            result_ = fail("Expected to get a TestCaseResult_t")
-        end select
-    end function checkNumPassingCases
 
     function checkNumFailingCases(example_result) result(result_)
         use Vegetables_m, only: Result_t, TestCaseResult_t, assertEquals, fail
@@ -208,20 +192,4 @@ contains
             result_ = fail("Expected to get a TestCaseResult_t")
         end select
     end function checkNumFailingAsserts
-
-    function checkNumPassingAsserts(example_result) result(result_)
-        use example_asserts_m, only: NUM_PASSING_ASSERTS_IN_FAILING
-        use Vegetables_m, only: Result_t, TestCaseResult_t, assertEquals, fail
-
-        class(*), intent(in) :: example_result
-        type(Result_t) :: result_
-
-        select type (example_result)
-        type is (TestCaseResult_t)
-            result_ = assertEquals( &
-                    NUM_PASSING_ASSERTS_IN_FAILING, example_result%numPassingAsserts())
-        class default
-            result_ = fail("Expected to get a TestCaseResult_t")
-        end select
-    end function checkNumPassingAsserts
 end module failing_case_test

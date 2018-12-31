@@ -22,8 +22,6 @@ module example_collections_m
     integer, parameter, public :: NUM_CASES_IN_FAILING = 3
     integer, parameter, public :: NUM_FAILING_ASSERTS = 1
     integer, parameter, public :: NUM_FAILING_CASES = 1
-    integer, parameter, public :: NUM_PASSING_ASSERTS_IN_FAILING = NUM_PASSING_FROM_EXAMPLE * 2
-    integer, parameter, public :: NUM_PASSING_CASES_IN_FAILING = 2
 
     public :: exampleFailingCollection, examplePassingCollection, runCollection
 contains

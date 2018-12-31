@@ -35,7 +35,6 @@ module Vegetables_m
         procedure, public :: failureDescription => resultFailureDescription
         procedure, public :: numAsserts => resultNumAsserts
         procedure, public :: numFailing => resultNumFailing
-        procedure, public :: numPassing => resultNumPassing
         procedure, public :: passed => resultPassed
         procedure, public :: verboseDescription => resultVerboseDescription
     end type Result_t
@@ -60,8 +59,6 @@ module Vegetables_m
         procedure(testResultNum), deferred, public :: numCases
         procedure(testResultNum), deferred, public :: numFailingAsserts
         procedure(testResultNum), deferred, public :: numFailingCases
-        procedure(testResultNum), deferred, public :: numPassingAsserts
-        procedure(testResultNum), deferred, public :: numPassingCases
         procedure(testQuestion), deferred, public :: passed
         procedure(testResultDescription), deferred, public :: verboseDescription
     end type TestResult_t
@@ -206,8 +203,6 @@ module Vegetables_m
         procedure, public :: numCases => testResultItemNumCases
         procedure, public :: numFailingAsserts => testResultItemNumFailingAsserts
         procedure, public :: numFailingCases => testResultItemNumFailing
-        procedure, public :: numPassingAsserts => testResultItemNumPassingAsserts
-        procedure, public :: numPassingCases => testResultItemNumPassing
         procedure, public :: passed => testItemPassed
         procedure, public :: verboseDescription => testResultItemVerboseDescription
     end type TestResultItem_t
@@ -222,8 +217,6 @@ module Vegetables_m
         procedure, public :: numCases => testCaseResultNumCases
         procedure, public :: numFailingAsserts => testCaseNumFailingAsserts
         procedure, public :: numFailingCases => testCaseNumFailing
-        procedure, public :: numPassingAsserts => testCaseNumPassingAsserts
-        procedure, public :: numPassingCases => testCaseNumPassing
         procedure, public :: passed => testCasePassed
         procedure, public :: verboseDescription => testCaseVerboseDescription
     end type TestCaseResult_t
@@ -238,8 +231,6 @@ module Vegetables_m
         procedure, public :: numCases => testCollectionResultNumCases
         procedure, public :: numFailingAsserts => testCollectionNumFailingAsserts
         procedure, public :: numFailingCases => testCollectionNumFailing
-        procedure, public :: numPassingAsserts => testCollectionNumPassingAsserts
-        procedure, public :: numPassingCases => testCollectionNumPassing
         procedure, public :: passed => testCollectionPassed
         procedure, public :: verboseDescription => testCollectionVerboseDescription
     end type TestCollectionResult_t
@@ -1295,13 +1286,6 @@ contains
         num_asserts = self%num_failling_asserts
     end function resultNumFailing
 
-    pure function resultNumPassing(self) result(num_asserts)
-        class(Result_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = self%num_passing_asserts
-    end function resultNumPassing
-
     pure function resultPassed(self) result(passed)
         class(Result_t), intent(in) :: self
         logical :: passed
@@ -1659,24 +1643,6 @@ contains
         num_asserts = self%result_%numFailing()
     end function testCaseNumFailingAsserts
 
-    pure function testCaseNumPassing(self) result(num_cases)
-        class(TestCaseResult_t), intent(in) :: self
-        integer :: num_cases
-
-        if (self%passed()) then
-            num_cases = 1
-        else
-            num_cases = 0
-        end if
-    end function testCaseNumPassing
-
-    pure function testCaseNumPassingAsserts(self) result(num_asserts)
-        class(TestCaseResult_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = self%result_%numPassing()
-    end function testCaseNumPassingAsserts
-
     pure function testCasePassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
         logical :: passed
@@ -1787,20 +1753,6 @@ contains
 
         num_asserts = sum(self%results%numFailingAsserts())
     end function testCollectionNumFailingAsserts
-
-    pure function testCollectionNumPassing(self) result(num_cases)
-        class(TestCollectionResult_t), intent(in) :: self
-        integer :: num_cases
-
-        num_cases = sum(self%results%numPassingCases())
-    end function testCollectionNumPassing
-
-    pure function testCollectionNumPassingAsserts(self) result(num_asserts)
-        class(TestCollectionResult_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = sum(self%results%numPassingAsserts())
-    end function testCollectionNumPassingAsserts
 
     pure function testCollectionPassed(self) result(passed)
         class(TestCollectionResult_t), intent(in) :: self
@@ -1937,20 +1889,6 @@ contains
 
         num_asserts = self%result_%numFailingAsserts()
     end function testResultItemNumFailingAsserts
-
-    elemental function testResultItemNumPassing(self) result(num_cases)
-        class(TestResultItem_t), intent(in) :: self
-        integer :: num_cases
-
-        num_cases = self%result_%numPassingCases()
-    end function testResultItemNumPassing
-
-    elemental function testResultItemNumPassingAsserts(self) result(num_asserts)
-        class(TestResultItem_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = self%result_%numPassingAsserts()
-    end function testResultItemNumPassingAsserts
 
     pure function testResultItemVerboseDescription(self) result(description)
         class(TestResultItem_t), intent(in) :: self
