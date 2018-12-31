@@ -1426,8 +1426,8 @@ contains
         character(len=:), allocatable :: message
 
         message = &
-                "Expected " // delimit(actual) // " to be  within ±" &
-                // delimit(tolerance) // " of " // delimit(expected)
+                "Expected " // delimit(actual) // " to be  within " &
+                // delimit("±" // tolerance) // " of " // delimit(expected)
     end function makeWithinFailureMessage
 
     pure function makeWithinSuccesMessage( &
@@ -1438,7 +1438,7 @@ contains
         character(len=:), allocatable :: message
 
         message = &
-                delimit(actual) // " was within ±" // delimit(tolerance) &
+                delimit(actual) // " was within " // delimit("±" // tolerance) &
                 // " of " // delimit(expected)
     end function makeWithinSuccesMessage
 
