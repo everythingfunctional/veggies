@@ -1,4 +1,4 @@
-module assert_equals_double_test
+module assert_equals_within_relative_test
     implicit none
     private
 
@@ -50,4 +50,4 @@ contains
 
         result_ = assertThat(example_result%passed(), "It passed", "It didn't pass")
     end function checkPassForCloseNumbers
-end module assert_equals_double_test
+end module assert_equals_within_relative_test
