@@ -399,13 +399,7 @@ contains
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
-        if (.not.(string.includes.search_for)) then
-            result__ = succeed( &
-                    makeDoesntIncludeSuccessMessage(search_for, string))
-        else
-            result__ = fail( &
-                    makeDoesntIncludeFailureMessage(search_for, string))
-        end if
+        result__ = assertDoesntInclude(search_for, string, "", "")
     end function assertDoesntIncludeBasic
 
     pure function assertDoesntIncludeWithMessage( &
@@ -431,7 +425,7 @@ contains
                     makeDoesntIncludeSuccessMessage(search_for, string) &
                     // makeUserMessage(success_message))
         else
-            result__ = succeed( &
+            result__ = fail( &
                     makeDoesntIncludeFailureMessage(search_for, string) &
                     // makeUserMessage(failure_message))
         end if
@@ -441,11 +435,7 @@ contains
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
-        if (string == "") then
-            result__ = succeed(EMPTY_SUCCESS_MESSAGE)
-        else
-            result__ = fail(makeEmptyFailureMessage(string))
-        end if
+        result__ = assertEmpty(string, "", "")
     end function assertEmptyBasic
 
     pure function assertEmptyWithMessage(string, message) result(result__)
@@ -478,12 +468,7 @@ contains
         character(len=*), intent(in) :: actual
         type(Result_t) :: result__
 
-        if (expected == actual) then
-            result__ = succeed(makeEqualsSuccessMessage(replaceNewlines(expected)))
-        else
-            result__ = fail(makeEqualsFailureMessage( &
-                    replaceNewlines(expected), replaceNewlines(actual)))
-        end if
+        result__ = assertEquals(expected, actual, "", "")
     end function assertEqualsCharacters
 
     pure function assertEqualsCharactersWithMessage( &
@@ -521,12 +506,7 @@ contains
         integer, intent(in) :: actual
         type(Result_t) :: result__
 
-        if (expected == actual) then
-            result__ = succeed(makeEqualsSuccessMessage(toCharacter(expected)))
-        else
-            result__ = fail(makeEqualsFailureMessage( &
-                    toCharacter(expected), toCharacter(actual)))
-        end if
+        result__ = assertEquals(expected, actual, "", "")
     end function assertEqualsInteger
 
     pure function assertEqualsIntegerWithMessage(expected, actual, message) result(result__)
@@ -563,13 +543,7 @@ contains
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
-        if (string.includes.search_for) then
-            result__ = succeed( &
-                    makeIncludesSuccessMessage(search_for, string))
-        else
-            result__ = fail( &
-                    makeIncludesFailureMessage(search_for, string))
-        end if
+        result__ = assertIncludes(search_for, string, "", "")
     end function assertIncludesBasic
 
     pure function assertIncludesWithMessage( &
@@ -605,11 +579,7 @@ contains
         logical, intent(in) :: condition
         type(Result_t) :: result__
 
-        if (.not. condition) then
-            result__ = succeed(NOT_SUCCESS_MESSAGE)
-        else
-            result__ = fail(NOT_FAILURE_MESSAGE)
-        end if
+        result__ = assertNot(condition, "", "")
     end function assertNotBasic
 
     pure function assertNotWithMessage(condition, message) result(result__)
@@ -640,11 +610,7 @@ contains
         logical, intent(in) :: condition
         type(Result_t) :: result__
 
-        if (condition) then
-            result__ = succeed(THAT_SUCCESS_MESSAGE)
-        else
-            result__ = fail(THAT_FAILURE_MESSAGE)
-        end if
+        result__ = assertThat(condition, "", "")
     end function assertThatBasic
 
     pure function assertThatWithMessage(condition, message) result(result__)
@@ -1225,7 +1191,11 @@ contains
         character(len=*), intent(in) :: message
         character(len=:), allocatable :: user_message
 
-        user_message = "; User Message: " // delimit(message)
+        if (message == "") then
+            user_message = ""
+        else
+            user_message = "; User Message: " // delimit(message)
+        end if
     end function makeUserMessage
 
     pure function replaceNewlines(chars) result(without_newlines)
