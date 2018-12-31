@@ -32,16 +32,14 @@ contains
 
     function checkCaseFails(example_result) result(result_)
         use Vegetables_m, only: &
-                Result_t, TestCaseResult_t, assertNot, assertThat, fail
+                Result_t, TestCaseResult_t, assertNot, fail
 
         class(*), intent(in) :: example_result
         type(Result_t) :: result_
 
         select type (example_result)
         type is (TestCaseResult_t)
-            result_ = &
-                    assertThat(example_result%failed(), "It failed", "It didn't fail") &
-                    .and.assertNot(example_result%passed(), "It passed", "It didn't pass")
+            result_ = assertNot(example_result%passed(), "It passed", "It didn't pass")
         class default
             result_ = fail("Expected to get a TestCaseResult_t")
         end select

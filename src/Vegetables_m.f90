@@ -55,7 +55,6 @@ module Vegetables_m
         character(len=:), allocatable :: description
     contains
         private
-        procedure(testQuestion), deferred, public :: failed
         procedure(testResultDescription), deferred, public :: failureDescription
         procedure(testResultNum), deferred, public :: numAsserts
         procedure(testResultNum), deferred, public :: numCases
@@ -218,7 +217,6 @@ module Vegetables_m
         type(Result_t) :: result_
     contains
         private
-        procedure, public :: failed => testCaseFailed
         procedure, public :: failureDescription => testCaseFailureDescription
         procedure, public :: numAsserts => testCaseNumAsserts
         procedure, public :: numCases => testCaseResultNumCases
@@ -235,7 +233,6 @@ module Vegetables_m
         type(TestResultItem_t), allocatable :: results(:)
     contains
         private
-        procedure, public :: failed => testCollectionFailed
         procedure, public :: failureDescription => testCollectionFailureDescription
         procedure, public :: numAsserts => testCollectionNumAsserts
         procedure, public :: numCases => testCollectionResultNumCases
@@ -1616,13 +1613,6 @@ contains
         description = self%description_
     end function testCaseDescription
 
-    pure function testCaseFailed(self) result(failed)
-        class(TestCaseResult_t), intent(in) :: self
-        logical :: failed
-
-        failed = .not.self%passed()
-    end function testCaseFailed
-
     pure function testCaseFailureDescription(self) result(description)
         class(TestCaseResult_t), intent(in) :: self
         character(len=:), allocatable :: description
@@ -1747,13 +1737,6 @@ contains
                 self%description_ // NEWLINE &
                 // join(descriptions, NEWLINE))
     end function testCollectionDescription
-
-    pure function testCollectionFailed(self) result(failed)
-        class(TestCollectionResult_t), intent(in) :: self
-        logical :: failed
-
-        failed = .not.self%passed()
-    end function testCollectionFailed
 
     pure function testCollectionFailureDescription(self) result(description)
         class(TestCollectionResult_t), intent(in) :: self

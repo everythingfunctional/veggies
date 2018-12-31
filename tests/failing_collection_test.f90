@@ -40,16 +40,14 @@ contains
 
     function checkCollectionFails(example_results) result(result_)
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertNot, assertThat, fail
+                Result_t, TestCollectionResult_t, assertNot, fail
 
         class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
         type is (TestCollectionResult_t)
-            result_ = &
-                    assertThat(example_results%failed(), "It failed", "It didn't fail") &
-                    .and.assertNot(example_results%passed(), "It didn't pass", "It passed")
+            result_ = assertNot(example_results%passed(), "It didn't pass", "It passed")
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select

@@ -30,16 +30,14 @@ contains
 
     function checkCollectionPasses(example_results) result(result_)
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertNot, assertThat, fail
+                Result_t, TestCollectionResult_t, assertThat, fail
 
         class(*), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
         type is (TestCollectionResult_t)
-            result_ = &
-                    assertThat(example_results%passed(), "It passed", "It didn't pass") &
-                    .and.assertNot(example_results%failed(), "It didn't fail", "It failed")
+            result_ = assertThat(example_results%passed(), "It passed", "It didn't pass")
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
