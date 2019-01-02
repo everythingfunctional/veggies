@@ -25,6 +25,7 @@ module Vegetables_m
         private
         character(len=:), allocatable :: all_message
         character(len=:), allocatable :: failing_message
+        logical :: initialized = .false.
         integer :: num_failling_asserts
         integer :: num_passing_asserts
         logical :: passed_
@@ -800,12 +801,18 @@ contains
         type(Result_t), intent(in) :: rhs
         type(Result_t) :: combined
 
-        combined = Result_( &
-                all_message = lhs%all_message // NEWLINE // rhs%all_message, &
-                failing_message = lhs%failing_message // NEWLINE // rhs%failing_message, &
-                passed = lhs%passed_ .and. rhs%passed_, &
-                num_failling_asserts = lhs%num_failling_asserts + rhs%num_failling_asserts, &
-                num_passing_asserts = lhs%num_passing_asserts + rhs%num_passing_asserts)
+        if (lhs%initialized .and. rhs%initialized) then
+            combined = Result_( &
+                    all_message = lhs%all_message // NEWLINE // rhs%all_message, &
+                    failing_message = lhs%failing_message // NEWLINE // rhs%failing_message, &
+                    passed = lhs%passed_ .and. rhs%passed_, &
+                    num_failling_asserts = lhs%num_failling_asserts + rhs%num_failling_asserts, &
+                    num_passing_asserts = lhs%num_passing_asserts + rhs%num_passing_asserts)
+        else if (lhs%initialized) then
+            combined = lhs
+        else if (rhs%initialized) then
+            combined = rhs
+        end if
     end function combineResults
 
     pure function coverEmptyDecimal(number) result(fixed)
@@ -1518,6 +1525,7 @@ contains
         Result_ = Result_t( &
                 all_message = all_message, &
                 failing_message = failing_message, &
+                initialized = .true., &
                 num_failling_asserts = num_failling_asserts, &
                 num_passing_asserts = num_passing_asserts, &
                 passed_ = passed)
