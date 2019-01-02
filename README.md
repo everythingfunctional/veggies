@@ -30,8 +30,8 @@ but the tests for Vegetables are a pretty good example as well.
 First, you'll need to write a function that defines a part of your test suite,
 either spec or BDD style use the provided functions `describe` and `it` or
 `Given`, `When` and `Then`. If you're using the provided build system, then
-this function should be in a module name something*_test*, in a file with the
-same name. The function should be named *test_*something, and must take
+this function should be in a module name `something`*`_test`*, in a file with the
+same name. The function should be named *`test_`*`something`, and must take
 no arguments, and return a value of type `TestItem_t`, which the above functions do.
 
 The `Given`, `When` and `describe` functions take a description string, and a
@@ -56,8 +56,8 @@ also optionally accept one or two strings to be used as custom messages. If two
 are provided, the first is used in the case of a success, and the second in the
 case of a failure. If only one is provided, then it is used in either case.
 
-If you are using the provided build system, multiple *test_*something functions
-can be provided within a module, and multiple something*_test* modules can be
+If you are using the provided build system, multiple *`test_`*`something` functions
+can be provided within a module, and multiple `something`*`_test`* modules can be
 provided in separate files. The build system will generate a driver program
 that calls each *test_*something function it finds in order to build up the
 test suite. It will then run all of the tests and report the results. The section
