@@ -56,6 +56,12 @@ also optionally accept one or two strings to be used as custom messages. If two
 are provided, the first is used in the case of a success, and the second in the
 case of a failure. If only one is provided, then it is used in either case.
 
+The framework is also highly extensible. The `succeed` and `fail` functions are
+provided, which simply take a character value and produce a succeeding or failing
+`Result_t` value. This means writing your own assert functions becomes quite
+easy. However, it is recommended to use the provided assert functions when possible,
+in order to remain consistent with the message style.
+
 If you are using the provided build system, multiple *`test_`*`something` functions
 can be provided within a module, and multiple `something`*`_test`* modules can be
 provided in separate files. The build system will generate a driver program
@@ -64,3 +70,19 @@ test suite. It will then run all of the tests and report the results. The sectio
 of the build system which generates this program can be used as a standalone
 program that accepts as command line arguments the name of the generator program
 and the list of files containing the tests, but it makes the same assumptions.
+
+The generated driver program uses the function `testThat` to combine all of the
+tests provided by the *`test_`*`something` functions into a single collection,
+and then calls the subroutine `runTests` with that collection. So, even manually
+writing and maintaining the driver program wouldn't be _too_ bad.
+
+The driver program accepts a handful of command line arguments for controlling
+the outputs from the tests. This is done inside the `runTests` subroutine, so
+even manually or otherwise generated driver programs can use this functionality.
+The `-q` or `--quiet` command line flag can be used to suppress the initial
+report of the tests that will be executed. The `-v` or `--verbose` flag can be
+used to report the results of *all* of the assertions made when running the tests,
+instead of just the failing ones. Finally, the `-f` or `--filter` flag can be
+used to provide a filter string to select which tests should be run. Any test
+case or collection whose description contains the given string will be included
+in the tests that are run.
