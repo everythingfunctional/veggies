@@ -1110,11 +1110,12 @@ contains
     end function firstCharacter
 
     function getOptions() result(options)
-        use iso_fortran_env, only: error_unit
+        use iso_fortran_env, only: error_unit, output_unit
 
         type(Options_t) :: options
 
         character(len=100) :: argument
+        character(len=100) :: program_name
         integer :: i
         integer :: num_arguments
 
@@ -1123,11 +1124,15 @@ contains
         options%filter_tests = .false.
         options%filter_string = ""
 
+        call get_command_argument(0, program_name)
         num_arguments = command_argument_count()
         i = 1
         do while (i <= num_arguments)
             call get_command_argument(i, argument)
             select case (trim(argument))
+            case ("-h", "--help")
+                write(output_unit, '(A)') usageMessage(program_name)
+                call exit(0)
             case ("-f", "--filter")
                 options%filter_tests = .true.
                 i = i + 1
@@ -1139,11 +1144,28 @@ contains
                 options%verbose = .true.
             case default
                 write(error_unit, '(A)') &
-                        "Unknown argument: '" // trim(argument) // "'"
+                        "Unknown argument: '" // trim(argument) // "'" // NEWLINE
+                write(error_unit, '(A)') usageMessage(program_name)
                 call exit(1)
             end select
             i = i + 1
         end do
+    contains
+        pure function usageMessage(program_name_)
+            character(len=*), intent(in) :: program_name_
+            character(len=:), allocatable :: usageMessage
+
+            usageMessage = &
+                    "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-f string]" // NEWLINE &
+                    // "  options:" // NEWLINE &
+                    // "    -h, --help                    Output this message and exit" // NEWLINE &
+                    // "    -q, --quiet                   Don't print the test descriptions before" // NEWLINE &
+                    // "                                  running the tests" // NEWLINE &
+                    // "    -v, --verbose                 Print all of the assertion messages, not" // NEWLINE &
+                    // "                                  just the failing ones" // NEWLINE &
+                    // "    -f string, --filter string    Only run cases or collections whose" // NEWLINE &
+                    // "                                  description contains the given string" // NEWLINE
+        end function usageMessage
     end function getOptions
 
     pure function getTestItems(maybes) result(test_items)

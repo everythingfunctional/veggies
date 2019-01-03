@@ -79,6 +79,8 @@ writing and maintaining the driver program wouldn't be _too_ bad.
 The driver program accepts a handful of command line arguments for controlling
 the outputs from the tests. This is done inside the `runTests` subroutine, so
 even manually or otherwise generated driver programs can use this functionality.
+The ``-h` or `--help` command line flag can be used to print a usage message
+and stop execution.
 The `-q` or `--quiet` command line flag can be used to suppress the initial
 report of the tests that will be executed. The `-v` or `--verbose` flag can be
 used to report the results of *all* of the assertions made when running the tests,
