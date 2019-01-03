@@ -69,6 +69,11 @@ module Vegetables_m
         class(*), allocatable :: value_
     end type Transformed_t
 
+    type, public :: Example_t
+        private
+        class(*), allocatable :: value_
+    end type Example_t
+
     abstract interface
         pure function filter_(self, filter_string) result(maybe)
             import :: Test_t, Maybe_t
@@ -158,6 +163,18 @@ module Vegetables_m
         procedure, public :: numCases => inputTestCaseNumCases
         procedure, public :: run => runCaseWithInput
     end type InputTestCase_t
+
+    type, extends(Test_t), public :: TestCaseWithExamples_t
+        private
+        type(Example_t), allocatable :: examples(:)
+        procedure(inputTest), nopass, pointer :: test
+    contains
+        private
+        procedure, public :: description => testCaseWithExamplesDescription
+        procedure, public :: filter => filterTestCaseWithExamples
+        procedure, public :: numCases => testCaseWithExamplesNumCases
+        procedure, public :: run => runCaseWithExamples
+    end type TestCaseWithExamples_t
 
     type, extends(Test_t), public :: TestCollection_t
         private
@@ -260,6 +277,14 @@ module Vegetables_m
         procedure, public :: getValue => getValueTestCase
     end type JustTestCase_t
 
+    type, public, extends(Maybe_t) :: JustTestCaseWithExamples_t
+        private
+        type(TestCaseWithExamples_t) :: value_
+    contains
+        private
+        procedure, public :: getValue => getValueTestCaseWithExamples
+    end type JustTestCaseWithExamples_t
+
     type, public, extends(Maybe_t) :: JustTestCollection_t
         private
         type(TestCollection_t) :: value_
@@ -360,9 +385,15 @@ module Vegetables_m
         module procedure givenWithInput
     end interface given
 
+    interface it
+        module procedure itBasic
+        module procedure itWithExamples
+    end interface it
+
     interface Just
         module procedure JustInputTestCase
         module procedure JustTestCase
+        module procedure JustTestCaseWithExamples
         module procedure JustTestCollection
         module procedure JustTestCollectionWithInput
         module procedure JustTestItem
@@ -401,6 +432,7 @@ module Vegetables_m
             assertNot, &
             assertThat, &
             describe, &
+            Example, &
             fail, &
             given, &
             it, &
@@ -922,6 +954,13 @@ contains
                 .or. (abs(expected - actual) / abs(expected) <= tolerance)
     end function equalsWithinRelative
 
+    pure function Example(value_)
+        class(*), intent(in) :: value_
+        type(Example_t) :: Example
+
+        Example%value_ = value_
+    end function Example
+
     pure function fail(message) result(failure)
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
@@ -957,6 +996,18 @@ contains
             maybe = NOTHING
         end if
     end function filterTestCase
+
+    pure function filterTestCaseWithExamples(self, filter_string) result(maybe)
+        class(TestCaseWithExamples_t), intent(in) :: self
+        character(len=*), intent(in) :: filter_string
+        class(Maybe_t), allocatable :: maybe
+
+        if (self%description_.includes.filter_string) then
+            maybe = Just(self)
+        else
+            maybe = NOTHING
+        end if
+    end function filterTestCaseWithExamples
 
     pure function filterTestCollection(self, filter_string) result(maybe)
         class(TestCollection_t), intent(in) :: self
@@ -1039,6 +1090,13 @@ contains
             allocate(TestCase_t :: test_item%test)
             select type (test => test_item%test)
             type is (TestCase_t)
+                test = filtered%getValue()
+                maybe%maybe = Just(test_item)
+            end select
+        type is (JustTestCaseWithExamples_t)
+            allocate(TestCaseWithExamples_t :: test_item%test)
+            select type (test => test_item%test)
+            type is (TestCaseWithExamples_t)
                 test = filtered%getValue()
                 maybe%maybe = Just(test_item)
             end select
@@ -1207,6 +1265,13 @@ contains
         value_ = just_%value_
     end function getValueTestCase
 
+    pure function getValueTestCaseWithExamples(just_) result(value_)
+        class(JustTestCaseWithExamples_t), intent(in) :: just_
+        type(TestCaseWithExamples_t) :: value_
+
+        value_ = just_%value_
+    end function getValueTestCaseWithExamples
+
     pure function getValueTestCollection(just_) result(value_)
         class(JustTestCollection_t), intent(in) :: just_
         type(TestCollection_t) :: value_
@@ -1317,18 +1382,6 @@ contains
         string = trim(temp)
     end function integerToCharacter
 
-    function it(description, func) result(test_case)
-        character(len=*), intent(in) :: description
-        procedure(test_) :: func
-        type(TestItem_t) :: test_case
-
-        allocate(TestCase_t :: test_case%test)
-        select type (test => test_case%test)
-        type is (TestCase_t)
-            test = TestCase(description, func)
-        end select
-    end function it
-
     function it_(description, func) result(test_case)
         character(len=*), intent(in) :: description
         procedure(inputTest) :: func
@@ -1340,6 +1393,31 @@ contains
             test = InputTestCase(description, func)
         end select
     end function it_
+
+    function itBasic(description, func) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(test_) :: func
+        type(TestItem_t) :: test_case
+
+        allocate(TestCase_t :: test_case%test)
+        select type (test => test_case%test)
+        type is (TestCase_t)
+            test = TestCase(description, func)
+        end select
+    end function itBasic
+
+    function itWithExamples(description, examples, func) result(test_case)
+        character(len=*), intent(in) :: description
+        type(Example_t), intent(in) :: examples(:)
+        procedure(inputTest) :: func
+        type(TestItem_t) :: test_case
+
+        allocate(TestCaseWithExamples_t :: test_case%test)
+        select type (test => test_case%test)
+        type is (TestCaseWithExamples_t)
+            test = TestCaseWithExamples(description, examples, func)
+        end select
+    end function itWithExamples
 
     pure function join(strings_, separator) result(string)
         type(VegetableString_t), intent(in) :: strings_(:)
@@ -1367,6 +1445,13 @@ contains
 
         just_ = JustTestCase_t(value_)
     end function JustTestCase
+
+    pure function JustTestCaseWithExamples(value_) result(just_)
+        type(TestCaseWithExamples_t), intent(in) :: value_
+        type(JustTestCaseWithExamples_t) :: just_
+
+        just_ = JustTestCaseWithExamples_t(value_)
+    end function JustTestCaseWithExamples
 
     pure function JustTestCollection(value_) result(just_)
         type(TestCollection_t), intent(in) :: value_
@@ -1595,6 +1680,19 @@ contains
         result__ = TestCaseResult(self%description_, self%test())
     end function runCase
 
+    function runCaseWithExamples(self) result(result__)
+        class(TestCaseWithExamples_t), intent(in) :: self
+        type(TestCaseResult_t) :: result__
+
+        integer :: i
+        type(Result_t) :: results
+
+        do i = 1, size(self%examples)
+            results = results.and.self%test(self%examples(i)%value_)
+        end do
+        result__ = TestCaseResult(self%description_, results)
+    end function runCaseWithExamples
+
     function runCaseWithInput(self, input) result(result__)
         class(InputTestCase_t), intent(in) :: self
         class(*), intent(in) :: input
@@ -1652,6 +1750,12 @@ contains
             type is (TestCaseResult_t)
                 result_ = test%run()
             end select
+        type is (TestCaseWithExamples_t)
+            allocate(TestCaseResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCaseResult_t)
+                result_ = test%run()
+            end select
         type is (TestCollection_t)
             allocate(TestCollectionResult_t :: result_item%result_)
             select type (result_ => result_item%result_)
@@ -1686,6 +1790,12 @@ contains
                 result_ = test%run(input)
             end select
         type is (TestCase_t)
+            allocate(TestCaseResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCaseResult_t)
+                result_ = test%run()
+            end select
+        type is (TestCaseWithExamples_t)
             allocate(TestCaseResult_t :: result_item%result_)
             select type (result_ => result_item%result_)
             type is (TestCaseResult_t)
@@ -1963,6 +2073,34 @@ contains
         description = hangingIndent( &
                 self%description // NEWLINE // self%result_%verboseDescription())
     end function testCaseVerboseDescription
+
+    function TestCaseWithExamples(description, examples, func) result(test_case)
+        character(len=*), intent(in) :: description
+        type(Example_t), intent(in) :: examples(:)
+        procedure(inputTest) :: func
+        type(TestCaseWithExamples_t) :: test_case
+
+        test_case%description_ = description
+        allocate(test_case%examples(size(examples)))
+        test_case%examples = examples
+        test_case%test => func
+    end function TestCaseWithExamples
+
+    pure function testCaseWithExamplesDescription(self) result(description)
+        class(TestCaseWithExamples_t), intent(in) :: self
+        character(len=:), allocatable :: description
+
+        description = self%description_
+    end function testCaseWithExamplesDescription
+
+    pure function testCaseWithExamplesNumCases(self) result(num_cases)
+        class(TestCaseWithExamples_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self)
+        end associate
+        num_cases = 1
+    end function testCaseWithExamplesNumCases
 
     pure function TestCollection(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
