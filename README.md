@@ -65,7 +65,7 @@ in order to remain consistent with the message style.
 If you are using the provided build system, multiple *`test_`*`something` functions
 can be provided within a module, and multiple `something`*`_test`* modules can be
 provided in separate files. The build system will generate a driver program
-that calls each *test_*something function it finds in order to build up the
+that calls each *`test_`*`something` function it finds in order to build up the
 test suite. It will then run all of the tests and report the results. The section
 of the build system which generates this program can be used as a standalone
 program that accepts as command line arguments the name of the generator program
@@ -79,7 +79,7 @@ writing and maintaining the driver program wouldn't be _too_ bad.
 The driver program accepts a handful of command line arguments for controlling
 the outputs from the tests. This is done inside the `runTests` subroutine, so
 even manually or otherwise generated driver programs can use this functionality.
-The ``-h` or `--help` command line flag can be used to print a usage message
+The `-h` or `--help` command line flag can be used to print a usage message
 and stop execution.
 The `-q` or `--quiet` command line flag can be used to suppress the initial
 report of the tests that will be executed. The `-v` or `--verbose` flag can be
