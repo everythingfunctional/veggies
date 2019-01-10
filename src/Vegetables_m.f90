@@ -413,6 +413,7 @@ module Vegetables_m
 
     integer, parameter :: dp = kind(0.0d0)
     character(len=*), parameter :: EMPTY_SUCCESS_MESSAGE = "String was empty"
+    integer, parameter :: INDENTATION = 4
     double precision, parameter :: MACHINE_EPSILON = EPSILON(0.0_dp)
     double precision, parameter :: MACHINE_TINY = TINY(0.0_dp)
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
@@ -474,13 +475,13 @@ contains
         type(Result_t) :: result__
 
         if(.not.(string.includes.search_for)) then
-            result__ = succeed( &
-                    makeDoesntIncludeSuccessMessage(search_for, string) &
-                    // makeUserMessage(success_message))
+            result__ = succeed(withUserMessage(&
+                    makeDoesntIncludeSuccessMessage(search_for, string), &
+                    success_message))
         else
-            result__ = fail( &
-                    makeDoesntIncludeFailureMessage(search_for, string) &
-                    // makeUserMessage(failure_message))
+            result__ = fail(withUserMessage( &
+                    makeDoesntIncludeFailureMessage(search_for, string), &
+                    failure_message))
         end if
     end function assertDoesntIncludeWithMessages
 
@@ -507,12 +508,12 @@ contains
         type(Result_t) :: result__
 
         if (string == "") then
-            result__ = succeed( &
-                    EMPTY_SUCCESS_MESSAGE // makeUserMessage(success_message))
+            result__ = succeed(withUserMessage( &
+                    EMPTY_SUCCESS_MESSAGE, success_message))
         else
-            result__ = fail( &
-                    makeEmptyFailureMessage(string) &
-                    // makeUserMessage(failure_message))
+            result__ = fail(withUserMessage( &
+                    makeEmptyFailureMessage(string), &
+                    failure_message))
         end if
     end function assertEmptyWithMessages
 
@@ -543,14 +544,13 @@ contains
         type(Result_t) :: result__
 
         if (expected == actual) then
-            result__ = succeed( &
-                    makeEqualsSuccessMessage(expected) &
-                    // makeUserMessage(success_message))
+            result__ = succeed(withUserMessage( &
+                    makeEqualsSuccessMessage(expected), &
+                    success_message))
         else
-            result__ = fail( &
-                    makeEqualsFailureMessage( &
-                            expected, actual) &
-                    // makeUserMessage(failure_message))
+            result__ = fail(withUserMessage( &
+                    makeEqualsFailureMessage(expected, actual), &
+                    failure_message))
         end if
     end function assertEqualsCharactersWithMessages
 
@@ -621,19 +621,19 @@ contains
         type(Result_t) :: result__
 
         if (equalsWithinAbsolute(expected, actual, tolerance)) then
-            result__ = succeed( &
+            result__ = succeed(withUserMessage( &
                     makeWithinSuccesMessage( &
                             toCharacter(expected), &
                             toCharacter(actual), &
-                            toCharacter(tolerance) ) &
-                    // makeUserMessage(success_message))
+                            toCharacter(tolerance)), &
+                    success_message))
         else
-            result__ = fail( &
+            result__ = fail(withUserMessage( &
                     makeWithinFailureMessage( &
                             toCharacter(expected), &
                             toCharacter(actual), &
-                            toCharacter(tolerance)) &
-                    // makeUserMessage(failure_message))
+                            toCharacter(tolerance)), &
+                    failure_message))
         end if
     end function assertEqualsWithinAbsoluteWithMessages
 
@@ -674,19 +674,19 @@ contains
         type(Result_t) :: result__
 
         if (equalsWithinRelative(expected, actual, tolerance)) then
-            result__ = succeed( &
+            result__ = succeed(withUserMessage( &
                     makeWithinSuccesMessage( &
                             toCharacter(expected), &
                             toCharacter(actual), &
-                            toCharacter(tolerance * 100.0_dp) // "%") &
-                    // makeUserMessage(success_message))
+                            toCharacter(tolerance * 100.0_dp) // "%"), &
+                    success_message))
         else
-            result__ = fail( &
+            result__ = fail(withUserMessage( &
                     makeWithinFailureMessage( &
                             toCharacter(expected), &
                             toCharacter(actual), &
-                            toCharacter(tolerance * 100.0_dp) // "%") &
-                    // makeUserMessage(failure_message))
+                            toCharacter(tolerance * 100.0_dp) // "%"), &
+                    failure_message))
         end if
     end function assertEqualsWithinRelativeWithMessages
 
@@ -717,14 +717,14 @@ contains
         type(Result_t) :: result__
 
         if (expected == actual) then
-            result__ = succeed( &
-                    makeEqualsSuccessMessage(toCharacter(expected)) &
-                    // makeUserMessage(success_message))
+            result__ = succeed(withUserMessage( &
+                    makeEqualsSuccessMessage(toCharacter(expected)), &
+                    success_message))
         else
-            result__ = fail( &
+            result__ = fail(withUserMessage( &
                     makeEqualsFailureMessage( &
-                            toCharacter(expected), toCharacter(actual)) &
-                    // makeUserMessage(failure_message))
+                            toCharacter(expected), toCharacter(actual)), &
+                    failure_message))
         end if
     end function assertEqualsIntegerWithMessages
 
@@ -755,13 +755,13 @@ contains
         type(Result_t) :: result__
 
         if (string.includes.search_for) then
-            result__ = succeed( &
-                    makeIncludesSuccessMessage(search_for, string) &
-                    // makeUserMessage(success_message))
+            result__ = succeed(withUserMessage( &
+                    makeIncludesSuccessMessage(search_for, string), &
+                    success_message))
         else
-            result__ = fail( &
-                    makeIncludesFailureMessage(search_for, string) &
-                    // makeUserMessage(failure_message))
+            result__ = fail(withUserMessage( &
+                    makeIncludesFailureMessage(search_for, string), &
+                    failure_message))
         end if
     end function assertIncludesWithMessages
 
@@ -788,11 +788,11 @@ contains
         type(Result_t) :: result__
 
         if (.not. condition) then
-            result__ = succeed( &
-                    NOT_SUCCESS_MESSAGE // makeUserMessage(success_message))
+            result__ = succeed(withUserMessage( &
+                    NOT_SUCCESS_MESSAGE, success_message))
         else
-            result__ = fail( &
-                    NOT_FAILURE_MESSAGE // makeUserMessage(failure_message))
+            result__ = fail(withUserMessage( &
+                    NOT_FAILURE_MESSAGE, failure_message))
         end if
     end function assertNotWithMessages
 
@@ -819,11 +819,11 @@ contains
         type(Result_t) :: result__
 
         if (condition) then
-            result__ = succeed( &
-                    THAT_SUCCESS_MESSAGE // makeUserMessage(success_message))
+            result__ = succeed(withUserMessage( &
+                    THAT_SUCCESS_MESSAGE, success_message))
         else
-            result__ = fail( &
-                    THAT_FAILURE_MESSAGE // makeUserMessage(failure_message))
+            result__ = fail(withUserMessage( &
+                    THAT_FAILURE_MESSAGE, failure_message))
         end if
     end function assertThatWithMessages
 
@@ -1316,14 +1316,15 @@ contains
         test_collection = describe("Given " // description, input, tests)
     end function givenWithInput
 
-    pure function hangingIndent(string__) result(indented)
+    pure function hangingIndent(string__, spaces) result(indented)
         character(len=*), intent(in) :: string__
+        integer, intent(in) :: spaces
         character(len=:), allocatable :: indented
 
         type(VegetableString_t), allocatable :: lines(:)
 
         lines = splitAt(string__, NEWLINE)
-        indented = join(lines, NEWLINE // "    ")
+        indented = join(lines, NEWLINE // repeat(" ", spaces))
     end function hangingIndent
 
     elemental function hasValue(self)
@@ -1345,6 +1346,14 @@ contains
 
         includes = index(string, search_for) > 0
     end function includes
+
+    pure function indent(string, spaces) result(indented)
+        character(len=*), intent(in) :: string
+        integer, intent(in) :: spaces
+        character(len=:), allocatable :: indented
+
+        indented = repeat(" ", spaces) // hangingIndent(string, spaces)
+    end function indent
 
     function InputTestCase(description, func) result(test_case)
         character(len=*), intent(in) :: description
@@ -1495,9 +1504,16 @@ contains
         character(len=*), intent(in) :: string
         character(len=:), allocatable :: message
 
-        message = &
-                "Expected " // delimit(string) &
-                // " to not include " // delimit(search_for)
+        message = hangingIndent( &
+                "Expected" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(string, 1)), &
+                        INDENTATION) // NEWLINE &
+                // "to not include" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(search_for, 1)), &
+                        INDENTATION), &
+                INDENTATION)
     end function makeDoesntIncludeFailureMessage
 
     pure function makeDoesntIncludeSuccessMessage(search_for, string) result(message)
@@ -1505,16 +1521,29 @@ contains
         character(len=*), intent(in) :: string
         character(len=:), allocatable :: message
 
-        message = &
-                delimit(string) // " did not include " &
-                // delimit(search_for)
+        message = hangingIndent( &
+                "The string" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(string, 1)), &
+                        INDENTATION) // NEWLINE &
+                // "did not include" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(search_for, 1)), &
+                        INDENTATION), &
+                INDENTATION)
     end function makeDoesntIncludeSuccessMessage
 
     pure function makeEmptyFailureMessage(string) result(message)
         character(len=*), intent(in) :: string
         character(len=:), allocatable :: message
 
-        message = "String " // delimit(string) // " wasn't empty"
+        message = hangingIndent( &
+                "The string" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(string, 1)), &
+                        INDENTATION) // NEWLINE &
+                // "wasn't empty", &
+                INDENTATION)
     end function makeEmptyFailureMessage
 
     pure function makeEqualsFailureMessage(expected, actual) result(message)
@@ -1522,16 +1551,28 @@ contains
         character(len=*), intent(in) :: actual
         character(len=:), allocatable :: message
 
-        message = &
-                "Expected " // delimit(expected) &
-                // " but got " // delimit(actual)
+        message = hangingIndent( &
+                "Expected" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(expected, 1)), &
+                        INDENTATION) // NEWLINE &
+                // "but got" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(actual, 1)), &
+                        INDENTATION), &
+                INDENTATION)
     end function makeEqualsFailureMessage
 
     pure function makeEqualsSuccessMessage(expected) result(message)
         character(len=*), intent(in) :: expected
         character(len=:), allocatable :: message
 
-        message = "Expected and got " // delimit(expected)
+        message = hangingIndent( &
+                "Expected and got" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(expected, 1)), &
+                        INDENTATION), &
+                INDENTATION)
     end function makeEqualsSuccessMessage
 
     pure function makeIncludesFailureMessage(search_for, string) result(message)
@@ -1539,9 +1580,16 @@ contains
         character(len=*), intent(in) :: string
         character(len=:), allocatable :: message
 
-        message = &
-                "Expected " // delimit(string) &
-                // " to include " // delimit(search_for)
+        message = hangingIndent( &
+                "Expected" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(string, 1)), &
+                        INDENTATION) // NEWLINE &
+                // "to include" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(search_for, 1)), &
+                        INDENTATION), &
+                INDENTATION)
     end function makeIncludesFailureMessage
 
     pure function makeIncludesSuccessMessage(search_for, string) result(message)
@@ -1549,21 +1597,17 @@ contains
         character(len=*), intent(in) :: string
         character(len=:), allocatable :: message
 
-        message = &
-                delimit(string) // " included " &
-                // delimit(search_for)
+        message = hangingIndent( &
+                "The string" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(string, 1)), &
+                        INDENTATION) // NEWLINE &
+                // "included" // NEWLINE &
+                // indent( &
+                        delimit(hangingIndent(search_for, 1)), &
+                        INDENTATION), &
+                INDENTATION)
     end function makeIncludesSuccessMessage
-
-    pure function makeUserMessage(message) result(user_message)
-        character(len=*), intent(in) :: message
-        character(len=:), allocatable :: user_message
-
-        if (message == "") then
-            user_message = ""
-        else
-            user_message = "; User Message: " // delimit(message)
-        end if
-    end function makeUserMessage
 
     pure function makeWithinFailureMessage( &
             expected, actual, tolerance) result(message)
@@ -1986,7 +2030,8 @@ contains
             description = ""
         else
             description = hangingIndent( &
-                    self%description // NEWLINE // self%result_%failureDescription())
+                    self%description // NEWLINE // self%result_%failureDescription(), &
+                    INDENTATION)
         end if
     end function testCaseFailureDescription
 
@@ -2054,7 +2099,8 @@ contains
         character(len=:), allocatable :: description
 
         description = hangingIndent( &
-                self%description // NEWLINE // self%result_%verboseDescription())
+                self%description // NEWLINE // self%result_%verboseDescription(), &
+                INDENTATION)
     end function testCaseVerboseDescription
 
     function TestCaseWithExamples(description, examples, func) result(test_case)
@@ -2109,8 +2155,8 @@ contains
             descriptions(i) = toString(self%tests(i)%description())
         end do
         description = hangingIndent( &
-                self%description_ // NEWLINE &
-                // join(descriptions, NEWLINE))
+                self%description_ // NEWLINE // join(descriptions, NEWLINE), &
+                INDENTATION)
     end function testCollectionDescription
 
     pure function testCollectionFailureDescription(self) result(description)
@@ -2130,8 +2176,8 @@ contains
                 descriptions(i) = toString(self%results(i)%failureDescription())
             end do
             description = hangingIndent( &
-                    self%description // NEWLINE &
-                    // join(descriptions, NEWLINE))
+                    self%description // NEWLINE // join(descriptions, NEWLINE), &
+                    INDENTATION)
         end if
     end function testCollectionFailureDescription
 
@@ -2201,8 +2247,8 @@ contains
             descriptions(i) = toString(self%results(i)%verboseDescription())
         end do
         description = hangingIndent( &
-                self%description // NEWLINE &
-                // join(descriptions, NEWLINE))
+                self%description // NEWLINE // join(descriptions, NEWLINE), &
+                INDENTATION)
     end function testCollectionVerboseDescription
 
     pure function TestCollectionWithInput( &
@@ -2232,8 +2278,8 @@ contains
             descriptions(i) = toString(self%tests(i)%description())
         end do
         description = hangingIndent( &
-                self%description_ // NEWLINE &
-                // join(descriptions, NEWLINE))
+                self%description_ // NEWLINE // join(descriptions, NEWLINE), &
+                INDENTATION)
     end function testCollectionWithInputDescription
 
     pure function testCollectionWithInputNumCases(self) result(num_cases)
@@ -2374,8 +2420,8 @@ contains
             descriptions(i) = toString(self%tests(i)%description())
         end do
         description = hangingIndent( &
-                self%description_ // NEWLINE &
-                // join(descriptions, NEWLINE))
+                self%description_ // NEWLINE // join(descriptions, NEWLINE), &
+                INDENTATION)
     end function transformingTestCollectionDescription
 
     pure function transformingTestCollectionNumCases(self) result(num_cases)
@@ -2425,4 +2471,23 @@ contains
         trimmed = trim(string)
         withoutLastCharacter = trimmed(1:len(trimmed)-1)
     end function withoutLastCharacter
+
+    pure function withUserMessage(message, user_message) result(whole_message)
+        character(len=*), intent(in) :: message
+        character(len=*), intent(in) :: user_message
+        character(len=:), allocatable :: whole_message
+
+        if (user_message == "") then
+            whole_message = message
+        else
+            whole_message = &
+                    message // NEWLINE &
+                    // indent( &
+                            hangingIndent( &
+                                    "User Message:" // NEWLINE &
+                                    // delimit(hangingIndent(user_message, 1)), &
+                                    INDENTATION), &
+                            INDENTATION)
+        end if
+    end function withUserMessage
 end module Vegetables_m
