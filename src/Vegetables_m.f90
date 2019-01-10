@@ -437,7 +437,6 @@ module Vegetables_m
             given, &
             it, &
             it_, &
-            replaceNewlines, &
             runTests, &
             succeed, &
             TestCase, &
@@ -545,12 +544,12 @@ contains
 
         if (expected == actual) then
             result__ = succeed( &
-                    makeEqualsSuccessMessage(replaceNewlines(expected)) &
+                    makeEqualsSuccessMessage(expected) &
                     // makeUserMessage(success_message))
         else
             result__ = fail( &
                     makeEqualsFailureMessage( &
-                            replaceNewlines(expected), replaceNewlines(actual)) &
+                            expected, actual) &
                     // makeUserMessage(failure_message))
         end if
     end function assertEqualsCharactersWithMessages
@@ -1497,8 +1496,8 @@ contains
         character(len=:), allocatable :: message
 
         message = &
-                "Expected " // delimit(replaceNewlines(string)) &
-                // " to not include " // delimit(replaceNewlines(search_for))
+                "Expected " // delimit(string) &
+                // " to not include " // delimit(search_for)
     end function makeDoesntIncludeFailureMessage
 
     pure function makeDoesntIncludeSuccessMessage(search_for, string) result(message)
@@ -1507,15 +1506,15 @@ contains
         character(len=:), allocatable :: message
 
         message = &
-                delimit(replaceNewlines(string)) // " did not include " &
-                // delimit(replaceNewlines(search_for))
+                delimit(string) // " did not include " &
+                // delimit(search_for)
     end function makeDoesntIncludeSuccessMessage
 
     pure function makeEmptyFailureMessage(string) result(message)
         character(len=*), intent(in) :: string
         character(len=:), allocatable :: message
 
-        message = "String " // delimit(replaceNewlines(string)) // " wasn't empty"
+        message = "String " // delimit(string) // " wasn't empty"
     end function makeEmptyFailureMessage
 
     pure function makeEqualsFailureMessage(expected, actual) result(message)
@@ -1541,8 +1540,8 @@ contains
         character(len=:), allocatable :: message
 
         message = &
-                "Expected " // delimit(replaceNewlines(string)) &
-                // " to include " // delimit(replaceNewlines(search_for))
+                "Expected " // delimit(string) &
+                // " to include " // delimit(search_for)
     end function makeIncludesFailureMessage
 
     pure function makeIncludesSuccessMessage(search_for, string) result(message)
@@ -1551,8 +1550,8 @@ contains
         character(len=:), allocatable :: message
 
         message = &
-                delimit(replaceNewlines(string)) // " included " &
-                // delimit(replaceNewlines(search_for))
+                delimit(string) // " included " &
+                // delimit(search_for)
     end function makeIncludesSuccessMessage
 
     pure function makeUserMessage(message) result(user_message)
@@ -1599,22 +1598,6 @@ contains
             trimmed = withoutLastCharacter(trimmed)
         end do
     end function removeTrailingZeros
-
-    pure function replaceNewlines(chars) result(without_newlines)
-        character(len=*), intent(in) :: chars
-        character(len=:), allocatable :: without_newlines
-
-        integer :: i
-
-        without_newlines = ""
-        do i = 1, len(chars)
-            if (chars(i:i) == NEWLINE) then
-                without_newlines = without_newlines // "\n"
-            else
-                without_newlines = without_newlines // chars(i:i)
-            end if
-        end do
-    end function replaceNewlines
 
     pure function Result_( &
             passed, &
