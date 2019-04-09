@@ -10,19 +10,21 @@ contains
 
         type(TestItem_t) :: test
 
+        type(TestItem_t) :: collection(1)
         type(TestCase_t) :: example_case
+        type(TestItem_t) :: individual_tests(8)
 
         example_case = examplePassingTestCase()
-        test = given("a passing test case", example_case, &
-                [when("it is run", runCase, &
-                        [then_("it knows it passed", checkCasePasses), &
-                        then_("it has 1 test case", checkNumCases), &
-                        then_("it has no failing case", checkNumFailingCases), &
-                        then_("it's verbose description still includes the given description", checkVerboseDescription), &
-                        then_("it's verbose description includes the assertion message", checkVerboseDescriptionAssertion), &
-                        then_("it's failure description is empty", checkFailureDescriptionEmpty), &
-                        then_("it knows how many asserts there were", checkNumAsserts), &
-                        then_("it has no failing asserts", checkNumFailingAsserts)])])
+        individual_tests(1) = then_("it knows it passed", checkCasePasses)
+        individual_tests(2) = then_("it has 1 test case", checkNumCases)
+        individual_tests(3) = then_("it has no failing case", checkNumFailingCases)
+        individual_tests(4) = then_("it's verbose description still includes the given description", checkVerboseDescription)
+        individual_tests(5) = then_("it's verbose description includes the assertion message", checkVerboseDescriptionAssertion)
+        individual_tests(6) = then_("it's failure description is empty", checkFailureDescriptionEmpty)
+        individual_tests(7) = then_("it knows how many asserts there were", checkNumAsserts)
+        individual_tests(8) = then_("it has no failing asserts", checkNumFailingAsserts)
+        collection(1) = when("it is run", runCase, individual_tests)
+        test = given("a passing test case", example_case, collection)
     end function test_passing_case_behaviors
 
     function checkCasePasses(example_result) result(result_)

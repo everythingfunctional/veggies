@@ -9,10 +9,12 @@ contains
 
         type(TestItem_t) :: tests
 
-        tests = describe("assertEqualsWithinRelative", &
-                [it("passes with the same number even with very small tolerance", checkPassForSameNumber), &
-                it("fails with sufficiently different numbers", checkFailForDifferentNumbers), &
-                it("passes with sufficiently close numbers", checkPassForCloseNumbers)])
+        type(TestItem_t) :: individual_tests(3)
+
+        individual_tests(1) = it("passes with the same number even with very small tolerance", checkPassForSameNumber)
+        individual_tests(2) = it("fails with sufficiently different numbers", checkFailForDifferentNumbers)
+        individual_tests(3) = it("passes with sufficiently close numbers", checkPassForCloseNumbers)
+        tests = describe("assertEqualsWithinRelative", individual_tests)
     end function test_assert_equals_within_relative
 
     function checkPassForSameNumber() result(result_)

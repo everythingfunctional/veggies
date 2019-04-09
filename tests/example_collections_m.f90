@@ -60,12 +60,16 @@ contains
     end function exampleFailingTestCase
 
     function exampleFailingCollection() result(test_collection)
-        use Vegetables_m, only: TestCollection_t, TestCollection
+        use Vegetables_m, only: TestCollection_t, TestItem_t, TestCollection
 
         type(TestCollection_t) :: test_collection
 
-        test_collection = TestCollection(EXAMPLE_COLLECTION_DESCRIPTION, &
-                [exampleTestCase1(), exampleTestCase2(), exampleFailingTestCase()])
+        type(TestItem_t) :: cases(3)
+
+        cases(1) = exampleTestCase1()
+        cases(2) = exampleTestCase2()
+        cases(3) = exampleFailingTestCase()
+        test_collection = TestCollection(EXAMPLE_COLLECTION_DESCRIPTION, cases)
     end function exampleFailingCollection
 
     function middleCollection() result(test_collection)
@@ -73,17 +77,23 @@ contains
 
         type(TestItem_t) :: test_collection
 
-        test_collection = describe(MIDDLE_COLLECTION_DESCRIPTION, &
-                [exampleTestCase1(), exampleTestCase2()])
+        type(TestItem_t) :: cases(2)
+
+        cases(1) = exampleTestCase1()
+        cases(2) = exampleTestCase2()
+        test_collection = describe(MIDDLE_COLLECTION_DESCRIPTION, cases)
     end function middleCollection
 
     function examplePassingCollection() result(test_collection)
-        use Vegetables_m, only: TestCollection_t, TestCollection
+        use Vegetables_m, only: TestCollection_t, TestItem_t, TestCollection
 
         type(TestCollection_t) :: test_collection
 
-        test_collection = TestCollection(EXAMPLE_COLLECTION_DESCRIPTION, &
-                [middleCollection(), exampleTestCase2()])
+        type(TestItem_t) :: items(2)
+
+        items(1) = middleCollection()
+        items(2) = exampleTestCase2()
+        test_collection = TestCollection(EXAMPLE_COLLECTION_DESCRIPTION, items)
     end function examplePassingCollection
 
     function runCollection(example_collection) result(example_results)

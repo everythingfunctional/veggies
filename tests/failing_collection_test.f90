@@ -10,30 +10,34 @@ contains
 
         type(TestItem_t) :: tests
 
+        type(TestItem_t) :: collection(1)
         type(TestCollection_t) :: example_collection
+        type(TestItem_t) :: individual_tests(15)
 
         example_collection = exampleFailingCollection()
-        tests = given("a failing test collection", example_collection, &
-                [when("it is run", runCollection, &
-                        [then_("it knows it failed", checkCollectionFails), &
-                        then_("it knows how many cases there were", checkNumCases), &
-                        then_("it knows how many cases failed", checkNumFailingCases), &
-                        then_("it's verbose description includes the given description", checkVerboseTopDescription), &
-                        then_("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
-                        then_("it's verbose description includes the failure message", checkVerboseForFailureMessage), &
-                        then_("it's verbose description includes the success message", checkVerboseForSuccessMessage), &
-                        then_("it's failure description includes the given description", checkFailureForTopDescription), &
-                        then_("it's failure description includes the failing case description", checkFailureCaseDescription), &
-                        then_( &
-                                "it's failure description does not include the passing case descriptions", &
-                                checkFailureNoPassingDescriptions), &
-                        then_("it's failure description includes the failure message", checkFailureForMessage), &
-                        then_( &
-                                "it's failure description does not include the success message", &
-                                checkFailureNoSuccessMessage), &
-                        then_("it's failure description does not include blank lines", checkFailureNoBlankLines), &
-                        then_("it knows how many asserts there were", checkNumAsserts), &
-                        then_("it knows how many asserts failed", checkNumFailingAsserts)])])
+        individual_tests(1) = then_("it knows it failed", checkCollectionFails)
+        individual_tests(2) = then_("it knows how many cases there were", checkNumCases)
+        individual_tests(3) = then_("it knows how many cases failed", checkNumFailingCases)
+        individual_tests(4) = then_("it's verbose description includes the given description", checkVerboseTopDescription)
+        individual_tests(5) = then_( &
+                "it's verbose description includes the individual case descriptions", &
+                checkVerboseCaseDescriptions)
+        individual_tests(6) = then_("it's verbose description includes the failure message", checkVerboseForFailureMessage)
+        individual_tests(7) = then_("it's verbose description includes the success message", checkVerboseForSuccessMessage)
+        individual_tests(8) = then_("it's failure description includes the given description", checkFailureForTopDescription)
+        individual_tests(9) = then_("it's failure description includes the failing case description", checkFailureCaseDescription)
+        individual_tests(10) = then_( &
+                "it's failure description does not include the passing case descriptions", &
+                checkFailureNoPassingDescriptions)
+        individual_tests(11) = then_("it's failure description includes the failure message", checkFailureForMessage)
+        individual_tests(12) = then_( &
+                "it's failure description does not include the success message", &
+                checkFailureNoSuccessMessage)
+        individual_tests(13) = then_("it's failure description does not include blank lines", checkFailureNoBlankLines)
+        individual_tests(14) = then_("it knows how many asserts there were", checkNumAsserts)
+        individual_tests(15) = then_("it knows how many asserts failed", checkNumFailingAsserts)
+        collection(1) = when("it is run", runCollection, individual_tests)
+        tests = given("a failing test collection", example_collection, collection)
     end function test_failing_collection_behaviors
 
     function checkCollectionFails(example_results) result(result_)

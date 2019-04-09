@@ -9,9 +9,11 @@ contains
 
         type(TestItem_t) :: tests
 
-        tests = describe("assertEquals with double precision values", &
-                [it("passes with the same number", checkPassForSameNumber), &
-                it("fails with different numbers", checkFailForDifferentNumbers)])
+        type(TestItem_t) :: individual_tests(2)
+
+        individual_tests(1) = it("passes with the same number", checkPassForSameNumber)
+        individual_tests(2) = it("fails with different numbers", checkFailForDifferentNumbers)
+        tests = describe("assertEquals with double precision values", individual_tests)
     end function test_assert_equals_integers
 
     function checkPassForSameNumber() result(result_)

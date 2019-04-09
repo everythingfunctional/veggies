@@ -9,9 +9,11 @@ contains
 
         type(TestItem_t) :: tests
 
-        tests = describe("assertIncludes", &
-                [it("passes with the same strings", checkPassForSameStrings), &
-                it("fails when the string isn't included", checkFailForDifferentStrings)])
+        type(TestItem_t) :: individual_tests(2)
+
+        individual_tests(1) = it("passes with the same strings", checkPassForSameStrings)
+        individual_tests(2) = it("fails when the string isn't included", checkFailForDifferentStrings)
+        tests = describe("assertIncludes", individual_tests)
     end function test_assert_includes
 
     function checkPassForSameStrings() result(result_)

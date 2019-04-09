@@ -10,14 +10,23 @@ contains
 
         type(TestItem_t) :: tests
 
+        type(TestItem_t) :: collection(2)
         type(TestCase_t) :: example_case
+        type(TestItem_t) :: first(1)
+        type(TestItem_t) :: second(1)
 
         example_case = examplePassingTestCase()
-        tests = Given("a test case", example_case, &
-                [When("it is filterd with a string it doesn't contain", filterCaseNotMatching, &
-                        [Then_("it returns nothing", checkCaseForNothing)]), &
-                When("it is filtered with a matching string", filterCaseMatching, &
-                        [Then_("it returns itself", checkCaseIsSame)])])
+        first(1) = Then_("it returns nothing", checkCaseForNothing)
+        second(1) = Then_("it returns itself", checkCaseIsSame)
+        collection(1) = When( &
+                "it is filterd with a string it doesn't contain", &
+                filterCaseNotMatching, &
+                first)
+        collection(2) = When( &
+                "it is filtered with a matching string", &
+                filterCaseMatching, &
+                second)
+        tests = Given("a test case", example_case, collection)
     end function test_filter_case
 
     function test_filter_collection() result(tests)
@@ -26,16 +35,29 @@ contains
 
         type(TestItem_t) :: tests
 
+        type(TestItem_t) :: collection(3)
         type(TestCollection_t) :: example_collection
+        type(TestItem_t) :: first(1)
+        type(TestItem_t) :: second(1)
+        type(TestItem_t) :: third(1)
 
         example_collection = examplePassingCollection()
-        tests = Given("a test collection", example_collection, &
-                [When("it is filtered with a string it doesn't contain", filterCollectionNotMatching, &
-                        [Then_("it returns nothing", checkCollectionForNothing)]), &
-                When("it is filtered with a string matching it's description", filterCollectionMatchingDescription, &
-                        [Then_("it returns itself", checkCollectionIsSame)]), &
-                When("it is filtered with a string matching only 1 of its cases", filterCollectionMatchingCase, &
-                        [Then_("it returns a collection with only that case", checkCollectionSingleCase)])])
+        first(1) = Then_("it returns nothing", checkCollectionForNothing)
+        second(1) = Then_("it returns itself", checkCollectionIsSame)
+        third(1) = Then_("it returns a collection with only that case", checkCollectionSingleCase)
+        collection(1) = When( &
+                "it is filtered with a string it doesn't contain", &
+                filterCollectionNotMatching, &
+                first)
+        collection(2) = When( &
+                "it is filtered with a string matching it's description", &
+                filterCollectionMatchingDescription, &
+                second)
+        collection(3) = When( &
+                "it is filtered with a string matching only 1 of its cases", &
+                filterCollectionMatchingCase, &
+                third)
+        tests = Given("a test collection", example_collection, collection)
     end function test_filter_collection
 
     function filterCaseNotMatching(example_case) result(filtered)

@@ -10,20 +10,24 @@ contains
 
         type(TestItem_t) :: tests
 
+        type(TestItem_t) :: collection(1)
         type(TestCollection_t) :: example_collection
+        type(TestItem_t) :: individual_tests(9)
 
         example_collection = examplePassingCollection()
-        tests = given("a passing test collection", example_collection, &
-                [when("it is run", runCollection, &
-                        [then_("it knows it passed", checkCollectionPasses), &
-                        then_("it knows how many cases there were", checkNumCases), &
-                        then_("it has no failing cases", checkNumFailingCases), &
-                        then_("it's verbose description includes the given description", checkVerboseTopDescription), &
-                        then_("it's verbose description includes the individual case descriptions", checkVerboseCaseDescriptions), &
-                        then_("it's verbose description includes the assertion message", checkVerboseDescriptionAssertion), &
-                        then_("it's failure description is empty", checkFailureDescriptionEmpty), &
-                        then_("it knows how many asserts there were", checkNumAsserts), &
-                        then_("it has no failing asserts", checkNumFailingAsserts)])])
+        individual_tests(1) = then_("it knows it passed", checkCollectionPasses)
+        individual_tests(2) = then_("it knows how many cases there were", checkNumCases)
+        individual_tests(3) = then_("it has no failing cases", checkNumFailingCases)
+        individual_tests(4) = then_("it's verbose description includes the given description", checkVerboseTopDescription)
+        individual_tests(5) = then_( &
+                "it's verbose description includes the individual case descriptions", &
+                checkVerboseCaseDescriptions)
+        individual_tests(6) = then_("it's verbose description includes the assertion message", checkVerboseDescriptionAssertion)
+        individual_tests(7) = then_("it's failure description is empty", checkFailureDescriptionEmpty)
+        individual_tests(8) = then_("it knows how many asserts there were", checkNumAsserts)
+        individual_tests(9) = then_("it has no failing asserts", checkNumFailingAsserts)
+        collection(1) = when("it is run", runCollection, individual_tests)
+        tests = given("a passing test collection", example_collection, collection)
     end function test_passing_collection_behaviors
 
     function checkCollectionPasses(example_results) result(result_)

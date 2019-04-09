@@ -10,22 +10,24 @@ contains
 
         type(TestItem_t) :: test
 
+        type(TestItem_t) :: collection(1)
         type(TestCase_t) :: example_case
+        type(TestItem_t) :: individual_tests(11)
 
         example_case = exampleFailingTestCase()
-        test = given("a failing test case", example_case, &
-                [when("it is run", runCase, &
-                        [then_("it knows it failed", checkCaseFails), &
-                        then_("it has 1 test case", checkNumCases), &
-                        then_("it has 1 failing case", checkNumFailingCases), &
-                        then_("it's verbose description includes the given description", checkVerboseForGivenDescription), &
-                        then_("it's verbose description includes the success message", checkVerboseForSuccessMessage), &
-                        then_("it's verbose description includes the failure message", checkVerboseForFailureMessage), &
-                        then_("it's failure description includes the given description", checkFailureForGivenDescription), &
-                        then_("it's failure description includes the failure message", checkFailureForFailureMessage), &
-                        then_("it's failure description doesn't include the success message", checkFailureNoSuccessMessage), &
-                        then_("it knows how many asserts there were", checkNumAsserts), &
-                        then_("it knows how many asserts failed", checkNumFailingAsserts)])])
+        individual_tests(1) = then_("it knows it failed", checkCaseFails)
+        individual_tests(2) = then_("it has 1 test case", checkNumCases)
+        individual_tests(3) = then_("it has 1 failing case", checkNumFailingCases)
+        individual_tests(4) = then_("it's verbose description includes the given description", checkVerboseForGivenDescription)
+        individual_tests(5) = then_("it's verbose description includes the success message", checkVerboseForSuccessMessage)
+        individual_tests(6) = then_("it's verbose description includes the failure message", checkVerboseForFailureMessage)
+        individual_tests(7) = then_("it's failure description includes the given description", checkFailureForGivenDescription)
+        individual_tests(8) = then_("it's failure description includes the failure message", checkFailureForFailureMessage)
+        individual_tests(9) = then_("it's failure description doesn't include the success message", checkFailureNoSuccessMessage)
+        individual_tests(10) = then_("it knows how many asserts there were", checkNumAsserts)
+        individual_tests(11) = then_("it knows how many asserts failed", checkNumFailingAsserts)
+        collection(1) = when("it is run", runCase, individual_tests)
+        test = given("a failing test case", example_case, collection)
     end function test_failing_case_behaviors
 
     function checkCaseFails(example_result) result(result_)

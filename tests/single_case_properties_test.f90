@@ -10,9 +10,11 @@ contains
 
         type(TestItem_t) :: test
 
-        test = describe("A test case", examplePassingTestCase(), &
-                [it_("includes the given description", checkCaseDescription), &
-                it_("only has 1 test case", checkNumCases)])
+        type(TestItem_t) :: individual_tests(2)
+
+        individual_tests(1) = it_("includes the given description", checkCaseDescription)
+        individual_tests(2) = it_("only has 1 test case", checkNumCases)
+        test = describe("A test case", examplePassingTestCase(), individual_tests)
     end function test_case_properties
 
     function checkCaseDescription(example_case) result(result_)

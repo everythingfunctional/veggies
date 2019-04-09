@@ -9,9 +9,11 @@ contains
 
         type(TestItem_t) :: tests
 
-        tests = describe("assertEmpty", &
-                [it("passes with an empty character", checkPassForEmptyChars), &
-                it("fails with a non empty character", checkFailsForNonemptyChars)])
+        type(TestItem_t) :: individual_tests(2)
+
+        individual_tests(1) = it("passes with an empty character", checkPassForEmptyChars)
+        individual_tests(2) = it("fails with a non empty character", checkFailsForNonemptyChars)
+        tests = describe("assertEmpty", individual_tests)
     end function test_assert_empty
 
     function checkPassForEmptyChars() result(result_)

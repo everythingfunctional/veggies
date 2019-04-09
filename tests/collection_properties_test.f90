@@ -11,12 +11,13 @@ contains
         type(TestItem_t) :: test
 
         type(TestCollection_t) :: example_collection
+        type(TestItem_t) :: individual_tests(3)
 
         example_collection = examplePassingCollection()
-        test = describe("A test collection", example_collection, &
-                [it_("can tell how many tests it has", checkNumCases), &
-                it_("includes the given description", checkCollectionTopDescription), &
-                it_("includes the individual test descriptions", checkCollectionDescriptions)])
+        individual_tests(1) = it_("can tell how many tests it has", checkNumCases)
+        individual_tests(2) = it_("includes the given description", checkCollectionTopDescription)
+        individual_tests(3) = it_("includes the individual test descriptions", checkCollectionDescriptions)
+        test = describe("A test collection", example_collection, individual_tests)
     end function test_collection_properties
 
     function checkNumCases(example_collection) result(result_)

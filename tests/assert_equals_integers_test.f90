@@ -5,16 +5,18 @@ module assert_equals_integers_test
     public :: test_assert_equals_integers
 contains
     function test_assert_equals_integers() result(tests)
-        use Vegetables_m, only: TestItem_t, describe, Example, it
+        use Vegetables_m, only: Example_t, TestItem_t, describe, Example, it
 
         type(TestItem_t) :: tests
 
-        tests = describe("assertEquals with integers", &
-                [it( &
-                        "passes with the same integer", &
-                        [Example(1), Example(2)],&
-                        checkPassForSameInteger), &
-                it("fails with different integers", checkFailForDifferentIntegers)])
+        type(Example_t) :: examples(2)
+        type(TestItem_t) :: individual_tests(2)
+
+        examples(1) = Example(1)
+        examples(2) = Example(2)
+        individual_tests(1) = it("passes with the same integer", examples, checkPassForSameInteger)
+        individual_tests(2) = it("fails with different integers", checkFailForDifferentIntegers)
+        tests = describe("assertEquals with integers", individual_tests)
     end function test_assert_equals_integers
 
     function checkPassForSameInteger(input) result(result_)
