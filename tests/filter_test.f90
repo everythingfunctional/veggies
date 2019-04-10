@@ -62,14 +62,17 @@ contains
 
     function filterCaseNotMatching(example_case) result(filtered)
         use example_cases_m, only: NOT_IN_DESCRIPTION
-        use Vegetables_m, only: TestCase_t, Transformed_t, fail, Transformed
+        use Vegetables_m, only: Maybe_t, TestCase_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_case
         type(Transformed_t) :: filtered
 
+        class(Maybe_t), allocatable :: maybe
+
         select type (example_case)
         type is (TestCase_t)
-            filtered = Transformed(example_case%filter(NOT_IN_DESCRIPTION))
+            maybe = example_case%filter(NOT_IN_DESCRIPTION)
+            filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCase_t"))
         end select
@@ -77,14 +80,17 @@ contains
 
     function filterCollectionNotMatching(example_collection) result(filtered)
         use example_collections_m, only: NOT_IN_DESCRIPTIONS
-        use Vegetables_m, only: TestCollection_t, Transformed_t, fail, Transformed
+        use Vegetables_m, only: Maybe_t, TestCollection_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_collection
         type(Transformed_t) :: filtered
 
+        class(Maybe_t), allocatable :: maybe
+
         select type (example_collection)
         type is (TestCollection_t)
-            filtered = Transformed(example_collection%filter(NOT_IN_DESCRIPTIONS))
+            maybe = example_collection%filter(NOT_IN_DESCRIPTIONS)
+            filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCollection_t"))
         end select
@@ -92,14 +98,17 @@ contains
 
     function filterCaseMatching(example_case) result(filtered)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
-        use Vegetables_m, only: TestCase_t, Transformed_t, fail, Transformed
+        use Vegetables_m, only: Maybe_t, TestCase_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_case
         type(Transformed_t) :: filtered
 
+        class(Maybe_t), allocatable :: maybe
+
         select type (example_case)
         type is (TestCase_t)
-            filtered = Transformed(example_case%filter(EXAMPLE_DESCRIPTION))
+            maybe = example_case%filter(EXAMPLE_DESCRIPTION)
+            filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCase_t"))
         end select
@@ -107,14 +116,17 @@ contains
 
     function filterCollectionMatchingDescription(example_collection) result(filtered)
         use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
-        use Vegetables_m, only: TestCollection_t, Transformed_t, fail, Transformed
+        use Vegetables_m, only: Maybe_t, TestCollection_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_collection
         type(Transformed_t) :: filtered
 
+        class(Maybe_t), allocatable :: maybe
+
         select type (example_collection)
         type is (TestCollection_t)
-            filtered = Transformed(example_collection%filter(EXAMPLE_COLLECTION_DESCRIPTION))
+            maybe = example_collection%filter(EXAMPLE_COLLECTION_DESCRIPTION)
+            filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCollection_t"))
         end select
@@ -122,14 +134,17 @@ contains
 
     function filterCollectionMatchingCase(example_collection) result(filtered)
         use example_collections_m, only: EXAMPLE_CASE_DESCRIPTION_1
-        use Vegetables_m, only: TestCollection_t, Transformed_t, fail, Transformed
+        use Vegetables_m, only: Maybe_t, TestCollection_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_collection
         type(Transformed_t) :: filtered
 
+        class(Maybe_t), allocatable :: maybe
+
         select type (example_collection)
         type is (TestCollection_t)
-            filtered = Transformed(example_collection%filter(EXAMPLE_CASE_DESCRIPTION_1))
+            maybe = example_collection%filter(EXAMPLE_CASE_DESCRIPTION_1)
+            filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCollection_t"))
         end select
