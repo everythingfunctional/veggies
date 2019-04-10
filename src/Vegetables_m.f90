@@ -978,9 +978,9 @@ contains
         class(Maybe_t), allocatable :: maybe
 
         if (self%description_.includes.filter_string) then
-            maybe = Just(self)
+            allocate(maybe, source = Just(self))
         else
-            maybe = NOTHING
+            allocate(maybe, source = NOTHING)
         end if
     end function filterInputTestCase
 
@@ -990,9 +990,9 @@ contains
         class(Maybe_t), allocatable :: maybe
 
         if (self%description_.includes.filter_string) then
-            maybe = Just(self)
+            allocate(maybe, source = Just(self))
         else
-            maybe = NOTHING
+            allocate(maybe, source = NOTHING)
         end if
     end function filterTestCase
 
@@ -1002,9 +1002,9 @@ contains
         class(Maybe_t), allocatable :: maybe
 
         if (self%description_.includes.filter_string) then
-            maybe = Just(self)
+            allocate(maybe, source = Just(self))
         else
-            maybe = NOTHING
+            allocate(maybe, source = NOTHING)
         end if
     end function filterTestCaseWithExamples
 
@@ -1019,7 +1019,7 @@ contains
         logical, allocatable :: passed_filter(:)
 
         if (self%description_.includes.filter_string) then
-            maybe = Just(self)
+            allocate(maybe, source = Just(self))
         else
             num_input_tests = size(self%tests)
             allocate(filtered_tests(num_input_tests))
@@ -1030,9 +1030,9 @@ contains
                 new_collection%description_ = self%description_
                 allocate(new_collection%tests(count(passed_filter)))
                 new_collection%tests = getTestItems(filtered_tests)
-                maybe = Just(new_collection)
+                allocate(maybe, source = Just(new_collection))
             else
-                maybe = NOTHING
+                allocate(maybe, source = NOTHING)
             end if
         end if
     end function filterTestCollection
@@ -1048,7 +1048,7 @@ contains
         logical, allocatable :: passed_filter(:)
 
         if (self%description_.includes.filter_string) then
-            maybe = Just(self)
+            allocate(maybe, source = Just(self))
         else
             num_input_tests = size(self%tests)
             allocate(filtered_tests(num_input_tests))
@@ -1060,9 +1060,9 @@ contains
                 new_collection%input = self%input
                 allocate(new_collection%tests(count(passed_filter)))
                 new_collection%tests = getTestItems(filtered_tests)
-                maybe = Just(new_collection)
+                allocate(maybe, source = Just(new_collection))
             else
-                maybe = NOTHING
+                allocate(maybe, source = NOTHING)
             end if
         end if
     end function filterTestCollectionWithInput
@@ -1075,53 +1075,29 @@ contains
         class(Maybe_t), allocatable :: filtered
         type(TestItem_t) :: test_item
 
-        filtered = self%test%filter(filter_string)
+        allocate(filtered, source = self%test%filter(filter_string))
 
         select type (filtered)
         type is (JustInputTestCase_t)
-            allocate(InputTestCase_t :: test_item%test)
-            select type (test => test_item%test)
-            type is (InputTestCase_t)
-                test = filtered%getValue()
-                maybe%maybe = Just(test_item)
-            end select
+            allocate(test_item%test, source = filtered%getValue())
+            allocate(maybe%maybe, source = Just(test_item))
         type is (JustTestCase_t)
-            allocate(TestCase_t :: test_item%test)
-            select type (test => test_item%test)
-            type is (TestCase_t)
-                test = filtered%getValue()
-                maybe%maybe = Just(test_item)
-            end select
+            allocate(test_item%test, source = filtered%getValue())
+            allocate(maybe%maybe, source = Just(test_item))
         type is (JustTestCaseWithExamples_t)
-            allocate(TestCaseWithExamples_t :: test_item%test)
-            select type (test => test_item%test)
-            type is (TestCaseWithExamples_t)
-                test = filtered%getValue()
-                maybe%maybe = Just(test_item)
-            end select
+            allocate(test_item%test, source = filtered%getValue())
+            allocate(maybe%maybe, source = Just(test_item))
         type is (JustTestCollection_t)
-            allocate(TestCollection_t :: test_item%test)
-            select type (test => test_item%test)
-            type is (TestCollection_t)
-                test = filtered%getValue()
-                maybe%maybe = Just(test_item)
-            end select
+            allocate(test_item%test, source = filtered%getValue())
+            allocate(maybe%maybe, source = Just(test_item))
         type is (JustTestCollectionWithInput_t)
-            allocate(TestCollectionWithInput_t :: test_item%test)
-            select type (test => test_item%test)
-            type is (TestCollectionWithInput_t)
-                test = filtered%getValue()
-                maybe%maybe = Just(test_item)
-            end select
+            allocate(test_item%test, source = filtered%getValue())
+            allocate(maybe%maybe, source = Just(test_item))
         type is (JustTransformingTestCollection_t)
-            allocate(TransformingTestCollection_t :: test_item%test)
-            select type (test => test_item%test)
-            type is (TransformingTestCollection_t)
-                test = filtered%getValue()
-                maybe%maybe = Just(test_item)
-            end select
+            allocate(test_item%test, source = filtered%getValue())
+            allocate(maybe%maybe, source = Just(test_item))
         type is (Nothing_t)
-            maybe%maybe = NOTHING
+            allocate(maybe%maybe, source = NOTHING)
         end select
     end function filterTestItem
 
@@ -1136,7 +1112,7 @@ contains
         logical, allocatable :: passed_filter(:)
 
         if (self%description_.includes.filter_string) then
-            maybe = Just(self)
+            allocate(maybe, source = Just(self))
         else
             num_input_tests = size(self%tests)
             allocate(filtered_tests(num_input_tests))
@@ -1148,9 +1124,9 @@ contains
                 new_collection%transformer => self%transformer
                 allocate(new_collection%tests(count(passed_filter)))
                 new_collection%tests = getTestItems(filtered_tests)
-                maybe = Just(new_collection)
+                allocate(maybe, source = Just(new_collection))
             else
-                maybe = NOTHING
+                allocate(maybe, source = NOTHING)
             end if
         end if
     end function filterTransformingTestCollection

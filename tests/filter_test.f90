@@ -71,7 +71,7 @@ contains
 
         select type (example_case)
         type is (TestCase_t)
-            maybe = example_case%filter(NOT_IN_DESCRIPTION)
+            allocate(maybe, source = example_case%filter(NOT_IN_DESCRIPTION))
             filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCase_t"))
@@ -89,7 +89,7 @@ contains
 
         select type (example_collection)
         type is (TestCollection_t)
-            maybe = example_collection%filter(NOT_IN_DESCRIPTIONS)
+            allocate(maybe, source = example_collection%filter(NOT_IN_DESCRIPTIONS))
             filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCollection_t"))
@@ -107,7 +107,7 @@ contains
 
         select type (example_case)
         type is (TestCase_t)
-            maybe = example_case%filter(EXAMPLE_DESCRIPTION)
+            allocate(maybe, source = example_case%filter(EXAMPLE_DESCRIPTION))
             filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCase_t"))
@@ -125,7 +125,7 @@ contains
 
         select type (example_collection)
         type is (TestCollection_t)
-            maybe = example_collection%filter(EXAMPLE_COLLECTION_DESCRIPTION)
+            allocate(maybe, source = example_collection%filter(EXAMPLE_COLLECTION_DESCRIPTION))
             filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCollection_t"))
@@ -143,7 +143,7 @@ contains
 
         select type (example_collection)
         type is (TestCollection_t)
-            maybe = example_collection%filter(EXAMPLE_CASE_DESCRIPTION_1)
+            allocate(maybe, source = example_collection%filter(EXAMPLE_CASE_DESCRIPTION_1))
             filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCollection_t"))
