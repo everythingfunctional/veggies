@@ -1075,7 +1075,20 @@ contains
         class(Maybe_t), allocatable :: filtered
         type(TestItem_t) :: test_item
 
-        allocate(filtered, source = self%test%filter(filter_string))
+        select type (test => self%test)
+        type is (InputTestCase_t)
+            allocate(filtered, source = test%filter(filter_string))
+        type is (TestCase_t)
+            allocate(filtered, source = test%filter(filter_string))
+        type is (TestCaseWithExamples_t)
+            allocate(filtered, source = test%filter(filter_string))
+        type is (TestCollection_t)
+            allocate(filtered, source = test%filter(filter_string))
+        type is (TestCollectionWithInput_t)
+            allocate(filtered, source = test%filter(filter_string))
+        type is (TransformingTestCollection_t)
+            allocate(filtered, source = test%filter(filter_string))
+        end select
 
         select type (filtered)
         type is (JustInputTestCase_t)
