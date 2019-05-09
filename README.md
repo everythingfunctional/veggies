@@ -9,15 +9,14 @@ For a healthier code base, eat your vegetables.
 
 In order to run this you will need:
 * A reasonably recent version of gcc and gfortran
-* The Haskell Stack tool, with packages MissingH, shake and split installed
-  * I.e. `stack install MissingH shake split`
+* The Haskell Stack tool
 
 Running the tests is then as simple as
 
 ```
 git clone https://gitlab.com/everythingfunctional/vegetables.git
 cd vegetables
-./shake.sh
+./Shakefile.hs
 ```
 
 Using Vegetables
@@ -30,8 +29,8 @@ but the tests for Vegetables are a pretty good example as well.
 First, you'll need to write a function that defines a part of your test suite,
 either spec or BDD style use the provided functions `describe` and `it` or
 `Given`, `When` and `Then`. If you're using the provided build system, then
-this function should be in a module name `something`*`_test`*, in a file with the
-same name. The function should be named *`test_`*`something`, and must take
+this function should be in a module name `something`**`_test`**, in a file with the
+same name. The function should be named **`test_`**`something`, and must take
 no arguments, and return a value of type `TestItem_t`, which the above functions do.
 
 The `Given`, `When` and `describe` functions take a description string, and a
@@ -62,17 +61,17 @@ provided, which simply take a character value and produce a succeeding or failin
 easy. However, it is recommended to use the provided assert functions when possible,
 in order to remain consistent with the message style.
 
-If you are using the provided build system, multiple *`test_`*`something` functions
-can be provided within a module, and multiple `something`*`_test`* modules can be
+If you are using the provided build system, multiple **`test_`**`something` functions
+can be provided within a module, and multiple `something`**`_test`** modules can be
 provided in separate files. The build system will generate a driver program
-that calls each *`test_`*`something` function it finds in order to build up the
+that calls each **`test_`**`something` function it finds in order to build up the
 test suite. It will then run all of the tests and report the results. The section
 of the build system which generates this program can be used as a standalone
 program that accepts as command line arguments the name of the generator program
 and the list of files containing the tests, but it makes the same assumptions.
 
 The generated driver program uses the function `testThat` to combine all of the
-tests provided by the *`test_`*`something` functions into a single collection,
+tests provided by the **`test_`**`something` functions into a single collection,
 and then calls the subroutine `runTests` with that collection. So, even manually
 writing and maintaining the driver program wouldn't be _too_ bad.
 
