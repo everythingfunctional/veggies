@@ -2,4 +2,4 @@ image: registry.gitlab.com/everythingfunctional/fortranshaker
 
 test:
   script:
-    - ./shake.sh
+    - ./Shakefile.hs
