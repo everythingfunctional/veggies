@@ -1,6 +1,8 @@
 #!/usr/bin/env stack
 {- stack
-  runghc
+  script
+  --resolver lts-13.13
+  --ghc-options -itools
   --package containers
   --package directory
   --package extra
