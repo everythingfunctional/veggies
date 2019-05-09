@@ -1,4 +1,4 @@
-
+#!/usr/bin/env stack
 {- stack
   runghc
   --package containers
@@ -10,18 +10,6 @@
   --package shake
   --package split
 -}
-
-
-
-
-
-
-
-
-
-
-
-
 import           Control.Applicative            ( (<|>) )
 import           Control.Exception              ( catch
                                                 , throwIO
