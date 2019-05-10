@@ -29,6 +29,7 @@ import           Data.List                      ( intercalate
                                                 )
 import           Data.List.Split                ( splitOn )
 import qualified Data.Map                      as Map
+import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Set                      as Set
 import           Data.String.Utils              ( endswith
                                                 , replace
@@ -64,6 +65,7 @@ import           Development.Shake              ( Action
                                                 , want
                                                 , (%>)
                                                 , (&%>)
+                                                , (&?>)
                                                 , (<//>)
                                                 )
 import           Development.Shake.FilePath     ( dropExtension
@@ -203,6 +205,24 @@ main = do
     let testSearchTree =
             Node testBuildDir testModules (Set.singleton sourceSearchTree)
 
+    let (sourceFilesMap, sourceDependsMap, sourceCommandsMap) =
+            makeSourceRuleMaps fDevelFlags
+                               cDevelFlags
+                               cIncludeFlags
+                               sourceSearchTree
+                               (Set.toList sources)
+    let (testFilesMap, testDependsMap, testCommandsMap) = makeSourceRuleMaps
+            fDevelFlags
+            cDevelFlags
+            cIncludeFlags
+            testSearchTree
+            (Set.toList testSources)
+    let (filesMap, dependsMap, commandsMap) =
+            ( sourceFilesMap `Map.union` testFilesMap
+            , sourceDependsMap `Map.union` testDependsMap
+            , sourceCommandsMap `Map.union` testCommandsMap
+            )
+
     shakeArgs shakeOptions { shakeFiles    = "_shake"
                            , shakeChange   = ChangeModtimeAndDigest
                            , shakeColor    = True
@@ -210,19 +230,28 @@ main = do
                            , shakeProgress = progressSimple
                            }
         $ do
-              mapM_
-                  (makeSourceRule fDevelFlags
-                                  cDevelFlags
-                                  cIncludeFlags
-                                  sourceSearchTree
-                  )
-                  sources
+              (`Map.lookup` filesMap) &?> \(obj : _) -> do
+                  need =<< liftIO
+                      (fromMaybe undefined (Map.lookup obj dependsMap))
+                  fromMaybe undefined (Map.lookup obj commandsMap)
+
+              testDriverSourceFile %> \driver -> do
+                  need testCollectionFiles
+                  createDriver driver testCollectionFiles
+
               mapM_
                   (makeExecutableRule develLinkFlags
                                       cIncludeFlags
                                       sourceSearchTree
                   )
                   programs
+
+              mapM_
+                  (makeExecutableRule develLinkFlags
+                                      cIncludeFlags
+                                      testSearchTree
+                  )
+                  testPrograms
 
               want ["tests"]
               phony "tests" $ do
@@ -233,28 +262,11 @@ main = do
                   need progs
                   mapM_ (cmd :: FilePath -> Action ()) progs
 
-              testDriverSourceFile %> \driver -> do
-                  need testCollectionFiles
-                  createDriver driver testCollectionFiles
-
-              mapM_
-                  (makeSourceRule fDevelFlags
-                                  cDevelFlags
-                                  cIncludeFlags
-                                  testSearchTree
-                  )
-                  testSources
-              mapM_
-                  (makeExecutableRule develLinkFlags
-                                      cIncludeFlags
-                                      testSearchTree
-                  )
-                  testPrograms
-
-              phony "clean" $ do
-                  removeFilesAfter buildDir     ["//"]
-                  removeFilesAfter testBuildDir ["//"]
-                  removeFilesAfter "_shake"     ["//"]
+              phony "cleanBuild" $ removeFilesAfter buildDir ["//"]
+              phony "cleanTest" $ removeFilesAfter testBuildDir ["//"]
+              phony "cleanShake" $ removeFilesAfter "_shake" ["//"]
+              phony "clean" $ need ["cleanBuild", "cleanTest"]
+              phony "cleanAll" $ need ["clean", "cleanShake"]
 
 getCIncludeDirs :: [FilePath] -> [FilePattern] -> IO [FilePath]
 getCIncludeDirs dirs exts = do
@@ -616,50 +628,116 @@ freeFormComment = do
     return ()
 
 -- Helper routines for generating the build rules
-makeSourceRule
+makeSourceRuleMaps
     :: [String]
     -> [String]
     -> [String]
     -> ModuleSearchTree
-    -> SourceFile
-    -> Rules ()
-makeSourceRule = makeSpecialSourceRule Map.empty
+    -> [SourceFile]
+    -> ( Map.Map FilePath [FilePath]
+       , Map.Map FilePath (IO [FilePath])
+       , Map.Map FilePath (Action ())
+       )
+makeSourceRuleMaps = makeSpecialSourceRuleMaps Map.empty
 
-makeSpecialSourceRule
+makeSpecialSourceRuleMaps
+    :: SpecialCommands
+    -> [String]
+    -> [String]
+    -> [String]
+    -> ModuleSearchTree
+    -> [SourceFile]
+    -> ( Map.Map FilePath [FilePath]
+       , Map.Map FilePath (IO [FilePath])
+       , Map.Map FilePath (Action ())
+       )
+makeSpecialSourceRuleMaps specialCommands fortranFlags cFlags cIncludeFlags moduleSearchTree sources
+    = foldl
+        (\(previousFilesMap, previousDependsMap, previousCommandMap) (newFilesMap, newDependsMap, newCommandMap) ->
+            ( previousFilesMap `Map.union` newFilesMap
+            , previousDependsMap `Map.union` newDependsMap
+            , previousCommandMap `Map.union` newCommandMap
+            )
+        )
+        (Map.empty, Map.empty, Map.empty)
+        (map
+            (makeSpecialSourceRuleMap specialCommands
+                                      fortranFlags
+                                      cFlags
+                                      cIncludeFlags
+                                      moduleSearchTree
+            )
+            sources
+        )
+
+makeSpecialSourceRuleMap
     :: SpecialCommands
     -> [String]
     -> [String]
     -> [String]
     -> ModuleSearchTree
     -> SourceFile
-    -> Rules ()
-makeSpecialSourceRule specialCommands fortranFlags cFlags cIncludeFlags moduleSearchTree source
-    = let buildDir = getNodeDirectory moduleSearchTree
+    -> ( Map.Map FilePath [FilePath]
+       , Map.Map FilePath (IO [FilePath])
+       , Map.Map FilePath (Action ())
+       )
+makeSpecialSourceRuleMap specialCommands fortranFlags cFlags cIncludeFlags moduleSearchTree source
+    = let
+          buildDir = getNodeDirectory moduleSearchTree
           compDeps = compileTimeDepends source cIncludeFlags moduleSearchTree
-      in  case source of
+      in
+          case source of
               FortranSourceFile src _ _ modulesContained ->
-                  map (buildDir </>) (objectFileName : moduleFileNames)
-                      &%> \(obj : _) -> do
-                              need =<< liftIO compDeps
-                              case Map.lookup src specialCommands of
-                                  Just command -> cmd command ["-o", obj, src]
-                                  Nothing      -> cmd compiler
-                                                      ["-c", "-J" ++ buildDir]
-                                                      additionalIncludeFlags
-                                                      fortranFlags
-                                                      ["-o", obj, src]
-                where
-                  objectFileName = takeFileName src -<.> "o"
-                  moduleFileNames =
-                      map (-<.> "mod") $ Set.toList modulesContained
-                  additionalIncludeFlags =
-                      map ("-I" ++) (getAdditionalBuildDirs moduleSearchTree)
-              CSourceFile src _ -> objectFileName %> \obj -> do
-                  need =<< liftIO compDeps
-                  case Map.lookup src specialCommands of
-                      Just command -> cmd command ["-o", obj, src]
-                      Nothing -> cmd compiler ["-c"] cFlags ["-o", obj, src]
-                  where objectFileName = buildDir </> takeFileName src -<.> "o"
+                  let
+                      objectFileName  = buildDir </> takeFileName src -<.> "o"
+                      moduleFileNames = map ((buildDir </>) . (-<.> "mod"))
+                          $ Set.toList modulesContained
+                      additionalIncludeFlags = map
+                          ("-I" ++)
+                          (getAdditionalBuildDirs moduleSearchTree)
+                      filesMap = foldl
+                          (\previousMap newFile -> Map.insert
+                              newFile
+                              (objectFileName : moduleFileNames)
+                              previousMap
+                          )
+                          Map.empty
+                          (objectFileName : moduleFileNames)
+                      dependsMap = Map.singleton objectFileName compDeps
+                      commandMap =
+                          Map.singleton objectFileName
+                              $ case Map.lookup src specialCommands of
+                                    Just command ->
+                                        cmd command ["-o", objectFileName, src] :: Action
+                                                ()
+                                    Nothing ->
+                                        cmd compiler
+                                            ["-c", "-J" ++ buildDir]
+                                            additionalIncludeFlags
+                                            fortranFlags
+                                            ["-o", objectFileName, src] :: Action
+                                                ()
+                  in
+                      (filesMap, dependsMap, commandMap)
+              CSourceFile src _ ->
+                  let
+                      objectFileName = buildDir </> takeFileName src -<.> "o"
+                      filesMap = Map.singleton objectFileName [objectFileName]
+                      dependsMap = Map.singleton objectFileName compDeps
+                      commandMap =
+                          Map.singleton objectFileName
+                              $ case Map.lookup src specialCommands of
+                                    Just command ->
+                                        cmd command ["-o", objectFileName, src] :: Action
+                                                ()
+                                    Nothing ->
+                                        cmd compiler
+                                            ["-c"]
+                                            cFlags
+                                            ["-o", objectFileName, src] :: Action
+                                                ()
+                  in
+                      (filesMap, dependsMap, commandMap)
 
 getAdditionalBuildDirs :: ModuleSearchTree -> [FilePath]
 getAdditionalBuildDirs moduleSearchTree =
