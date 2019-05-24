@@ -507,6 +507,7 @@ module Vegetables_m
             given, &
             getRandomInteger, &
             getRandomIntegerWithRange, &
+            getRandomLogical, &
             it, &
             it_, &
             runTests, &
@@ -1335,18 +1336,11 @@ contains
     function getRandomInteger() result(random_integer)
         integer :: random_integer
 
-        integer :: maybe_negative
         double precision :: random_real
-        double precision :: random_reals(2)
 
-        call random_number(random_reals)
-        random_real = random_reals(1)
-        if (random_reals(2) > 0.5) then
-            maybe_negative = 1
-        else
-            maybe_negative = -1
-        end if
-        random_integer = floor(random_real*MAX_INT)*maybe_negative
+        call random_number(random_real)
+        random_integer = floor(random_real*MAX_INT)
+        if (getRandomLogical()) random_integer = -random_integer
     end function getRandomInteger
 
     function getRandomIntegerWithRange(start, end_) result(random_integer)
@@ -1359,6 +1353,16 @@ contains
         call random_number(random_real)
         random_integer = start + floor((end_ + 1 - start) * random_real)
     end function getRandomIntegerWithRange
+
+    function getRandomLogical() result(random_logical)
+        logical :: random_logical
+
+        if (getRandomIntegerWithRange(0, 1) == 0) then
+            random_logical = .TRUE.
+        else
+            random_logical = .FALSE.
+        end if
+    end function getRandomLogical
 
     pure function getTestItems(maybes) result(test_items)
         type(MaybeItem_t), intent(in) :: maybes(:)
