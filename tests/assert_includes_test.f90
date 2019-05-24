@@ -5,29 +5,33 @@ module assert_includes_test
     public :: test_assert_includes
 contains
     function test_assert_includes() result(tests)
-        use Vegetables_m, only: TestItem_t, describe, it
+        use Vegetables_m, only: TestItem_t, describe, it, ASCII_STRING_GENERATOR
 
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: individual_tests(2)
 
-        individual_tests(1) = it("passes with the same strings", checkPassForSameStrings)
+        individual_tests(1) = it("passes with the same strings", ASCII_STRING_GENERATOR, checkPassForSameStrings)
         individual_tests(2) = it("fails when the string isn't included", checkFailForDifferentStrings)
         tests = describe("assertIncludes", individual_tests)
     end function test_assert_includes
 
-    function checkPassForSameStrings() result(result_)
-        use Vegetables_m, only: Result_t, assertIncludes, assertThat
+    function checkPassForSameStrings(example) result(result_)
+        use Vegetables_m, only: Result_t, assertIncludes, assertThat, fail
 
+        class(*), intent(in) :: example
         type(Result_t) :: result_
 
-        character(len=*), parameter :: EXAMPLE_STRING = "Example String"
         type(Result_t) :: example_result
 
-        example_result = assertIncludes(EXAMPLE_STRING, EXAMPLE_STRING)
-
-        result_ = assertThat( &
-                example_result%passed(), example_result%verboseDescription())
+        select type (example)
+        type is (character(len=*))
+            example_result = assertIncludes(example, example)
+            result_ = assertThat( &
+                    example_result%passed(), example_result%verboseDescription())
+        class default
+            result_ = fail("Expected a character string")
+        end select
     end function checkPassForSameStrings
 
     function checkFailForDifferentStrings() result(result_)

@@ -30,6 +30,13 @@ module Vegetables_m
         procedure(shrink_), public, nopass, deferred :: shrink
     end type Generator_t
 
+    type, public, extends(Generator_t) :: AsciiStringGenerator_t
+    contains
+        private
+        procedure, public :: generate => generateAsciiString
+        procedure, public, nopass :: shrink => shrinkAsciiString
+    end type AsciiStringGenerator_t
+
     type, public, extends(Generator_t) :: IntegerGenerator_t
     contains
         private
@@ -475,6 +482,7 @@ module Vegetables_m
         module procedure whenWithTransformer
     end interface
 
+    type(AsciiStringGenerator_t), parameter, public :: ASCII_STRING_GENERATOR = AsciiStringGenerator_t()
     type(IntegerGenerator_t), parameter, public :: INTEGER_GENERATOR = IntegerGenerator_t()
 
     integer, parameter :: dp = kind(0.0d0)
@@ -505,6 +513,8 @@ module Vegetables_m
             fail, &
             Generated, &
             given, &
+            getRandomAsciiCharacter, &
+            getRandomAsciiString, &
             getRandomInteger, &
             getRandomIntegerWithRange, &
             getRandomLogical, &
@@ -1168,6 +1178,8 @@ contains
             allocate(filtered, source = test%filter(filter_string))
         type is (TestCaseWithExamples_t)
             allocate(filtered, source = test%filter(filter_string))
+        type is (TestCaseWithGenerator_t)
+            allocate(filtered, source = test%filter(filter_string))
         type is (TestCollection_t)
             allocate(filtered, source = test%filter(filter_string))
         type is (TestCollectionWithInput_t)
@@ -1184,6 +1196,9 @@ contains
             allocate(test_item%test, source = filtered%getValue())
             allocate(maybe%maybe, source = Just(test_item))
         type is (JustTestCaseWithExamples_t)
+            allocate(test_item%test, source = filtered%getValue())
+            allocate(maybe%maybe, source = Just(test_item))
+        type is (JustTestCaseWithGenerator_t)
             allocate(test_item%test, source = filtered%getValue())
             allocate(maybe%maybe, source = Just(test_item))
         type is (JustTestCollection_t)
@@ -1245,8 +1260,22 @@ contains
         class(*), intent(in) :: value_
         type(Generated_t) :: Generated
 
-        allocate(Generated%value_, source = value_)
+        select type (value_)
+        type is (character(len=*))
+            allocate(Generated%value_, source = toString(value_))
+        class default
+            allocate(Generated%value_, source = value_)
+        end select
     end function Generated
+
+    function generateAsciiString(self) result(generated_value)
+        class(AsciiStringGenerator_t), intent(in) :: self
+        type(Generated_t) :: generated_value
+
+        associate(a => self)
+        end associate
+        generated_value = Generated(getRandomAsciiString())
+    end function generateAsciiString
 
     function generateInteger(self) result(generated_value)
         class(IntegerGenerator_t), intent(in) :: self
@@ -1332,6 +1361,37 @@ contains
                     // "                                  test with generated values (default = 100)"
         end function usageMessage
     end function getOptions
+
+    function getRandomAsciiCharacter() result(random_character)
+        character(len=1) :: random_character
+
+        character(len=*), parameter :: ASCII_CHARACTERS = &
+        '  !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
+        integer :: which_character
+
+        which_character = getRandomIntegerWithRange(0, len(ASCII_CHARACTERS))
+        random_character = ASCII_CHARACTERS(which_character:which_character)
+    end function getRandomAsciiCharacter
+
+    function getRandomAsciiString() result(random_string)
+        character(len=:), allocatable :: random_string
+
+        random_string = getRandomAsciiStringWithMaxLength(1024)
+    end function getRandomAsciiString
+
+    function getRandomAsciiStringWithMaxLength(max_length) result(random_string)
+        integer, intent(in) :: max_length
+        character(len=:), allocatable :: random_string
+
+        integer :: i
+        integer :: num_characters
+
+        num_characters = getRandomIntegerWithRange(0, max_length)
+        allocate(character(len=num_characters) :: random_string)
+        do i = 1, num_characters
+            random_string(i:i) = getRandomAsciiCharacter()
+        end do
+    end function getRandomAsciiStringWithMaxLength
 
     function getRandomInteger() result(random_integer)
         integer :: random_integer
@@ -1898,7 +1958,12 @@ contains
 
         do i = 1, NUM_GENERATOR_TESTS
             generated_value = self%generator%generate()
-            previous_result = self%test(generated_value%value_)
+            select type (the_value => generated_value%value_)
+            type is (VegetableString_t)
+                previous_result = self%test(the_value%string)
+            class default
+                previous_result = self%test(the_value)
+            end select
             if (.NOT.previous_result%passed()) exit
         end do
         if (i > NUM_GENERATOR_TESTS) then
@@ -1907,10 +1972,20 @@ contains
                     succeed("Passed after " // toCharacter(NUM_GENERATOR_TESTS) // " examples"))
         else
             do
-                allocate(simpler_value, source = self%generator%shrink(generated_value%value_))
+                select type (the_value => generated_value%value_)
+                type is (VegetableString_t)
+                    allocate(simpler_value, source = self%generator%shrink(the_value%string))
+                class default
+                    allocate(simpler_value, source = self%generator%shrink(the_value))
+                end select
                 select type (simpler_value)
                 type is (ShrunkValue_t)
-                    new_result = self%test(simpler_value%value_)
+                    select type (the_value => simpler_value%value_)
+                    type is (VegetableString_t)
+                        new_result = self%test(the_value%string)
+                    class default
+                        new_result = self%test(the_value)
+                    end select
                     if (new_result%passed()) then
                         result__ = TestCaseResult( &
                                 self%description_, &
@@ -1921,7 +1996,12 @@ contains
                         generated_value = Generated(simpler_value%value_)
                     end if
                 type is (SimplestValue_t)
-                    new_result = self%test(simpler_value%value_)
+                    select type (the_value => simpler_value%value_)
+                    type is (VegetableString_t)
+                        new_result = self%test(the_value%string)
+                    class default
+                        new_result = self%test(the_value)
+                    end select
                     if (new_result%passed()) then
                         result__ = TestCaseResult( &
                                 self%description_, &
@@ -2180,6 +2260,20 @@ contains
         end select
     end function runTransformingCollection
 
+    pure function shrinkAsciiString(value_) result(shrunk)
+        class(*), intent(in) :: value_
+        class(ShrinkResult_t), allocatable :: shrunk
+
+        select type (value_)
+        type is (character(len=*))
+            if (len(value_) <= 1) then
+                allocate(shrunk, source = SimplestValue(""))
+            else
+                allocate(shrunk, source = ShrunkValue(value_(1:len(value_)-1)))
+            end if
+        end select
+    end function shrinkAsciiString
+
     pure function shrinkInteger(value_) result(shrunk)
         class(*), intent(in) :: value_
         class(ShrinkResult_t), allocatable :: shrunk
@@ -2198,14 +2292,24 @@ contains
         class(*), intent(in) :: value_
         type(ShrunkValue_t) :: ShrunkValue
 
-        allocate(ShrunkValue%value_, source = value_)
+        select type (value_)
+        type is (character(len=*))
+            allocate(ShrunkValue%value_, source = toString(value_))
+        class default
+            allocate(ShrunkValue%value_, source = value_)
+        end select
     end function ShrunkValue
 
     pure function SimplestValue(value_)
         class(*), intent(in) :: value_
         type(SimplestValue_t) :: SimplestValue
 
-        allocate(SimplestValue%value_, source = value_)
+        select type (value_)
+        type is (character(len=*))
+            allocate(SimplestValue%value_, source = toString(value_))
+        class default
+            allocate(SimplestValue%value_, source = value_)
+        end select
     end function SimplestValue
 
     pure recursive function splitAt(&

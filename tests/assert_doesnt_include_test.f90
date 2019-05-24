@@ -5,14 +5,14 @@ module assert_doesnt_include_test
     public :: test_assert_includes
 contains
     function test_assert_includes() result(tests)
-        use Vegetables_m, only: TestItem_t, describe, it
+        use Vegetables_m, only: TestItem_t, describe, it, ASCII_STRING_GENERATOR
 
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: individual_tests(2)
 
         individual_tests(1) = it("passes with different strings", checkPassForDifferentStrings)
-        individual_tests(2) = it("fails with the same string", checkFailForSameString)
+        individual_tests(2) = it("fails with the same string", ASCII_STRING_GENERATOR, checkFailForSameString)
         tests = describe("assertDoesntInclude", individual_tests)
     end function test_assert_includes
 
@@ -31,18 +31,21 @@ contains
                 example_result%passed(), example_result%verboseDescription())
     end function checkPassForDifferentStrings
 
-    function checkFailForSameString() result(result_)
-        use Vegetables_m, only: Result_t, assertDoesntInclude, assertNot
+    function checkFailForSameString(example) result(result_)
+        use Vegetables_m, only: Result_t, assertDoesntInclude, assertNot, fail
 
+        class(*), intent(in) :: example
         type(Result_t) :: result_
 
-        character(len=*), parameter :: EXAMPLE_STRING = "Example String"
         type(Result_t) :: example_result
 
-        example_result = assertDoesntInclude(EXAMPLE_STRING, EXAMPLE_STRING)
-
-
-        result_ = assertNot( &
-                example_result%passed(), example_result%verboseDescription())
+        select type (example)
+        type is (character(len=*))
+            example_result = assertDoesntInclude(example, example)
+            result_ = assertNot( &
+                    example_result%passed(), example_result%verboseDescription())
+        class default
+            result_ = fail("Expected a character string")
+        end select
     end function checkFailForSameString
 end module assert_doesnt_include_test
