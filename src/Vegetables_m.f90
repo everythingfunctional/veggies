@@ -37,6 +37,15 @@ module Vegetables_m
         procedure, public, nopass :: shrink => shrinkInteger
     end type IntegerGenerator_t
 
+    type, public, extends(IntegerGenerator_t) :: IntegerWithRangeGenerator_t
+        private
+        integer :: start
+        integer :: end_
+    contains
+        private
+        procedure, public :: generate => generateIntegerWithRange
+    end type IntegerWithRangeGenerator_t
+
     type, public, abstract :: Maybe_t
     end type Maybe_t
 
@@ -506,6 +515,8 @@ module Vegetables_m
             Generated, &
             given, &
             getRandomInteger, &
+            getRandomIntegerWithRange, &
+            IntegerWithRangeGenerator, &
             it, &
             it_, &
             runTests, &
@@ -1255,6 +1266,13 @@ contains
         generated_value = Generated(getRandomInteger())
     end function generateInteger
 
+    function generateIntegerWithRange(self) result(generated_value)
+        class(IntegerWithRangeGenerator_t), intent(in) :: self
+        type(Generated_t) :: generated_value
+
+        generated_value = Generated(getRandomIntegerWithRange(self%start, self%end_))
+    end function generateIntegerWithRange
+
     function getOptions() result(options)
         use iso_fortran_env, only: error_unit, output_unit
 
@@ -1347,6 +1365,17 @@ contains
         end if
         random_integer = floor(random_real*MAX_INT)*maybe_negative
     end function getRandomInteger
+
+    function getRandomIntegerWithRange(start, end_) result(random_integer)
+        integer, intent(in) :: start
+        integer, intent(in) :: end_
+        integer :: random_integer
+
+        double precision :: random_real
+
+        call random_number(random_real)
+        random_integer = start + floor((end_ + 1 - start) * random_real)
+    end function getRandomIntegerWithRange
 
     pure function getTestItems(maybes) result(test_items)
         type(MaybeItem_t), intent(in) :: maybes(:)
@@ -1519,6 +1548,15 @@ contains
         write(temp, '(I0)') int
         string = trim(temp)
     end function integerToCharacter
+
+    pure function IntegerWithRangeGenerator(start, end_) result(generator)
+        integer, intent(in) :: start
+        integer, intent(in) :: end_
+        type(IntegerWithRangeGenerator_t) :: generator
+
+        generator%start = start
+        generator%end_ = end_
+    end function IntegerWithRangeGenerator
 
     function it_(description, func) result(test_case)
         character(len=*), intent(in) :: description
