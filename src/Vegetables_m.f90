@@ -1274,6 +1274,7 @@ contains
         character(len=100) :: argument
         character(len=100) :: program_name
         integer :: i
+        integer :: iostat
         integer :: num_arguments
 
         options%quiet = .false.
@@ -1295,6 +1296,20 @@ contains
                 i = i + 1
                 call get_command_argument(i, argument)
                 options%filter_string = trim(argument)
+            case ("-n", "--numrand")
+                i = i + 1
+                call get_command_argument(i, argument)
+                read(argument, *, iostat=iostat) NUM_GENERATOR_TESTS
+                if (iostat /= 0) then
+                    write(error_unit, '(A)') &
+                            'Unable to read "' // trim(argument) // '" as an integer'
+                    call exit(1)
+                end if
+                if (NUM_GENERATOR_TESTS <= 0) then
+                    write(error_unit, '(A)') &
+                            "Number of random values must be >0"
+                    call exit(1)
+                end if
             case ("-q", "--quiet")
                 options%quiet = .true.
             case ("-v", "--verbose")
@@ -1313,7 +1328,7 @@ contains
             character(len=:), allocatable :: usageMessage
 
             usageMessage = &
-                    "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-f string]" // NEWLINE &
+                    "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-f string] [-n num]" // NEWLINE &
                     // "  options:" // NEWLINE &
                     // "    -h, --help                    Output this message and exit" // NEWLINE &
                     // "    -q, --quiet                   Don't print the test descriptions before" // NEWLINE &
@@ -1321,7 +1336,9 @@ contains
                     // "    -v, --verbose                 Print all of the assertion messages, not" // NEWLINE &
                     // "                                  just the failing ones" // NEWLINE &
                     // "    -f string, --filter string    Only run cases or collections whose" // NEWLINE &
-                    // "                                  description contains the given string" // NEWLINE
+                    // "                                  description contains the given string" // NEWLINE &
+                    // "    -n num, --numrand num         Number of random values to use for each" // NEWLINE &
+                    // "                                  test with generated values (default = 100)"
         end function usageMessage
     end function getOptions
 
