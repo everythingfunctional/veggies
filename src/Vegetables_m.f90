@@ -505,6 +505,7 @@ module Vegetables_m
             fail, &
             Generated, &
             given, &
+            getRandomInteger, &
             it, &
             it_, &
             runTests, &
@@ -1249,21 +1250,9 @@ contains
         class(IntegerGenerator_t), intent(in) :: self
         type(Generated_t) :: generated_value
 
-        integer :: maybe_negative
-        double precision :: random_real
-        double precision :: random_reals(2)
-
         associate(a => self)
         end associate
-
-        call random_number(random_reals)
-        random_real = random_reals(1)
-        if (random_reals(2) > 0.5) then
-            maybe_negative = 1
-        else
-            maybe_negative = -1
-        end if
-        generated_value = Generated(floor(random_real*MAX_INT)*maybe_negative)
+        generated_value = Generated(getRandomInteger())
     end function generateInteger
 
     function getOptions() result(options)
@@ -1341,6 +1330,23 @@ contains
                     // "                                  test with generated values (default = 100)"
         end function usageMessage
     end function getOptions
+
+    function getRandomInteger() result(random_integer)
+        integer :: random_integer
+
+        integer :: maybe_negative
+        double precision :: random_real
+        double precision :: random_reals(2)
+
+        call random_number(random_reals)
+        random_real = random_reals(1)
+        if (random_reals(2) > 0.5) then
+            maybe_negative = 1
+        else
+            maybe_negative = -1
+        end if
+        random_integer = floor(random_real*MAX_INT)*maybe_negative
+    end function getRandomInteger
 
     pure function getTestItems(maybes) result(test_items)
         type(MaybeItem_t), intent(in) :: maybes(:)
