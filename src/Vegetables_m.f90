@@ -7,6 +7,36 @@ module Vegetables_m
         character(len=:), allocatable :: string
     end type VegetableString_t
 
+    type, public :: Generated_t
+        private
+        class(*), allocatable :: value_
+    end type Generated_t
+
+    type, public, abstract :: ShrinkResult_t
+        private
+        class(*), allocatable :: value_
+    end type ShrinkResult_t
+
+    type, public, extends(ShrinkResult_t) :: ShrunkValue_t
+    end type ShrunkValue_t
+
+    type, public, extends(ShrinkResult_t) :: SimplestValue_t
+    end type SimplestValue_t
+
+    type, public, abstract :: Generator_t
+    contains
+        private
+        procedure(generate_), public, deferred :: generate
+        procedure(shrink_), public, nopass, deferred :: shrink
+    end type Generator_t
+
+    type, public, extends(Generator_t) :: IntegerGenerator_t
+    contains
+        private
+        procedure, public :: generate => generateInteger
+        procedure, public, nopass :: shrink => shrinkInteger
+    end type IntegerGenerator_t
+
     type, public, abstract :: Maybe_t
     end type Maybe_t
 
@@ -82,11 +112,23 @@ module Vegetables_m
             class(Maybe_t), allocatable :: maybe
         end function filter_
 
+        function generate_(self) result(generated_value)
+            import :: Generated_t, Generator_t
+            class(Generator_t), intent(in) :: self
+            type(Generated_t) :: generated_value
+        end function generate_
+
         function inputTest(input) result(result_)
             import :: Result_t
             class(*), intent(in) :: input
             type(Result_t) :: result_
         end function inputTest
+
+        function shrink_(value_) result(shrunk_value)
+            import :: ShrinkResult_t
+            class(*), intent(in) :: value_
+            class(ShrinkResult_t), allocatable :: shrunk_value
+        end function shrink_
 
         function test_() result(result_)
             import :: Result_t
@@ -175,6 +217,18 @@ module Vegetables_m
         procedure, public :: numCases => testCaseWithExamplesNumCases
         procedure, public :: run => runCaseWithExamples
     end type TestCaseWithExamples_t
+
+    type, extends(Test_t), public :: TestCaseWithGenerator_t
+        private
+        class(Generator_t), allocatable :: generator
+        procedure(inputTest), nopass, pointer :: test
+    contains
+        private
+        procedure, public :: description => testCaseWithGeneratorDescription
+        procedure, public :: filter => filterTestCaseWithGenerator
+        procedure, public :: numCases => testCaseWithGeneratorNumCases
+        procedure, public :: run => runCaseWithGenerator
+    end type TestCaseWithGenerator_t
 
     type, extends(Test_t), public :: TestCollection_t
         private
@@ -285,6 +339,14 @@ module Vegetables_m
         procedure, public :: getValue => getValueTestCaseWithExamples
     end type JustTestCaseWithExamples_t
 
+    type, public, extends(Maybe_t) :: JustTestCaseWithGenerator_t
+        private
+        type(TestCaseWithGenerator_t) :: value_
+    contains
+        private
+        procedure, public :: getValue => getValueTestCaseWithGenerator
+    end type JustTestCaseWithGenerator_t
+
     type, public, extends(Maybe_t) :: JustTestCollection_t
         private
         type(TestCollection_t) :: value_
@@ -388,12 +450,14 @@ module Vegetables_m
     interface it
         module procedure itBasic
         module procedure itWithExamples
+        module procedure itWithGenerator
     end interface it
 
     interface Just
         module procedure JustInputTestCase
         module procedure JustTestCase
         module procedure JustTestCaseWithExamples
+        module procedure JustTestCaseWithGenerator
         module procedure JustTestCollection
         module procedure JustTestCollectionWithInput
         module procedure JustTestItem
@@ -411,15 +475,19 @@ module Vegetables_m
         module procedure whenWithTransformer
     end interface
 
+    type(IntegerGenerator_t), parameter, public :: INTEGER_GENERATOR = IntegerGenerator_t()
+
     integer, parameter :: dp = kind(0.0d0)
     character(len=*), parameter :: EMPTY_SUCCESS_MESSAGE = "String was empty"
     integer, parameter :: INDENTATION = 4
     double precision, parameter :: MACHINE_EPSILON = EPSILON(0.0_dp)
     double precision, parameter :: MACHINE_TINY = TINY(0.0_dp)
+    integer, parameter :: MAX_INT = HUGE(1)
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
     character(len=*), parameter :: NOT_FAILURE_MESSAGE = "Expected to not be true"
     character(len=*), parameter :: NOT_SUCCESS_MESSAGE = "Was not true"
     type(Nothing_t), parameter :: NOTHING = Nothing_t()
+    integer :: NUM_GENERATOR_TESTS = 100
     character(len=*), parameter :: THAT_FAILURE_MESSAGE = "Expected to be true"
     character(len=*), parameter :: THAT_SUCCESS_MESSAGE = "Was true"
 
@@ -435,10 +503,13 @@ module Vegetables_m
             describe, &
             Example, &
             fail, &
+            Generated, &
             given, &
             it, &
             it_, &
             runTests, &
+            ShrunkValue, &
+            SimplestValue, &
             succeed, &
             TestCase, &
             TestCollection, &
@@ -1008,6 +1079,18 @@ contains
         end if
     end function filterTestCaseWithExamples
 
+    pure function filterTestCaseWithGenerator(self, filter_string) result(maybe)
+        class(TestCaseWithGenerator_t), intent(in) :: self
+        character(len=*), intent(in) :: filter_string
+        class(Maybe_t), allocatable :: maybe
+
+        if (self%description_.includes.filter_string) then
+            allocate(maybe, source = Just(self))
+        else
+            allocate(maybe, source = NOTHING)
+        end if
+    end function filterTestCaseWithGenerator
+
     pure function filterTestCollection(self, filter_string) result(maybe)
         class(TestCollection_t), intent(in) :: self
         character(len=*), intent(in) :: filter_string
@@ -1155,6 +1238,34 @@ contains
         first = trimmed(1:1)
     end function firstCharacter
 
+    pure function Generated(value_)
+        class(*), intent(in) :: value_
+        type(Generated_t) :: Generated
+
+        allocate(Generated%value_, source = value_)
+    end function Generated
+
+    function generateInteger(self) result(generated_value)
+        class(IntegerGenerator_t), intent(in) :: self
+        type(Generated_t) :: generated_value
+
+        integer :: maybe_negative
+        double precision :: random_real
+        double precision :: random_reals(2)
+
+        associate(a => self)
+        end associate
+
+        call random_number(random_reals)
+        random_real = random_reals(1)
+        if (random_reals(2) > 0.5) then
+            maybe_negative = 1
+        else
+            maybe_negative = -1
+        end if
+        generated_value = Generated(floor(random_real*MAX_INT)*maybe_negative)
+    end function generateInteger
+
     function getOptions() result(options)
         use iso_fortran_env, only: error_unit, output_unit
 
@@ -1259,6 +1370,13 @@ contains
 
         value_ = just_%value_
     end function getValueTestCaseWithExamples
+
+    pure function getValueTestCaseWithGenerator(just_) result(value_)
+        class(JustTestCaseWithGenerator_t), intent(in) :: just_
+        type(TestCaseWithGenerator_t) :: value_
+
+        value_ = just_%value_
+    end function getValueTestCaseWithGenerator
 
     pure function getValueTestCollection(just_) result(value_)
         class(JustTestCollection_t), intent(in) :: just_
@@ -1416,6 +1534,19 @@ contains
         end select
     end function itWithExamples
 
+    function itWithGenerator(description, generator, func) result(test_case)
+        character(len=*), intent(in) :: description
+        class(Generator_t), intent(in) :: generator
+        procedure(inputTest) :: func
+        type(TestItem_t) :: test_case
+
+        allocate(TestCaseWithGenerator_t :: test_case%test)
+        select type (test => test_case%test)
+        type is (TestCaseWithGenerator_t)
+            test = TestCaseWithGenerator(description, generator, func)
+        end select
+    end function itWithGenerator
+
     pure function join(strings_, separator) result(string)
         type(VegetableString_t), intent(in) :: strings_(:)
         character(len=*), intent(in) :: separator
@@ -1449,6 +1580,13 @@ contains
 
         just_ = JustTestCaseWithExamples_t(value_)
     end function JustTestCaseWithExamples
+
+    pure function JustTestCaseWithGenerator(value_) result(just_)
+        type(TestCaseWithGenerator_t), intent(in) :: value_
+        type(JustTestCaseWithGenerator_t) :: just_
+
+        just_ = JustTestCaseWithGenerator_t(value_)
+    end function JustTestCaseWithGenerator
 
     pure function JustTestCollection(value_) result(just_)
         type(TestCollection_t), intent(in) :: value_
@@ -1709,6 +1847,64 @@ contains
         result__ = TestCaseResult(self%description_, results)
     end function runCaseWithExamples
 
+    function runCaseWithGenerator(self) result(result__)
+        class(TestCaseWithGenerator_t), intent(in) :: self
+        type(TestCaseResult_t) :: result__
+
+        type(Generated_t) :: generated_value
+        integer :: i
+        class(ShrinkResult_t), allocatable :: simpler_value
+        type(Result_t) :: new_result
+        type(Result_t) :: previous_result
+
+        do i = 1, NUM_GENERATOR_TESTS
+            generated_value = self%generator%generate()
+            previous_result = self%test(generated_value%value_)
+            if (.NOT.previous_result%passed()) exit
+        end do
+        if (i > NUM_GENERATOR_TESTS) then
+            result__ = TestCaseResult( &
+                    self%description_, &
+                    succeed("Passed after " // toCharacter(NUM_GENERATOR_TESTS) // " examples"))
+        else
+            do
+                allocate(simpler_value, source = self%generator%shrink(generated_value%value_))
+                select type (simpler_value)
+                type is (ShrunkValue_t)
+                    new_result = self%test(simpler_value%value_)
+                    if (new_result%passed()) then
+                        result__ = TestCaseResult( &
+                                self%description_, &
+                                fail('Found simplest example causing failure').and.previous_result)
+                        return
+                    else
+                        previous_result = new_result
+                        generated_value = Generated(simpler_value%value_)
+                    end if
+                type is (SimplestValue_t)
+                    new_result = self%test(simpler_value%value_)
+                    if (new_result%passed()) then
+                        result__ = TestCaseResult( &
+                                self%description_, &
+                                fail('Found simplest example causing failure').and.previous_result)
+                        return
+                    else
+                        result__ = TestCaseResult( &
+                                self%description_, &
+                                fail('Fails with the simplest possible example').and.new_result)
+                        return
+                    end if
+                class default
+                    result__ = TestCaseResult( &
+                            self%description_, &
+                            fail("Got an unknown type when trying to shrink last value").and.previous_result)
+                    return
+                end select
+                deallocate(simpler_value)
+            end do
+        end if
+    end function runCaseWithGenerator
+
     function runCaseWithInput(self, input) result(result__)
         class(InputTestCase_t), intent(in) :: self
         class(*), intent(in) :: input
@@ -1772,6 +1968,12 @@ contains
             type is (TestCaseResult_t)
                 result_ = test%run()
             end select
+        type is (TestCaseWithGenerator_t)
+            allocate(TestCaseResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCaseResult_t)
+                result_ = test%run()
+            end select
         type is (TestCollection_t)
             allocate(TestCollectionResult_t :: result_item%result_)
             select type (result_ => result_item%result_)
@@ -1812,6 +2014,12 @@ contains
                 result_ = test%run()
             end select
         type is (TestCaseWithExamples_t)
+            allocate(TestCaseResult_t :: result_item%result_)
+            select type (result_ => result_item%result_)
+            type is (TestCaseResult_t)
+                result_ = test%run()
+            end select
+        type is (TestCaseWithGenerator_t)
             allocate(TestCaseResult_t :: result_item%result_)
             select type (result_ => result_item%result_)
             type is (TestCaseResult_t)
@@ -1932,6 +2140,34 @@ contains
             result__ = TestCollectionResult(self%description_, results)
         end select
     end function runTransformingCollection
+
+    pure function shrinkInteger(value_) result(shrunk)
+        class(*), intent(in) :: value_
+        class(ShrinkResult_t), allocatable :: shrunk
+
+        select type (value_)
+        type is (integer)
+            if (value_ == 0) then
+                allocate(shrunk, source = SimplestValue(0))
+            else
+                allocate(shrunk, source = ShrunkValue(value_/2))
+            end if
+        end select
+    end function
+
+    pure function ShrunkValue(value_)
+        class(*), intent(in) :: value_
+        type(ShrunkValue_t) :: ShrunkValue
+
+        allocate(ShrunkValue%value_, source = value_)
+    end function ShrunkValue
+
+    pure function SimplestValue(value_)
+        class(*), intent(in) :: value_
+        type(SimplestValue_t) :: SimplestValue
+
+        allocate(SimplestValue%value_, source = value_)
+    end function SimplestValue
 
     pure recursive function splitAt(&
             string_, split_characters) result(strings)
@@ -2104,6 +2340,17 @@ contains
         test_case%test => func
     end function TestCaseWithExamples
 
+    function TestCaseWithGenerator(description, generator, func) result(test_case)
+        character(len=*), intent(in) :: description
+        class(Generator_t), intent(in) :: generator
+        procedure(inputTest) :: func
+        type(TestCaseWithGenerator_t) :: test_case
+
+        test_case%description_ = description
+        allocate(test_case%generator, source = generator)
+        test_case%test => func
+    end function TestCaseWithGenerator
+
     pure function testCaseWithExamplesDescription(self) result(description)
         class(TestCaseWithExamples_t), intent(in) :: self
         character(len=:), allocatable :: description
@@ -2119,6 +2366,22 @@ contains
         end associate
         num_cases = 1
     end function testCaseWithExamplesNumCases
+
+    pure function testCaseWithGeneratorDescription(self) result(description)
+        class(TestCaseWithGenerator_t), intent(in) :: self
+        character(len=:), allocatable :: description
+
+        description = self%description_
+    end function testCaseWithGeneratorDescription
+
+    pure function testCaseWithGeneratorNumCases(self) result(num_cases)
+        class(TestCaseWithGenerator_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self)
+        end associate
+        num_cases = 1
+    end function testCaseWithGeneratorNumCases
 
     pure function TestCollection(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
