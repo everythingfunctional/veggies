@@ -485,6 +485,7 @@ module Vegetables_m
     type(AsciiStringGenerator_t), parameter, public :: ASCII_STRING_GENERATOR = AsciiStringGenerator_t()
     type(IntegerGenerator_t), parameter, public :: INTEGER_GENERATOR = IntegerGenerator_t()
 
+    logical :: COLORIZE_OUTPUT = .TRUE.
     integer, parameter :: dp = kind(0.0d0)
     character(len=*), parameter :: EMPTY_SUCCESS_MESSAGE = "String was empty"
     integer, parameter :: INDENTATION = 4
@@ -1050,10 +1051,19 @@ contains
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
 
+        character(len=:), allocatable :: colorized_output
+
+        allocate(character(len=0) :: colorized_output)
+        if (COLORIZE_OUTPUT) then
+            colorized_output = char(27) // "[31m" // message // char(27) // "[0m"
+        else
+            colorized_output = message
+        end if
+
         failure = Result_( &
                 passed = .false., &
-                all_message = message, &
-                failing_message = message, &
+                all_message = colorized_output, &
+                failing_message = colorized_output, &
                 num_failling_asserts = 1, &
                 num_passing_asserts = 0)
     end function fail
@@ -1310,6 +1320,8 @@ contains
         do while (i <= num_arguments)
             call get_command_argument(i, argument)
             select case (trim(argument))
+            case ("-c", "--color-off")
+                COLORIZE_OUTPUT = .FALSE.
             case ("-h", "--help")
                 write(output_unit, '(A)') usageMessage(program_name)
                 call exit(0)
@@ -1324,7 +1336,8 @@ contains
                 read(argument, *, iostat=iostat) NUM_GENERATOR_TESTS
                 if (iostat /= 0) then
                     write(error_unit, '(A)') &
-                            'Unable to read "' // trim(argument) // '" as an integer'
+                            'Unable to read "' // trim(argument) // '" as an integer' // NEWLINE
+                    write(error_unit, '(A)') usageMessage(program_name)
                     call exit(1)
                 end if
                 if (NUM_GENERATOR_TESTS <= 0) then
@@ -1350,7 +1363,7 @@ contains
             character(len=:), allocatable :: usageMessage
 
             usageMessage = &
-                    "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-f string] [-n num]" // NEWLINE &
+                    "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-f string] [-n num] [-c]" // NEWLINE &
                     // "  options:" // NEWLINE &
                     // "    -h, --help                    Output this message and exit" // NEWLINE &
                     // "    -q, --quiet                   Don't print the test descriptions before" // NEWLINE &
@@ -1360,7 +1373,8 @@ contains
                     // "    -f string, --filter string    Only run cases or collections whose" // NEWLINE &
                     // "                                  description contains the given string" // NEWLINE &
                     // "    -n num, --numrand num         Number of random values to use for each" // NEWLINE &
-                    // "                                  test with generated values (default = 100)"
+                    // "                                  test with generated values (default = 100)" // NEWLINE &
+                    // "    -c, --color-off               Don't colorize the output"
         end function usageMessage
     end function getOptions
 
@@ -2386,9 +2400,18 @@ contains
         character(len=*), intent(in) :: message
         type(Result_t) :: success
 
+        character(len=:), allocatable :: colorized_output
+
+        allocate(character(len=0) :: colorized_output)
+        if (COLORIZE_OUTPUT) then
+            colorized_output = char(27) // "[32m" // message // char(27) // "[0m"
+        else
+            colorized_output = message
+        end if
+
         success = Result_( &
                 passed = .true., &
-                all_message = message, &
+                all_message = colorized_output, &
                 failing_message = "", &
                 num_failling_asserts = 0, &
                 num_passing_asserts = 1)
