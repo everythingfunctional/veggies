@@ -5,54 +5,82 @@ module assert_equals_within_absolute_test
     public :: test_assert_equals_within_relative
 contains
     function test_assert_equals_within_relative() result(tests)
+        use DoublePrecisionGenerator_m, only: DOUBLE_PRECISION_GENERATOR
         use Vegetables_m, only: TestItem_t, describe, it
 
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: individual_tests(3)
 
-        individual_tests(1) = it("passes with the same number even with very small tolerance", checkPassForSameNumber)
-        individual_tests(2) = it("fails with sufficiently different numbers", checkFailForDifferentNumbers)
-        individual_tests(3) = it("passes with sufficiently close numbers", checkPassForCloseNumbers)
+        individual_tests(1) = it( &
+                "passes with the same number even with very small tolerance", &
+                DOUBLE_PRECISION_GENERATOR, &
+                checkPassForSameNumber)
+        individual_tests(2) = it( &
+                "fails with sufficiently different numbers", &
+                DOUBLE_PRECISION_GENERATOR, &
+                checkFailForDifferentNumbers)
+        individual_tests(3) = it( &
+                "passes with sufficiently close numbers", &
+                DOUBLE_PRECISION_GENERATOR, &
+                checkPassForCloseNumbers)
         tests = describe("assertEqualsWithinAbsolute", individual_tests)
     end function test_assert_equals_within_relative
 
-    function checkPassForSameNumber() result(result_)
-        use Vegetables_m, only: Result_t, assertEqualsWithinAbsolute, assertThat
+    function checkPassForSameNumber(example) result(result_)
+        use Vegetables_m, only: &
+                Result_t, assertEqualsWithinAbsolute, assertThat, fail
 
+        class(*), intent(in) :: example
         type(Result_t) :: result_
 
         type(Result_t) :: example_result
 
-        example_result = assertEqualsWithinAbsolute(1.0d0, 1.0d0, TINY(0.0d0))
-
-        result_ = assertThat( &
-                example_result%passed(), example_result%verboseDescription())
+        select type (example)
+        type is (double precision)
+            example_result = assertEqualsWithinAbsolute(example, example, TINY(0.0d0))
+            result_ = assertThat( &
+                    example_result%passed(), example_result%verboseDescription())
+        class default
+            result_ = fail("Expected to get a double precision value")
+        end select
     end function checkPassForSameNumber
 
-    function checkFailForDifferentNumbers() result(result_)
-        use Vegetables_m, only: Result_t, assertEqualsWithinAbsolute, assertNot
+    function checkFailForDifferentNumbers(example) result(result_)
+        use Vegetables_m, only: &
+                Result_t, assertEqualsWithinAbsolute, assertNot, fail
 
+        class(*), intent(in) :: example
         type(Result_t) :: result_
 
         type(Result_t) :: example_result
 
-        example_result = assertEqualsWithinAbsolute(1.0d0, 2.0d0, 0.1d0)
-
-        result_ = assertNot( &
-                example_result%passed(), example_result%verboseDescription())
+        select type (example)
+        type is (double precision)
+            example_result = assertEqualsWithinAbsolute(example, example+0.2d0, 0.1d0)
+            result_ = assertNot( &
+                    example_result%passed(), example_result%verboseDescription())
+        class default
+            result_ = fail("Expected to get a double precision value")
+        end select
     end function checkFailForDifferentNumbers
 
-    function checkPassForCloseNumbers() result(result_)
-        use Vegetables_m, only: Result_t, assertEqualsWithinAbsolute, assertThat
+    function checkPassForCloseNumbers(example) result(result_)
+        use Vegetables_m, only: &
+                Result_t, assertEqualsWithinAbsolute, assertThat, fail
 
+        class(*), intent(in) :: example
         type(Result_t) :: result_
 
         type(Result_t) :: example_result
 
-        example_result = assertEqualsWithinAbsolute(1.0d0, 1.099999d0, 0.1d0)
-
-        result_ = assertThat( &
-                example_result%passed(), example_result%verboseDescription())
+        select type (example)
+        type is (double precision)
+            example_result = assertEqualsWithinAbsolute(example, example+0.05d0, 0.1d0)
+            result_ = assertThat( &
+                    example_result%passed(), example_result%verboseDescription())
+        class default
+            result_ = fail("Expected to get a double precision value")
+        end select
     end function checkPassForCloseNumbers
 end module assert_equals_within_absolute_test

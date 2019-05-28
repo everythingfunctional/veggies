@@ -515,6 +515,8 @@ module Vegetables_m
             given, &
             getRandomAsciiCharacter, &
             getRandomAsciiString, &
+            getRandomDoublePrecisionWithMagnitude, &
+            getRandomDoublePrecisionWithRange, &
             getRandomInteger, &
             getRandomIntegerWithRange, &
             getRandomLogical, &
@@ -1392,6 +1394,24 @@ contains
             random_string(i:i) = getRandomAsciiCharacter()
         end do
     end function getRandomAsciiStringWithMaxLength
+
+    function getRandomDoublePrecisionWithMagnitude(magnitude) result(random_double)
+        double precision, intent(in) :: magnitude
+        double precision :: random_double
+
+        call random_number(random_double)
+        random_double = random_double * magnitude
+        if (getRandomLogical()) random_double = -random_double
+    end function getRandomDoublePrecisionWithMagnitude
+
+    function getRandomDoublePrecisionWithRange(start, end_) result(random_double)
+        double precision, intent(in) :: start
+        double precision, intent(in) :: end_
+        double precision :: random_double
+
+        call random_number(random_double)
+        random_double = start + (end_ - start) * random_double
+    end function getRandomDoublePrecisionWithRange
 
     function getRandomInteger() result(random_integer)
         integer :: random_integer
