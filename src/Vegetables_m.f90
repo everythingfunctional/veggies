@@ -2148,47 +2148,25 @@ contains
 
         select type (test => self%test)
         type is (InputTestCase_t)
-            allocate(TestCaseResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCaseResult_t)
-                result_ = TestCaseResult(test%description_, fail("No input provided"))
-            end select
+            allocate( &
+                    result_item%result_, &
+                    source = TestCaseResult( &
+                            test%description_, fail("No input provided")))
         type is (TestCase_t)
-            allocate(TestCaseResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCaseResult_t)
-                result_ = test%run()
-            end select
+            allocate(result_item%result_, source = test%run())
         type is (TestCaseWithExamples_t)
-            allocate(TestCaseResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCaseResult_t)
-                result_ = test%run()
-            end select
+            allocate(result_item%result_, source = test%run())
         type is (TestCaseWithGenerator_t)
-            allocate(TestCaseResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCaseResult_t)
-                result_ = test%run()
-            end select
+            allocate(result_item%result_, source = test%run())
         type is (TestCollection_t)
-            allocate(TestCollectionResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCollectionResult_t)
-                result_ = test%run()
-            end select
+            allocate(result_item%result_, source = test%run())
         type is (TestCollectionWithInput_t)
-            allocate(TestCollectionResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCollectionResult_t)
-                result_ = test%run()
-            end select
+            allocate(result_item%result_, source = test%run())
         type is (TransformingTestCollection_t)
-            allocate(TestCaseResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCaseResult_t)
-                result_ = TestCaseResult(test%description_, fail("No input provided"))
-            end select
+            allocate( &
+                    result_item%result_, &
+                    source = TestCaseResult( &
+                            test%description_, fail("No input provided")))
         end select
     end function runTestItem
 
@@ -2199,47 +2177,19 @@ contains
 
         select type (test => self%test)
         type is (InputTestCase_t)
-            allocate(TestCaseResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCaseResult_t)
-                result_ = test%run(input)
-            end select
+            allocate(result_item%result_, source = test%run(input))
         type is (TestCase_t)
-            allocate(TestCaseResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCaseResult_t)
-                result_ = test%run()
-            end select
+            allocate(result_item%result_, source = test%run())
         type is (TestCaseWithExamples_t)
-            allocate(TestCaseResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCaseResult_t)
-                result_ = test%run()
-            end select
+            allocate(result_item%result_, source = test%run())
         type is (TestCaseWithGenerator_t)
-            allocate(TestCaseResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCaseResult_t)
-                result_ = test%run()
-            end select
+            allocate(result_item%result_, source = test%run())
         type is (TestCollection_t)
-            allocate(TestCollectionResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCollectionResult_t)
-                result_ = test%run()
-            end select
+            allocate(result_item%result_, source = test%run())
         type is (TestCollectionWithInput_t)
-            allocate(TestCollectionResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCollectionResult_t)
-                result_ = test%run()
-            end select
+            allocate(result_item%result_, source = test%run())
         type is (TransformingTestCollection_t)
-            allocate(TestCollectionResult_t :: result_item%result_)
-            select type (result_ => result_item%result_)
-            type is (TestCollectionResult_t)
-                result_ = test%run(input)
-            end select
+            allocate(result_item%result_, source = test%run(input))
         end select
     end function runTestItemWithInput
 
