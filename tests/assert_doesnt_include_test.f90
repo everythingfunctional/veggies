@@ -28,7 +28,7 @@ contains
         example_result = assertDoesntInclude(ONE_STRNIG, OTHER_STRING)
 
         result_ = assertThat( &
-                example_result%passed(), example_result%verboseDescription())
+                example_result%passed(), example_result%verboseDescription(.false.))
     end function checkPassForDifferentStrings
 
     function checkFailForSameString(example) result(result_)
@@ -43,7 +43,7 @@ contains
         type is (character(len=*))
             example_result = assertDoesntInclude(example, example)
             result_ = assertNot( &
-                    example_result%passed(), example_result%verboseDescription())
+                    example_result%passed(), example_result%verboseDescription(.false.))
         class default
             result_ = fail("Expected a character string")
         end select

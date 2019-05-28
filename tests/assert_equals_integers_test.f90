@@ -28,7 +28,7 @@ contains
         type is (integer)
             example_result = assertEquals(input, input)
             result_ = assertThat( &
-                    example_result%passed(), example_result%verboseDescription())
+                    example_result%passed(), example_result%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get an integer")
         end select
@@ -44,6 +44,6 @@ contains
         example_result = assertEquals(1, 2)
 
         result_ = assertNot( &
-                example_result%passed(), example_result%verboseDescription())
+                example_result%passed(), example_result%verboseDescription(.false.))
     end function checkFailForDifferentIntegers
 end module assert_equals_integers_test

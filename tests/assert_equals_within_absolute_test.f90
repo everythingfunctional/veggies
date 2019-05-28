@@ -40,7 +40,7 @@ contains
         type is (double precision)
             example_result = assertEqualsWithinAbsolute(example, example, TINY(0.0d0))
             result_ = assertThat( &
-                    example_result%passed(), example_result%verboseDescription())
+                    example_result%passed(), example_result%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get a double precision value")
         end select
@@ -59,7 +59,7 @@ contains
         type is (double precision)
             example_result = assertEqualsWithinAbsolute(example, example+0.2d0, 0.1d0)
             result_ = assertNot( &
-                    example_result%passed(), example_result%verboseDescription())
+                    example_result%passed(), example_result%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get a double precision value")
         end select
@@ -78,7 +78,7 @@ contains
         type is (double precision)
             example_result = assertEqualsWithinAbsolute(example, example+0.05d0, 0.1d0)
             result_ = assertThat( &
-                    example_result%passed(), example_result%verboseDescription())
+                    example_result%passed(), example_result%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get a double precision value")
         end select

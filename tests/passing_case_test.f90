@@ -79,7 +79,7 @@ contains
 
         select type (example_result)
         type is (TestCaseResult_t)
-            result_ = assertIncludes(EXAMPLE_DESCRIPTION, example_result%verboseDescription())
+            result_ = assertIncludes(EXAMPLE_DESCRIPTION, example_result%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCaseResult_t")
         end select
@@ -94,7 +94,7 @@ contains
 
         select type (example_result)
         type is (TestCaseResult_t)
-            result_ = assertIncludes(SUCCESS_MESSAGE, example_result%verboseDescription())
+            result_ = assertIncludes(SUCCESS_MESSAGE, example_result%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCaseResult_t")
         end select
@@ -108,7 +108,7 @@ contains
 
         select type (example_result)
         type is (TestCaseResult_t)
-            result_ = assertEmpty(example_result%failureDescription())
+            result_ = assertEmpty(example_result%failureDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCaseResult_t")
         end select

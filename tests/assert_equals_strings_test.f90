@@ -28,7 +28,7 @@ contains
         type is (character(len=*))
             example_result = assertEquals(example, example)
             result_ = assertThat( &
-                    example_result%passed(), example_result%verboseDescription())
+                    example_result%passed(), example_result%verboseDescription(.false.))
         class default
             result_ = fail("Expected a character string")
         end select
@@ -46,6 +46,6 @@ contains
         example_result = assertEquals(ONE_STRNIG, OTHER_STRING)
 
         result_ = assertNot( &
-                example_result%passed(), example_result%verboseDescription())
+                example_result%passed(), example_result%verboseDescription(.false.))
     end function checkFailForDifferentStrings
 end module assert_equals_strings_test

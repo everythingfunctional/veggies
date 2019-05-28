@@ -26,7 +26,7 @@ contains
         example_result = assertEmpty("")
 
         result_ = assertThat( &
-                example_result%passed(), example_result%verboseDescription())
+                example_result%passed(), example_result%verboseDescription(.false.))
     end function checkPassForEmptyChars
 
     function checkFailsForNonemptyChars() result(result_)
@@ -39,6 +39,6 @@ contains
         example_result = assertEmpty("Not Empty")
 
         result_ = assertNot( &
-                example_result%passed(), example_result%verboseDescription())
+                example_result%passed(), example_result%verboseDescription(.false.))
     end function checkFailsForNonemptyChars
 end module assert_empty_test

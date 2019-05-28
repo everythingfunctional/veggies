@@ -99,7 +99,7 @@ contains
         type is (TestCollectionResult_t)
             result_ = assertIncludes( &
                     EXAMPLE_COLLECTION_DESCRIPTION, &
-                    example_results%verboseDescription())
+                    example_results%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
@@ -121,13 +121,13 @@ contains
             result_ = &
                     assertIncludes( &
                             EXAMPLE_CASE_DESCRIPTION_1, &
-                            example_results%verboseDescription()) &
+                            example_results%verboseDescription(.false.)) &
                     .and.assertIncludes( &
                             EXAMPLE_CASE_DESCRIPTION_2, &
-                            example_results%verboseDescription()) &
+                            example_results%verboseDescription(.false.)) &
                     .and.assertIncludes( &
                             EXAMPLE_FAILING_CASE_DESCRIPTION, &
-                            example_results%verboseDescription())
+                            example_results%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
@@ -145,7 +145,7 @@ contains
         type is (TestCollectionResult_t)
             result_ = assertIncludes( &
                     FAILURE_MESSAGE, &
-                    example_results%verboseDescription())
+                    example_results%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
@@ -163,7 +163,7 @@ contains
         type is (TestCollectionResult_t)
             result_ = assertIncludes( &
                     SUCCESS_MESSAGE, &
-                    example_results%verboseDescription())
+                    example_results%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
@@ -181,7 +181,7 @@ contains
         type is (TestCollectionResult_t)
             result_ = assertIncludes( &
                     EXAMPLE_COLLECTION_DESCRIPTION, &
-                    example_results%failureDescription())
+                    example_results%failureDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
@@ -199,7 +199,7 @@ contains
         type is (TestCollectionResult_t)
             result_ = assertIncludes( &
                     EXAMPLE_FAILING_CASE_DESCRIPTION, &
-                    example_results%failureDescription())
+                    example_results%failureDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
@@ -219,10 +219,10 @@ contains
             result_ = &
                     assertDoesntInclude( &
                             EXAMPLE_CASE_DESCRIPTION_1, &
-                            example_results%failureDescription()) &
+                            example_results%failureDescription(.false.)) &
                     .and.assertDoesntInclude( &
                             EXAMPLE_CASE_DESCRIPTION_2, &
-                            example_results%failureDescription())
+                            example_results%failureDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
@@ -240,7 +240,7 @@ contains
         type is (TestCollectionResult_t)
             result_ = assertIncludes( &
                     FAILURE_MESSAGE, &
-                    example_results%failureDescription())
+                    example_results%failureDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
@@ -258,7 +258,7 @@ contains
         type is (TestCollectionResult_t)
             result_ = assertDoesntInclude( &
                     SUCCESS_MESSAGE, &
-                    example_results%failureDescription())
+                    example_results%failureDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select
@@ -275,7 +275,7 @@ contains
         type is (TestCollectionResult_t)
             result_ = assertDoesntInclude( &
                     NEW_LINE('A') // NEW_LINE('A'), &
-                    example_results%failureDescription())
+                    example_results%failureDescription(.false.))
         class default
             result_ = fail("Expected to get a TestCollectionResult_t")
         end select

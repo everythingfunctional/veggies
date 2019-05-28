@@ -29,7 +29,7 @@ contains
         type is (double precision)
                 example_result = assertEquals(example, example)
                 result_ = assertThat( &
-                        example_result%passed(), example_result%verboseDescription())
+                        example_result%passed(), example_result%verboseDescription(.false.))
         class default
             result_ = fail("Expected to get a double precision value")
         end select
@@ -45,6 +45,6 @@ contains
         example_result = assertEquals(1.0d0, 2.0d0)
 
         result_ = assertNot( &
-                example_result%passed(), example_result%verboseDescription())
+                example_result%passed(), example_result%verboseDescription(.false.))
     end function checkFailForDifferentNumbers
 end module assert_equals_double_precision_test

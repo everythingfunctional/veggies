@@ -58,14 +58,19 @@ module Vegetables_m
     type, public, extends(Maybe_t) :: Nothing_t
     end type Nothing_t
 
+    type :: IndividualResult_t
+        private
+        character(len=:), allocatable :: message
+        logical :: passed_
+    contains
+        private
+        procedure :: failureDescription => individualResultFailureDescription
+        procedure :: verboseDescription => individualResultVerboseDescription
+    end type IndividualResult_t
+
     type, public :: Result_t
         private
-        character(len=:), allocatable :: all_message
-        character(len=:), allocatable :: failing_message
-        logical :: initialized = .false.
-        integer :: num_failling_asserts
-        integer :: num_passing_asserts
-        logical :: passed_
+        type(IndividualResult_t), allocatable :: results(:)
     contains
         private
         generic, public :: operator(.and.) => combineResults
@@ -160,9 +165,10 @@ module Vegetables_m
             logical :: answer
         end function testQuestion
 
-        pure function testResultDescription(self) result(description)
+        pure function testResultDescription(self, colorize) result(description)
             import :: TestResult_t
             class(TestResult_t), intent(in) :: self
+            logical, intent(in) :: colorize
             character(len=:), allocatable :: description
         end function testResultDescription
 
@@ -316,6 +322,7 @@ module Vegetables_m
 
     type :: Options_t
         private
+        logical :: colorize
         logical :: quiet
         logical :: verbose
         logical :: filter_tests
@@ -485,7 +492,6 @@ module Vegetables_m
     type(AsciiStringGenerator_t), parameter, public :: ASCII_STRING_GENERATOR = AsciiStringGenerator_t()
     type(IntegerGenerator_t), parameter, public :: INTEGER_GENERATOR = IntegerGenerator_t()
 
-    logical :: COLORIZE_OUTPUT = .TRUE.
     integer, parameter :: dp = kind(0.0d0)
     character(len=*), parameter :: EMPTY_SUCCESS_MESSAGE = "String was empty"
     integer, parameter :: INDENTATION = 4
@@ -919,16 +925,18 @@ contains
         type(Result_t), intent(in) :: rhs
         type(Result_t) :: combined
 
-        if (lhs%initialized .and. rhs%initialized) then
-            combined = Result_( &
-                    all_message = lhs%all_message // NEWLINE // rhs%all_message, &
-                    failing_message = lhs%failing_message // NEWLINE // rhs%failing_message, &
-                    passed = lhs%passed_ .and. rhs%passed_, &
-                    num_failling_asserts = lhs%num_failling_asserts + rhs%num_failling_asserts, &
-                    num_passing_asserts = lhs%num_passing_asserts + rhs%num_passing_asserts)
-        else if (lhs%initialized) then
+        integer :: num_lhs
+        integer :: num_rhs
+
+        if (allocated(lhs%results) .and. allocated(rhs%results)) then
+            num_lhs = size(lhs%results)
+            num_rhs = size(rhs%results)
+            allocate(combined%results(num_lhs + num_rhs))
+            combined%results(1:num_lhs) = lhs%results(:)
+            combined%results(num_lhs+1:) = rhs%results(:)
+        else if (allocated(lhs%results)) then
             combined = lhs
-        else if (rhs%initialized) then
+        else if (allocated(rhs%results)) then
             combined = rhs
         end if
     end function combineResults
@@ -1051,21 +1059,7 @@ contains
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
 
-        character(len=:), allocatable :: colorized_output
-
-        allocate(character(len=0) :: colorized_output)
-        if (COLORIZE_OUTPUT) then
-            colorized_output = char(27) // "[31m" // message // char(27) // "[0m"
-        else
-            colorized_output = message
-        end if
-
-        failure = Result_( &
-                passed = .false., &
-                all_message = colorized_output, &
-                failing_message = colorized_output, &
-                num_failling_asserts = 1, &
-                num_passing_asserts = 0)
+        failure = Result_(IndividualResult(message, .false.))
     end function fail
 
     pure function filterInputTestCase(self, filter_string) result(maybe)
@@ -1309,6 +1303,7 @@ contains
         integer :: iostat
         integer :: num_arguments
 
+        options%colorize = .true.
         options%quiet = .false.
         options%verbose = .false.
         options%filter_tests = .false.
@@ -1321,7 +1316,7 @@ contains
             call get_command_argument(i, argument)
             select case (trim(argument))
             case ("-c", "--color-off")
-                COLORIZE_OUTPUT = .FALSE.
+                options%colorize = .false.
             case ("-h", "--help")
                 write(output_unit, '(A)') usageMessage(program_name)
                 call exit(0)
@@ -1594,6 +1589,43 @@ contains
 
         indented = repeat(" ", spaces) // hangingIndent(string, spaces)
     end function indent
+
+    pure function IndividualResult(message, passed_)
+        character(len=*), intent(in) :: message
+        logical, intent(in) :: passed_
+        type(IndividualResult_t) :: IndividualResult
+
+        IndividualResult%message = message
+        IndividualResult%passed_ = passed_
+    end function IndividualResult
+
+    pure function individualResultFailureDescription(self, colorize) result(description)
+        class(IndividualResult_t), intent(in) :: self
+        logical, intent(in) :: colorize
+        character(len=:), allocatable :: description
+
+        if (colorize) then
+            description = char(27) // "[31m" // self%message // char(27) // "[0m"
+        else
+            description = self%message
+        end if
+    end function individualResultFailureDescription
+
+    pure function individualResultVerboseDescription(self, colorize) result(description)
+        class(IndividualResult_t), intent(in) :: self
+        logical, intent(in) :: colorize
+        character(len=:), allocatable :: description
+
+        if (colorize) then
+            if (self%passed_) then
+                description = char(27) // "[32m" // self%message // char(27) // "[0m"
+            else
+                description = char(27) // "[31m" // self%message // char(27) // "[0m"
+            end if
+        else
+            description = self%message
+        end if
+    end function individualResultVerboseDescription
 
     function InputTestCase(description, func) result(test_case)
         character(len=*), intent(in) :: description
@@ -1903,61 +1935,73 @@ contains
         end do
     end function removeTrailingZeros
 
-    pure function Result_( &
-            passed, &
-            all_message, &
-            failing_message, &
-            num_failling_asserts, &
-            num_passing_asserts)
-        logical, intent(in) :: passed
-        character(len=*), intent(in) :: all_message
-        character(len=*), intent(in) :: failing_message
-        integer, intent(in) :: num_failling_asserts
-        integer, intent(in) :: num_passing_asserts
+    pure function Result_(individual_result)
+        type(IndividualResult_t), intent(in) :: individual_result
         type(Result_t) :: Result_
 
-        Result_ = Result_t( &
-                all_message = all_message, &
-                failing_message = failing_message, &
-                initialized = .true., &
-                num_failling_asserts = num_failling_asserts, &
-                num_passing_asserts = num_passing_asserts, &
-                passed_ = passed)
+        allocate(Result_%results(1))
+        Result_%results(1) = individual_result
     end function Result_
 
-    pure function resultFailureDescription(self) result(description)
+    pure function resultFailureDescription(self, colorize) result(description)
         class(Result_t), intent(in) :: self
+        logical, intent(in) :: colorize
         character(len=:), allocatable :: description
 
-        description = self%failing_message
+        logical, allocatable :: failed_mask(:)
+        type(IndividualResult_t), allocatable :: failed_results(:)
+        integer :: i
+        type(VegetableString_t), allocatable :: individual_descriptions(:)
+
+        allocate(failed_mask(size(self%results)))
+        failed_mask = .not.self%results%passed_
+        allocate(failed_results(count(failed_mask)))
+        failed_results = pack(self%results, mask=failed_mask)
+        allocate(individual_descriptions(size(failed_results)))
+        do i = 1, size(failed_results)
+            individual_descriptions(i) = toString(failed_results(i)%failureDescription(colorize))
+        end do
+        if (size(failed_results) > 0) then
+            description = join(individual_descriptions, NEWLINE)
+        else
+            description = ""
+        end if
     end function resultFailureDescription
 
     pure function resultNumAsserts(self) result(num_asserts)
         class(Result_t), intent(in) :: self
         integer :: num_asserts
 
-        num_asserts = self%num_passing_asserts + self%num_failling_asserts
+        num_asserts = size(self%results)
     end function resultNumAsserts
 
     pure function resultNumFailing(self) result(num_asserts)
         class(Result_t), intent(in) :: self
         integer :: num_asserts
 
-        num_asserts = self%num_failling_asserts
+        num_asserts = count(.not.self%results%passed_)
     end function resultNumFailing
 
     pure function resultPassed(self) result(passed)
         class(Result_t), intent(in) :: self
         logical :: passed
 
-        passed = self%passed_
+        passed = all(self%results%passed_)
     end function resultPassed
 
-    pure function resultVerboseDescription(self) result(description)
+    pure function resultVerboseDescription(self, colorize) result(description)
         class(Result_t), intent(in) :: self
+        logical, intent(in) :: colorize
         character(len=:), allocatable :: description
 
-        description = self%all_message
+        integer :: i
+        type(VegetableString_t), allocatable :: individual_descriptions(:)
+
+        allocate(individual_descriptions(size(self%results)))
+        do i = 1, size(self%results)
+            individual_descriptions(i) = toString(self%results(i)%verboseDescription(colorize))
+        end do
+        description = join(individual_descriptions, NEWLINE)
     end function resultVerboseDescription
 
     function runCase(self) result(result__)
@@ -2236,7 +2280,7 @@ contains
             write(output_unit, '(A)')
             write(output_unit, '(A)') "All Passed"
             if (options%verbose) then
-                write(output_unit, '(A)') results%verboseDescription()
+                write(output_unit, '(A)') results%verboseDescription(options%colorize)
             end if
             write(output_unit, '(A)') &
                     "A total of " // toCharacter(results%numCases()) &
@@ -2246,7 +2290,11 @@ contains
         else
             write(error_unit, '(A)')
             write(error_unit, '(A)') "Failed"
-            write(error_unit, '(A)')
+            if (options%verbose) then
+                write(error_unit, '(A)') results%verboseDescription(options%colorize)
+            else
+                write(error_unit, '(A)') results%failureDescription(options%colorize)
+            end if
             write(error_unit, '(A)') &
                     toCharacter(results%numFailingCases()) // " of " &
                     // toCharacter(results%numCases()) // " cases failed"
@@ -2254,11 +2302,6 @@ contains
                     toCharacter(results%numFailingAsserts()) // " of " &
                     // toCharacter(results%numAsserts()) // " assertions failed"
             write(error_unit, '(A)')
-            if (options%verbose) then
-                write(error_unit, '(A)') results%verboseDescription()
-            else
-                write(error_unit, '(A)') results%failureDescription()
-            end if
             write(error_unit, '(A)')
             call exit(1)
         end if
@@ -2400,21 +2443,7 @@ contains
         character(len=*), intent(in) :: message
         type(Result_t) :: success
 
-        character(len=:), allocatable :: colorized_output
-
-        allocate(character(len=0) :: colorized_output)
-        if (COLORIZE_OUTPUT) then
-            colorized_output = char(27) // "[32m" // message // char(27) // "[0m"
-        else
-            colorized_output = message
-        end if
-
-        success = Result_( &
-                passed = .true., &
-                all_message = colorized_output, &
-                failing_message = "", &
-                num_failling_asserts = 0, &
-                num_passing_asserts = 1)
+        success = Result_(IndividualResult(message, .true.))
     end function succeed
 
     function TestCase(description, func) result(test_case)
@@ -2433,15 +2462,16 @@ contains
         description = self%description_
     end function testCaseDescription
 
-    pure function testCaseFailureDescription(self) result(description)
+    pure function testCaseFailureDescription(self, colorize) result(description)
         class(TestCaseResult_t), intent(in) :: self
+        logical, intent(in) :: colorize
         character(len=:), allocatable :: description
 
         if (self%passed()) then
             description = ""
         else
             description = hangingIndent( &
-                    self%description // NEWLINE // self%result_%failureDescription(), &
+                    self%description // NEWLINE // self%result_%failureDescription(colorize), &
                     INDENTATION)
         end if
     end function testCaseFailureDescription
@@ -2505,12 +2535,13 @@ contains
         num_cases = 1
     end function testCaseResultNumCases
 
-    pure function testCaseVerboseDescription(self) result(description)
+    pure function testCaseVerboseDescription(self, colorize) result(description)
         class(TestCaseResult_t), intent(in) :: self
+        logical, intent(in) :: colorize
         character(len=:), allocatable :: description
 
         description = hangingIndent( &
-                self%description // NEWLINE // self%result_%verboseDescription(), &
+                self%description // NEWLINE // self%result_%verboseDescription(colorize), &
                 INDENTATION)
     end function testCaseVerboseDescription
 
@@ -2597,8 +2628,9 @@ contains
                 INDENTATION)
     end function testCollectionDescription
 
-    pure function testCollectionFailureDescription(self) result(description)
+    pure function testCollectionFailureDescription(self, colorize) result(description)
         class(TestCollectionResult_t), intent(in) :: self
+        logical, intent(in) :: colorize
         character(len=:), allocatable :: description
 
         type(VegetableString_t), allocatable :: descriptions(:)
@@ -2611,7 +2643,7 @@ contains
             num_cases = size(self%results)
             allocate(descriptions(num_cases))
             do concurrent (i = 1:num_cases)
-                descriptions(i) = toString(self%results(i)%failureDescription())
+                descriptions(i) = toString(self%results(i)%failureDescription(colorize))
             end do
             description = hangingIndent( &
                     self%description // NEWLINE // join(descriptions, NEWLINE), &
@@ -2671,8 +2703,9 @@ contains
         num_cases = sum(self%results%numCases())
     end function testCollectionResultNumCases
 
-    pure function testCollectionVerboseDescription(self) result(description)
+    pure function testCollectionVerboseDescription(self, colorize) result(description)
         class(TestCollectionResult_t), intent(in) :: self
+        logical, intent(in) :: colorize
         character(len=:), allocatable :: description
 
         type(VegetableString_t), allocatable :: descriptions(:)
@@ -2682,7 +2715,7 @@ contains
         num_cases = size(self%results)
         allocate(descriptions(num_cases))
         do concurrent (i = 1:num_cases)
-            descriptions(i) = toString(self%results(i)%verboseDescription())
+            descriptions(i) = toString(self%results(i)%verboseDescription(colorize))
         end do
         description = hangingIndent( &
                 self%description // NEWLINE // join(descriptions, NEWLINE), &
@@ -2748,11 +2781,12 @@ contains
         passed = self%result_%passed()
     end function testItemPassed
 
-    pure function testResultItemFailureDescription(self) result(description)
+    pure function testResultItemFailureDescription(self, colorize) result(description)
         class(TestResultItem_t), intent(in) :: self
+        logical, intent(in) :: colorize
         character(len=:), allocatable :: description
 
-        description = self%result_%failureDescription()
+        description = self%result_%failureDescription(colorize)
     end function testResultItemFailureDescription
 
     elemental function testResultItemNumAsserts(self) result(num_asserts)
@@ -2783,11 +2817,12 @@ contains
         num_asserts = self%result_%numFailingAsserts()
     end function testResultItemNumFailingAsserts
 
-    pure function testResultItemVerboseDescription(self) result(description)
+    pure function testResultItemVerboseDescription(self, colorize) result(description)
         class(TestResultItem_t), intent(in) :: self
+        logical, intent(in) :: colorize
         character(len=:), allocatable :: description
 
-        description = self%result_%verboseDescription()
+        description = self%result_%verboseDescription(colorize)
     end function testResultItemVerboseDescription
 
     pure function testThat(tests) result(test_collection)
