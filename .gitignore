@@ -4,3 +4,4 @@ build/*
 test_build/*
 tools_build/*
 vegetable-juicer.cabal
+stack.yaml.lock
