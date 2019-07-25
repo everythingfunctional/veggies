@@ -449,8 +449,12 @@ module Vegetables_m
 
     interface assertEquals
         module procedure assertEqualsDoublePrecision
-        module procedure assertEqualsDoublePrecisionWithMessage
-        module procedure assertEqualsDoublePrecisionWithMessages
+        module procedure assertEqualsDoublePrecisionWithMessageC
+        module procedure assertEqualsDoublePrecisionWithMessageS
+        module procedure assertEqualsDoublePrecisionWithMessagesCC
+        module procedure assertEqualsDoublePrecisionWithMessagesCS
+        module procedure assertEqualsDoublePrecisionWithMessagesSC
+        module procedure assertEqualsDoublePrecisionWithMessagesSS
         module procedure assertEqualsInteger
         module procedure assertEqualsIntegerWithMessage
         module procedure assertEqualsIntegerWithMessages
@@ -1041,7 +1045,7 @@ contains
         result__ = assertEquals(expected, actual, "", "")
     end function assertEqualsDoublePrecision
 
-    pure function assertEqualsDoublePrecisionWithMessage( &
+    pure function assertEqualsDoublePrecisionWithMessageC( &
             expected, actual, message) result(result__)
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
@@ -1049,9 +1053,19 @@ contains
         type(Result_t) :: result__
 
         result__ = assertEquals(expected, actual, message, message)
-    end function assertEqualsDoublePrecisionWithMessage
+    end function assertEqualsDoublePrecisionWithMessageC
 
-    pure function assertEqualsDoublePrecisionWithMessages( &
+    pure function assertEqualsDoublePrecisionWithMessageS( &
+            expected, actual, message) result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, char(message), char(message))
+    end function assertEqualsDoublePrecisionWithMessageS
+
+    pure function assertEqualsDoublePrecisionWithMessagesCC( &
             expected, actual, success_message, failure_message) result(result__)
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
@@ -1061,7 +1075,40 @@ contains
 
         result__ = assertEqualsWithinAbsolute( &
                 expected, actual, MACHINE_EPSILON, success_message, failure_message)
-    end function assertEqualsDoublePrecisionWithMessages
+    end function assertEqualsDoublePrecisionWithMessagesCC
+
+    pure function assertEqualsDoublePrecisionWithMessagesCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, success_message, char(failure_message))
+    end function assertEqualsDoublePrecisionWithMessagesCS
+
+    pure function assertEqualsDoublePrecisionWithMessagesSC( &
+            expected, actual, success_message, failure_message) result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, char(success_message), failure_message)
+    end function assertEqualsDoublePrecisionWithMessagesSC
+
+    pure function assertEqualsDoublePrecisionWithMessagesSS( &
+            expected, actual, success_message, failure_message) result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, char(success_message), char(failure_message))
+    end function assertEqualsDoublePrecisionWithMessagesSS
 
     pure function assertEqualsStringsCC(expected, actual) result(result__)
         character(len=*), intent(in) :: expected
