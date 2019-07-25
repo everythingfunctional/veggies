@@ -431,9 +431,20 @@ module Vegetables_m
     end interface assertDoesntInclude
 
     interface assertEmpty
-        module procedure assertEmptyBasic
-        module procedure assertEmptyWithMessage
-        module procedure assertEmptyWithMessages
+        module procedure assertEmptyC
+        module procedure assertEmptyS
+        module procedure assertEmptyWithMessageCC
+        module procedure assertEmptyWithMessageCS
+        module procedure assertEmptyWithMessageSC
+        module procedure assertEmptyWithMessageSS
+        module procedure assertEmptyWithMessagesCCC
+        module procedure assertEmptyWithMessagesCCS
+        module procedure assertEmptyWithMessagesCSC
+        module procedure assertEmptyWithMessagesCSS
+        module procedure assertEmptyWithMessagesSCC
+        module procedure assertEmptyWithMessagesSCS
+        module procedure assertEmptyWithMessagesSSC
+        module procedure assertEmptyWithMessagesSSS
     end interface assertEmpty
 
     interface assertEquals
@@ -889,22 +900,53 @@ contains
         result__ = assertDoesntInclude(char(search_for), char(string), char(success_message), char(failure_message))
     end function assertDoesntIncludeWithMessagesSSSS
 
-    pure function assertEmptyBasic(string) result(result__)
+    pure function assertEmptyC(string) result(result__)
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
         result__ = assertEmpty(string, "", "")
-    end function assertEmptyBasic
+    end function assertEmptyC
 
-    pure function assertEmptyWithMessage(string, message) result(result__)
+    pure function assertEmptyS(string) result(result__)
+        type(VARYING_STRING), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(char(string), "", "")
+    end function assertEmptyS
+
+    pure function assertEmptyWithMessageCC(string, message) result(result__)
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
         result__ = assertEmpty(string, message, message)
-    end function assertEmptyWithMessage
+    end function assertEmptyWithMessageCC
 
-    pure function assertEmptyWithMessages(&
+    pure function assertEmptyWithMessageCS(string, message) result(result__)
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(string, char(message), char(message))
+    end function assertEmptyWithMessageCS
+
+    pure function assertEmptyWithMessageSC(string, message) result(result__)
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(char(string), message, message)
+    end function assertEmptyWithMessageSC
+
+    pure function assertEmptyWithMessageSS(string, message) result(result__)
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(char(string), char(message), char(message))
+    end function assertEmptyWithMessageSS
+
+    pure function assertEmptyWithMessagesCCC(&
             string, success_message, failure_message) result(result__)
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -919,7 +961,77 @@ contains
                     makeEmptyFailureMessage(string), &
                     failure_message))
         end if
-    end function assertEmptyWithMessages
+    end function assertEmptyWithMessagesCCC
+
+    pure function assertEmptyWithMessagesCCS(&
+            string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(string, success_message, char(failure_message))
+    end function assertEmptyWithMessagesCCS
+
+    pure function assertEmptyWithMessagesCSC(&
+            string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(string, char(success_message), failure_message)
+    end function assertEmptyWithMessagesCSC
+
+    pure function assertEmptyWithMessagesCSS(&
+            string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(string, char(success_message), char(failure_message))
+    end function assertEmptyWithMessagesCSS
+
+    pure function assertEmptyWithMessagesSCC(&
+            string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(char(string), success_message, failure_message)
+    end function assertEmptyWithMessagesSCC
+
+    pure function assertEmptyWithMessagesSCS(&
+            string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(char(string), success_message, char(failure_message))
+    end function assertEmptyWithMessagesSCS
+
+    pure function assertEmptyWithMessagesSSC(&
+            string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(char(string), char(success_message), failure_message)
+    end function assertEmptyWithMessagesSSC
+
+    pure function assertEmptyWithMessagesSSS(&
+            string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty(char(string), char(success_message), char(failure_message))
+    end function assertEmptyWithMessagesSSS
 
     pure function assertEqualsDoublePrecision(expected, actual) result(result__)
         double precision, intent(in) :: expected
