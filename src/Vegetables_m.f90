@@ -412,15 +412,40 @@ module Vegetables_m
     end interface assertEmpty
 
     interface assertEquals
-        module procedure assertEqualsCharacters
-        module procedure assertEqualsCharactersWithMessage
-        module procedure assertEqualsCharactersWithMessages
         module procedure assertEqualsDoublePrecision
         module procedure assertEqualsDoublePrecisionWithMessage
         module procedure assertEqualsDoublePrecisionWithMessages
         module procedure assertEqualsInteger
         module procedure assertEqualsIntegerWithMessage
         module procedure assertEqualsIntegerWithMessages
+        module procedure assertEqualsStringsCC
+        module procedure assertEqualsStringsCS
+        module procedure assertEqualsStringsSC
+        module procedure assertEqualsStringsSS
+        module procedure assertEqualsStringsWithMessageCCC
+        module procedure assertEqualsStringsWithMessageCCS
+        module procedure assertEqualsStringsWithMessageCSC
+        module procedure assertEqualsStringsWithMessageCSS
+        module procedure assertEqualsStringsWithMessageSCC
+        module procedure assertEqualsStringsWithMessageSCS
+        module procedure assertEqualsStringsWithMessageSSC
+        module procedure assertEqualsStringsWithMessageSSS
+        module procedure assertEqualsStringsWithMessagesCCCC
+        module procedure assertEqualsStringsWithMessagesCCCS
+        module procedure assertEqualsStringsWithMessagesCCSC
+        module procedure assertEqualsStringsWithMessagesCCSS
+        module procedure assertEqualsStringsWithMessagesCSCC
+        module procedure assertEqualsStringsWithMessagesCSCS
+        module procedure assertEqualsStringsWithMessagesCSSC
+        module procedure assertEqualsStringsWithMessagesCSSS
+        module procedure assertEqualsStringsWithMessagesSCCC
+        module procedure assertEqualsStringsWithMessagesSCCS
+        module procedure assertEqualsStringsWithMessagesSCSC
+        module procedure assertEqualsStringsWithMessagesSCSS
+        module procedure assertEqualsStringsWithMessagesSSCC
+        module procedure assertEqualsStringsWithMessagesSSCS
+        module procedure assertEqualsStringsWithMessagesSSSC
+        module procedure assertEqualsStringsWithMessagesSSSS
     end interface assertEquals
 
     interface assertEqualsWithinAbsolute
@@ -612,43 +637,6 @@ contains
         end if
     end function assertEmptyWithMessages
 
-    pure function assertEqualsCharacters(expected, actual) result(result__)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, actual, "", "")
-    end function assertEqualsCharacters
-
-    pure function assertEqualsCharactersWithMessage( &
-            expected, actual, message) result(result__)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, actual, message, message)
-    end function assertEqualsCharactersWithMessage
-
-    pure function assertEqualsCharactersWithMessages( &
-            expected, actual, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        if (expected == actual) then
-            result__ = succeed(withUserMessage( &
-                    makeEqualsSuccessMessage(expected), &
-                    success_message))
-        else
-            result__ = fail(withUserMessage( &
-                    makeEqualsFailureMessage(expected, actual), &
-                    failure_message))
-        end if
-    end function assertEqualsCharactersWithMessages
-
     pure function assertEqualsDoublePrecision(expected, actual) result(result__)
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
@@ -678,6 +666,302 @@ contains
         result__ = assertEqualsWithinAbsolute( &
                 expected, actual, MACHINE_EPSILON, success_message, failure_message)
     end function assertEqualsDoublePrecisionWithMessages
+
+    pure function assertEqualsStringsCC(expected, actual) result(result__)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, "", "")
+    end function assertEqualsStringsCC
+
+    pure function assertEqualsStringsCS(expected, actual) result(result__)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, char(actual), "", "")
+    end function assertEqualsStringsCS
+
+    pure function assertEqualsStringsSC(expected, actual) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), actual, "", "")
+    end function assertEqualsStringsSC
+
+    pure function assertEqualsStringsSS(expected, actual) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), char(actual), "", "")
+    end function assertEqualsStringsSS
+
+    pure function assertEqualsStringsWithMessageCCC( &
+            expected, actual, message) result(result__)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, message, message)
+    end function assertEqualsStringsWithMessageCCC
+
+    pure function assertEqualsStringsWithMessageCCS( &
+            expected, actual, message) result(result__)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, char(message), char(message))
+    end function assertEqualsStringsWithMessageCCS
+
+    pure function assertEqualsStringsWithMessageCSC( &
+            expected, actual, message) result(result__)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, char(actual), message, message)
+    end function assertEqualsStringsWithMessageCSC
+
+    pure function assertEqualsStringsWithMessageCSS( &
+            expected, actual, message) result(result__)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, char(actual), char(message), char(message))
+    end function assertEqualsStringsWithMessageCSS
+
+    pure function assertEqualsStringsWithMessageSCC( &
+            expected, actual, message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), actual, message, message)
+    end function assertEqualsStringsWithMessageSCC
+
+    pure function assertEqualsStringsWithMessageSCS( &
+            expected, actual, message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), actual, char(message), char(message))
+    end function assertEqualsStringsWithMessageSCS
+
+    pure function assertEqualsStringsWithMessageSSC( &
+            expected, actual, message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), char(actual), message, message)
+    end function assertEqualsStringsWithMessageSSC
+
+    pure function assertEqualsStringsWithMessageSSS( &
+            expected, actual, message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), char(actual), char(message), char(message))
+    end function assertEqualsStringsWithMessageSSS
+
+    pure function assertEqualsStringsWithMessagesCCCC( &
+            expected, actual, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        if (expected == actual) then
+            result__ = succeed(withUserMessage( &
+                    makeEqualsSuccessMessage(expected), &
+                    success_message))
+        else
+            result__ = fail(withUserMessage( &
+                    makeEqualsFailureMessage(expected, actual), &
+                    failure_message))
+        end if
+    end function assertEqualsStringsWithMessagesCCCC
+
+    pure function assertEqualsStringsWithMessagesCCCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, success_message, char(failure_message))
+    end function assertEqualsStringsWithMessagesCCCS
+
+    pure function assertEqualsStringsWithMessagesCCSC( &
+            expected, actual, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, char(success_message), failure_message)
+    end function assertEqualsStringsWithMessagesCCSC
+
+    pure function assertEqualsStringsWithMessagesCCSS( &
+            expected, actual, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, char(success_message), char(failure_message))
+    end function assertEqualsStringsWithMessagesCCSS
+
+    pure function assertEqualsStringsWithMessagesCSCC( &
+            expected, actual, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, char(actual), success_message, failure_message)
+    end function assertEqualsStringsWithMessagesCSCC
+
+    pure function assertEqualsStringsWithMessagesCSCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, char(actual), success_message, char(failure_message))
+    end function assertEqualsStringsWithMessagesCSCS
+
+    pure function assertEqualsStringsWithMessagesCSSC( &
+            expected, actual, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, char(actual), char(success_message), failure_message)
+    end function assertEqualsStringsWithMessagesCSSC
+
+    pure function assertEqualsStringsWithMessagesCSSS( &
+            expected, actual, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, char(actual), char(success_message), char(failure_message))
+    end function assertEqualsStringsWithMessagesCSSS
+
+    pure function assertEqualsStringsWithMessagesSCCC( &
+            expected, actual, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), actual, success_message, failure_message)
+    end function assertEqualsStringsWithMessagesSCCC
+
+    pure function assertEqualsStringsWithMessagesSCCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), actual, success_message, char(failure_message))
+    end function assertEqualsStringsWithMessagesSCCS
+
+    pure function assertEqualsStringsWithMessagesSCSC( &
+            expected, actual, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), actual, char(success_message), failure_message)
+    end function assertEqualsStringsWithMessagesSCSC
+
+    pure function assertEqualsStringsWithMessagesSCSS( &
+            expected, actual, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), actual, char(success_message), char(failure_message))
+    end function assertEqualsStringsWithMessagesSCSS
+
+    pure function assertEqualsStringsWithMessagesSSCC( &
+            expected, actual, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), char(actual), success_message, failure_message)
+    end function assertEqualsStringsWithMessagesSSCC
+
+    pure function assertEqualsStringsWithMessagesSSCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), char(actual), success_message, char(failure_message))
+    end function assertEqualsStringsWithMessagesSSCS
+
+    pure function assertEqualsStringsWithMessagesSSSC( &
+            expected, actual, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), char(actual), char(success_message), failure_message)
+    end function assertEqualsStringsWithMessagesSSSC
+
+    pure function assertEqualsStringsWithMessagesSSSS( &
+            expected, actual, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(char(expected), char(actual), char(success_message), char(failure_message))
+    end function assertEqualsStringsWithMessagesSSSS
 
     pure function assertEqualsWithinAbsoluteBasic( &
             expected, actual, tolerance) result(result__)
