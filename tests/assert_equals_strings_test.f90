@@ -62,31 +62,102 @@ contains
             example_result_cs = assertEquals(example, var_str(example))
             example_result_sc = assertEquals(var_str(example), example)
             example_result_ss = assertEquals(var_str(example), var_str(example))
-            example_result_ccc = assertEquals(example, example, BOTH_MESSAGE)
-            example_result_ccs = assertEquals(example, example, var_str(BOTH_MESSAGE))
-            example_result_csc = assertEquals(example, var_str(example), BOTH_MESSAGE)
-            example_result_css = assertEquals(example, var_str(example), var_str(BOTH_MESSAGE))
-            example_result_scc = assertEquals(var_str(example), example, BOTH_MESSAGE)
-            example_result_scs = assertEquals(var_str(example), example, var_str(BOTH_MESSAGE))
-            example_result_ssc = assertEquals(var_str(example), var_str(example), BOTH_MESSAGE)
-            example_result_sss = assertEquals(var_str(example), var_str(example), var_str(BOTH_MESSAGE))
-            example_result_cccc = assertEquals(example, example, SUCCESS_MESSAGE, FAILURE_MESSAGE)
-            example_result_cccs = assertEquals(example, example, SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
-            example_result_ccsc = assertEquals(example, example, var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
-            example_result_ccss = assertEquals(example, example, var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
-            example_result_cscc = assertEquals(example, var_str(example), SUCCESS_MESSAGE, FAILURE_MESSAGE)
-            example_result_cscs = assertEquals(example, var_str(example), SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
-            example_result_cssc = assertEquals(example, var_str(example), var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
-            example_result_csss = assertEquals(example, var_str(example), var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
-            example_result_sccc = assertEquals(var_str(example), example, SUCCESS_MESSAGE, FAILURE_MESSAGE)
-            example_result_sccs = assertEquals(var_str(example), example, SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
-            example_result_scsc = assertEquals(var_str(example), example, var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
-            example_result_scss = assertEquals(var_str(example), example, var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
-            example_result_sscc = assertEquals(var_str(example), var_str(example), SUCCESS_MESSAGE, FAILURE_MESSAGE)
-            example_result_sscs = assertEquals(var_str(example), var_str(example), SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
-            example_result_sssc = assertEquals(var_str(example), var_str(example), var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
+            example_result_ccc = assertEquals( &
+                    example, example, BOTH_MESSAGE)
+            example_result_ccs = assertEquals( &
+                    example, example, var_str(BOTH_MESSAGE))
+            example_result_csc = assertEquals( &
+                    example, var_str(example), BOTH_MESSAGE)
+            example_result_css = assertEquals( &
+                    example, var_str(example), var_str(BOTH_MESSAGE))
+            example_result_scc = assertEquals( &
+                    var_str(example), example, BOTH_MESSAGE)
+            example_result_scs = assertEquals( &
+                    var_str(example), example, var_str(BOTH_MESSAGE))
+            example_result_ssc = assertEquals( &
+                    var_str(example), var_str(example), BOTH_MESSAGE)
+            example_result_sss = assertEquals( &
+                    var_str(example), var_str(example), var_str(BOTH_MESSAGE))
+            example_result_cccc = assertEquals( &
+                    example, &
+                    example, &
+                    SUCCESS_MESSAGE, &
+                    FAILURE_MESSAGE)
+            example_result_cccs = assertEquals( &
+                    example, &
+                    example, &
+                    SUCCESS_MESSAGE, &
+                    var_str(FAILURE_MESSAGE))
+            example_result_ccsc = assertEquals( &
+                    example, &
+                    example, &
+                    var_str(SUCCESS_MESSAGE), &
+                    FAILURE_MESSAGE)
+            example_result_ccss = assertEquals( &
+                    example, &
+                    example, &
+                    var_str(SUCCESS_MESSAGE), &
+                    var_str(FAILURE_MESSAGE))
+            example_result_cscc = assertEquals( &
+                    example, &
+                    var_str(example), &
+                    SUCCESS_MESSAGE, &
+                    FAILURE_MESSAGE)
+            example_result_cscs = assertEquals( &
+                    example, &
+                    var_str(example), &
+                    SUCCESS_MESSAGE, &
+                    var_str(FAILURE_MESSAGE))
+            example_result_cssc = assertEquals( &
+                    example, &
+                    var_str(example), &
+                    var_str(SUCCESS_MESSAGE), &
+                    FAILURE_MESSAGE)
+            example_result_csss = assertEquals( &
+                    example, &
+                    var_str(example), &
+                    var_str(SUCCESS_MESSAGE), &
+                    var_str(FAILURE_MESSAGE))
+            example_result_sccc = assertEquals( &
+                    var_str(example), &
+                    example, &
+                    SUCCESS_MESSAGE, &
+                    FAILURE_MESSAGE)
+            example_result_sccs = assertEquals( &
+                    var_str(example), &
+                    example, &
+                    SUCCESS_MESSAGE, &
+                    var_str(FAILURE_MESSAGE))
+            example_result_scsc = assertEquals( &
+                    var_str(example), &
+                    example, &
+                    var_str(SUCCESS_MESSAGE), &
+                    FAILURE_MESSAGE)
+            example_result_scss = assertEquals( &
+                    var_str(example), &
+                    example, &
+                    var_str(SUCCESS_MESSAGE), &
+                    var_str(FAILURE_MESSAGE))
+            example_result_sscc = assertEquals( &
+                    var_str(example), &
+                    var_str(example), &
+                    SUCCESS_MESSAGE, &
+                    FAILURE_MESSAGE)
+            example_result_sscs = assertEquals( &
+                    var_str(example), &
+                    var_str(example), &
+                    SUCCESS_MESSAGE, &
+                    var_str(FAILURE_MESSAGE))
+            example_result_sssc = assertEquals( &
+                    var_str(example), &
+                    var_str(example), &
+                    var_str(SUCCESS_MESSAGE), &
+                    FAILURE_MESSAGE)
             example_result_ssss = assertEquals( &
-                    var_str(example), var_str(example), var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
+                    var_str(example), &
+                    var_str(example), &
+                    var_str(SUCCESS_MESSAGE), &
+                    var_str(FAILURE_MESSAGE))
             result_ = &
                     assertThat( &
                             example_result_cc%passed(), &
@@ -218,31 +289,102 @@ contains
         example_result_cs = assertEquals(ONE_STRNIG, var_str(OTHER_STRING))
         example_result_sc = assertEquals(var_str(ONE_STRNIG), OTHER_STRING)
         example_result_ss = assertEquals(var_str(ONE_STRNIG), var_str(OTHER_STRING))
-        example_result_ccc = assertEquals(ONE_STRNIG, OTHER_STRING, BOTH_MESSAGE)
-        example_result_ccs = assertEquals(ONE_STRNIG, OTHER_STRING, var_str(BOTH_MESSAGE))
-        example_result_csc = assertEquals(ONE_STRNIG, var_str(OTHER_STRING), BOTH_MESSAGE)
-        example_result_css = assertEquals(ONE_STRNIG, var_str(OTHER_STRING), var_str(BOTH_MESSAGE))
-        example_result_scc = assertEquals(var_str(ONE_STRNIG), OTHER_STRING, BOTH_MESSAGE)
-        example_result_scs = assertEquals(var_str(ONE_STRNIG), OTHER_STRING, var_str(BOTH_MESSAGE))
-        example_result_ssc = assertEquals(var_str(ONE_STRNIG), var_str(OTHER_STRING), BOTH_MESSAGE)
-        example_result_sss = assertEquals(var_str(ONE_STRNIG), var_str(OTHER_STRING), var_str(BOTH_MESSAGE))
-        example_result_cccc = assertEquals(ONE_STRNIG, OTHER_STRING, SUCCESS_MESSAGE, FAILURE_MESSAGE)
-        example_result_cccs = assertEquals(ONE_STRNIG, OTHER_STRING, SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
-        example_result_ccsc = assertEquals(ONE_STRNIG, OTHER_STRING, var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
-        example_result_ccss = assertEquals(ONE_STRNIG, OTHER_STRING, var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
-        example_result_cscc = assertEquals(ONE_STRNIG, var_str(OTHER_STRING), SUCCESS_MESSAGE, FAILURE_MESSAGE)
-        example_result_cscs = assertEquals(ONE_STRNIG, var_str(OTHER_STRING), SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
-        example_result_cssc = assertEquals(ONE_STRNIG, var_str(OTHER_STRING), var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
-        example_result_csss = assertEquals(ONE_STRNIG, var_str(OTHER_STRING), var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
-        example_result_sccc = assertEquals(var_str(ONE_STRNIG), OTHER_STRING, SUCCESS_MESSAGE, FAILURE_MESSAGE)
-        example_result_sccs = assertEquals(var_str(ONE_STRNIG), OTHER_STRING, SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
-        example_result_scsc = assertEquals(var_str(ONE_STRNIG), OTHER_STRING, var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
-        example_result_scss = assertEquals(var_str(ONE_STRNIG), OTHER_STRING, var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
-        example_result_sscc = assertEquals(var_str(ONE_STRNIG), var_str(OTHER_STRING), SUCCESS_MESSAGE, FAILURE_MESSAGE)
-        example_result_sscs = assertEquals(var_str(ONE_STRNIG), var_str(OTHER_STRING), SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
-        example_result_sssc = assertEquals(var_str(ONE_STRNIG), var_str(OTHER_STRING), var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
+        example_result_ccc = assertEquals( &
+                ONE_STRNIG, OTHER_STRING, BOTH_MESSAGE)
+        example_result_ccs = assertEquals( &
+                ONE_STRNIG, OTHER_STRING, var_str(BOTH_MESSAGE))
+        example_result_csc = assertEquals( &
+                ONE_STRNIG, var_str(OTHER_STRING), BOTH_MESSAGE)
+        example_result_css = assertEquals( &
+                ONE_STRNIG, var_str(OTHER_STRING), var_str(BOTH_MESSAGE))
+        example_result_scc = assertEquals( &
+                var_str(ONE_STRNIG), OTHER_STRING, BOTH_MESSAGE)
+        example_result_scs = assertEquals( &
+                var_str(ONE_STRNIG), OTHER_STRING, var_str(BOTH_MESSAGE))
+        example_result_ssc = assertEquals( &
+                var_str(ONE_STRNIG), var_str(OTHER_STRING), BOTH_MESSAGE)
+        example_result_sss = assertEquals( &
+                var_str(ONE_STRNIG), var_str(OTHER_STRING), var_str(BOTH_MESSAGE))
+        example_result_cccc = assertEquals( &
+                ONE_STRNIG, &
+                OTHER_STRING, &
+                SUCCESS_MESSAGE, &
+                FAILURE_MESSAGE)
+        example_result_cccs = assertEquals( &
+                ONE_STRNIG, &
+                OTHER_STRING, &
+                SUCCESS_MESSAGE, &
+                var_str(FAILURE_MESSAGE))
+        example_result_ccsc = assertEquals( &
+                ONE_STRNIG, &
+                OTHER_STRING, &
+                var_str(SUCCESS_MESSAGE), &
+                FAILURE_MESSAGE)
+        example_result_ccss = assertEquals( &
+                ONE_STRNIG, &
+                OTHER_STRING, &
+                var_str(SUCCESS_MESSAGE), &
+                var_str(FAILURE_MESSAGE))
+        example_result_cscc = assertEquals( &
+                ONE_STRNIG, &
+                var_str(OTHER_STRING), &
+                SUCCESS_MESSAGE, &
+                FAILURE_MESSAGE)
+        example_result_cscs = assertEquals( &
+                ONE_STRNIG, &
+                var_str(OTHER_STRING), &
+                SUCCESS_MESSAGE, &
+                var_str(FAILURE_MESSAGE))
+        example_result_cssc = assertEquals( &
+                ONE_STRNIG, &
+                var_str(OTHER_STRING), &
+                var_str(SUCCESS_MESSAGE), &
+                FAILURE_MESSAGE)
+        example_result_csss = assertEquals( &
+                ONE_STRNIG, &
+                var_str(OTHER_STRING), &
+                var_str(SUCCESS_MESSAGE), &
+                var_str(FAILURE_MESSAGE))
+        example_result_sccc = assertEquals( &
+                var_str(ONE_STRNIG), &
+                OTHER_STRING, &
+                SUCCESS_MESSAGE, &
+                FAILURE_MESSAGE)
+        example_result_sccs = assertEquals( &
+                var_str(ONE_STRNIG), &
+                OTHER_STRING, &
+                SUCCESS_MESSAGE, &
+                var_str(FAILURE_MESSAGE))
+        example_result_scsc = assertEquals( &
+                var_str(ONE_STRNIG), &
+                OTHER_STRING, &
+                var_str(SUCCESS_MESSAGE), &
+                FAILURE_MESSAGE)
+        example_result_scss = assertEquals( &
+                var_str(ONE_STRNIG), &
+                OTHER_STRING, &
+                var_str(SUCCESS_MESSAGE), &
+                var_str(FAILURE_MESSAGE))
+        example_result_sscc = assertEquals( &
+                var_str(ONE_STRNIG), &
+                var_str(OTHER_STRING), &
+                SUCCESS_MESSAGE, &
+                FAILURE_MESSAGE)
+        example_result_sscs = assertEquals( &
+                var_str(ONE_STRNIG), &
+                var_str(OTHER_STRING), &
+                SUCCESS_MESSAGE, &
+                var_str(FAILURE_MESSAGE))
+        example_result_sssc = assertEquals( &
+                var_str(ONE_STRNIG), &
+                var_str(OTHER_STRING), &
+                var_str(SUCCESS_MESSAGE), &
+                FAILURE_MESSAGE)
         example_result_ssss = assertEquals( &
-                var_str(ONE_STRNIG), var_str(OTHER_STRING), var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
+                var_str(ONE_STRNIG), &
+                var_str(OTHER_STRING), &
+                var_str(SUCCESS_MESSAGE), &
+                var_str(FAILURE_MESSAGE))
 
         result_ = &
                 assertNot( &

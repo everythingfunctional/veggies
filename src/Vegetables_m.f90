@@ -400,9 +400,34 @@ module Vegetables_m
     end interface operator(.includes.)
 
     interface assertDoesntInclude
-        module procedure assertDoesntIncludeBasic
-        module procedure assertDoesntIncludeWithMessage
-        module procedure assertDoesntIncludeWithMessages
+        module procedure assertDoesntIncludeCC
+        module procedure assertDoesntIncludeCS
+        module procedure assertDoesntIncludeSC
+        module procedure assertDoesntIncludeSS
+        module procedure assertDoesntIncludeWithMessageCCC
+        module procedure assertDoesntIncludeWithMessageCCS
+        module procedure assertDoesntIncludeWithMessageCSC
+        module procedure assertDoesntIncludeWithMessageCSS
+        module procedure assertDoesntIncludeWithMessageSCC
+        module procedure assertDoesntIncludeWithMessageSCS
+        module procedure assertDoesntIncludeWithMessageSSC
+        module procedure assertDoesntIncludeWithMessageSSS
+        module procedure assertDoesntIncludeWithMessagesCCCC
+        module procedure assertDoesntIncludeWithMessagesCCCS
+        module procedure assertDoesntIncludeWithMessagesCCSC
+        module procedure assertDoesntIncludeWithMessagesCCSS
+        module procedure assertDoesntIncludeWithMessagesCSCC
+        module procedure assertDoesntIncludeWithMessagesCSCS
+        module procedure assertDoesntIncludeWithMessagesCSSC
+        module procedure assertDoesntIncludeWithMessagesCSSS
+        module procedure assertDoesntIncludeWithMessagesSCCC
+        module procedure assertDoesntIncludeWithMessagesSCCS
+        module procedure assertDoesntIncludeWithMessagesSCSC
+        module procedure assertDoesntIncludeWithMessagesSCSS
+        module procedure assertDoesntIncludeWithMessagesSSCC
+        module procedure assertDoesntIncludeWithMessagesSSCS
+        module procedure assertDoesntIncludeWithMessagesSSSC
+        module procedure assertDoesntIncludeWithMessagesSSSS
     end interface assertDoesntInclude
 
     interface assertEmpty
@@ -568,15 +593,39 @@ module Vegetables_m
             Transformed, &
             when
 contains
-    pure function assertDoesntIncludeBasic(search_for, string) result(result__)
+    pure function assertDoesntIncludeCC(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
         result__ = assertDoesntInclude(search_for, string, "", "")
-    end function assertDoesntIncludeBasic
+    end function assertDoesntIncludeCC
 
-    pure function assertDoesntIncludeWithMessage( &
+    pure function assertDoesntIncludeCS(search_for, string) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, char(string), "", "")
+    end function assertDoesntIncludeCS
+
+    pure function assertDoesntIncludeSC(search_for, string) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), string, "", "")
+    end function assertDoesntIncludeSC
+
+    pure function assertDoesntIncludeSS(search_for, string) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), char(string), "", "")
+    end function assertDoesntIncludeSS
+
+    pure function assertDoesntIncludeWithMessageCCC( &
             search_for, string, message) result(result__)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -584,9 +633,79 @@ contains
         type(Result_t) :: result__
 
         result__ = assertDoesntInclude(search_for, string, message, message)
-    end function assertDoesntIncludeWithMessage
+    end function assertDoesntIncludeWithMessageCCC
 
-    pure function assertDoesntIncludeWithMessages( &
+    pure function assertDoesntIncludeWithMessageCCS( &
+            search_for, string, message) result(result__)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, string, char(message), char(message))
+    end function assertDoesntIncludeWithMessageCCS
+
+    pure function assertDoesntIncludeWithMessageCSC( &
+            search_for, string, message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, char(string), message, message)
+    end function assertDoesntIncludeWithMessageCSC
+
+    pure function assertDoesntIncludeWithMessageCSS( &
+            search_for, string, message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, char(string), char(message), char(message))
+    end function assertDoesntIncludeWithMessageCSS
+
+    pure function assertDoesntIncludeWithMessageSCC( &
+            search_for, string, message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), string, message, message)
+    end function assertDoesntIncludeWithMessageSCC
+
+    pure function assertDoesntIncludeWithMessageSCS( &
+            search_for, string, message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), string, char(message), char(message))
+    end function assertDoesntIncludeWithMessageSCS
+
+    pure function assertDoesntIncludeWithMessageSSC( &
+            search_for, string, message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), char(string), message, message)
+    end function assertDoesntIncludeWithMessageSSC
+
+    pure function assertDoesntIncludeWithMessageSSS( &
+            search_for, string, message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), char(string), char(message), char(message))
+    end function assertDoesntIncludeWithMessageSSS
+
+    pure function assertDoesntIncludeWithMessagesCCCC( &
             search_for, string, success_message, failure_message) result(result__)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -603,7 +722,172 @@ contains
                     makeDoesntIncludeFailureMessage(search_for, string), &
                     failure_message))
         end if
-    end function assertDoesntIncludeWithMessages
+    end function assertDoesntIncludeWithMessagesCCCC
+
+    pure function assertDoesntIncludeWithMessagesCCCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, string, success_message, char(failure_message))
+    end function assertDoesntIncludeWithMessagesCCCS
+
+    pure function assertDoesntIncludeWithMessagesCCSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, string, char(success_message), failure_message)
+    end function assertDoesntIncludeWithMessagesCCSC
+
+    pure function assertDoesntIncludeWithMessagesCCSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, string, char(success_message), char(failure_message))
+    end function assertDoesntIncludeWithMessagesCCSS
+
+    pure function assertDoesntIncludeWithMessagesCSCC( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, char(string), success_message, failure_message)
+    end function assertDoesntIncludeWithMessagesCSCC
+
+    pure function assertDoesntIncludeWithMessagesCSCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, char(string), success_message, char(failure_message))
+    end function assertDoesntIncludeWithMessagesCSCS
+
+    pure function assertDoesntIncludeWithMessagesCSSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, char(string), char(success_message), failure_message)
+    end function assertDoesntIncludeWithMessagesCSSC
+
+    pure function assertDoesntIncludeWithMessagesCSSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(search_for, char(string), char(success_message), char(failure_message))
+    end function assertDoesntIncludeWithMessagesCSSS
+
+    pure function assertDoesntIncludeWithMessagesSCCC( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), string, success_message, failure_message)
+    end function assertDoesntIncludeWithMessagesSCCC
+
+    pure function assertDoesntIncludeWithMessagesSCCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), string, success_message, char(failure_message))
+    end function assertDoesntIncludeWithMessagesSCCS
+
+    pure function assertDoesntIncludeWithMessagesSCSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), string, char(success_message), failure_message)
+    end function assertDoesntIncludeWithMessagesSCSC
+
+    pure function assertDoesntIncludeWithMessagesSCSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), string, char(success_message), char(failure_message))
+    end function assertDoesntIncludeWithMessagesSCSS
+
+    pure function assertDoesntIncludeWithMessagesSSCC( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), char(string), success_message, failure_message)
+    end function assertDoesntIncludeWithMessagesSSCC
+
+    pure function assertDoesntIncludeWithMessagesSSCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), char(string), success_message, char(failure_message))
+    end function assertDoesntIncludeWithMessagesSSCS
+
+    pure function assertDoesntIncludeWithMessagesSSSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), char(string), char(success_message), failure_message)
+    end function assertDoesntIncludeWithMessagesSSSC
+
+    pure function assertDoesntIncludeWithMessagesSSSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude(char(search_for), char(string), char(success_message), char(failure_message))
+    end function assertDoesntIncludeWithMessagesSSSS
 
     pure function assertEmptyBasic(string) result(result__)
         character(len=*), intent(in) :: string
