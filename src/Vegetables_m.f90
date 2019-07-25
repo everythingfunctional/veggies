@@ -1,4 +1,6 @@
 module Vegetables_m
+    use iso_varying_string
+
     implicit none
     private
 
