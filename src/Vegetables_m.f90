@@ -504,8 +504,12 @@ module Vegetables_m
 
     interface assertEqualsWithinRelative
         module procedure assertEqualsWithinRelativeBasic
-        module procedure assertEqualsWithinRelativeWithMessage
-        module procedure assertEqualsWithinRelativeWithMessages
+        module procedure assertEqualsWithinRelativeWithMessageC
+        module procedure assertEqualsWithinRelativeWithMessageS
+        module procedure assertEqualsWithinRelativeWithMessagesCC
+        module procedure assertEqualsWithinRelativeWithMessagesCS
+        module procedure assertEqualsWithinRelativeWithMessagesSC
+        module procedure assertEqualsWithinRelativeWithMessagesSS
     end interface assertEqualsWithinRelative
 
     interface assertIncludes
@@ -1543,7 +1547,7 @@ contains
         result__ = assertEqualsWithinRelative(expected, actual, tolerance, "", "")
     end function assertEqualsWithinRelativeBasic
 
-    pure function assertEqualsWithinRelativeWithMessage( &
+    pure function assertEqualsWithinRelativeWithMessageC( &
             expected, actual, tolerance, message) result(result__)
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
@@ -1553,9 +1557,21 @@ contains
 
         result__ = assertEqualsWithinRelative( &
                 expected, actual, tolerance, message, message)
-    end function assertEqualsWithinRelativeWithMessage
+    end function assertEqualsWithinRelativeWithMessageC
 
-    pure function assertEqualsWithinRelativeWithMessages( &
+    pure function assertEqualsWithinRelativeWithMessageS( &
+            expected, actual, tolerance, message) result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, actual, tolerance, char(message), char(message))
+    end function assertEqualsWithinRelativeWithMessageS
+
+    pure function assertEqualsWithinRelativeWithMessagesCC( &
             expected, &
             actual, &
             tolerance, &
@@ -1584,7 +1600,61 @@ contains
                             toCharacter(tolerance * 100.0_dp) // "%"), &
                     failure_message))
         end if
-    end function assertEqualsWithinRelativeWithMessages
+    end function assertEqualsWithinRelativeWithMessagesCC
+
+    pure function assertEqualsWithinRelativeWithMessagesCS( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, actual, tolerance, success_message, char(failure_message))
+    end function assertEqualsWithinRelativeWithMessagesCS
+
+    pure function assertEqualsWithinRelativeWithMessagesSC( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, actual, tolerance, char(success_message), failure_message)
+    end function assertEqualsWithinRelativeWithMessagesSC
+
+    pure function assertEqualsWithinRelativeWithMessagesSS( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, actual, tolerance, char(success_message), char(failure_message))
+    end function assertEqualsWithinRelativeWithMessagesSS
 
     pure function assertEqualsInteger(expected, actual) result(result__)
         integer, intent(in) :: expected
