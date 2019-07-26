@@ -545,8 +545,12 @@ module Vegetables_m
 
     interface assertNot
         module procedure assertNotBasic
-        module procedure assertNotWithMessage
-        module procedure assertNotWithMessages
+        module procedure assertNotWithMessageC
+        module procedure assertNotWithMessageS
+        module procedure assertNotWithMessagesCC
+        module procedure assertNotWithMessagesCS
+        module procedure assertNotWithMessagesSC
+        module procedure assertNotWithMessagesSS
     end interface assertNot
 
     interface assertThat
@@ -2080,15 +2084,23 @@ contains
         result__ = assertNot(condition, "", "")
     end function assertNotBasic
 
-    pure function assertNotWithMessage(condition, message) result(result__)
+    pure function assertNotWithMessageC(condition, message) result(result__)
         logical, intent(in) :: condition
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
         result__ = assertNot(condition, message, message)
-    end function assertNotWithMessage
+    end function assertNotWithMessageC
 
-    pure function assertNotWithMessages( &
+    pure function assertNotWithMessageS(condition, message) result(result__)
+        logical, intent(in) :: condition
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertNot(condition, char(message), char(message))
+    end function assertNotWithMessageS
+
+    pure function assertNotWithMessagesCC( &
             condition, success_message, failure_message) result(result__)
         logical, intent(in) :: condition
         character(len=*), intent(in) :: success_message
@@ -2102,7 +2114,37 @@ contains
             result__ = fail(withUserMessage( &
                     NOT_FAILURE_MESSAGE, failure_message))
         end if
-    end function assertNotWithMessages
+    end function assertNotWithMessagesCC
+
+    pure function assertNotWithMessagesCS( &
+            condition, success_message, failure_message) result(result__)
+        logical, intent(in) :: condition
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertNot(condition, success_message, char(failure_message))
+    end function assertNotWithMessagesCS
+
+    pure function assertNotWithMessagesSC( &
+            condition, success_message, failure_message) result(result__)
+        logical, intent(in) :: condition
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertNot(condition, char(success_message), failure_message)
+    end function assertNotWithMessagesSC
+
+    pure function assertNotWithMessagesSS( &
+            condition, success_message, failure_message) result(result__)
+        logical, intent(in) :: condition
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertNot(condition, char(success_message), char(failure_message))
+    end function assertNotWithMessagesSS
 
     pure function assertThatBasic(condition) result(result__)
         logical, intent(in) :: condition
