@@ -555,8 +555,12 @@ module Vegetables_m
 
     interface assertThat
         module procedure assertThatBasic
-        module procedure assertThatWithMessage
-        module procedure assertThatWithMessages
+        module procedure assertThatWithMessageC
+        module procedure assertThatWithMessageS
+        module procedure assertThatWithMessagesCC
+        module procedure assertThatWithMessagesCS
+        module procedure assertThatWithMessagesSC
+        module procedure assertThatWithMessagesSS
     end interface assertThat
 
     interface describe
@@ -2153,15 +2157,23 @@ contains
         result__ = assertThat(condition, "", "")
     end function assertThatBasic
 
-    pure function assertThatWithMessage(condition, message) result(result__)
+    pure function assertThatWithMessageC(condition, message) result(result__)
         logical, intent(in) :: condition
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
         result__ = assertThat(condition, message, message)
-    end function assertThatWithMessage
+    end function assertThatWithMessageC
 
-    pure function assertThatWithMessages( &
+    pure function assertThatWithMessageS(condition, message) result(result__)
+        logical, intent(in) :: condition
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertThat(condition, char(message), char(message))
+    end function assertThatWithMessageS
+
+    pure function assertThatWithMessagesCC( &
             condition, success_message, failure_message) result(result__)
         logical, intent(in) :: condition
         character(len=*), intent(in) :: success_message
@@ -2175,7 +2187,37 @@ contains
             result__ = fail(withUserMessage( &
                     THAT_FAILURE_MESSAGE, failure_message))
         end if
-    end function assertThatWithMessages
+    end function assertThatWithMessagesCC
+
+    pure function assertThatWithMessagesCS( &
+            condition, success_message, failure_message) result(result__)
+        logical, intent(in) :: condition
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertThat(condition, success_message, char(failure_message))
+    end function assertThatWithMessagesCS
+
+    pure function assertThatWithMessagesSC( &
+            condition, success_message, failure_message) result(result__)
+        logical, intent(in) :: condition
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertThat(condition, char(success_message), failure_message)
+    end function assertThatWithMessagesSC
+
+    pure function assertThatWithMessagesSS( &
+            condition, success_message, failure_message) result(result__)
+        logical, intent(in) :: condition
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertThat(condition, char(success_message), char(failure_message))
+    end function assertThatWithMessagesSS
 
     pure function combineResults(lhs, rhs) result(combined)
         class(Result_t), intent(in) :: lhs
