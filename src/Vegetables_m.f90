@@ -568,6 +568,11 @@ module Vegetables_m
         module procedure describeWithInput
     end interface describe
 
+    interface fail
+        module procedure failC
+        module procedure failS
+    end interface fail
+
     interface given
         module procedure givenBasic
         module procedure givenWithInput
@@ -589,6 +594,11 @@ module Vegetables_m
         module procedure JustTestItem
         module procedure JustTransformingTestCollection
     end interface Just
+
+    interface succeed
+        module procedure succeedC
+        module procedure succeedS
+    end interface succeed
 
     interface toCharacter
         module procedure doublePrecisionToCharacter
@@ -2354,12 +2364,19 @@ contains
         Example%value_ = value_
     end function Example
 
-    pure function fail(message) result(failure)
+    pure function failC(message) result(failure)
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
 
         failure = Result_(IndividualResult(message, .false.))
-    end function fail
+    end function failC
+
+    pure function failS(message) result(failure)
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: failure
+
+        failure = Result_(IndividualResult(char(message), .false.))
+    end function failS
 
     pure function filterInputTestCase(self, filter_string) result(maybe)
         class(InputTestCase_t), intent(in) :: self
@@ -3688,12 +3705,19 @@ contains
         end function doSplit
     end function splitAt
 
-    pure function succeed(message) result(success)
+    pure function succeedC(message) result(success)
         character(len=*), intent(in) :: message
         type(Result_t) :: success
 
         success = Result_(IndividualResult(message, .true.))
-    end function succeed
+    end function succeedC
+
+    pure function succeedS(message) result(success)
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: success
+
+        success = Result_(IndividualResult(char(message), .true.))
+    end function succeedS
 
     function TestCase(description, func) result(test_case)
         character(len=*), intent(in) :: description
