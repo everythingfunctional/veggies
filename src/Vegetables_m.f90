@@ -513,9 +513,34 @@ module Vegetables_m
     end interface assertEqualsWithinRelative
 
     interface assertIncludes
-        module procedure assertIncludesBasic
-        module procedure assertIncludesWithMessage
-        module procedure assertIncludesWithMessages
+        module procedure assertIncludesCC
+        module procedure assertIncludesCS
+        module procedure assertIncludesSC
+        module procedure assertIncludesSS
+        module procedure assertIncludesWithMessageCCC
+        module procedure assertIncludesWithMessageCCS
+        module procedure assertIncludesWithMessageCSC
+        module procedure assertIncludesWithMessageCSS
+        module procedure assertIncludesWithMessageSCC
+        module procedure assertIncludesWithMessageSCS
+        module procedure assertIncludesWithMessageSSC
+        module procedure assertIncludesWithMessageSSS
+        module procedure assertIncludesWithMessagesCCCC
+        module procedure assertIncludesWithMessagesCCCS
+        module procedure assertIncludesWithMessagesCCSC
+        module procedure assertIncludesWithMessagesCCSS
+        module procedure assertIncludesWithMessagesCSCC
+        module procedure assertIncludesWithMessagesCSCS
+        module procedure assertIncludesWithMessagesCSSC
+        module procedure assertIncludesWithMessagesCSSS
+        module procedure assertIncludesWithMessagesSCCC
+        module procedure assertIncludesWithMessagesSCCS
+        module procedure assertIncludesWithMessagesSCSC
+        module procedure assertIncludesWithMessagesSCSS
+        module procedure assertIncludesWithMessagesSSCC
+        module procedure assertIncludesWithMessagesSSCS
+        module procedure assertIncludesWithMessagesSSSC
+        module procedure assertIncludesWithMessagesSSSS
     end interface assertIncludes
 
     interface assertNot
@@ -1737,15 +1762,39 @@ contains
         result__ = assertEquals(expected, actual, char(success_message), char(failure_message))
     end function assertEqualsIntegerWithMessagesSS
 
-    pure function assertIncludesBasic(search_for, string) result(result__)
+    pure function assertIncludesCC(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
         result__ = assertIncludes(search_for, string, "", "")
-    end function assertIncludesBasic
+    end function assertIncludesCC
 
-    pure function assertIncludesWithMessage( &
+    pure function assertIncludesCS(search_for, string) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(search_for, char(string), "", "")
+    end function assertIncludesCS
+
+    pure function assertIncludesSC(search_for, string) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(char(search_for), string, "", "")
+    end function assertIncludesSC
+
+    pure function assertIncludesSS(search_for, string) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(char(search_for), char(string), "", "")
+    end function assertIncludesSS
+
+    pure function assertIncludesWithMessageCCC( &
             search_for, string, message) result(result__)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -1753,9 +1802,79 @@ contains
         type(Result_t) :: result__
 
         result__ = assertIncludes(search_for, string, message, message)
-    end function assertIncludesWithMessage
+    end function assertIncludesWithMessageCCC
 
-    pure function assertIncludesWithMessages( &
+    pure function assertIncludesWithMessageCCS( &
+            search_for, string, message) result(result__)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(search_for, string, char(message), char(message))
+    end function assertIncludesWithMessageCCS
+
+    pure function assertIncludesWithMessageCSC( &
+            search_for, string, message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(search_for, char(string), message, message)
+    end function assertIncludesWithMessageCSC
+
+    pure function assertIncludesWithMessageCSS( &
+            search_for, string, message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(search_for, char(string), char(message), char(message))
+    end function assertIncludesWithMessageCSS
+
+    pure function assertIncludesWithMessageSCC( &
+            search_for, string, message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(char(search_for), string, message, message)
+    end function assertIncludesWithMessageSCC
+
+    pure function assertIncludesWithMessageSCS( &
+            search_for, string, message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(char(search_for), string, char(message), char(message))
+    end function assertIncludesWithMessageSCS
+
+    pure function assertIncludesWithMessageSSC( &
+            search_for, string, message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(char(search_for), char(string), message, message)
+    end function assertIncludesWithMessageSSC
+
+    pure function assertIncludesWithMessageSSS( &
+            search_for, string, message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes(char(search_for), char(string), char(message), char(message))
+    end function assertIncludesWithMessageSSS
+
+    pure function assertIncludesWithMessagesCCCC( &
             search_for, string, success_message, failure_message) result(result__)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -1772,7 +1891,187 @@ contains
                     makeIncludesFailureMessage(search_for, string), &
                     failure_message))
         end if
-    end function assertIncludesWithMessages
+    end function assertIncludesWithMessagesCCCC
+
+    pure function assertIncludesWithMessagesCCCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, string, success_message, char(failure_message))
+    end function assertIncludesWithMessagesCCCS
+
+    pure function assertIncludesWithMessagesCCSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, string, char(success_message), failure_message)
+    end function assertIncludesWithMessagesCCSC
+
+    pure function assertIncludesWithMessagesCCSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, string, char(success_message), char(failure_message))
+    end function assertIncludesWithMessagesCCSS
+
+    pure function assertIncludesWithMessagesCSCC( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, char(string), success_message, failure_message)
+    end function assertIncludesWithMessagesCSCC
+
+    pure function assertIncludesWithMessagesCSCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, char(string), success_message, char(failure_message))
+    end function assertIncludesWithMessagesCSCS
+
+    pure function assertIncludesWithMessagesCSSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, char(string), char(success_message), failure_message)
+    end function assertIncludesWithMessagesCSSC
+
+    pure function assertIncludesWithMessagesCSSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, char(string), char(success_message), char(failure_message))
+    end function assertIncludesWithMessagesCSSS
+
+    pure function assertIncludesWithMessagesSCCC( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                char(search_for), string, success_message, failure_message)
+    end function assertIncludesWithMessagesSCCC
+
+    pure function assertIncludesWithMessagesSCCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                char(search_for), string, success_message, char(failure_message))
+    end function assertIncludesWithMessagesSCCS
+
+    pure function assertIncludesWithMessagesSCSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                char(search_for), string, char(success_message), failure_message)
+    end function assertIncludesWithMessagesSCSC
+
+    pure function assertIncludesWithMessagesSCSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                char(search_for), string, char(success_message), char(failure_message))
+    end function assertIncludesWithMessagesSCSS
+
+    pure function assertIncludesWithMessagesSSCC( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                char(search_for), char(string), success_message, failure_message)
+    end function assertIncludesWithMessagesSSCC
+
+    pure function assertIncludesWithMessagesSSCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                char(search_for), char(string), success_message, char(failure_message))
+    end function assertIncludesWithMessagesSSCS
+
+    pure function assertIncludesWithMessagesSSSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                char(search_for), char(string), char(success_message), failure_message)
+    end function assertIncludesWithMessagesSSSC
+
+    pure function assertIncludesWithMessagesSSSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                char(search_for), char(string), char(success_message), char(failure_message))
+    end function assertIncludesWithMessagesSSSS
 
     pure function assertNotBasic(condition) result(result__)
         logical, intent(in) :: condition
