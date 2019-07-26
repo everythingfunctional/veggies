@@ -615,18 +615,18 @@ module Vegetables_m
     type(IntegerGenerator_t), parameter, public :: INTEGER_GENERATOR = IntegerGenerator_t()
 
     integer, parameter :: dp = kind(0.0d0)
-    character(len=*), parameter :: EMPTY_SUCCESS_MESSAGE = "String was empty"
+    character(len=*), parameter, public :: EMPTY_SUCCESS_MESSAGE = "String was empty"
     integer, parameter :: INDENTATION = 4
     double precision, parameter :: MACHINE_EPSILON = EPSILON(0.0_dp)
     double precision, parameter :: MACHINE_TINY = TINY(0.0_dp)
     integer, parameter :: MAX_INT = HUGE(1)
     character(len=*), parameter :: NEWLINE = NEW_LINE('A')
-    character(len=*), parameter :: NOT_FAILURE_MESSAGE = "Expected to not be true"
-    character(len=*), parameter :: NOT_SUCCESS_MESSAGE = "Was not true"
+    character(len=*), parameter, public :: NOT_FAILURE_MESSAGE = "Expected to not be true"
+    character(len=*), parameter, public :: NOT_SUCCESS_MESSAGE = "Was not true"
     type(Nothing_t), parameter :: NOTHING = Nothing_t()
     integer :: NUM_GENERATOR_TESTS = 100
-    character(len=*), parameter :: THAT_FAILURE_MESSAGE = "Expected to be true"
-    character(len=*), parameter :: THAT_SUCCESS_MESSAGE = "Was true"
+    character(len=*), parameter, public :: THAT_FAILURE_MESSAGE = "Expected to be true"
+    character(len=*), parameter, public :: THAT_SUCCESS_MESSAGE = "Was true"
 
     public :: &
             assertDoesntInclude, &
@@ -651,6 +651,15 @@ module Vegetables_m
             getRandomLogical, &
             it, &
             it_, &
+            makeDoesntIncludeFailureMessage, &
+            makeDoesntIncludeSuccessMessage, &
+            makeEmptyFailureMessage, &
+            makeEqualsFailureMessage, &
+            makeEqualsSuccessMessage, &
+            makeIncludesFailureMessage, &
+            makeIncludesSuccessMessage, &
+            makeWithinFailureMessage, &
+            makeWithinSuccesMessage, &
             runTests, &
             ShrunkValue, &
             SimplestValue, &
@@ -661,6 +670,7 @@ module Vegetables_m
             then, &
             then_, &
             Transformed, &
+            withUserMessage, &
             when
 contains
     pure function assertDoesntIncludeCC(search_for, string) result(result__)
