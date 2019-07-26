@@ -250,7 +250,7 @@ contains
     end function checkPassForDifferentStrings
 
     function checkFailForSameString(example) result(result_)
-        use iso_varying_string, only: var_str
+        use iso_varying_string, only: VARYING_STRING, char, var_str
         use Vegetables_m, only: Result_t, assertDoesntInclude, assertNot, fail
 
         class(*), intent(in) :: example
@@ -286,109 +286,109 @@ contains
         type(Result_t) :: example_result_ssss
 
         select type (example)
-        type is (character(len=*))
+        type is (VARYING_STRING)
             example_result_cc = assertDoesntInclude( &
-                    example, example)
+                    char(example), char(example))
             example_result_cs = assertDoesntInclude( &
-                    example, var_str(example))
+                    char(example), example)
             example_result_sc = assertDoesntInclude( &
-                    var_str(example), example)
+                    example, char(example))
             example_result_ss = assertDoesntInclude( &
-                    var_str(example), var_str(example))
+                    example, example)
             example_result_ccc = assertDoesntInclude( &
-                    example, example, BOTH_MESSAGE)
+                    char(example), char(example), BOTH_MESSAGE)
             example_result_ccs = assertDoesntInclude( &
-                    example, example, var_str(BOTH_MESSAGE))
+                    char(example), char(example), var_str(BOTH_MESSAGE))
             example_result_csc = assertDoesntInclude( &
-                    example, var_str(example), BOTH_MESSAGE)
+                    char(example), example, BOTH_MESSAGE)
             example_result_css = assertDoesntInclude( &
-                    example, var_str(example), var_str(BOTH_MESSAGE))
+                    char(example), example, var_str(BOTH_MESSAGE))
             example_result_scc = assertDoesntInclude( &
-                    var_str(example), example, BOTH_MESSAGE)
+                    example, char(example), BOTH_MESSAGE)
             example_result_scs = assertDoesntInclude( &
-                    var_str(example), example, var_str(BOTH_MESSAGE))
+                    example, char(example), var_str(BOTH_MESSAGE))
             example_result_ssc = assertDoesntInclude( &
-                    var_str(example), var_str(example), BOTH_MESSAGE)
+                    example, example, BOTH_MESSAGE)
             example_result_sss = assertDoesntInclude( &
-                    var_str(example), var_str(example), var_str(BOTH_MESSAGE))
+                    example, example, var_str(BOTH_MESSAGE))
             example_result_cccc = assertDoesntInclude( &
-                    example, &
-                    example, &
+                    char(example), &
+                    char(example), &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
             example_result_cccs = assertDoesntInclude( &
-                    example, &
-                    example, &
+                    char(example), &
+                    char(example), &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
             example_result_ccsc = assertDoesntInclude( &
-                    example, &
-                    example, &
+                    char(example), &
+                    char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
             example_result_ccss = assertDoesntInclude( &
-                    example, &
-                    example, &
+                    char(example), &
+                    char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
             example_result_cscc = assertDoesntInclude( &
+                    char(example), &
                     example, &
-                    var_str(example), &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
             example_result_cscs = assertDoesntInclude( &
+                    char(example), &
                     example, &
-                    var_str(example), &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
             example_result_cssc = assertDoesntInclude( &
+                    char(example), &
                     example, &
-                    var_str(example), &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
             example_result_csss = assertDoesntInclude( &
+                    char(example), &
                     example, &
-                    var_str(example), &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
             example_result_sccc = assertDoesntInclude( &
-                    var_str(example), &
                     example, &
+                    char(example), &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
             example_result_sccs = assertDoesntInclude( &
-                    var_str(example), &
                     example, &
+                    char(example), &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
             example_result_scsc = assertDoesntInclude( &
-                    var_str(example), &
                     example, &
+                    char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
             example_result_scss = assertDoesntInclude( &
-                    var_str(example), &
                     example, &
+                    char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
             example_result_sscc = assertDoesntInclude( &
-                    var_str(example), &
-                    var_str(example), &
+                    example, &
+                    example, &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
             example_result_sscs = assertDoesntInclude( &
-                    var_str(example), &
-                    var_str(example), &
+                    example, &
+                    example, &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
             example_result_sssc = assertDoesntInclude( &
-                    var_str(example), &
-                    var_str(example), &
+                    example, &
+                    example, &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
             example_result_ssss = assertDoesntInclude( &
-                    var_str(example), &
-                    var_str(example), &
+                    example, &
+                    example, &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
             result_ = &
@@ -477,7 +477,7 @@ contains
                             example_result_ssss%passed(), &
                             example_result_ssss%verboseDescription(.false.))
         class default
-            result_ = fail("Expected a character string")
+            result_ = fail("Expected a VARYING_STRING")
         end select
     end function checkFailForSameString
 end module assert_doesnt_include_test

@@ -32,6 +32,13 @@ module Vegetables_m
         procedure(shrink_), public, nopass, deferred :: shrink
     end type Generator_t
 
+    type, public, extends(Generator_t) :: AsciiCharactersGenerator_t
+    contains
+        private
+        procedure, public :: generate => generateAsciiCharacters
+        procedure, public, nopass :: shrink => shrinkAsciiCharacters
+    end type AsciiCharactersGenerator_t
+
     type, public, extends(Generator_t) :: AsciiStringGenerator_t
     contains
         private
@@ -618,8 +625,12 @@ module Vegetables_m
         module procedure whenWithTransformer
     end interface
 
-    type(AsciiStringGenerator_t), parameter, public :: ASCII_STRING_GENERATOR = AsciiStringGenerator_t()
-    type(IntegerGenerator_t), parameter, public :: INTEGER_GENERATOR = IntegerGenerator_t()
+    type(AsciiCharactersGenerator_t), parameter, public :: &
+            ASCII_CHARACTERS_GENERATOR = AsciiCharactersGenerator_t()
+    type(AsciiStringGenerator_t), parameter, public :: &
+            ASCII_STRING_GENERATOR = AsciiStringGenerator_t()
+    type(IntegerGenerator_t), parameter, public :: &
+            INTEGER_GENERATOR = IntegerGenerator_t()
 
     integer, parameter :: dp = kind(0.0d0)
     character(len=*), parameter, public :: EMPTY_SUCCESS_MESSAGE = "String was empty"
@@ -650,7 +661,10 @@ module Vegetables_m
             Generated, &
             given, &
             getRandomAsciiCharacter, &
+            getRandomAsciiCharacters, &
+            getRandomAsciiCharactersWithMaxLength, &
             getRandomAsciiString, &
+            getRandomAsciiStringWithMaxLength, &
             getRandomDoublePrecisionWithMagnitude, &
             getRandomDoublePrecisionWithRange, &
             getRandomInteger, &
@@ -2607,6 +2621,15 @@ contains
         end select
     end function Generated
 
+    function generateAsciiCharacters(self) result(generated_value)
+        class(AsciiCharactersGenerator_t), intent(in) :: self
+        type(Generated_t) :: generated_value
+
+        associate(a => self)
+        end associate
+        generated_value = Generated(getRandomAsciiCharacters())
+    end function generateAsciiCharacters
+
     function generateAsciiString(self) result(generated_value)
         class(AsciiStringGenerator_t), intent(in) :: self
         type(Generated_t) :: generated_value
@@ -2717,13 +2740,13 @@ contains
         random_character = ASCII_CHARACTERS(which_character:which_character)
     end function getRandomAsciiCharacter
 
-    function getRandomAsciiString() result(random_string)
+    function getRandomAsciiCharacters() result(random_string)
         character(len=:), allocatable :: random_string
 
-        random_string = getRandomAsciiStringWithMaxLength(1024)
-    end function getRandomAsciiString
+        random_string = getRandomAsciiCharactersWithMaxLength(1024)
+    end function getRandomAsciiCharacters
 
-    function getRandomAsciiStringWithMaxLength(max_length) result(random_string)
+    function getRandomAsciiCharactersWithMaxLength(max_length) result(random_string)
         integer, intent(in) :: max_length
         character(len=:), allocatable :: random_string
 
@@ -2735,6 +2758,19 @@ contains
         do i = 1, num_characters
             random_string(i:i) = getRandomAsciiCharacter()
         end do
+    end function getRandomAsciiCharactersWithMaxLength
+
+    function getRandomAsciiString() result(random_string)
+        type(VARYING_STRING) :: random_string
+
+        random_string = getRandomAsciiStringWithMaxLength(1024)
+    end function getRandomAsciiString
+
+    function getRandomAsciiStringWithMaxLength(max_length) result(random_string)
+        integer, intent(in) :: max_length
+        type(VARYING_STRING) :: random_string
+
+        random_string = getRandomAsciiCharactersWithMaxLength(max_length)
     end function getRandomAsciiStringWithMaxLength
 
     function getRandomDoublePrecisionWithMagnitude(magnitude) result(random_double)
@@ -3620,7 +3656,7 @@ contains
         end select
     end function runTransformingCollection
 
-    pure function shrinkAsciiString(value_) result(shrunk)
+    pure function shrinkAsciiCharacters(value_) result(shrunk)
         class(*), intent(in) :: value_
         class(ShrinkResult_t), allocatable :: shrunk
 
@@ -3630,6 +3666,20 @@ contains
                 allocate(shrunk, source = SimplestValue(""))
             else
                 allocate(shrunk, source = ShrunkValue(value_(1:len(value_)-1)))
+            end if
+        end select
+    end function shrinkAsciiCharacters
+
+    pure function shrinkAsciiString(value_) result(shrunk)
+        class(*), intent(in) :: value_
+        class(ShrinkResult_t), allocatable :: shrunk
+
+        select type (value_)
+        type is (VARYING_STRING)
+            if (len(value_) <= 1) then
+                allocate(shrunk, source = SimplestValue(var_str("")))
+            else
+                allocate(shrunk, source = ShrunkValue(extract(value_, 1, len(value_)-1)))
             end if
         end select
     end function shrinkAsciiString

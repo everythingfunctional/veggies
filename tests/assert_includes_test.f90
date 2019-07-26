@@ -21,7 +21,7 @@ contains
     end function test_assert_includes
 
     function checkPassForSameStrings(example) result(result_)
-        use iso_varying_string, only: var_str
+        use iso_varying_string, only: VARYING_STRING, char, var_str
         use Vegetables_m, only: Result_t, assertIncludes, assertThat, fail
 
         class(*), intent(in) :: example
@@ -57,105 +57,105 @@ contains
         type(Result_t) :: example_result_ssss
 
         select type (example)
-        type is (character(len=*))
-            example_result_cc = assertIncludes(example, example)
-            example_result_cs = assertIncludes(example, var_str(example))
-            example_result_sc = assertIncludes(var_str(example), example)
-            example_result_ss = assertIncludes(var_str(example), var_str(example))
+        type is (VARYING_STRING)
+            example_result_cc = assertIncludes(char(example), char(example))
+            example_result_cs = assertIncludes(char(example), example)
+            example_result_sc = assertIncludes(example, char(example))
+            example_result_ss = assertIncludes(example, example)
             example_result_ccc = assertIncludes( &
-                    example, example, BOTH_MESSAGE)
+                    char(example), char(example), BOTH_MESSAGE)
             example_result_ccs = assertIncludes( &
-                    example, example, var_str(BOTH_MESSAGE))
+                    char(example), char(example), var_str(BOTH_MESSAGE))
             example_result_csc = assertIncludes( &
-                    example, var_str(example), BOTH_MESSAGE)
+                    char(example), example, BOTH_MESSAGE)
             example_result_css = assertIncludes( &
-                    example, var_str(example), var_str(BOTH_MESSAGE))
+                    char(example), example, var_str(BOTH_MESSAGE))
             example_result_scc = assertIncludes( &
-                    var_str(example), example, BOTH_MESSAGE)
+                    example, char(example), BOTH_MESSAGE)
             example_result_scs = assertIncludes( &
-                    var_str(example), example, var_str(BOTH_MESSAGE))
+                    example, char(example), var_str(BOTH_MESSAGE))
             example_result_ssc = assertIncludes( &
-                    var_str(example), var_str(example), BOTH_MESSAGE)
+                    example, example, BOTH_MESSAGE)
             example_result_sss = assertIncludes( &
-                    var_str(example), var_str(example), var_str(BOTH_MESSAGE))
+                    example, example, var_str(BOTH_MESSAGE))
             example_result_cccc = assertIncludes( &
-                    example, &
-                    example, &
+                    char(example), &
+                    char(example), &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
             example_result_cccs = assertIncludes( &
-                    example, &
-                    example, &
+                    char(example), &
+                    char(example), &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
             example_result_ccsc = assertIncludes( &
-                    example, &
-                    example, &
+                    char(example), &
+                    char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
             example_result_ccss = assertIncludes( &
-                    example, &
-                    example, &
+                    char(example), &
+                    char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
             example_result_cscc = assertIncludes( &
+                    char(example), &
                     example, &
-                    var_str(example), &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
             example_result_cscs = assertIncludes( &
+                    char(example), &
                     example, &
-                    var_str(example), &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
             example_result_cssc = assertIncludes( &
+                    char(example), &
                     example, &
-                    var_str(example), &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
             example_result_csss = assertIncludes( &
+                    char(example), &
                     example, &
-                    var_str(example), &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
             example_result_sccc = assertIncludes( &
-                    var_str(example), &
                     example, &
+                    char(example), &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
             example_result_sccs = assertIncludes( &
-                    var_str(example), &
                     example, &
+                    char(example), &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
             example_result_scsc = assertIncludes( &
-                    var_str(example), &
                     example, &
+                    char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
             example_result_scss = assertIncludes( &
-                    var_str(example), &
                     example, &
+                    char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
             example_result_sscc = assertIncludes( &
-                    var_str(example), &
-                    var_str(example), &
+                    example, &
+                    example, &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
             example_result_sscs = assertIncludes( &
-                    var_str(example), &
-                    var_str(example), &
+                    example, &
+                    example, &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
             example_result_sssc = assertIncludes( &
-                    var_str(example), &
-                    var_str(example), &
+                    example, &
+                    example, &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
             example_result_ssss = assertIncludes( &
-                    var_str(example), &
-                    var_str(example), &
+                    example, &
+                    example, &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
             result_ = &
