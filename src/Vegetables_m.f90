@@ -605,6 +605,13 @@ module Vegetables_m
         module procedure integerToCharacter
     end interface toCharacter
 
+    interface withUserMessage
+        module procedure withUserMessageCC
+        module procedure withUserMessageCS
+        module procedure withUserMessageSC
+        module procedure withUserMessageSS
+    end interface withUserMessage
+
     interface when
         module procedure whenBasic
         module procedure whenWithInput
@@ -4228,10 +4235,10 @@ contains
         withoutLastCharacter = trimmed(1:len(trimmed)-1)
     end function withoutLastCharacter
 
-    pure function withUserMessage(message, user_message) result(whole_message)
+    pure function withUserMessageCC(message, user_message) result(whole_message)
         character(len=*), intent(in) :: message
         character(len=*), intent(in) :: user_message
-        character(len=:), allocatable :: whole_message
+        type(VARYING_STRING) :: whole_message
 
         if (user_message == "") then
             whole_message = message
@@ -4245,5 +4252,29 @@ contains
                                     INDENTATION), &
                             INDENTATION)
         end if
-    end function withUserMessage
+    end function withUserMessageCC
+
+    pure function withUserMessageCS(message, user_message) result(whole_message)
+        character(len=*), intent(in) :: message
+        type(VARYING_STRING), intent(in) :: user_message
+        type(VARYING_STRING) :: whole_message
+
+        whole_message = withUserMessage(message, char(user_message))
+    end function withUserMessageCS
+
+    pure function withUserMessageSC(message, user_message) result(whole_message)
+        type(VARYING_STRING), intent(in) :: message
+        character(len=*), intent(in) :: user_message
+        type(VARYING_STRING) :: whole_message
+
+        whole_message = withUserMessage(char(message), user_message)
+    end function withUserMessageSC
+
+    pure function withUserMessageSS(message, user_message) result(whole_message)
+        type(VARYING_STRING), intent(in) :: message
+        type(VARYING_STRING), intent(in) :: user_message
+        type(VARYING_STRING) :: whole_message
+
+        whole_message = withUserMessage(char(message), char(user_message))
+    end function withUserMessageSS
 end module Vegetables_m
