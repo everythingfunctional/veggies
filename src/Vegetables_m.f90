@@ -456,8 +456,12 @@ module Vegetables_m
         module procedure assertEqualsDoublePrecisionWithMessagesSC
         module procedure assertEqualsDoublePrecisionWithMessagesSS
         module procedure assertEqualsInteger
-        module procedure assertEqualsIntegerWithMessage
-        module procedure assertEqualsIntegerWithMessages
+        module procedure assertEqualsIntegerWithMessageC
+        module procedure assertEqualsIntegerWithMessageS
+        module procedure assertEqualsIntegerWithMessagesCC
+        module procedure assertEqualsIntegerWithMessagesCS
+        module procedure assertEqualsIntegerWithMessagesSC
+        module procedure assertEqualsIntegerWithMessagesSS
         module procedure assertEqualsStringsCC
         module procedure assertEqualsStringsCS
         module procedure assertEqualsStringsSC
@@ -1520,7 +1524,7 @@ contains
         result__ = assertEquals(expected, actual, "", "")
     end function assertEqualsInteger
 
-    pure function assertEqualsIntegerWithMessage( &
+    pure function assertEqualsIntegerWithMessageC( &
             expected, actual, message) result(result__)
         integer, intent(in) :: expected
         integer, intent(in) :: actual
@@ -1528,9 +1532,19 @@ contains
         type(Result_t) :: result__
 
         result__ = assertEquals(expected, actual, message, message)
-    end function assertEqualsIntegerWithMessage
+    end function assertEqualsIntegerWithMessageC
 
-    pure function assertEqualsIntegerWithMessages( &
+    pure function assertEqualsIntegerWithMessageS( &
+            expected, actual, message) result(result__)
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, char(message), char(message))
+    end function assertEqualsIntegerWithMessageS
+
+    pure function assertEqualsIntegerWithMessagesCC( &
             expected, actual, success_message, failure_message) result(result__)
         integer, intent(in) :: expected
         integer, intent(in) :: actual
@@ -1548,7 +1562,40 @@ contains
                             toCharacter(expected), toCharacter(actual)), &
                     failure_message))
         end if
-    end function assertEqualsIntegerWithMessages
+    end function assertEqualsIntegerWithMessagesCC
+
+    pure function assertEqualsIntegerWithMessagesCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, success_message, char(failure_message))
+    end function assertEqualsIntegerWithMessagesCS
+
+    pure function assertEqualsIntegerWithMessagesSC( &
+            expected, actual, success_message, failure_message) result(result__)
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, char(success_message), failure_message)
+    end function assertEqualsIntegerWithMessagesSC
+
+    pure function assertEqualsIntegerWithMessagesSS( &
+            expected, actual, success_message, failure_message) result(result__)
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals(expected, actual, char(success_message), char(failure_message))
+    end function assertEqualsIntegerWithMessagesSS
 
     pure function assertIncludesBasic(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
