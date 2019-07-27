@@ -573,11 +573,6 @@ module Vegetables_m
         module procedure assertThatWithMessagesSS
     end interface assertThat
 
-    interface delimit
-        module procedure delimitC
-        module procedure delimitS
-    end interface delimit
-
     interface describe
         module procedure describeBasic
         module procedure describeWithInput
@@ -625,6 +620,11 @@ module Vegetables_m
         module procedure JustTransformingTestCollection
     end interface Just
 
+    interface lastCharacter
+        module procedure lastCharacterC
+        module procedure lastCharacterS
+    end interface lastCharacter
+
     interface splitAt
         module procedure splitAtCC
         module procedure splitAtSC
@@ -645,10 +645,10 @@ module Vegetables_m
         module procedure TestCollectionResultS
     end interface TestCollectionResult
 
-    interface toCharacter
-        module procedure doublePrecisionToCharacter
-        module procedure integerToCharacter
-    end interface toCharacter
+    interface toString
+        module procedure doublePrecisionToString
+        module procedure integerToString
+    end interface toString
 
     interface withUserMessage
         module procedure withUserMessageCC
@@ -1356,11 +1356,11 @@ contains
 
         if (expected == actual) then
             result__ = succeed(withUserMessage( &
-                    makeEqualsSuccessMessage(expected), &
+                    makeEqualsSuccessMessage(var_str(expected)), &
                     success_message))
         else
             result__ = fail(withUserMessage( &
-                    makeEqualsFailureMessage(expected, actual), &
+                    makeEqualsFailureMessage(var_str(expected), var_str(actual)), &
                     failure_message))
         end if
     end function assertEqualsStringsWithMessagesCCCC
@@ -1581,16 +1581,16 @@ contains
         if (equalsWithinAbsolute(expected, actual, tolerance)) then
             result__ = succeed(withUserMessage( &
                     makeWithinSuccesMessage( &
-                            toCharacter(expected), &
-                            toCharacter(actual), &
-                            toCharacter(tolerance)), &
+                            toString(expected), &
+                            toString(actual), &
+                            toString(tolerance)), &
                     success_message))
         else
             result__ = fail(withUserMessage( &
                     makeWithinFailureMessage( &
-                            toCharacter(expected), &
-                            toCharacter(actual), &
-                            toCharacter(tolerance)), &
+                            toString(expected), &
+                            toString(actual), &
+                            toString(tolerance)), &
                     failure_message))
         end if
     end function assertEqualsWithinAbsoluteWithMessagesCC
@@ -1700,16 +1700,16 @@ contains
         if (equalsWithinRelative(expected, actual, tolerance)) then
             result__ = succeed(withUserMessage( &
                     makeWithinSuccesMessage( &
-                            toCharacter(expected), &
-                            toCharacter(actual), &
-                            toCharacter(tolerance * 100.0_dp) // "%"), &
+                            toString(expected), &
+                            toString(actual), &
+                            toString(tolerance * 100.0_dp) // "%"), &
                     success_message))
         else
             result__ = fail(withUserMessage( &
                     makeWithinFailureMessage( &
-                            toCharacter(expected), &
-                            toCharacter(actual), &
-                            toCharacter(tolerance * 100.0_dp) // "%"), &
+                            toString(expected), &
+                            toString(actual), &
+                            toString(tolerance * 100.0_dp) // "%"), &
                     failure_message))
         end if
     end function assertEqualsWithinRelativeWithMessagesCC
@@ -1806,12 +1806,12 @@ contains
 
         if (expected == actual) then
             result__ = succeed(withUserMessage( &
-                    makeEqualsSuccessMessage(toCharacter(expected)), &
+                    makeEqualsSuccessMessage(toString(expected)), &
                     success_message))
         else
             result__ = fail(withUserMessage( &
                     makeEqualsFailureMessage( &
-                            toCharacter(expected), toCharacter(actual)), &
+                            toString(expected), toString(actual)), &
                     failure_message))
         end if
     end function assertEqualsIntegerWithMessagesCC
@@ -2321,7 +2321,7 @@ contains
 
     pure function coverEmptyDecimal(number) result(fixed)
         character(len=*), intent(in) :: number
-        character(len=:), allocatable :: fixed
+        type(VARYING_STRING) :: fixed
 
         if (lastCharacter(trim(number)) == ".") then
             fixed = trim(number) // "0"
@@ -2332,19 +2332,12 @@ contains
         end if
     end function coverEmptyDecimal
 
-    pure function delimitC(string) result(delimited)
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING) :: delimited
-
-        delimited = "[" // string // "]"
-    end function delimitC
-
-    pure function delimitS(string) result(delimited)
+    pure function delimit(string) result(delimited)
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: delimited
 
         delimited = "[" // string // "]"
-    end function delimitS
+    end function delimit
 
     pure function describeBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -2371,9 +2364,9 @@ contains
         end select
     end function describeWithInput
 
-    pure function doublePrecisionToCharacter(number) result(string)
+    pure function doublePrecisionToString(number) result(string)
         double precision, intent(in) :: number
-        character(len=:), allocatable :: string
+        type(VARYING_STRING) :: string
 
         integer, parameter :: C_LEN = 32
         integer, parameter :: PRECISION = 15
@@ -2411,7 +2404,7 @@ contains
         else
             string = trim(intermediate)
         end if
-    end function doublePrecisionToCharacter
+    end function doublePrecisionToString
 
     pure function equalsWithinAbsolute(expected, actual, tolerance)
         double precision, intent(in) :: expected
@@ -2647,11 +2640,10 @@ contains
         character(len=*), intent(in) :: string
         character(len=1) :: first
 
-        character(len=:), allocatable :: trimmed
+        type(VARYING_STRING) :: trimmed
 
-        allocate(character(len=0) :: trimmed)
         trimmed = trim(string)
-        first = trimmed(1:1)
+        first = extract(trimmed, 1, 1)
     end function firstCharacter
 
     pure function Generated(value_)
@@ -2660,7 +2652,7 @@ contains
 
         select type (value_)
         type is (character(len=*))
-            allocate(Generated%value_, source = toString(value_))
+            allocate(Generated%value_, source = VString(value_))
         class default
             allocate(Generated%value_, source = value_)
         end select
@@ -3110,15 +3102,15 @@ contains
         num_cases = 1
     end function inputTestCaseNumCases
 
-    pure function integerToCharacter(int) result(string)
+    pure function integerToString(int) result(string)
         integer, intent(in) :: int
-        character(len=:), allocatable :: string
+        type(VARYING_STRING) :: string
 
         character(len=12) :: temp
 
         write(temp, '(I0)') int
         string = trim(temp)
-    end function integerToCharacter
+    end function integerToString
 
     function it_(description, func) result(test_case)
         character(len=*), intent(in) :: description
@@ -3169,19 +3161,6 @@ contains
             test = TestCaseWithGenerator(description, generator, func)
         end select
     end function itWithGenerator
-
-    ! pure function joinOld(strings_, separator) result(string)
-    !     type(VegetableString_t), intent(in) :: strings_(:)
-    !     character(len=*), intent(in) :: separator
-    !     character(len=:), allocatable :: string
-    !
-    !     integer :: i
-    !
-    !     string = strings_(1)%string
-    !     do i = 2, size(strings_)
-    !         string = string // separator // strings_(i)%string
-    !     end do
-    ! end function joinOld
 
     pure function joinC(strings_, separator) result(string)
         type(VARYING_STRING), intent(in) :: strings_(:)
@@ -3260,7 +3239,7 @@ contains
         just_ = JustTransformingTestCollection_t(value_)
     end function JustTransformingTestCollection
 
-    pure function lastCharacter(string) result(char_)
+    pure function lastCharacterC(string) result(char_)
         character(len=*), intent(in) :: string
         character(len=1) :: char_
 
@@ -3268,7 +3247,14 @@ contains
 
         length = len(trim(string))
         char_ = string(length:length)
-    end function lastCharacter
+    end function lastCharacterC
+
+    pure function lastCharacterS(string) result(char_)
+        type(VARYING_STRING), intent(in) :: string
+        character(len=1) :: char_
+
+        char_ = lastCharacter(char(string))
+    end function lastCharacterS
 
     pure function makeDoesntIncludeFailureMessage(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
@@ -3318,8 +3304,8 @@ contains
     end function makeEmptyFailureMessage
 
     pure function makeEqualsFailureMessage(expected, actual) result(message)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING) :: message
 
         message = hangingIndent( &
@@ -3335,7 +3321,7 @@ contains
     end function makeEqualsFailureMessage
 
     pure function makeEqualsSuccessMessage(expected) result(message)
-        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING) :: message
 
         message = hangingIndent( &
@@ -3382,9 +3368,9 @@ contains
 
     pure function makeWithinFailureMessage( &
             expected, actual, tolerance) result(message)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
         type(VARYING_STRING) :: message
 
         message = &
@@ -3394,9 +3380,9 @@ contains
 
     pure function makeWithinSuccesMessage( &
             expected, actual, tolerance) result(message)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
         type(VARYING_STRING) :: message
 
         message = &
@@ -3406,7 +3392,7 @@ contains
 
     pure function removeTrailingZeros(number) result(trimmed)
         character(len=*), intent(in) :: number
-        character(len=:), allocatable :: trimmed
+        type(VARYING_STRING) :: trimmed
 
         trimmed = trim(number)
         do while (lastCharacter(trimmed) == "0")
@@ -3526,7 +3512,7 @@ contains
         if (i > NUM_GENERATOR_TESTS) then
             result__ = TestCaseResult( &
                     self%description_, &
-                    succeed("Passed after " // toCharacter(NUM_GENERATOR_TESTS) // " examples"))
+                    succeed("Passed after " // toString(NUM_GENERATOR_TESTS) // " examples"))
         else
             do
                 select type (the_value => generated_value%value_)
@@ -3704,7 +3690,7 @@ contains
         end if
         call put_line( &
                 output_unit, &
-                "A total of " // toCharacter(tests_to_run%numCases()) // " test cases")
+                "A total of " // toString(tests_to_run%numCases()) // " test cases")
         results = tests_to_run%run()
         if (results%passed()) then
             call put_line(output_unit, "")
@@ -3715,9 +3701,9 @@ contains
             end if
             call put_line( &
                     output_unit, &
-                    "A total of " // toCharacter(results%numCases()) &
+                    "A total of " // toString(results%numCases()) &
                     // " test cases containg a total of " &
-                    // toCharacter(results%numAsserts()) // " assertions")
+                    // toString(results%numAsserts()) // " assertions")
             call put_line(output_unit, "")
         else
             call put_line(error_unit, "")
@@ -3731,12 +3717,12 @@ contains
             end if
             call put_line( &
                     error_unit, &
-                    toCharacter(results%numFailingCases()) // " of " &
-                    // toCharacter(results%numCases()) // " cases failed")
+                    toString(results%numFailingCases()) // " of " &
+                    // toString(results%numCases()) // " cases failed")
             call put_line( &
                     error_unit, &
-                    toCharacter(results%numFailingAsserts()) // " of " &
-                    // toCharacter(results%numAsserts()) // " assertions failed")
+                    toString(results%numFailingAsserts()) // " of " &
+                    // toString(results%numAsserts()) // " assertions failed")
             call put_line(error_unit, "")
             call exit(1)
         end if
@@ -3820,7 +3806,7 @@ contains
 
         select type (value_)
         type is (character(len=*))
-            allocate(ShrunkValue%value_, source = toString(value_))
+            allocate(ShrunkValue%value_, source = vString(value_))
         class default
             allocate(ShrunkValue%value_, source = value_)
         end select
@@ -3832,7 +3818,7 @@ contains
 
         select type (value_)
         type is (character(len=*))
-            allocate(SimplestValue%value_, source = toString(value_))
+            allocate(SimplestValue%value_, source = VString(value_))
         class default
             allocate(SimplestValue%value_, source = value_)
         end select
@@ -4334,12 +4320,12 @@ contains
         test_case = it_("Then " // description, func)
     end function then_
 
-    pure function toString(chars) result(string)
+    pure function VString(chars) result(string)
         character(len=*), intent(in) :: chars
         type(VegetableString_t) :: string
 
         string%string = chars
-    end function toString
+    end function VString
 
     pure function Transformed(input)
         class(*), intent(in) :: input
@@ -4417,14 +4403,13 @@ contains
     end function whenWithTransformer
 
     pure function withoutLastCharacter(string)
-        character(len=*), intent(in) :: string
-        character(len=:), allocatable :: withoutLastCharacter
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: withoutLastCharacter
 
-        character(len=:), allocatable :: trimmed
+        type(VARYING_STRING) :: trimmed
 
-        allocate(character(len=0) :: trimmed)
         trimmed = trim(string)
-        withoutLastCharacter = trimmed(1:len(trimmed)-1)
+        withoutLastCharacter = extract(trimmed, 1, len(trimmed)-1)
     end function withoutLastCharacter
 
     pure function withUserMessageCC(message, user_message) result(whole_message)
