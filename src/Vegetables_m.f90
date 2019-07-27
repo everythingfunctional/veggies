@@ -2719,7 +2719,7 @@ contains
             case ("-c", "--color-off")
                 options%colorize = .false.
             case ("-h", "--help")
-                write(output_unit, '(A)') usageMessage(program_name)
+                call put_line(output_unit, usageMessage(program_name))
                 call exit(0)
             case ("-f", "--filter")
                 options%filter_tests = .true.
@@ -2731,14 +2731,14 @@ contains
                 call get_command_argument(i, argument)
                 read(argument, *, iostat=iostat) NUM_GENERATOR_TESTS
                 if (iostat /= 0) then
-                    write(error_unit, '(A)') &
-                            'Unable to read "' // trim(argument) // '" as an integer' // NEWLINE
-                    write(error_unit, '(A)') usageMessage(program_name)
+                    call put_line( &
+                            error_unit, &
+                            'Unable to read "' // trim(argument) // '" as an integer' // NEWLINE)
+                    call put_line(error_unit, usageMessage(program_name))
                     call exit(1)
                 end if
                 if (NUM_GENERATOR_TESTS <= 0) then
-                    write(error_unit, '(A)') &
-                            "Number of random values must be >0"
+                    call put_line(error_unit, "Number of random values must be >0")
                     call exit(1)
                 end if
             case ("-q", "--quiet")
@@ -2746,9 +2746,10 @@ contains
             case ("-v", "--verbose")
                 options%verbose = .true.
             case default
-                write(error_unit, '(A)') &
-                        "Unknown argument: '" // trim(argument) // "'" // NEWLINE
-                write(error_unit, '(A)') usageMessage(program_name)
+                call put_line( &
+                        error_unit, &
+                        "Unknown argument: '" // trim(argument) // "'" // NEWLINE)
+                call put_line(error_unit, usageMessage(program_name))
                 call exit(1)
             end select
             i = i + 1
@@ -2756,7 +2757,7 @@ contains
     contains
         pure function usageMessage(program_name_)
             character(len=*), intent(in) :: program_name_
-            character(len=:), allocatable :: usageMessage
+            type(VARYING_STRING) :: usageMessage
 
             usageMessage = &
                     "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-f string] [-n num] [-c]" // NEWLINE &
@@ -3689,48 +3690,54 @@ contains
             type is (JustTestItem_t)
                 tests_to_run = maybe%getValue()
             type is (Nothing_t)
-                write(error_unit, '(A)') "No matching tests found"
+                call put_line(error_unit, "No matching tests found")
                 call exit(1)
             end select
         else
             tests_to_run = tests
         end if
-        write(output_unit, '(A)') "Running Tests"
-        write(output_unit, '(A)')
+        call put_line(output_unit, "Running Tests")
+        call put_line(output_unit, "")
         if (.not.options%quiet) then
-            write(output_unit, '(A)') char(tests_to_run%description())
-            write(output_unit, '(A)')
+            call put_line(output_unit, tests_to_run%description())
+            call put_line(output_unit, "")
         end if
-        write(output_unit, '(A)') &
-                "A total of " // toCharacter(tests_to_run%numCases()) // " test cases"
+        call put_line( &
+                output_unit, &
+                "A total of " // toCharacter(tests_to_run%numCases()) // " test cases")
         results = tests_to_run%run()
         if (results%passed()) then
-            write(output_unit, '(A)')
-            write(output_unit, '(A)') "All Passed"
+            call put_line(output_unit, "")
+            call put_line(output_unit, "All Passed")
             if (options%verbose) then
-                write(output_unit, '(A)') char(results%verboseDescription(options%colorize))
+                call put_line( &
+                        output_unit, results%verboseDescription(options%colorize))
             end if
-            write(output_unit, '(A)') &
+            call put_line( &
+                    output_unit, &
                     "A total of " // toCharacter(results%numCases()) &
                     // " test cases containg a total of " &
-                    // toCharacter(results%numAsserts()) // " assertions"
-            write(output_unit, '(A)')
+                    // toCharacter(results%numAsserts()) // " assertions")
+            call put_line(output_unit, "")
         else
-            write(error_unit, '(A)')
-            write(error_unit, '(A)') "Failed"
+            call put_line(error_unit, "")
+            call put_line(error_unit, "Failed")
             if (options%verbose) then
-                write(error_unit, '(A)') char(results%verboseDescription(options%colorize))
+                call put_line( &
+                        error_unit, results%verboseDescription(options%colorize))
             else
-                write(error_unit, '(A)') char(results%failureDescription(options%colorize))
+                call put_line( &
+                        error_unit, results%failureDescription(options%colorize))
             end if
-            write(error_unit, '(A)') &
+            call put_line( &
+                    error_unit, &
                     toCharacter(results%numFailingCases()) // " of " &
-                    // toCharacter(results%numCases()) // " cases failed"
-            write(error_unit, '(A)') &
+                    // toCharacter(results%numCases()) // " cases failed")
+            call put_line( &
+                    error_unit, &
                     toCharacter(results%numFailingAsserts()) // " of " &
-                    // toCharacter(results%numAsserts()) // " assertions failed"
-            write(error_unit, '(A)')
-            write(error_unit, '(A)')
+                    // toCharacter(results%numAsserts()) // " assertions failed")
+            call put_line(error_unit, "")
             call exit(1)
         end if
     end subroutine
