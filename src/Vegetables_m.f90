@@ -6,7 +6,7 @@ module Vegetables_m
 
     type :: VegetableString_t
         private
-        character(len=:), allocatable :: string
+        type(VARYING_STRING) :: string
     end type VegetableString_t
 
     type, public :: Generated_t
@@ -69,7 +69,7 @@ module Vegetables_m
 
     type :: IndividualResult_t
         private
-        character(len=:), allocatable :: message
+        type(VARYING_STRING) :: message
         logical :: passed_
     contains
         private
@@ -93,7 +93,7 @@ module Vegetables_m
 
     type, abstract, public :: Test_t
         private
-        character(len=:), allocatable :: description_
+        type(VARYING_STRING) :: description_
     contains
         private
         procedure(testDescription), deferred, public :: description
@@ -103,7 +103,7 @@ module Vegetables_m
 
     type, abstract, public :: TestResult_t
         private
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
     contains
         private
         procedure(testResultDescription), deferred, public :: failureDescription
@@ -157,9 +157,9 @@ module Vegetables_m
         end function
 
         pure function testDescription(self) result(description)
-            import :: Test_t
+            import :: Test_t, VARYING_STRING
             class(Test_t), intent(in) :: self
-            character(len=:), allocatable :: description
+            type(VARYING_STRING) :: description
         end function testDescription
 
         pure function testNum(self) result(num)
@@ -175,10 +175,10 @@ module Vegetables_m
         end function testQuestion
 
         pure function testResultDescription(self, colorize) result(description)
-            import :: TestResult_t
+            import :: TestResult_t, VARYING_STRING
             class(TestResult_t), intent(in) :: self
             logical, intent(in) :: colorize
-            character(len=:), allocatable :: description
+            type(VARYING_STRING) :: description
         end function testResultDescription
 
         pure function testResultNum(self) result(num)
@@ -403,7 +403,10 @@ module Vegetables_m
     end type JustTransformingTestCollection_t
 
     interface operator(.includes.)
-        module procedure includes
+        module procedure includesCC
+        ! module procedure includesCS
+        module procedure includesSC
+        ! module procedure includesSS
     end interface operator(.includes.)
 
     interface assertDoesntInclude
@@ -570,6 +573,11 @@ module Vegetables_m
         module procedure assertThatWithMessagesSS
     end interface assertThat
 
+    interface delimit
+        module procedure delimitC
+        module procedure delimitS
+    end interface delimit
+
     interface describe
         module procedure describeBasic
         module procedure describeWithInput
@@ -585,11 +593,26 @@ module Vegetables_m
         module procedure givenWithInput
     end interface given
 
+    interface hangingIndent
+        module procedure hangingIndentC
+        module procedure hangingIndentS
+    end interface hangingIndent
+
+    interface indent
+        ! module procedure indentC
+        module procedure indentS
+    end interface indent
+
     interface it
         module procedure itBasic
         module procedure itWithExamples
         module procedure itWithGenerator
     end interface it
+
+    interface join
+        module procedure joinC
+        ! module procedure joinS
+    end interface join
 
     interface Just
         module procedure JustInputTestCase
@@ -602,10 +625,25 @@ module Vegetables_m
         module procedure JustTransformingTestCollection
     end interface Just
 
+    interface splitAt
+        module procedure splitAtCC
+        module procedure splitAtSC
+    end interface splitAt
+
     interface succeed
         module procedure succeedC
         module procedure succeedS
     end interface succeed
+
+    interface TestCaseResult
+        module procedure TestCaseResultC
+        module procedure TestCaseResultS
+    end interface TestCaseResult
+
+    interface TestCollectionResult
+        ! module procedure TestCollectionResultC
+        module procedure TestCollectionResultS
+    end interface TestCollectionResult
 
     interface toCharacter
         module procedure doublePrecisionToCharacter
@@ -2294,12 +2332,19 @@ contains
         end if
     end function coverEmptyDecimal
 
-    pure function delimit(string) result(delimited)
+    pure function delimitC(string) result(delimited)
         character(len=*), intent(in) :: string
-        character(len=:), allocatable :: delimited
+        type(VARYING_STRING) :: delimited
 
         delimited = "[" // string // "]"
-    end function delimit
+    end function delimitC
+
+    pure function delimitS(string) result(delimited)
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: delimited
+
+        delimited = "[" // string // "]"
+    end function delimitS
 
     pure function describeBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -2920,16 +2965,27 @@ contains
         test_collection = describe("Given " // description, input, tests)
     end function givenWithInput
 
-    pure function hangingIndent(string__, spaces) result(indented)
+    pure function hangingIndentC(string__, spaces) result(indented)
         character(len=*), intent(in) :: string__
         integer, intent(in) :: spaces
-        character(len=:), allocatable :: indented
+        type(VARYING_STRING) :: indented
 
-        type(VegetableString_t), allocatable :: lines(:)
+        type(VARYING_STRING), allocatable :: lines(:)
 
-        lines = splitAt(string__, NEWLINE)
+        allocate(lines, source = splitAt(string__, NEWLINE))
         indented = join(lines, NEWLINE // repeat(" ", spaces))
-    end function hangingIndent
+    end function hangingIndentC
+
+    pure function hangingIndentS(string__, spaces) result(indented)
+        type(VARYING_STRING), intent(in) :: string__
+        integer, intent(in) :: spaces
+        type(VARYING_STRING) :: indented
+
+        type(VARYING_STRING), allocatable :: lines(:)
+
+        allocate(lines, source = splitAt(string__, NEWLINE))
+        indented = join(lines, NEWLINE // repeat(" ", spaces))
+    end function hangingIndentS
 
     elemental function hasValue(self)
         class(MaybeItem_t), intent(in) :: self
@@ -2943,21 +2999,53 @@ contains
         end select
     end function hasValue
 
-    pure function includes(string, search_for)
+    pure function includesCC(string, search_for) result(includes)
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: search_for
         logical :: includes
 
         includes = index(string, search_for) > 0
-    end function includes
+    end function includesCC
 
-    pure function indent(string, spaces) result(indented)
-        character(len=*), intent(in) :: string
+    ! pure function includesCS(string, search_for) result(includes)
+    !     character(len=*), intent(in) :: string
+    !     type(VARYING_STRING), intent(in) :: search_for
+    !     logical :: includes
+    !
+    !     includes = index(string, search_for) > 0
+    ! end function includesCS
+
+    pure function includesSC(string, search_for) result(includes)
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: search_for
+        logical :: includes
+
+        includes = index(string, search_for) > 0
+    end function includesSC
+
+    ! pure function includesSS(string, search_for) result(includes)
+    !     type(VARYING_STRING), intent(in) :: string
+    !     type(VARYING_STRING), intent(in) :: search_for
+    !     logical :: includes
+    !
+    !     includes = index(string, search_for) > 0
+    ! end function includesSS
+
+    ! pure function indentC(string, spaces) result(indented)
+    !     character(len=*), intent(in) :: string
+    !     integer, intent(in) :: spaces
+    !     type(VARYING_STRING) :: indented
+    !
+    !     indented = repeat(" ", spaces) // hangingIndent(string, spaces)
+    ! end function indentC
+
+    pure function indentS(string, spaces) result(indented)
+        type(VARYING_STRING), intent(in) :: string
         integer, intent(in) :: spaces
-        character(len=:), allocatable :: indented
+        type(VARYING_STRING) :: indented
 
         indented = repeat(" ", spaces) // hangingIndent(string, spaces)
-    end function indent
+    end function indentS
 
     pure function IndividualResult(message, passed_)
         character(len=*), intent(in) :: message
@@ -2971,7 +3059,7 @@ contains
     pure function individualResultFailureDescription(self, colorize) result(description)
         class(IndividualResult_t), intent(in) :: self
         logical, intent(in) :: colorize
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         if (colorize) then
             description = char(27) // "[31m" // self%message // char(27) // "[0m"
@@ -2983,7 +3071,7 @@ contains
     pure function individualResultVerboseDescription(self, colorize) result(description)
         class(IndividualResult_t), intent(in) :: self
         logical, intent(in) :: colorize
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         if (colorize) then
             if (self%passed_) then
@@ -3007,7 +3095,7 @@ contains
 
     pure function inputTestCaseDescription(self) result(description)
         class(InputTestCase_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         description = self%description_
     end function inputTestCaseDescription
@@ -3081,18 +3169,39 @@ contains
         end select
     end function itWithGenerator
 
-    pure function join(strings_, separator) result(string)
-        type(VegetableString_t), intent(in) :: strings_(:)
+    ! pure function joinOld(strings_, separator) result(string)
+    !     type(VegetableString_t), intent(in) :: strings_(:)
+    !     character(len=*), intent(in) :: separator
+    !     character(len=:), allocatable :: string
+    !
+    !     integer :: i
+    !
+    !     string = strings_(1)%string
+    !     do i = 2, size(strings_)
+    !         string = string // separator // strings_(i)%string
+    !     end do
+    ! end function joinOld
+
+    pure function joinC(strings_, separator) result(string)
+        type(VARYING_STRING), intent(in) :: strings_(:)
         character(len=*), intent(in) :: separator
-        character(len=:), allocatable :: string
+        type(VARYING_STRING) :: string
 
         integer :: i
 
-        string = strings_(1)%string
+        string = strings_(1)
         do i = 2, size(strings_)
-            string = string // separator // strings_(i)%string
+            string = string // separator // strings_(i)
         end do
-    end function join
+    end function joinC
+
+    ! pure function joinS(strings_, separator) result(string)
+    !     type(VARYING_STRING), intent(in) :: strings_(:)
+    !     type(VARYING_STRING), intent(in) :: separator
+    !     type(VARYING_STRING) :: string
+    !
+    !     string = join(strings_, char(separator))
+    ! end function joinS
 
     pure function JustInputTestCase(value_) result(just_)
         type(InputTestCase_t), intent(in) :: value_
@@ -3163,7 +3272,7 @@ contains
     pure function makeDoesntIncludeFailureMessage(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
-        character(len=:), allocatable :: message
+        type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "Expected" // NEWLINE &
@@ -3180,7 +3289,7 @@ contains
     pure function makeDoesntIncludeSuccessMessage(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
-        character(len=:), allocatable :: message
+        type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "The string" // NEWLINE &
@@ -3196,7 +3305,7 @@ contains
 
     pure function makeEmptyFailureMessage(string) result(message)
         character(len=*), intent(in) :: string
-        character(len=:), allocatable :: message
+        type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "The string" // NEWLINE &
@@ -3210,7 +3319,7 @@ contains
     pure function makeEqualsFailureMessage(expected, actual) result(message)
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
-        character(len=:), allocatable :: message
+        type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "Expected" // NEWLINE &
@@ -3226,7 +3335,7 @@ contains
 
     pure function makeEqualsSuccessMessage(expected) result(message)
         character(len=*), intent(in) :: expected
-        character(len=:), allocatable :: message
+        type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "Expected and got" // NEWLINE &
@@ -3239,7 +3348,7 @@ contains
     pure function makeIncludesFailureMessage(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
-        character(len=:), allocatable :: message
+        type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "Expected" // NEWLINE &
@@ -3256,7 +3365,7 @@ contains
     pure function makeIncludesSuccessMessage(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
-        character(len=:), allocatable :: message
+        type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "The string" // NEWLINE &
@@ -3275,7 +3384,7 @@ contains
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
-        character(len=:), allocatable :: message
+        type(VARYING_STRING) :: message
 
         message = &
                 "Expected " // delimit(actual) // " to be  within " &
@@ -3287,7 +3396,7 @@ contains
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
-        character(len=:), allocatable :: message
+        type(VARYING_STRING) :: message
 
         message = &
                 delimit(actual) // " was within " // delimit("±" // tolerance) &
@@ -3315,12 +3424,12 @@ contains
     pure function resultFailureDescription(self, colorize) result(description)
         class(Result_t), intent(in) :: self
         logical, intent(in) :: colorize
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         logical, allocatable :: failed_mask(:)
         type(IndividualResult_t), allocatable :: failed_results(:)
         integer :: i
-        type(VegetableString_t), allocatable :: individual_descriptions(:)
+        type(VARYING_STRING), allocatable :: individual_descriptions(:)
 
         allocate(failed_mask(size(self%results)))
         failed_mask = .not.self%results%passed_
@@ -3328,7 +3437,7 @@ contains
         failed_results = pack(self%results, mask=failed_mask)
         allocate(individual_descriptions(size(failed_results)))
         do i = 1, size(failed_results)
-            individual_descriptions(i) = toString(failed_results(i)%failureDescription(colorize))
+            individual_descriptions(i) = failed_results(i)%failureDescription(colorize)
         end do
         if (size(failed_results) > 0) then
             description = join(individual_descriptions, NEWLINE)
@@ -3361,14 +3470,14 @@ contains
     pure function resultVerboseDescription(self, colorize) result(description)
         class(Result_t), intent(in) :: self
         logical, intent(in) :: colorize
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         integer :: i
-        type(VegetableString_t), allocatable :: individual_descriptions(:)
+        type(VARYING_STRING), allocatable :: individual_descriptions(:)
 
         allocate(individual_descriptions(size(self%results)))
         do i = 1, size(self%results)
-            individual_descriptions(i) = toString(self%results(i)%verboseDescription(colorize))
+            individual_descriptions(i) = self%results(i)%verboseDescription(colorize)
         end do
         description = join(individual_descriptions, NEWLINE)
     end function resultVerboseDescription
@@ -3589,7 +3698,7 @@ contains
         write(output_unit, '(A)') "Running Tests"
         write(output_unit, '(A)')
         if (.not.options%quiet) then
-            write(output_unit, '(A)') tests_to_run%description()
+            write(output_unit, '(A)') char(tests_to_run%description())
             write(output_unit, '(A)')
         end if
         write(output_unit, '(A)') &
@@ -3599,7 +3708,7 @@ contains
             write(output_unit, '(A)')
             write(output_unit, '(A)') "All Passed"
             if (options%verbose) then
-                write(output_unit, '(A)') results%verboseDescription(options%colorize)
+                write(output_unit, '(A)') char(results%verboseDescription(options%colorize))
             end if
             write(output_unit, '(A)') &
                     "A total of " // toCharacter(results%numCases()) &
@@ -3610,9 +3719,9 @@ contains
             write(error_unit, '(A)')
             write(error_unit, '(A)') "Failed"
             if (options%verbose) then
-                write(error_unit, '(A)') results%verboseDescription(options%colorize)
+                write(error_unit, '(A)') char(results%verboseDescription(options%colorize))
             else
-                write(error_unit, '(A)') results%failureDescription(options%colorize)
+                write(error_unit, '(A)') char(results%failureDescription(options%colorize))
             end if
             write(error_unit, '(A)') &
                     toCharacter(results%numFailingCases()) // " of " &
@@ -3722,11 +3831,11 @@ contains
         end select
     end function SimplestValue
 
-    pure recursive function splitAt(&
+    pure recursive function splitAtCC(&
             string_, split_characters) result(strings)
         character(len=*), intent(in) :: string_
         character(len=*), intent(in) :: split_characters
-        type(VegetableString_t), allocatable :: strings(:)
+        type(VARYING_STRING), allocatable :: strings(:)
 
         if (len(split_characters) > 0) then
             if (len(string_) > 0) then
@@ -3739,38 +3848,45 @@ contains
                 end if
             else
                 allocate(strings(1))
-                strings(1) = toString("")
+                strings(1) = ""
             end if
         else
             allocate(strings(1))
-            strings(1) = toString(string_)
+            strings(1) = string_
         end if
     contains
         pure function doSplit(string__, split_characters_) result(strings_)
             character(len=*), intent(in) :: string__
             character(len=*), intent(in) :: split_characters_
-            type(VegetableString_t), allocatable :: strings_(:)
+            type(VARYING_STRING), allocatable :: strings_(:)
 
             integer :: i
-            type(VegetableString_t), allocatable :: rest(:)
-            character(len=:), allocatable :: this_string
-            allocate(character(len=0)::this_string)
+            type(VARYING_STRING), allocatable :: rest(:)
+            type(VARYING_STRING) :: this_string
 
             do i = 2, len(string__)
                 if (index(split_characters_, string__(i:i)) > 0) exit
             end do
             if (i < len(string__)) then
                 this_string = string__(1:i - 1)
-                rest = splitAt(string__(i + 1:), split_characters_)
+                allocate(rest, source = splitAt(string__(i + 1:), split_characters_))
                 allocate(strings_(size(rest) + 1))
-                strings_(1) = toString(this_string)
+                strings_(1) = this_string
                 strings_(2:) = rest(:)
             else
                 allocate(strings_(1))
-                strings_(1) = toString(string__)
+                strings_(1) = string__
             end if
         end function doSplit
-    end function splitAt
+    end function splitAtCC
+
+    pure function splitAtSC(string_, split_characters) result(strings)
+        type(VARYING_STRING), intent(in) :: string_
+        character(len=*), intent(in) :: split_characters
+        type(VARYING_STRING), allocatable :: strings(:)
+
+        allocate(strings, source = splitAt(char(string_), split_characters))
+    end function splitAtSC
 
     pure function succeedC(message) result(success)
         character(len=*), intent(in) :: message
@@ -3797,7 +3913,7 @@ contains
 
     pure function testCaseDescription(self) result(description)
         class(TestCase_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         description = self%description_
     end function testCaseDescription
@@ -3805,7 +3921,7 @@ contains
     pure function testCaseFailureDescription(self, colorize) result(description)
         class(TestCaseResult_t), intent(in) :: self
         logical, intent(in) :: colorize
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         if (self%passed()) then
             description = ""
@@ -3857,14 +3973,23 @@ contains
         passed = self%result_%passed()
     end function testCasePassed
 
-    pure function TestCaseResult(description, result__) result(test_case_result)
+    pure function TestCaseResultC(description, result__) result(test_case_result)
         character(len=*), intent(in) :: description
         type(Result_t), intent(in) :: result__
         type(TestCaseResult_t) :: test_case_result
 
         test_case_result%description = description
         test_case_result%result_ = result__
-    end function TestCaseResult
+    end function TestCaseResultC
+
+    pure function TestCaseResultS(description, result__) result(test_case_result)
+        type(VARYING_STRING), intent(in) :: description
+        type(Result_t), intent(in) :: result__
+        type(TestCaseResult_t) :: test_case_result
+
+        test_case_result%description = description
+        test_case_result%result_ = result__
+    end function TestCaseResultS
 
     pure function testCaseResultNumCases(self) result(num_cases)
         class(TestCaseResult_t), intent(in) :: self
@@ -3878,7 +4003,7 @@ contains
     pure function testCaseVerboseDescription(self, colorize) result(description)
         class(TestCaseResult_t), intent(in) :: self
         logical, intent(in) :: colorize
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         description = hangingIndent( &
                 self%description // NEWLINE // self%result_%verboseDescription(colorize), &
@@ -3910,7 +4035,7 @@ contains
 
     pure function testCaseWithExamplesDescription(self) result(description)
         class(TestCaseWithExamples_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         description = self%description_
     end function testCaseWithExamplesDescription
@@ -3926,7 +4051,7 @@ contains
 
     pure function testCaseWithGeneratorDescription(self) result(description)
         class(TestCaseWithGenerator_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         description = self%description_
     end function testCaseWithGeneratorDescription
@@ -3952,16 +4077,16 @@ contains
 
     pure function testCollectionDescription(self) result(description)
         class(TestCollection_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
-        type(VegetableString_t), allocatable :: descriptions(:)
+        type(VARYING_STRING), allocatable :: descriptions(:)
         integer :: i
         integer :: num_cases
 
         num_cases = size(self%tests)
         allocate(descriptions(num_cases))
         do concurrent (i = 1:num_cases)
-            descriptions(i) = toString(self%tests(i)%description())
+            descriptions(i) = self%tests(i)%description()
         end do
         description = hangingIndent( &
                 self%description_ // NEWLINE // join(descriptions, NEWLINE), &
@@ -3971,9 +4096,9 @@ contains
     pure function testCollectionFailureDescription(self, colorize) result(description)
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
-        type(VegetableString_t), allocatable :: descriptions(:)
+        type(VARYING_STRING), allocatable :: descriptions(:)
         integer :: i
         integer :: num_cases
 
@@ -3983,7 +4108,7 @@ contains
             num_cases = size(self%results)
             allocate(descriptions(num_cases))
             do concurrent (i = 1:num_cases)
-                descriptions(i) = toString(self%results(i)%failureDescription(colorize))
+                descriptions(i) = self%results(i)%failureDescription(colorize)
             end do
             description = hangingIndent( &
                     self%description // NEWLINE // join(descriptions, NEWLINE), &
@@ -4026,15 +4151,25 @@ contains
         passed = all(self%results%passed())
     end function testCollectionPassed
 
-    pure function TestCollectionResult(description, results) result(test_collection_result)
-        character(len=*), intent(in) :: description
+    ! pure function TestCollectionResultC(description, results) result(test_collection_result)
+    !     character(len=*), intent(in) :: description
+    !     type(TestResultItem_t), intent(in) :: results(:)
+    !     type(TestCollectionResult_t) :: test_collection_result
+    !
+    !     test_collection_result%description = description
+    !     allocate(test_collection_result%results(size(results)))
+    !     test_collection_result%results = results
+    ! end function TestCollectionResultC
+
+    pure function TestCollectionResultS(description, results) result(test_collection_result)
+        type(VARYING_STRING), intent(in) :: description
         type(TestResultItem_t), intent(in) :: results(:)
         type(TestCollectionResult_t) :: test_collection_result
 
         test_collection_result%description = description
         allocate(test_collection_result%results(size(results)))
         test_collection_result%results = results
-    end function TestCollectionResult
+    end function TestCollectionResultS
 
     pure function testCollectionResultNumCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
@@ -4046,16 +4181,16 @@ contains
     pure function testCollectionVerboseDescription(self, colorize) result(description)
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
-        type(VegetableString_t), allocatable :: descriptions(:)
+        type(VARYING_STRING), allocatable :: descriptions(:)
         integer :: i
         integer :: num_cases
 
         num_cases = size(self%results)
         allocate(descriptions(num_cases))
         do concurrent (i = 1:num_cases)
-            descriptions(i) = toString(self%results(i)%verboseDescription(colorize))
+            descriptions(i) = self%results(i)%verboseDescription(colorize)
         end do
         description = hangingIndent( &
                 self%description // NEWLINE // join(descriptions, NEWLINE), &
@@ -4077,16 +4212,16 @@ contains
 
     pure function testCollectionWithInputDescription(self) result(description)
         class(TestCollectionWithInput_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
-        type(VegetableString_t), allocatable :: descriptions(:)
+        type(VARYING_STRING), allocatable :: descriptions(:)
         integer :: i
         integer :: num_cases
 
         num_cases = size(self%tests)
         allocate(descriptions(num_cases))
         do concurrent (i = 1:num_cases)
-            descriptions(i) = toString(self%tests(i)%description())
+            descriptions(i) = self%tests(i)%description()
         end do
         description = hangingIndent( &
                 self%description_ // NEWLINE // join(descriptions, NEWLINE), &
@@ -4102,7 +4237,7 @@ contains
 
     pure function testItemDescription(self) result(description)
         class(TestItem_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         description = self%test%description()
     end function testItemDescription
@@ -4124,7 +4259,7 @@ contains
     pure function testResultItemFailureDescription(self, colorize) result(description)
         class(TestResultItem_t), intent(in) :: self
         logical, intent(in) :: colorize
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         description = self%result_%failureDescription(colorize)
     end function testResultItemFailureDescription
@@ -4160,7 +4295,7 @@ contains
     pure function testResultItemVerboseDescription(self, colorize) result(description)
         class(TestResultItem_t), intent(in) :: self
         logical, intent(in) :: colorize
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
         description = self%result_%verboseDescription(colorize)
     end function testResultItemVerboseDescription
@@ -4221,16 +4356,16 @@ contains
 
     pure function transformingTestCollectionDescription(self) result(description)
         class(TransformingTestCollection_t), intent(in) :: self
-        character(len=:), allocatable :: description
+        type(VARYING_STRING) :: description
 
-        type(VegetableString_t), allocatable :: descriptions(:)
+        type(VARYING_STRING), allocatable :: descriptions(:)
         integer :: i
         integer :: num_cases
 
         num_cases = size(self%tests)
         allocate(descriptions(num_cases))
         do concurrent (i = 1:num_cases)
-            descriptions(i) = toString(self%tests(i)%description())
+            descriptions(i) = self%tests(i)%description()
         end do
         description = hangingIndent( &
                 self%description_ // NEWLINE // join(descriptions, NEWLINE), &
