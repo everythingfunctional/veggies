@@ -62,6 +62,7 @@ contains
 
     function filterCaseNotMatching(example_case) result(filtered)
         use example_cases_m, only: NOT_IN_DESCRIPTION
+        use iso_varying_string, only: var_str
         use Vegetables_m, only: Maybe_t, TestCase_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_case
@@ -71,7 +72,7 @@ contains
 
         select type (example_case)
         type is (TestCase_t)
-            allocate(maybe, source = example_case%filter(NOT_IN_DESCRIPTION))
+            allocate(maybe, source = example_case%filter(var_str(NOT_IN_DESCRIPTION)))
             filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCase_t"))
@@ -80,6 +81,7 @@ contains
 
     function filterCollectionNotMatching(example_collection) result(filtered)
         use example_collections_m, only: NOT_IN_DESCRIPTIONS
+        use iso_varying_string, only: var_str
         use Vegetables_m, only: Maybe_t, TestCollection_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_collection
@@ -89,7 +91,7 @@ contains
 
         select type (example_collection)
         type is (TestCollection_t)
-            allocate(maybe, source = example_collection%filter(NOT_IN_DESCRIPTIONS))
+            allocate(maybe, source = example_collection%filter(var_str(NOT_IN_DESCRIPTIONS)))
             filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCollection_t"))
@@ -98,6 +100,7 @@ contains
 
     function filterCaseMatching(example_case) result(filtered)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
+        use iso_varying_string, only: var_str
         use Vegetables_m, only: Maybe_t, TestCase_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_case
@@ -107,7 +110,7 @@ contains
 
         select type (example_case)
         type is (TestCase_t)
-            allocate(maybe, source = example_case%filter(EXAMPLE_DESCRIPTION))
+            allocate(maybe, source = example_case%filter(var_str(EXAMPLE_DESCRIPTION)))
             filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCase_t"))
@@ -116,6 +119,7 @@ contains
 
     function filterCollectionMatchingDescription(example_collection) result(filtered)
         use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
+        use iso_varying_string, only: var_str
         use Vegetables_m, only: Maybe_t, TestCollection_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_collection
@@ -125,7 +129,7 @@ contains
 
         select type (example_collection)
         type is (TestCollection_t)
-            allocate(maybe, source = example_collection%filter(EXAMPLE_COLLECTION_DESCRIPTION))
+            allocate(maybe, source = example_collection%filter(var_str(EXAMPLE_COLLECTION_DESCRIPTION)))
             filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCollection_t"))
@@ -134,6 +138,7 @@ contains
 
     function filterCollectionMatchingCase(example_collection) result(filtered)
         use example_collections_m, only: EXAMPLE_CASE_DESCRIPTION_1
+        use iso_varying_string, only: var_str
         use Vegetables_m, only: Maybe_t, TestCollection_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_collection
@@ -143,7 +148,7 @@ contains
 
         select type (example_collection)
         type is (TestCollection_t)
-            allocate(maybe, source = example_collection%filter(EXAMPLE_CASE_DESCRIPTION_1))
+            allocate(maybe, source = example_collection%filter(var_str(EXAMPLE_CASE_DESCRIPTION_1)))
             filtered = Transformed(maybe)
         class default
             filtered = Transformed(fail("Expected to get a TestCollection_t"))

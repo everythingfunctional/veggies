@@ -127,9 +127,9 @@ module Vegetables_m
 
     abstract interface
         pure function filter_(self, filter_string) result(maybe)
-            import :: Test_t, Maybe_t
+            import :: Test_t, Maybe_t, VARYING_STRING
             class(Test_t), intent(in) :: self
-            character(len=*), intent(in) :: filter_string
+            type(VARYING_STRING), intent(in) :: filter_string
             class(Maybe_t), allocatable :: maybe
         end function filter_
 
@@ -335,7 +335,7 @@ module Vegetables_m
         logical :: quiet
         logical :: verbose
         logical :: filter_tests
-        character(len=:), allocatable :: filter_string
+        type(VARYING_STRING) :: filter_string
     end type Options_t
 
     type, public, extends(Maybe_t) :: JustInputTestCase_t
@@ -405,8 +405,8 @@ module Vegetables_m
     interface operator(.includes.)
         module procedure includesCC
         ! module procedure includesCS
-        module procedure includesSC
-        ! module procedure includesSS
+        ! module procedure includesSC
+        module procedure includesSS
     end interface operator(.includes.)
 
     interface assertDoesntInclude
@@ -2456,7 +2456,7 @@ contains
 
     pure function filterInputTestCase(self, filter_string) result(maybe)
         class(InputTestCase_t), intent(in) :: self
-        character(len=*), intent(in) :: filter_string
+        type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
         if (self%description_.includes.filter_string) then
@@ -2468,7 +2468,7 @@ contains
 
     pure function filterTestCase(self, filter_string) result(maybe)
         class(TestCase_t), intent(in) :: self
-        character(len=*), intent(in) :: filter_string
+        type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
         if (self%description_.includes.filter_string) then
@@ -2480,7 +2480,7 @@ contains
 
     pure function filterTestCaseWithExamples(self, filter_string) result(maybe)
         class(TestCaseWithExamples_t), intent(in) :: self
-        character(len=*), intent(in) :: filter_string
+        type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
         if (self%description_.includes.filter_string) then
@@ -2492,7 +2492,7 @@ contains
 
     pure function filterTestCaseWithGenerator(self, filter_string) result(maybe)
         class(TestCaseWithGenerator_t), intent(in) :: self
-        character(len=*), intent(in) :: filter_string
+        type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
         if (self%description_.includes.filter_string) then
@@ -2504,7 +2504,7 @@ contains
 
     pure function filterTestCollection(self, filter_string) result(maybe)
         class(TestCollection_t), intent(in) :: self
-        character(len=*), intent(in) :: filter_string
+        type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
         type(MaybeItem_t), allocatable :: filtered_tests(:)
@@ -2533,7 +2533,7 @@ contains
 
     pure function filterTestCollectionWithInput(self, filter_string) result(maybe)
         class(TestCollectionWithInput_t), intent(in) :: self
-        character(len=*), intent(in) :: filter_string
+        type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
         type(MaybeItem_t), allocatable :: filtered_tests(:)
@@ -2563,7 +2563,7 @@ contains
 
     elemental function filterTestItem(self, filter_string) result(maybe)
         class(TestItem_t), intent(in) :: self
-        character(len=*), intent(in) :: filter_string
+        type(VARYING_STRING), intent(in) :: filter_string
         type(MaybeItem_t) :: maybe
 
         class(Maybe_t), allocatable :: filtered
@@ -2615,7 +2615,7 @@ contains
 
     pure function filterTransformingTestCollection(self, filter_string) result(maybe)
         class(TransformingTestCollection_t), intent(in) :: self
-        character(len=*), intent(in) :: filter_string
+        type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
 
         type(MaybeItem_t), allocatable :: filtered_tests(:)
@@ -3015,21 +3015,21 @@ contains
     !     includes = index(string, search_for) > 0
     ! end function includesCS
 
-    pure function includesSC(string, search_for) result(includes)
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: search_for
-        logical :: includes
-
-        includes = index(string, search_for) > 0
-    end function includesSC
-
-    ! pure function includesSS(string, search_for) result(includes)
+    ! pure function includesSC(string, search_for) result(includes)
     !     type(VARYING_STRING), intent(in) :: string
-    !     type(VARYING_STRING), intent(in) :: search_for
+    !     character(len=*), intent(in) :: search_for
     !     logical :: includes
     !
     !     includes = index(string, search_for) > 0
-    ! end function includesSS
+    ! end function includesSC
+
+    pure function includesSS(string, search_for) result(includes)
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: search_for
+        logical :: includes
+
+        includes = index(string, search_for) > 0
+    end function includesSS
 
     ! pure function indentC(string, spaces) result(indented)
     !     character(len=*), intent(in) :: string
