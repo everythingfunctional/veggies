@@ -573,6 +573,11 @@ module Vegetables_m
         module procedure assertThatWithMessagesSS
     end interface assertThat
 
+    interface delimit
+        module procedure delimitC
+        module procedure delimitS
+    end interface delimit
+
     interface describe
         module procedure describeBasic
         module procedure describeWithInput
@@ -624,6 +629,73 @@ module Vegetables_m
         module procedure lastCharacterC
         module procedure lastCharacterS
     end interface lastCharacter
+
+    interface makeDoesntIncludeFailureMessage
+        module procedure makeDoesntIncludeFailureMessageCC
+        module procedure makeDoesntIncludeFailureMessageCS
+        module procedure makeDoesntIncludeFailureMessageSC
+        module procedure makeDoesntIncludeFailureMessageSS
+    end interface makeDoesntIncludeFailureMessage
+
+    interface makeDoesntIncludeSuccessMessage
+        module procedure makeDoesntIncludeSuccessMessageCC
+        module procedure makeDoesntIncludeSuccessMessageCS
+        module procedure makeDoesntIncludeSuccessMessageSC
+        module procedure makeDoesntIncludeSuccessMessageSS
+    end interface makeDoesntIncludeSuccessMessage
+
+    interface makeEmptyFailureMessage
+        module procedure makeEmptyFailureMessageC
+        module procedure makeEmptyFailureMessageS
+    end interface makeEmptyFailureMessage
+
+    interface makeEqualsFailureMessage
+        module procedure makeEqualsFailureMessageCC
+        module procedure makeEqualsFailureMessageCS
+        module procedure makeEqualsFailureMessageSC
+        module procedure makeEqualsFailureMessageSS
+    end interface makeEqualsFailureMessage
+
+    interface makeEqualsSuccessMessage
+        module procedure makeEqualsSuccessMessageC
+        module procedure makeEqualsSuccessMessageS
+    end interface makeEqualsSuccessMessage
+
+    interface makeIncludesFailureMessage
+        module procedure makeIncludesFailureMessageCC
+        module procedure makeIncludesFailureMessageCS
+        module procedure makeIncludesFailureMessageSC
+        module procedure makeIncludesFailureMessageSS
+    end interface makeIncludesFailureMessage
+
+    interface makeIncludesSuccessMessage
+        module procedure makeIncludesSuccessMessageCC
+        module procedure makeIncludesSuccessMessageCS
+        module procedure makeIncludesSuccessMessageSC
+        module procedure makeIncludesSuccessMessageSS
+    end interface makeIncludesSuccessMessage
+
+    interface makeWithinFailureMessage
+        module procedure makeWithinFailureMessageCCC
+        module procedure makeWithinFailureMessageCCS
+        module procedure makeWithinFailureMessageCSC
+        module procedure makeWithinFailureMessageCSS
+        module procedure makeWithinFailureMessageSCC
+        module procedure makeWithinFailureMessageSCS
+        module procedure makeWithinFailureMessageSSC
+        module procedure makeWithinFailureMessageSSS
+    end interface makeWithinFailureMessage
+
+    interface makeWithinSuccesMessage
+        module procedure makeWithinSuccesMessageCCC
+        module procedure makeWithinSuccesMessageCCS
+        module procedure makeWithinSuccesMessageCSC
+        module procedure makeWithinSuccesMessageCSS
+        module procedure makeWithinSuccesMessageSCC
+        module procedure makeWithinSuccesMessageSCS
+        module procedure makeWithinSuccesMessageSSC
+        module procedure makeWithinSuccesMessageSSS
+    end interface makeWithinSuccesMessage
 
     interface splitAt
         module procedure splitAtCC
@@ -694,6 +766,7 @@ module Vegetables_m
             assertNot, &
             assertThat, &
             describe, &
+            delimit, &
             Example, &
             fail, &
             Generated, &
@@ -2332,12 +2405,19 @@ contains
         end if
     end function coverEmptyDecimal
 
-    pure function delimit(string) result(delimited)
+    pure function delimitC(string) result(delimited)
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: delimited
+
+        delimited = "[" // string // "]"
+    end function delimitC
+
+    pure function delimitS(string) result(delimited)
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: delimited
 
         delimited = "[" // string // "]"
-    end function delimit
+    end function delimitS
 
     pure function describeBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -3256,7 +3336,7 @@ contains
         char_ = lastCharacter(char(string))
     end function lastCharacterS
 
-    pure function makeDoesntIncludeFailureMessage(search_for, string) result(message)
+    pure function makeDoesntIncludeFailureMessageCC(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -3271,9 +3351,33 @@ contains
                         delimit(hangingIndent(search_for, 1)), &
                         INDENTATION), &
                 INDENTATION)
-    end function makeDoesntIncludeFailureMessage
+    end function makeDoesntIncludeFailureMessageCC
 
-    pure function makeDoesntIncludeSuccessMessage(search_for, string) result(message)
+    pure function makeDoesntIncludeFailureMessageCS(search_for, string) result(message)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeDoesntIncludeFailureMessage(search_for, char(string))
+    end function makeDoesntIncludeFailureMessageCS
+
+    pure function makeDoesntIncludeFailureMessageSC(search_for, string) result(message)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeDoesntIncludeFailureMessage(char(search_for), string)
+    end function makeDoesntIncludeFailureMessageSC
+
+    pure function makeDoesntIncludeFailureMessageSS(search_for, string) result(message)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeDoesntIncludeFailureMessage(char(search_for), char(string))
+    end function makeDoesntIncludeFailureMessageSS
+
+    pure function makeDoesntIncludeSuccessMessageCC(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -3288,9 +3392,33 @@ contains
                         delimit(hangingIndent(search_for, 1)), &
                         INDENTATION), &
                 INDENTATION)
-    end function makeDoesntIncludeSuccessMessage
+    end function makeDoesntIncludeSuccessMessageCC
 
-    pure function makeEmptyFailureMessage(string) result(message)
+    pure function makeDoesntIncludeSuccessMessageCS(search_for, string) result(message)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeDoesntIncludeSuccessMessage(search_for, char(string))
+    end function makeDoesntIncludeSuccessMessageCS
+
+    pure function makeDoesntIncludeSuccessMessageSC(search_for, string) result(message)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeDoesntIncludeSuccessMessage(char(search_for), string)
+    end function makeDoesntIncludeSuccessMessageSC
+
+    pure function makeDoesntIncludeSuccessMessageSS(search_for, string) result(message)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeDoesntIncludeSuccessMessage(char(search_for), char(string))
+    end function makeDoesntIncludeSuccessMessageSS
+
+    pure function makeEmptyFailureMessageC(string) result(message)
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
 
@@ -3301,11 +3429,18 @@ contains
                         INDENTATION) // NEWLINE &
                 // "wasn't empty", &
                 INDENTATION)
-    end function makeEmptyFailureMessage
+    end function makeEmptyFailureMessageC
 
-    pure function makeEqualsFailureMessage(expected, actual) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
+    pure function makeEmptyFailureMessageS(string) result(message)
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeEmptyFailureMessage(char(string))
+    end function makeEmptyFailureMessageS
+
+    pure function makeEqualsFailureMessageCC(expected, actual) result(message)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
         type(VARYING_STRING) :: message
 
         message = hangingIndent( &
@@ -3318,10 +3453,34 @@ contains
                         delimit(hangingIndent(actual, 1)), &
                         INDENTATION), &
                 INDENTATION)
-    end function makeEqualsFailureMessage
+    end function makeEqualsFailureMessageCC
 
-    pure function makeEqualsSuccessMessage(expected) result(message)
+    pure function makeEqualsFailureMessageCS(expected, actual) result(message)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING) :: message
+
+        message = makeEqualsFailureMessage(expected, char(actual))
+    end function makeEqualsFailureMessageCS
+
+    pure function makeEqualsFailureMessageSC(expected, actual) result(message)
         type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING) :: message
+
+        message = makeEqualsFailureMessage(char(expected), actual)
+    end function makeEqualsFailureMessageSC
+
+    pure function makeEqualsFailureMessageSS(expected, actual) result(message)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING) :: message
+
+        message = makeEqualsFailureMessage(char(expected), char(actual))
+    end function makeEqualsFailureMessageSS
+
+    pure function makeEqualsSuccessMessageC(expected) result(message)
+        character(len=*), intent(in) :: expected
         type(VARYING_STRING) :: message
 
         message = hangingIndent( &
@@ -3330,9 +3489,16 @@ contains
                         delimit(hangingIndent(expected, 1)), &
                         INDENTATION), &
                 INDENTATION)
-    end function makeEqualsSuccessMessage
+    end function makeEqualsSuccessMessageC
 
-    pure function makeIncludesFailureMessage(search_for, string) result(message)
+    pure function makeEqualsSuccessMessageS(expected) result(message)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING) :: message
+
+        message = makeEqualsSuccessMessage(char(expected))
+    end function makeEqualsSuccessMessageS
+
+    pure function makeIncludesFailureMessageCC(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -3347,9 +3513,33 @@ contains
                         delimit(hangingIndent(search_for, 1)), &
                         INDENTATION), &
                 INDENTATION)
-    end function makeIncludesFailureMessage
+    end function makeIncludesFailureMessageCC
 
-    pure function makeIncludesSuccessMessage(search_for, string) result(message)
+    pure function makeIncludesFailureMessageCS(search_for, string) result(message)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesFailureMessage(search_for, char(string))
+    end function makeIncludesFailureMessageCS
+
+    pure function makeIncludesFailureMessageSC(search_for, string) result(message)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesFailureMessage(char(search_for), string)
+    end function makeIncludesFailureMessageSC
+
+    pure function makeIncludesFailureMessageSS(search_for, string) result(message)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesFailureMessage(char(search_for), char(string))
+    end function makeIncludesFailureMessageSS
+
+    pure function makeIncludesSuccessMessageCC(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -3364,31 +3554,195 @@ contains
                         delimit(hangingIndent(search_for, 1)), &
                         INDENTATION), &
                 INDENTATION)
-    end function makeIncludesSuccessMessage
+    end function makeIncludesSuccessMessageCC
 
-    pure function makeWithinFailureMessage( &
+    pure function makeIncludesSuccessMessageCS(search_for, string) result(message)
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesSuccessMessage(search_for, char(string))
+    end function makeIncludesSuccessMessageCS
+
+    pure function makeIncludesSuccessMessageSC(search_for, string) result(message)
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesSuccessMessage(char(search_for), string)
+    end function makeIncludesSuccessMessageSC
+
+    pure function makeIncludesSuccessMessageSS(search_for, string) result(message)
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesSuccessMessage(char(search_for), char(string))
+    end function makeIncludesSuccessMessageSS
+
+    pure function makeWithinFailureMessageCCC( &
             expected, actual, tolerance) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: tolerance
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
         type(VARYING_STRING) :: message
 
         message = &
                 "Expected " // delimit(actual) // " to be  within " &
                 // delimit("±" // tolerance) // " of " // delimit(expected)
-    end function makeWithinFailureMessage
+    end function makeWithinFailureMessageCCC
 
-    pure function makeWithinSuccesMessage( &
+    pure function makeWithinFailureMessageCCS( &
+            expected, actual, tolerance) result(message)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage(expected, actual, char(tolerance))
+    end function makeWithinFailureMessageCCS
+
+    pure function makeWithinFailureMessageCSC( &
+            expected, actual, tolerance) result(message)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage(expected, char(actual), tolerance)
+    end function makeWithinFailureMessageCSC
+
+    pure function makeWithinFailureMessageCSS( &
+            expected, actual, tolerance) result(message)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage(expected, char(actual), char(tolerance))
+    end function makeWithinFailureMessageCSS
+
+    pure function makeWithinFailureMessageSCC( &
+            expected, actual, tolerance) result(message)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage(char(expected), actual, tolerance)
+    end function makeWithinFailureMessageSCC
+
+    pure function makeWithinFailureMessageSCS( &
+            expected, actual, tolerance) result(message)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage(char(expected), actual, char(tolerance))
+    end function makeWithinFailureMessageSCS
+
+    pure function makeWithinFailureMessageSSC( &
+            expected, actual, tolerance) result(message)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage(char(expected), char(actual), tolerance)
+    end function makeWithinFailureMessageSSC
+
+    pure function makeWithinFailureMessageSSS( &
             expected, actual, tolerance) result(message)
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: tolerance
         type(VARYING_STRING) :: message
 
+        message = makeWithinFailureMessage(char(expected), char(actual), char(tolerance))
+    end function makeWithinFailureMessageSSS
+
+    pure function makeWithinSuccesMessageCCC( &
+            expected, actual, tolerance) result(message)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
         message = &
                 delimit(actual) // " was within " // delimit("±" // tolerance) &
                 // " of " // delimit(expected)
-    end function makeWithinSuccesMessage
+    end function makeWithinSuccesMessageCCC
+
+    pure function makeWithinSuccesMessageCCS( &
+            expected, actual, tolerance) result(message)
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccesMessage(expected, actual, char(tolerance))
+    end function makeWithinSuccesMessageCCS
+
+    pure function makeWithinSuccesMessageCSC( &
+            expected, actual, tolerance) result(message)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccesMessage(expected, char(actual), tolerance)
+    end function makeWithinSuccesMessageCSC
+
+    pure function makeWithinSuccesMessageCSS( &
+            expected, actual, tolerance) result(message)
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccesMessage(expected, char(actual), char(tolerance))
+    end function makeWithinSuccesMessageCSS
+
+    pure function makeWithinSuccesMessageSCC( &
+            expected, actual, tolerance) result(message)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccesMessage(char(expected), actual, tolerance)
+    end function makeWithinSuccesMessageSCC
+
+    pure function makeWithinSuccesMessageSCS( &
+            expected, actual, tolerance) result(message)
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccesMessage(char(expected), actual, char(tolerance))
+    end function makeWithinSuccesMessageSCS
+
+    pure function makeWithinSuccesMessageSSC( &
+            expected, actual, tolerance) result(message)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccesMessage(char(expected), char(actual), tolerance)
+    end function makeWithinSuccesMessageSSC
+
+    pure function makeWithinSuccesMessageSSS( &
+            expected, actual, tolerance) result(message)
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccesMessage(char(expected), char(actual), char(tolerance))
+    end function makeWithinSuccesMessageSSS
 
     pure function removeTrailingZeros(number) result(trimmed)
         character(len=*), intent(in) :: number
