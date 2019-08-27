@@ -591,11 +591,6 @@ module Vegetables_m
         module procedure hangingIndentS
     end interface hangingIndent
 
-    interface indent
-        ! module procedure indentC
-        module procedure indentS
-    end interface indent
-
     interface it
         module procedure itBasic
         module procedure itWithExamples
@@ -3014,22 +3009,6 @@ contains
         includes = index(string, search_for) > 0
     end function includesSS
 
-    ! pure function indentC(string, spaces) result(indented)
-    !     character(len=*), intent(in) :: string
-    !     integer, intent(in) :: spaces
-    !     type(VARYING_STRING) :: indented
-    !
-    !     indented = repeat(" ", spaces) // hangingIndent(string, spaces)
-    ! end function indentC
-
-    pure function indentS(string, spaces) result(indented)
-        type(VARYING_STRING), intent(in) :: string
-        integer, intent(in) :: spaces
-        type(VARYING_STRING) :: indented
-
-        indented = repeat(" ", spaces) // hangingIndent(string, spaces)
-    end function indentS
-
     pure function IndividualResult(message, passed_)
         character(len=*), intent(in) :: message
         logical, intent(in) :: passed_
@@ -3199,6 +3178,8 @@ contains
     end function JustTransformingTestCollection
 
     pure function makeDoesntIncludeFailureMessageCC(search_for, string) result(message)
+        use strff, only: indent
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -3240,6 +3221,8 @@ contains
     end function makeDoesntIncludeFailureMessageSS
 
     pure function makeDoesntIncludeSuccessMessageCC(search_for, string) result(message)
+        use strff, only: indent
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -3281,6 +3264,8 @@ contains
     end function makeDoesntIncludeSuccessMessageSS
 
     pure function makeEmptyFailureMessageC(string) result(message)
+        use strff, only: indent
+
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
 
@@ -3301,6 +3286,8 @@ contains
     end function makeEmptyFailureMessageS
 
     pure function makeEqualsFailureMessageCC(expected, actual) result(message)
+        use strff, only: indent
+
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING) :: message
@@ -3342,6 +3329,8 @@ contains
     end function makeEqualsFailureMessageSS
 
     pure function makeEqualsSuccessMessageC(expected) result(message)
+        use strff, only: indent
+
         character(len=*), intent(in) :: expected
         type(VARYING_STRING) :: message
 
@@ -3361,6 +3350,8 @@ contains
     end function makeEqualsSuccessMessageS
 
     pure function makeIncludesFailureMessageCC(search_for, string) result(message)
+        use strff, only: indent
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -3402,6 +3393,8 @@ contains
     end function makeIncludesFailureMessageSS
 
     pure function makeIncludesSuccessMessageCC(search_for, string) result(message)
+        use strff, only: indent
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -4555,6 +4548,8 @@ contains
     end function withoutLastCharacter
 
     pure function withUserMessageCC(message, user_message) result(whole_message)
+        use strff, only: indent
+
         character(len=*), intent(in) :: message
         character(len=*), intent(in) :: user_message
         type(VARYING_STRING) :: whole_message
