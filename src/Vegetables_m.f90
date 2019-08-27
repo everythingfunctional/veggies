@@ -602,11 +602,6 @@ module Vegetables_m
         module procedure itWithGenerator
     end interface it
 
-    interface join
-        module procedure joinC
-        ! module procedure joinS
-    end interface join
-
     interface Just
         module procedure JustInputTestCase
         module procedure JustTestCase
@@ -3029,6 +3024,8 @@ contains
     end function givenWithInput
 
     pure function hangingIndentC(string__, spaces) result(indented)
+        use strff, only: join
+
         character(len=*), intent(in) :: string__
         integer, intent(in) :: spaces
         type(VARYING_STRING) :: indented
@@ -3040,6 +3037,8 @@ contains
     end function hangingIndentC
 
     pure function hangingIndentS(string__, spaces) result(indented)
+        use strff, only: join
+
         type(VARYING_STRING), intent(in) :: string__
         integer, intent(in) :: spaces
         type(VARYING_STRING) :: indented
@@ -3231,27 +3230,6 @@ contains
             test = TestCaseWithGenerator(description, generator, func)
         end select
     end function itWithGenerator
-
-    pure function joinC(strings_, separator) result(string)
-        type(VARYING_STRING), intent(in) :: strings_(:)
-        character(len=*), intent(in) :: separator
-        type(VARYING_STRING) :: string
-
-        integer :: i
-
-        string = strings_(1)
-        do i = 2, size(strings_)
-            string = string // separator // strings_(i)
-        end do
-    end function joinC
-
-    ! pure function joinS(strings_, separator) result(string)
-    !     type(VARYING_STRING), intent(in) :: strings_(:)
-    !     type(VARYING_STRING), intent(in) :: separator
-    !     type(VARYING_STRING) :: string
-    !
-    !     string = join(strings_, char(separator))
-    ! end function joinS
 
     pure function JustInputTestCase(value_) result(just_)
         type(InputTestCase_t), intent(in) :: value_
@@ -3753,6 +3731,8 @@ contains
     end function Result_
 
     pure function resultFailureDescription(self, colorize) result(description)
+        use strff, only: join
+
         class(Result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -3799,6 +3779,8 @@ contains
     end function resultPassed
 
     pure function resultVerboseDescription(self, colorize) result(description)
+        use strff, only: join
+
         class(Result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -4399,6 +4381,8 @@ contains
     end function TestCollection
 
     pure function testCollectionDescription(self) result(description)
+        use strff, only: join
+
         class(TestCollection_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
@@ -4417,6 +4401,8 @@ contains
     end function testCollectionDescription
 
     pure function testCollectionFailureDescription(self, colorize) result(description)
+        use strff, only: join
+
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -4502,6 +4488,8 @@ contains
     end function testCollectionResultNumCases
 
     pure function testCollectionVerboseDescription(self, colorize) result(description)
+        use strff, only: join
+
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -4534,6 +4522,8 @@ contains
     end function TestCollectionWithInput
 
     pure function testCollectionWithInputDescription(self) result(description)
+        use strff, only: join
+
         class(TestCollectionWithInput_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
@@ -4678,6 +4668,8 @@ contains
     end function TransformingTestCollection
 
     pure function transformingTestCollectionDescription(self) result(description)
+        use strff, only: join
+
         class(TransformingTestCollection_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
