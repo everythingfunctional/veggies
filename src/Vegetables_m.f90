@@ -32,13 +32,6 @@ module Vegetables_m
         procedure(shrink_), public, nopass, deferred :: shrink
     end type Generator_t
 
-    type, public, extends(Generator_t) :: AsciiCharactersGenerator_t
-    contains
-        private
-        procedure, public :: generate => generateAsciiCharacters
-        procedure, public, nopass :: shrink => shrinkAsciiCharacters
-    end type AsciiCharactersGenerator_t
-
     type, public, extends(Generator_t) :: AsciiStringGenerator_t
     contains
         private
@@ -735,8 +728,6 @@ module Vegetables_m
         module procedure whenWithTransformer
     end interface
 
-    type(AsciiCharactersGenerator_t), parameter, public :: &
-            ASCII_CHARACTERS_GENERATOR = AsciiCharactersGenerator_t()
     type(AsciiStringGenerator_t), parameter, public :: &
             ASCII_STRING_GENERATOR = AsciiStringGenerator_t()
     type(IntegerGenerator_t), parameter, public :: &
@@ -2738,15 +2729,6 @@ contains
         end select
     end function Generated
 
-    function generateAsciiCharacters(self) result(generated_value)
-        class(AsciiCharactersGenerator_t), intent(in) :: self
-        type(Generated_t) :: generated_value
-
-        associate(a => self)
-        end associate
-        generated_value = Generated(getRandomAsciiCharacters())
-    end function generateAsciiCharacters
-
     function generateAsciiString(self) result(generated_value)
         class(AsciiStringGenerator_t), intent(in) :: self
         type(Generated_t) :: generated_value
@@ -2888,7 +2870,15 @@ contains
         integer, intent(in) :: max_length
         type(VARYING_STRING) :: random_string
 
-        random_string = getRandomAsciiCharactersWithMaxLength(max_length)
+        character(len=max_length) :: characters
+        integer :: i
+        integer :: num_characters
+
+        num_characters = getRandomIntegerWithRange(0, max_length)
+        do i = 1, num_characters
+            characters(i:i) = getRandomAsciiCharacter()
+        end do
+        random_string = characters(1:num_characters)
     end function getRandomAsciiStringWithMaxLength
 
     function getRandomDoublePrecisionWithMagnitude(magnitude) result(random_double)
@@ -4111,20 +4101,6 @@ contains
             result__ = TestCollectionResult(self%description_, results)
         end select
     end function runTransformingCollection
-
-    pure function shrinkAsciiCharacters(value_) result(shrunk)
-        class(*), intent(in) :: value_
-        class(ShrinkResult_t), allocatable :: shrunk
-
-        select type (value_)
-        type is (character(len=*))
-            if (len(value_) <= 1) then
-                allocate(shrunk, source = SimplestValue(""))
-            else
-                allocate(shrunk, source = ShrunkValue(value_(1:len(value_)-1)))
-            end if
-        end select
-    end function shrinkAsciiCharacters
 
     pure function shrinkAsciiString(value_) result(shrunk)
         class(*), intent(in) :: value_
