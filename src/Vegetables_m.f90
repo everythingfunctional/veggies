@@ -721,8 +721,6 @@ module Vegetables_m
             Generated, &
             given, &
             getRandomAsciiCharacter, &
-            getRandomAsciiCharacters, &
-            getRandomAsciiCharactersWithMaxLength, &
             getRandomAsciiString, &
             getRandomAsciiStringWithMaxLength, &
             getRandomDoublePrecisionWithMagnitude, &
@@ -2756,26 +2754,6 @@ contains
         which_character = getRandomIntegerWithRange(0, len(ASCII_CHARACTERS))
         random_character = ASCII_CHARACTERS(which_character:which_character)
     end function getRandomAsciiCharacter
-
-    function getRandomAsciiCharacters() result(random_string)
-        character(len=:), allocatable :: random_string
-
-        random_string = getRandomAsciiCharactersWithMaxLength(1024)
-    end function getRandomAsciiCharacters
-
-    function getRandomAsciiCharactersWithMaxLength(max_length) result(random_string)
-        integer, intent(in) :: max_length
-        character(len=:), allocatable :: random_string
-
-        integer :: i
-        integer :: num_characters
-
-        num_characters = getRandomIntegerWithRange(0, max_length)
-        allocate(character(len=num_characters) :: random_string)
-        do i = 1, num_characters
-            random_string(i:i) = getRandomAsciiCharacter()
-        end do
-    end function getRandomAsciiCharactersWithMaxLength
 
     function getRandomAsciiString() result(random_string)
         type(VARYING_STRING) :: random_string
