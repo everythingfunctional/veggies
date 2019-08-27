@@ -395,13 +395,6 @@ module Vegetables_m
         procedure, public :: getValue => getValueTransformingTestCollection
     end type JustTransformingTestCollection_t
 
-    interface operator(.includes.)
-        module procedure includesCC
-        ! module procedure includesCS
-        ! module procedure includesSC
-        module procedure includesSS
-    end interface operator(.includes.)
-
     interface assertDoesntInclude
         module procedure assertDoesntIncludeCC
         module procedure assertDoesntIncludeCS
@@ -875,6 +868,8 @@ contains
 
     pure function assertDoesntIncludeWithMessagesCCCC( &
             search_for, string, success_message, failure_message) result(result__)
+        use strff, only: operator(.includes.)
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -1998,6 +1993,8 @@ contains
 
     pure function assertIncludesWithMessagesCCCC( &
             search_for, string, success_message, failure_message) result(result__)
+        use strff, only: operator(.includes.)
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -2435,6 +2432,8 @@ contains
     end function failS
 
     pure function filterInputTestCase(self, filter_string) result(maybe)
+        use strff, only: operator(.includes.)
+
         class(InputTestCase_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
@@ -2447,6 +2446,8 @@ contains
     end function filterInputTestCase
 
     pure function filterTestCase(self, filter_string) result(maybe)
+        use strff, only: operator(.includes.)
+
         class(TestCase_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
@@ -2459,6 +2460,8 @@ contains
     end function filterTestCase
 
     pure function filterTestCaseWithExamples(self, filter_string) result(maybe)
+        use strff, only: operator(.includes.)
+
         class(TestCaseWithExamples_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
@@ -2471,6 +2474,8 @@ contains
     end function filterTestCaseWithExamples
 
     pure function filterTestCaseWithGenerator(self, filter_string) result(maybe)
+        use strff, only: operator(.includes.)
+
         class(TestCaseWithGenerator_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
@@ -2483,6 +2488,8 @@ contains
     end function filterTestCaseWithGenerator
 
     pure function filterTestCollection(self, filter_string) result(maybe)
+        use strff, only: operator(.includes.)
+
         class(TestCollection_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
@@ -2512,6 +2519,8 @@ contains
     end function filterTestCollection
 
     pure function filterTestCollectionWithInput(self, filter_string) result(maybe)
+        use strff, only: operator(.includes.)
+
         class(TestCollectionWithInput_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
@@ -2594,6 +2603,8 @@ contains
     end function filterTestItem
 
     pure function filterTransformingTestCollection(self, filter_string) result(maybe)
+        use strff, only: operator(.includes.)
+
         class(TransformingTestCollection_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         class(Maybe_t), allocatable :: maybe
@@ -2945,38 +2956,6 @@ contains
             hasValue = .true.
         end select
     end function hasValue
-
-    pure function includesCC(string, search_for) result(includes)
-        character(len=*), intent(in) :: string
-        character(len=*), intent(in) :: search_for
-        logical :: includes
-
-        includes = index(string, search_for) > 0
-    end function includesCC
-
-    ! pure function includesCS(string, search_for) result(includes)
-    !     character(len=*), intent(in) :: string
-    !     type(VARYING_STRING), intent(in) :: search_for
-    !     logical :: includes
-    !
-    !     includes = index(string, search_for) > 0
-    ! end function includesCS
-
-    ! pure function includesSC(string, search_for) result(includes)
-    !     type(VARYING_STRING), intent(in) :: string
-    !     character(len=*), intent(in) :: search_for
-    !     logical :: includes
-    !
-    !     includes = index(string, search_for) > 0
-    ! end function includesSC
-
-    pure function includesSS(string, search_for) result(includes)
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: search_for
-        logical :: includes
-
-        includes = index(string, search_for) > 0
-    end function includesSS
 
     pure function IndividualResult(message, passed_)
         character(len=*), intent(in) :: message
