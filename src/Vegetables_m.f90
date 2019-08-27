@@ -680,11 +680,6 @@ module Vegetables_m
         module procedure makeWithinSuccesMessageSSS
     end interface makeWithinSuccesMessage
 
-    interface splitAt
-        module procedure splitAtCC
-        module procedure splitAtSC
-    end interface splitAt
-
     interface succeed
         module procedure succeedC
         module procedure succeedS
@@ -2950,7 +2945,7 @@ contains
     end function givenWithInput
 
     pure function hangingIndentC(string__, spaces) result(indented)
-        use strff, only: join
+        use strff, only: join, splitAt
 
         character(len=*), intent(in) :: string__
         integer, intent(in) :: spaces
@@ -2963,7 +2958,7 @@ contains
     end function hangingIndentC
 
     pure function hangingIndentS(string__, spaces) result(indented)
-        use strff, only: join
+        use strff, only: join, splitAt
 
         type(VARYING_STRING), intent(in) :: string__
         integer, intent(in) :: spaces
@@ -4027,63 +4022,6 @@ contains
             allocate(SimplestValue%value_, source = value_)
         end select
     end function SimplestValue
-
-    pure recursive function splitAtCC(&
-            string_, split_characters) result(strings)
-        character(len=*), intent(in) :: string_
-        character(len=*), intent(in) :: split_characters
-        type(VARYING_STRING), allocatable :: strings(:)
-
-        if (len(split_characters) > 0) then
-            if (len(string_) > 0) then
-                if (index(split_characters, string_(1:1)) > 0) then
-                    strings = splitAt(string_(2:), split_characters)
-                else if (index(split_characters, string_(len(string_):len(string_))) > 0) then
-                    strings = splitAt(string_(1:len(string_) - 1), split_characters)
-                else
-                    strings = doSplit(string_, split_characters)
-                end if
-            else
-                allocate(strings(1))
-                strings(1) = ""
-            end if
-        else
-            allocate(strings(1))
-            strings(1) = string_
-        end if
-    contains
-        pure function doSplit(string__, split_characters_) result(strings_)
-            character(len=*), intent(in) :: string__
-            character(len=*), intent(in) :: split_characters_
-            type(VARYING_STRING), allocatable :: strings_(:)
-
-            integer :: i
-            type(VARYING_STRING), allocatable :: rest(:)
-            type(VARYING_STRING) :: this_string
-
-            do i = 2, len(string__)
-                if (index(split_characters_, string__(i:i)) > 0) exit
-            end do
-            if (i < len(string__)) then
-                this_string = string__(1:i - 1)
-                allocate(rest, source = splitAt(string__(i + 1:), split_characters_))
-                allocate(strings_(size(rest) + 1))
-                strings_(1) = this_string
-                strings_(2:) = rest(:)
-            else
-                allocate(strings_(1))
-                strings_(1) = string__
-            end if
-        end function doSplit
-    end function splitAtCC
-
-    pure function splitAtSC(string_, split_characters) result(strings)
-        type(VARYING_STRING), intent(in) :: string_
-        character(len=*), intent(in) :: split_characters
-        type(VARYING_STRING), allocatable :: strings(:)
-
-        allocate(strings, source = splitAt(char(string_), split_characters))
-    end function splitAtSC
 
     pure function succeedC(message) result(success)
         character(len=*), intent(in) :: message
