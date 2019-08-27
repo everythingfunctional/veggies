@@ -613,11 +613,6 @@ module Vegetables_m
         module procedure JustTransformingTestCollection
     end interface Just
 
-    interface lastCharacter
-        module procedure lastCharacterC
-        module procedure lastCharacterS
-    end interface lastCharacter
-
     interface makeDoesntIncludeFailureMessage
         module procedure makeDoesntIncludeFailureMessageCC
         module procedure makeDoesntIncludeFailureMessageCS
@@ -704,11 +699,6 @@ module Vegetables_m
         ! module procedure TestCollectionResultC
         module procedure TestCollectionResultS
     end interface TestCollectionResult
-
-    interface toString
-        module procedure doublePrecisionToString
-        module procedure integerToString
-    end interface toString
 
     interface withUserMessage
         module procedure withUserMessageCC
@@ -1630,6 +1620,8 @@ contains
             success_message, &
             failure_message) &
             result(result__)
+        use strff, only: toString
+
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -1749,6 +1741,8 @@ contains
             success_message, &
             failure_message) &
             result(result__)
+        use strff, only: toString
+
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -1857,6 +1851,8 @@ contains
 
     pure function assertEqualsIntegerWithMessagesCC( &
             expected, actual, success_message, failure_message) result(result__)
+        use strff, only: toString
+
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -2378,19 +2374,6 @@ contains
         end if
     end function combineResults
 
-    pure function coverEmptyDecimal(number) result(fixed)
-        character(len=*), intent(in) :: number
-        type(VARYING_STRING) :: fixed
-
-        if (lastCharacter(trim(number)) == ".") then
-            fixed = trim(number) // "0"
-        else if (firstCharacter(trim(number)) == ".") then
-            fixed = "0" // trim(number)
-        else
-            fixed = trim(number)
-        end if
-    end function coverEmptyDecimal
-
     pure function delimitC(string) result(delimited)
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: delimited
@@ -2429,48 +2412,6 @@ contains
             test = TestCollectionWithInput(description, input, tests)
         end select
     end function describeWithInput
-
-    pure function doublePrecisionToString(number) result(string)
-        double precision, intent(in) :: number
-        type(VARYING_STRING) :: string
-
-        integer, parameter :: C_LEN = 32
-        integer, parameter :: PRECISION = 15
-        double precision :: abs_num
-        character(len=C_LEN) :: exponent_part
-        character(len=C_LEN) :: floating_part
-        character(len=7) :: format_string
-        character(len=C_LEN) :: intermediate
-        integer :: scale_
-
-        abs_num = abs(number)
-        if (abs_num <= MACHINE_TINY) then
-            string = "0.0"
-            return
-        end if
-        scale_ = floor(log10(abs_num))
-        if (scale_ >= PRECISION) then
-            write(format_string, '(A,I0,A)') "(f0.", PRECISION-1, ")"
-            write(floating_part, format_string) abs_num / 10.0_dp**scale_
-            write(exponent_part, '(A,I0)') 'e', scale_
-        else if (scale_ <= -2) then
-            write(format_string, '(A,I0,A)') "(f0.", PRECISION-1, ")"
-            write(floating_part, format_string) abs_num * 10.0_dp**(-scale_)
-            write(exponent_part, '(A,I0)') 'e', scale_
-        else
-            write(format_string, '(A,I0,A)') "(f0.", PRECISION-scale_-1, ")"
-            write(floating_part, format_string) abs_num
-            exponent_part = ""
-        end if
-        floating_part = removeTrailingZeros(floating_part)
-        floating_part = coverEmptyDecimal(floating_part)
-        intermediate = trim(floating_part) // trim(exponent_part)
-        if (number < 0.0_dp) then
-            string = "-" // trim(intermediate)
-        else
-            string = trim(intermediate)
-        end if
-    end function doublePrecisionToString
 
     pure function equalsWithinAbsolute(expected, actual, tolerance)
         double precision, intent(in) :: expected
@@ -2701,16 +2642,6 @@ contains
             end if
         end if
     end function filterTransformingTestCollection
-
-    pure function firstCharacter(string) result(first)
-        character(len=*), intent(in) :: string
-        character(len=1) :: first
-
-        type(VARYING_STRING) :: trimmed
-
-        trimmed = trim(string)
-        first = extract(trimmed, 1, 1)
-    end function firstCharacter
 
     pure function Generated(value_)
         class(*), intent(in) :: value_
@@ -3171,16 +3102,6 @@ contains
         num_cases = 1
     end function inputTestCaseNumCases
 
-    pure function integerToString(int) result(string)
-        integer, intent(in) :: int
-        type(VARYING_STRING) :: string
-
-        character(len=12) :: temp
-
-        write(temp, '(I0)') int
-        string = trim(temp)
-    end function integerToString
-
     function it_(description, func) result(test_case)
         character(len=*), intent(in) :: description
         procedure(inputTest) :: func
@@ -3286,23 +3207,6 @@ contains
 
         just_ = JustTransformingTestCollection_t(value_)
     end function JustTransformingTestCollection
-
-    pure function lastCharacterC(string) result(char_)
-        character(len=*), intent(in) :: string
-        character(len=1) :: char_
-
-        integer :: length
-
-        length = len(trim(string))
-        char_ = string(length:length)
-    end function lastCharacterC
-
-    pure function lastCharacterS(string) result(char_)
-        type(VARYING_STRING), intent(in) :: string
-        character(len=1) :: char_
-
-        char_ = lastCharacter(char(string))
-    end function lastCharacterS
 
     pure function makeDoesntIncludeFailureMessageCC(search_for, string) result(message)
         character(len=*), intent(in) :: search_for
@@ -3712,16 +3616,6 @@ contains
         message = makeWithinSuccesMessage(char(expected), char(actual), char(tolerance))
     end function makeWithinSuccesMessageSSS
 
-    pure function removeTrailingZeros(number) result(trimmed)
-        character(len=*), intent(in) :: number
-        type(VARYING_STRING) :: trimmed
-
-        trimmed = trim(number)
-        do while (lastCharacter(trimmed) == "0")
-            trimmed = withoutLastCharacter(trimmed)
-        end do
-    end function removeTrailingZeros
-
     pure function Result_(individual_result)
         type(IndividualResult_t), intent(in) :: individual_result
         type(Result_t) :: Result_
@@ -3816,6 +3710,8 @@ contains
     end function runCaseWithExamples
 
     function runCaseWithGenerator(self) result(result__)
+        use strff, only: toString
+
         class(TestCaseWithGenerator_t), intent(in) :: self
         type(TestCaseResult_t) :: result__
 
@@ -3986,6 +3882,7 @@ contains
 
     subroutine runTests(tests)
         use iso_fortran_env, only: error_unit, output_unit
+        use strff, only: toString
 
         type(TestItem_t) :: tests
 
