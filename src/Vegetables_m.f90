@@ -695,11 +695,6 @@ module Vegetables_m
         module procedure TestCaseResultS
     end interface TestCaseResult
 
-    interface TestCollectionResult
-        ! module procedure TestCollectionResultC
-        module procedure TestCollectionResultS
-    end interface TestCollectionResult
-
     interface withUserMessage
         module procedure withUserMessageCC
         module procedure withUserMessageCS
@@ -4357,17 +4352,7 @@ contains
         passed = all(self%results%passed())
     end function testCollectionPassed
 
-    ! pure function TestCollectionResultC(description, results) result(test_collection_result)
-    !     character(len=*), intent(in) :: description
-    !     type(TestResultItem_t), intent(in) :: results(:)
-    !     type(TestCollectionResult_t) :: test_collection_result
-    !
-    !     test_collection_result%description = description
-    !     allocate(test_collection_result%results(size(results)))
-    !     test_collection_result%results = results
-    ! end function TestCollectionResultC
-
-    pure function TestCollectionResultS(description, results) result(test_collection_result)
+    pure function TestCollectionResult(description, results) result(test_collection_result)
         type(VARYING_STRING), intent(in) :: description
         type(TestResultItem_t), intent(in) :: results(:)
         type(TestCollectionResult_t) :: test_collection_result
@@ -4375,7 +4360,7 @@ contains
         test_collection_result%description = description
         allocate(test_collection_result%results(size(results)))
         test_collection_result%results = results
-    end function TestCollectionResultS
+    end function TestCollectionResult
 
     pure function testCollectionResultNumCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
