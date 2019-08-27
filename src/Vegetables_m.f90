@@ -586,11 +586,6 @@ module Vegetables_m
         module procedure givenWithInput
     end interface given
 
-    interface hangingIndent
-        module procedure hangingIndentC
-        module procedure hangingIndentS
-    end interface hangingIndent
-
     interface it
         module procedure itBasic
         module procedure itWithExamples
@@ -2939,32 +2934,6 @@ contains
         test_collection = describe("Given " // description, input, tests)
     end function givenWithInput
 
-    pure function hangingIndentC(string__, spaces) result(indented)
-        use strff, only: join, splitAt
-
-        character(len=*), intent(in) :: string__
-        integer, intent(in) :: spaces
-        type(VARYING_STRING) :: indented
-
-        type(VARYING_STRING), allocatable :: lines(:)
-
-        allocate(lines, source = splitAt(string__, NEWLINE))
-        indented = join(lines, NEWLINE // repeat(" ", spaces))
-    end function hangingIndentC
-
-    pure function hangingIndentS(string__, spaces) result(indented)
-        use strff, only: join, splitAt
-
-        type(VARYING_STRING), intent(in) :: string__
-        integer, intent(in) :: spaces
-        type(VARYING_STRING) :: indented
-
-        type(VARYING_STRING), allocatable :: lines(:)
-
-        allocate(lines, source = splitAt(string__, NEWLINE))
-        indented = join(lines, NEWLINE // repeat(" ", spaces))
-    end function hangingIndentS
-
     elemental function hasValue(self)
         class(MaybeItem_t), intent(in) :: self
         logical :: hasValue
@@ -3178,7 +3147,7 @@ contains
     end function JustTransformingTestCollection
 
     pure function makeDoesntIncludeFailureMessageCC(search_for, string) result(message)
-        use strff, only: indent
+        use strff, only: indent, hangingIndent
 
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -3221,7 +3190,7 @@ contains
     end function makeDoesntIncludeFailureMessageSS
 
     pure function makeDoesntIncludeSuccessMessageCC(search_for, string) result(message)
-        use strff, only: indent
+        use strff, only: indent, hangingIndent
 
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -3264,7 +3233,7 @@ contains
     end function makeDoesntIncludeSuccessMessageSS
 
     pure function makeEmptyFailureMessageC(string) result(message)
-        use strff, only: indent
+        use strff, only: indent, hangingIndent
 
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -3286,7 +3255,7 @@ contains
     end function makeEmptyFailureMessageS
 
     pure function makeEqualsFailureMessageCC(expected, actual) result(message)
-        use strff, only: indent
+        use strff, only: indent, hangingIndent
 
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
@@ -3329,7 +3298,7 @@ contains
     end function makeEqualsFailureMessageSS
 
     pure function makeEqualsSuccessMessageC(expected) result(message)
-        use strff, only: indent
+        use strff, only: indent, hangingIndent
 
         character(len=*), intent(in) :: expected
         type(VARYING_STRING) :: message
@@ -3350,7 +3319,7 @@ contains
     end function makeEqualsSuccessMessageS
 
     pure function makeIncludesFailureMessageCC(search_for, string) result(message)
-        use strff, only: indent
+        use strff, only: indent, hangingIndent
 
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -3393,7 +3362,7 @@ contains
     end function makeIncludesFailureMessageSS
 
     pure function makeIncludesSuccessMessageCC(search_for, string) result(message)
-        use strff, only: indent
+        use strff, only: indent, hangingIndent
 
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -4047,6 +4016,8 @@ contains
     end function testCaseDescription
 
     pure function testCaseFailureDescription(self, colorize) result(description)
+        use strff, only: hangingIndent
+
         class(TestCaseResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -4129,6 +4100,8 @@ contains
     end function testCaseResultNumCases
 
     pure function testCaseVerboseDescription(self, colorize) result(description)
+        use strff, only: hangingIndent
+
         class(TestCaseResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -4204,7 +4177,7 @@ contains
     end function TestCollection
 
     pure function testCollectionDescription(self) result(description)
-        use strff, only: join
+        use strff, only: hangingIndent, join
 
         class(TestCollection_t), intent(in) :: self
         type(VARYING_STRING) :: description
@@ -4224,7 +4197,7 @@ contains
     end function testCollectionDescription
 
     pure function testCollectionFailureDescription(self, colorize) result(description)
-        use strff, only: join
+        use strff, only: hangingIndent, join
 
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
@@ -4301,7 +4274,7 @@ contains
     end function testCollectionResultNumCases
 
     pure function testCollectionVerboseDescription(self, colorize) result(description)
-        use strff, only: join
+        use strff, only: hangingIndent, join
 
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
@@ -4335,7 +4308,7 @@ contains
     end function TestCollectionWithInput
 
     pure function testCollectionWithInputDescription(self) result(description)
-        use strff, only: join
+        use strff, only: hangingIndent, join
 
         class(TestCollectionWithInput_t), intent(in) :: self
         type(VARYING_STRING) :: description
@@ -4481,7 +4454,7 @@ contains
     end function TransformingTestCollection
 
     pure function transformingTestCollectionDescription(self) result(description)
-        use strff, only: join
+        use strff, only: hangingIndent, join
 
         class(TransformingTestCollection_t), intent(in) :: self
         type(VARYING_STRING) :: description
@@ -4548,7 +4521,7 @@ contains
     end function withoutLastCharacter
 
     pure function withUserMessageCC(message, user_message) result(whole_message)
-        use strff, only: indent
+        use strff, only: indent, hangingIndent
 
         character(len=*), intent(in) :: message
         character(len=*), intent(in) :: user_message
