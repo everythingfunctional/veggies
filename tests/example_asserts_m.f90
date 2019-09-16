@@ -27,5 +27,4 @@ contains
 
         result_ = succeed(SUCCESS_MESSAGE).and.fail(FAILURE_MESSAGE)
     end function exampleMultipleAssertsWithFail
-
 end module example_asserts_m

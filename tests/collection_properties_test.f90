@@ -11,12 +11,13 @@ contains
         type(TestItem_t) :: test
 
         type(TestCollection_t) :: example_collection
-        type(TestItem_t) :: individual_tests(3)
+        type(TestItem_t) :: individual_tests(4)
 
         example_collection = examplePassingCollection()
         individual_tests(1) = it_("can tell how many tests it has", checkNumCases)
         individual_tests(2) = it_("includes the given description", checkCollectionTopDescription)
         individual_tests(3) = it_("includes the individual test descriptions", checkCollectionDescriptions)
+        individual_tests(4) = it_("doesn't take much more time than the individual cases", checkSpeed)
         test = describe("A test collection", example_collection, individual_tests)
     end function test_collection_properties
 
@@ -71,4 +72,30 @@ contains
             result_ = fail("Expected to get a TestCollection_t")
         end select
     end function checkCollectionDescriptions
+
+    function checkSpeed(example_collection) result(result_)
+        use Vegetables_m, only: &
+                Result_t, TestCollection_t, assertFasterThan, fail
+
+        class(*), intent(in) :: example_collection
+        type(Result_t) :: result_
+
+        type(TestCollection_t) :: internal_collection
+
+        select type (example_collection)
+        type is (TestCollection_t)
+            internal_collection = example_collection
+            result_ = assertFasterThan(1.0d-5, runCollection, 100)
+        class default
+            result_ = fail("Expected to get a TestCollection_t")
+        end select
+    contains
+        subroutine runCollection
+            use Vegetables_m, only: TestCollectionResult_t
+
+            type(TestCollectionResult_t) :: internal_result
+
+            internal_result = internal_collection%run()
+        end subroutine
+    end function checkSpeed
 end module collection_properties_test

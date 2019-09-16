@@ -10,10 +10,11 @@ contains
 
         type(TestItem_t) :: test
 
-        type(TestItem_t) :: individual_tests(2)
+        type(TestItem_t) :: individual_tests(3)
 
         individual_tests(1) = it_("includes the given description", checkCaseDescription)
         individual_tests(2) = it_("only has 1 test case", checkNumCases)
+        individual_tests(3) = it_("takes very little time to run", checkSpeed)
         test = describe("A test case", examplePassingTestCase(), individual_tests)
     end function test_case_properties
 
@@ -45,4 +46,29 @@ contains
             result_ = fail("Expected to get a TestCase_t")
         end select
     end function checkNumCases
+
+    function checkSpeed(example_case) result(result_)
+        use Vegetables_m, only: Result_t, TestCase_t, assertFasterThan, fail
+
+        class(*), intent(in) :: example_case
+        type(Result_t) :: result_
+
+        type(TestCase_t) :: internal_case
+
+        select type (example_case)
+        type is (TestCase_t)
+            internal_case = example_case
+            result_ = assertFasterThan(1.0d-6, runCase, 100)
+        class default
+            result_ = fail("Expected to get a TestCase_t")
+        end select
+    contains
+        subroutine runCase
+            use Vegetables_m, only: TestCaseResult_t
+
+            type(TestCaseResult_t) :: internal_result
+
+            internal_result = internal_case%run()
+        end subroutine
+    end function checkSpeed
 end module single_case_properties_test
