@@ -2516,14 +2516,14 @@ contains
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: delimited
 
-        delimited = "[" // string // "]"
+        delimited = "|" // string // "|"
     end function delimitC
 
     pure function delimitS(string) result(delimited)
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: delimited
 
-        delimited = "[" // string // "]"
+        delimited = "|" // string // "|"
     end function delimitS
 
     pure function describeBasic(description, tests) result(test_collection)
