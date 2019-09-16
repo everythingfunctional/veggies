@@ -711,6 +711,7 @@ module Vegetables_m
             assertEquals, &
             assertEqualsWithinAbsolute, &
             assertEqualsWithinRelative, &
+            assertFasterThan, &
             assertIncludes, &
             assertNot, &
             assertThat, &
@@ -1876,6 +1877,43 @@ contains
 
         result__ = assertEquals(expected, actual, char(success_message), char(failure_message))
     end function assertEqualsIntegerWithMessagesSS
+
+    function assertFasterThan(seconds, computation, times) result(result__)
+        use strff, only: toString
+
+        interface
+            subroutine computation_
+            end subroutine computation_
+        end interface
+
+        double precision, intent(in) :: seconds
+        procedure(computation_) :: computation
+        integer, intent(in) :: times
+        type(Result_t) :: result__
+
+        integer :: i
+        double precision :: start_time
+        double precision :: end_time
+        double precision :: average_time
+
+        call cpu_time(start_time)
+        do i = 1, times
+            call computation
+        end do
+        call cpu_time(end_time)
+        average_time = (end_time - start_time) / dble(times)
+        if (average_time < seconds) then
+            result__ = succeed( &
+                    "Ran faster than " // toString(seconds) &
+                    // " seconds. Averaged " // toString(average_time) &
+                    // " seconds over " // toString(times) // " runs.")
+        else
+            result__ = fail( &
+                    "Ran slower than " // toString(seconds) &
+                    // " seconds. Averaged " // toString(average_time) &
+                    // " seconds over " // toString(times) // " runs.")
+        end if
+    end function assertFasterThan
 
     pure function assertIncludesCC(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
