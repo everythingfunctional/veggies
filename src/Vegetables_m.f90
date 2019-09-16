@@ -119,6 +119,9 @@ module Vegetables_m
     end type Example_t
 
     abstract interface
+        subroutine computation_
+        end subroutine computation_
+
         pure function filter_(self, filter_string) result(maybe)
             import :: Test_t, Maybe_t, VARYING_STRING
             class(Test_t), intent(in) :: self
@@ -507,6 +510,16 @@ module Vegetables_m
         module procedure assertEqualsWithinRelativeWithMessagesSC
         module procedure assertEqualsWithinRelativeWithMessagesSS
     end interface assertEqualsWithinRelative
+
+    interface assertFasterThan
+        module procedure assertFasterThanBasic
+        module procedure assertFasterThanWithMessagesC
+        module procedure assertFasterThanWithMessagesS
+        module procedure assertFasterThanWithMessagesCC
+        module procedure assertFasterThanWithMessagesCS
+        module procedure assertFasterThanWithMessagesSC
+        module procedure assertFasterThanWithMessagesSS
+    end interface assertFasterThan
 
     interface assertIncludes
         module procedure assertIncludesCC
@@ -1878,17 +1891,61 @@ contains
         result__ = assertEquals(expected, actual, char(success_message), char(failure_message))
     end function assertEqualsIntegerWithMessagesSS
 
-    function assertFasterThan(seconds, computation, times) result(result__)
-        use strff, only: toString
+    function assertFasterThanBasic(seconds, computation, times) result(result__)
+        double precision, intent(in) :: seconds
+        procedure(computation_) :: computation
+        integer, intent(in) :: times
+        type(Result_t) :: result__
 
-        interface
-            subroutine computation_
-            end subroutine computation_
-        end interface
+        result__ = assertFasterThan(seconds, computation, times, "", "")
+    end function assertFasterThanBasic
+
+    function assertFasterThanWithMessagesC( &
+            seconds, computation, times, message) result(result__)
+        double precision, intent(in) :: seconds
+        procedure(computation_) :: computation
+        integer, intent(in) :: times
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                seconds, &
+                computation, &
+                times, &
+                message, &
+                message)
+    end function assertFasterThanWithMessagesC
+
+    function assertFasterThanWithMessagesS( &
+            seconds, computation, times, message) result(result__)
+        double precision, intent(in) :: seconds
+        procedure(computation_) :: computation
+        integer, intent(in) :: times
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                seconds, &
+                computation, &
+                times, &
+                char(message), &
+                char(message))
+    end function assertFasterThanWithMessagesS
+
+    function assertFasterThanWithMessagesCC( &
+            seconds, &
+            computation, &
+            times, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use strff, only: toString
 
         double precision, intent(in) :: seconds
         procedure(computation_) :: computation
         integer, intent(in) :: times
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
         type(Result_t) :: result__
 
         integer :: i
@@ -1903,17 +1960,85 @@ contains
         call cpu_time(end_time)
         average_time = (end_time - start_time) / dble(times)
         if (average_time < seconds) then
-            result__ = succeed( &
+            result__ = succeed(withUserMessage( &
                     "Ran faster than " // toString(seconds) &
                     // " seconds. Averaged " // toString(average_time) &
-                    // " seconds over " // toString(times) // " runs.")
+                    // " seconds over " // toString(times) // " runs.", &
+                    success_message))
         else
-            result__ = fail( &
+            result__ = fail(withUserMessage( &
                     "Ran slower than " // toString(seconds) &
                     // " seconds. Averaged " // toString(average_time) &
-                    // " seconds over " // toString(times) // " runs.")
+                    // " seconds over " // toString(times) // " runs.", &
+                    failure_message))
         end if
-    end function assertFasterThan
+    end function assertFasterThanWithMessagesCC
+
+    function assertFasterThanWithMessagesCS( &
+            seconds, &
+            computation, &
+            times, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        double precision, intent(in) :: seconds
+        procedure(computation_) :: computation
+        integer, intent(in) :: times
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                seconds, &
+                computation, &
+                times, &
+                success_message, &
+                char(failure_message))
+    end function assertFasterThanWithMessagesCS
+
+    function assertFasterThanWithMessagesSC( &
+            seconds, &
+            computation, &
+            times, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        double precision, intent(in) :: seconds
+        procedure(computation_) :: computation
+        integer, intent(in) :: times
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                seconds, &
+                computation, &
+                times, &
+                char(success_message), &
+                failure_message)
+    end function assertFasterThanWithMessagesSC
+
+    function assertFasterThanWithMessagesSS( &
+            seconds, &
+            computation, &
+            times, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        double precision, intent(in) :: seconds
+        procedure(computation_) :: computation
+        integer, intent(in) :: times
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                seconds, &
+                computation, &
+                times, &
+                char(success_message), &
+                char(failure_message))
+    end function assertFasterThanWithMessagesSS
 
     pure function assertIncludesCC(search_for, string) result(result__)
         character(len=*), intent(in) :: search_for
