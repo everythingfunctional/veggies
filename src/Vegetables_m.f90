@@ -3405,12 +3405,11 @@ contains
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
 
-        logical, allocatable :: failed_mask(:)
+        logical :: failed_mask(size(self%results))
         type(IndividualResult_t), allocatable :: failed_results(:)
         integer :: i
         type(VARYING_STRING), allocatable :: individual_descriptions(:)
 
-        allocate(failed_mask(size(self%results)))
         failed_mask = .not.self%results%passed_
         allocate(failed_results(count(failed_mask)))
         failed_results = pack(self%results, mask=failed_mask)
