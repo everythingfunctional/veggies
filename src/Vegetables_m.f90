@@ -719,9 +719,9 @@ module Vegetables_m
             runTests, &
             ShrunkValue, &
             SimplestValue, &
+            SimpleTestCase, &
+            SimpleTestCollection, &
             succeed, &
-            TestCase, &
-            TestCollection, &
             testThat, &
             then, &
             then_, &
@@ -2494,11 +2494,8 @@ contains
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
 
-        allocate(SimpleTestCollection_t :: test_collection%test)
-        select type (test => test_collection%test)
-        type is (SimpleTestCollection_t)
-            test = TestCollection(description, tests)
-        end select
+        allocate(test_collection%test, source = SimpleTestCollection( &
+                description, tests))
     end function describeBasic
 
     pure function describeWithInput(description, input, tests) result(test_collection)
@@ -2507,11 +2504,8 @@ contains
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
 
-        allocate(TestCollectionWithInput_t :: test_collection%test)
-        select type (test => test_collection%test)
-        type is (TestCollectionWithInput_t)
-            test = TestCollectionWithInput(description, input, tests)
-        end select
+        allocate(test_collection%test, source = TestCollectionWithInput( &
+                description, input, tests))
     end function describeWithInput
 
     pure function equalsWithinAbsolute(expected, actual, tolerance)
@@ -2538,7 +2532,7 @@ contains
         class(*), intent(in) :: value_
         type(Example_t) :: Example
 
-        Example%value_ = value_
+        allocate(Example%value_, source = value_)
     end function Example
 
     pure function failC(message) result(failure)
@@ -2817,14 +2811,11 @@ contains
         type(MaybeItem_t), intent(in) :: maybes(:)
         type(TestItem_t), allocatable :: test_items(:)
 
-        logical, allocatable :: are_values(:)
+        logical :: are_values(size(maybes))
         integer :: i
         type(MaybeItem_t), allocatable :: maybe_outputs(:)
-        integer :: num_inputs
         integer :: num_outputs
 
-        num_inputs = size(maybes)
-        allocate(are_values(num_inputs))
         are_values = maybes%hasValue()
         num_outputs = count(are_values)
         allocate(maybe_outputs(num_outputs))
@@ -2932,11 +2923,7 @@ contains
         procedure(inputTest) :: func
         type(TestItem_t) :: test_case
 
-        allocate(InputTestCase_t :: test_case%test)
-        select type (test => test_case%test)
-        type is (InputTestCase_t)
-            test = InputTestCase(description, func)
-        end select
+        allocate(test_case%test, source = InputTestCase(description, func))
     end function it_
 
     function itBasic(description, func) result(test_case)
@@ -2944,11 +2931,7 @@ contains
         procedure(test_) :: func
         type(TestItem_t) :: test_case
 
-        allocate(SimpleTestCase_t :: test_case%test)
-        select type (test => test_case%test)
-        type is (SimpleTestCase_t)
-            test = TestCase(description, func)
-        end select
+        allocate(test_case%test, source = SimpleTestCase(description, func))
     end function itBasic
 
     function itWithExamples(description, examples, func) result(test_case)
@@ -2957,11 +2940,8 @@ contains
         procedure(inputTest) :: func
         type(TestItem_t) :: test_case
 
-        allocate(TestCaseWithExamples_t :: test_case%test)
-        select type (test => test_case%test)
-        type is (TestCaseWithExamples_t)
-            test = TestCaseWithExamples(description, examples, func)
-        end select
+        allocate(test_case%test, source = TestCaseWithExamples( &
+                description, examples, func))
     end function itWithExamples
 
     function itWithGenerator(description, generator, func) result(test_case)
@@ -2970,11 +2950,8 @@ contains
         procedure(inputTest) :: func
         type(TestItem_t) :: test_case
 
-        allocate(TestCaseWithGenerator_t :: test_case%test)
-        select type (test => test_case%test)
-        type is (TestCaseWithGenerator_t)
-            test = TestCaseWithGenerator(description, generator, func)
-        end select
+        allocate(test_case%test, source = TestCaseWithGenerator( &
+                description, generator, func))
     end function itWithGenerator
 
     pure function JustTest(value_) result(just_)
@@ -2988,7 +2965,7 @@ contains
         type(TestItem_t), intent(in) :: value_
         type(JustTestItem_t) :: just_
 
-        just_ = JustTestItem_t(value_)
+        just_%value_ = value_
     end function JustTestItem
 
     pure function makeDoesntIncludeFailureMessageCC(search_for, string) result(message)
@@ -3889,6 +3866,25 @@ contains
         end select
     end function SimplestValue
 
+    function SimpleTestCase(description, func) result(test_case)
+        character(len=*), intent(in) :: description
+        procedure(test_) :: func
+        type(SimpleTestCase_t) :: test_case
+
+        test_case%description_ = description
+        test_case%test => func
+    end function SimpleTestCase
+
+    pure function SimpleTestCollection(description, tests) result(test_collection)
+        character(len=*), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(SimpleTestCollection_t) :: test_collection
+
+        test_collection%description_ = description
+        allocate(test_collection%tests(size(tests)))
+        test_collection%tests = tests
+    end function SimpleTestCollection
+
     pure function succeedC(message) result(success)
         character(len=*), intent(in) :: message
         type(Result_t) :: success
@@ -3902,15 +3898,6 @@ contains
 
         success = Result_(IndividualResult(char(message), .true.))
     end function succeedS
-
-    function TestCase(description, func) result(test_case)
-        character(len=*), intent(in) :: description
-        procedure(test_) :: func
-        type(SimpleTestCase_t) :: test_case
-
-        test_case%description_ = description
-        test_case%test => func
-    end function TestCase
 
     pure function testCaseDescription(self) result(description)
         class(TestCase_t), intent(in) :: self
@@ -4037,16 +4024,6 @@ contains
         allocate(test_case%generator, source = generator)
         test_case%test => func
     end function TestCaseWithGenerator
-
-    pure function TestCollection(description, tests) result(test_collection)
-        character(len=*), intent(in) :: description
-        type(TestItem_t), intent(in) :: tests(:)
-        type(SimpleTestCollection_t) :: test_collection
-
-        test_collection%description_ = description
-        allocate(test_collection%tests(size(tests)))
-        test_collection%tests = tests
-    end function TestCollection
 
     pure function testCollectionDescription(self) result(description)
         use strff, only: hangingIndent, join
@@ -4248,11 +4225,8 @@ contains
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
 
-        allocate(SimpleTestCollection_t :: test_collection%test)
-        select type (test => test_collection%test)
-        type is (SimpleTestCollection_t)
-            test = TestCollection("Test that", tests)
-        end select
+        allocate(test_collection%test, source = SimpleTestCollection( &
+                "Test that", tests))
     end function testThat
 
     function then(description, func) result(test_case)
@@ -4321,11 +4295,8 @@ contains
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
 
-        allocate(TransformingTestCollection_t :: test_collection%test)
-        select type (test => test_collection%test)
-        type is (TransformingTestCollection_t)
-            test = TransformingTestCollection("When " // description, func, tests)
-        end select
+        allocate(test_collection%test, source = TransformingTestCollection( &
+                "When " // description, func, tests))
     end function whenWithTransformer
 
     pure function withoutLastCharacter(string)

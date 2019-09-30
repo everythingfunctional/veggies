@@ -9,20 +9,20 @@ module example_cases_m
 contains
     function examplePassingTestCase() result(test_case)
         use example_asserts_m, only: exampleMultipleAsserts
-        use Vegetables_m, only: SimpleTestCase_t, TestCase
+        use Vegetables_m, only: SimpleTestCase_t, SimpleTestCase
 
         type(SimpleTestCase_t) :: test_case
 
-        test_case = TestCase(EXAMPLE_DESCRIPTION, exampleMultipleAsserts)
+        test_case = SimpleTestCase(EXAMPLE_DESCRIPTION, exampleMultipleAsserts)
     end function examplePassingTestCase
 
     function exampleFailingTestCase() result(test_case)
         use example_asserts_m, only: exampleMultipleAssertsWithFail
-        use Vegetables_m, only: SimpleTestCase_t, TestCase
+        use Vegetables_m, only: SimpleTestCase_t, SimpleTestCase
 
         type(SimpleTestCase_t) :: test_case
 
-        test_case = TestCase(EXAMPLE_DESCRIPTION, exampleMultipleAssertsWithFail)
+        test_case = SimpleTestCase(EXAMPLE_DESCRIPTION, exampleMultipleAssertsWithFail)
     end function exampleFailingTestCase
 
     function runCase(example_case) result(example_result)

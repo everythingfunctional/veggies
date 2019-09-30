@@ -61,7 +61,7 @@ contains
 
     function exampleFailingCollection() result(test_collection)
         use Vegetables_m, only: &
-                SimpleTestCollection_t, TestItem_t, TestCollection
+                SimpleTestCollection_t, TestItem_t, SimpleTestCollection
 
         type(SimpleTestCollection_t) :: test_collection
 
@@ -70,7 +70,7 @@ contains
         cases(1) = exampleTestCase1()
         cases(2) = exampleTestCase2()
         cases(3) = exampleFailingTestCase()
-        test_collection = TestCollection(EXAMPLE_COLLECTION_DESCRIPTION, cases)
+        test_collection = SimpleTestCollection(EXAMPLE_COLLECTION_DESCRIPTION, cases)
     end function exampleFailingCollection
 
     function middleCollection() result(test_collection)
@@ -87,7 +87,7 @@ contains
 
     function examplePassingCollection() result(test_collection)
         use Vegetables_m, only: &
-                SimpleTestCollection_t, TestItem_t, TestCollection
+                SimpleTestCollection_t, TestItem_t, SimpleTestCollection
 
         type(SimpleTestCollection_t) :: test_collection
 
@@ -95,7 +95,7 @@ contains
 
         items(1) = middleCollection()
         items(2) = exampleTestCase2()
-        test_collection = TestCollection(EXAMPLE_COLLECTION_DESCRIPTION, items)
+        test_collection = SimpleTestCollection(EXAMPLE_COLLECTION_DESCRIPTION, items)
     end function examplePassingCollection
 
     function runCollection(example_collection) result(example_results)
