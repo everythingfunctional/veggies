@@ -92,6 +92,9 @@ module Vegetables_m
         procedure(testDescription), deferred, public :: description
         procedure(filter_), deferred, public :: filter
         procedure(testNum), deferred, public :: numCases
+        procedure(runWithInput_), deferred :: runWithInput
+        procedure(runWithoutInput_), deferred :: runWithoutInput
+        generic, public :: run => runWithInput, runWithoutInput
     end type Test_t
 
     type, abstract, public :: TestResult_t
@@ -140,6 +143,19 @@ module Vegetables_m
             class(*), intent(in) :: input
             type(Result_t) :: result_
         end function inputTest
+
+        function runWithInput_(self, input) result(result_)
+            import Test_t, TestResult_t
+            class(Test_t), intent(in) :: self
+            class(*), intent(in) :: input
+            class(TestResult_t), allocatable :: result_
+        end function runWithInput_
+
+        function runWithoutInput_(self) result(result_)
+            import Test_t, TestResult_t
+            class(Test_t), intent(in) :: self
+            class(TestResult_t), allocatable :: result_
+        end function runWithoutInput_
 
         function shrink_(value_) result(shrunk_value)
             import :: ShrinkResult_t
@@ -198,57 +214,58 @@ module Vegetables_m
         procedure, public :: description => testItemDescription
         procedure, public :: filter => filterTestItem
         procedure, public :: numCases => testItemNumCases
-        procedure, public :: run => runTestItem
-        procedure, public :: runWithInput => runTestItemWithInput
+        procedure :: runWithInput => runTestItemWithInput
+        procedure :: runWithoutInput => runTestItemWithoutInput
+        generic, public :: run => runWithInput, runWithoutInput
     end type TestItem_t
 
-    type, extends(Test_t), public :: TestCase_t
-        private
-        procedure(test_), nopass, pointer :: test
+    type, abstract, extends(Test_t), public :: TestCase_t
     contains
         private
         procedure, public :: description => testCaseDescription
         procedure, public :: filter => filterTestCase
         procedure, public :: numCases => testCaseNumCases
-        procedure, public :: run => runCase
     end type TestCase_t
 
-    type, extends(Test_t), public :: InputTestCase_t
+    type, extends(TestCase_t), public :: SimpleTestCase_t
+        private
+        procedure(test_), nopass, pointer :: test
+    contains
+        private
+        procedure :: runWithInput => runSimpleTestCaseWithInput
+        procedure :: runWithoutInput => runSimpleTestCaseWithoutInput
+    end type SimpleTestCase_t
+
+    type, extends(TestCase_t), public :: InputTestCase_t
         private
         procedure(inputTest), nopass, pointer :: test
     contains
         private
-        procedure, public :: description => inputTestCaseDescription
-        procedure, public :: filter => filterInputTestCase
-        procedure, public :: numCases => inputTestCaseNumCases
-        procedure, public :: run => runCaseWithInput
+        procedure :: runWithInput => runInputCaseWithInput
+        procedure :: runWithoutInput => runInputCaseWithoutInput
     end type InputTestCase_t
 
-    type, extends(Test_t), public :: TestCaseWithExamples_t
+    type, extends(TestCase_t), public :: TestCaseWithExamples_t
         private
         type(Example_t), allocatable :: examples(:)
         procedure(inputTest), nopass, pointer :: test
     contains
         private
-        procedure, public :: description => testCaseWithExamplesDescription
-        procedure, public :: filter => filterTestCaseWithExamples
-        procedure, public :: numCases => testCaseWithExamplesNumCases
-        procedure, public :: run => runCaseWithExamples
+        procedure :: runWithInput => runCaseWithExamplesWithInput
+        procedure :: runWithoutInput => runCaseWithExamplesWithoutInput
     end type TestCaseWithExamples_t
 
-    type, extends(Test_t), public :: TestCaseWithGenerator_t
+    type, extends(TestCase_t), public :: TestCaseWithGenerator_t
         private
         class(Generator_t), allocatable :: generator
         procedure(inputTest), nopass, pointer :: test
     contains
         private
-        procedure, public :: description => testCaseWithGeneratorDescription
-        procedure, public :: filter => filterTestCaseWithGenerator
-        procedure, public :: numCases => testCaseWithGeneratorNumCases
-        procedure, public :: run => runCaseWithGenerator
+        procedure :: runWithInput => runCaseWithGeneratorWithInput
+        procedure :: runWithoutInput => runCaseWithGeneratorWithoutInput
     end type TestCaseWithGenerator_t
 
-    type, extends(Test_t), public :: TestCollection_t
+    type, abstract, extends(Test_t), public :: TestCollection_t
         private
         type(TestItem_t), allocatable :: tests(:)
     contains
@@ -256,31 +273,31 @@ module Vegetables_m
         procedure, public :: description => testCollectionDescription
         procedure, public :: filter => filterTestCollection
         procedure, public :: numCases => testCollectionNumCases
-        procedure, public :: run => runCollection
     end type TestCollection_t
 
-    type, extends(Test_t), public :: TestCollectionWithInput_t
+    type, extends(TestCollection_t), public :: SimpleTestCollection_t
+    contains
         private
-        type(TestItem_t), allocatable :: tests(:)
+        procedure :: runWithInput => runSimpleCollectionWithInput
+        procedure :: runWithoutInput => runSimpleCollectionWithoutInput
+    end type SimpleTestCollection_t
+
+    type, extends(TestCollection_t), public :: TestCollectionWithInput_t
+        private
         class(*), allocatable :: input
     contains
         private
-        procedure, public :: description => testCollectionWithInputDescription
-        procedure, public :: filter => filterTestCollectionWithInput
-        procedure, public :: numCases => testCollectionWithInputNumCases
-        procedure, public :: run => runCollectionThatHasInput
+        procedure :: runWithInput => runCollectionThatHasInputWithInput
+        procedure :: runWithoutInput => runCollectionThatHasInputWithoutInput
     end type TestCollectionWithInput_t
 
-    type, extends(Test_t), public :: TransformingTestCollection_t
+    type, extends(TestCollection_t), public :: TransformingTestCollection_t
         private
-        type(TestItem_t), allocatable :: tests(:)
         procedure(transformer_), nopass, pointer :: transformer
     contains
         private
-        procedure, public :: description => transformingTestCollectionDescription
-        procedure, public :: filter => filterTransformingTestCollection
-        procedure, public :: numCases => transformingTestCollectionNumCases
-        procedure, public :: run => runTransformingCollection
+        procedure :: runWithInput => runTransformingCollectionWithInput
+        procedure :: runWithoutInput => runTransformingCollectionWithoutInput
     end type TransformingTestCollection_t
 
     type, public :: TestResultItem_t
@@ -334,53 +351,13 @@ module Vegetables_m
         type(VARYING_STRING) :: filter_string
     end type Options_t
 
-    type, public, extends(Maybe_t) :: JustInputTestCase_t
+    type, public, extends(Maybe_t) :: JustTest_t
         private
-        type(InputTestCase_t) :: value_
+        class(Test_t), allocatable :: value_
     contains
         private
-        procedure, public :: getValue => getValueInputTestCase
-    end type JustInputTestCase_t
-
-    type, public, extends(Maybe_t) :: JustTestCase_t
-        private
-        type(TestCase_t) :: value_
-    contains
-        private
-        procedure, public :: getValue => getValueTestCase
-    end type JustTestCase_t
-
-    type, public, extends(Maybe_t) :: JustTestCaseWithExamples_t
-        private
-        type(TestCaseWithExamples_t) :: value_
-    contains
-        private
-        procedure, public :: getValue => getValueTestCaseWithExamples
-    end type JustTestCaseWithExamples_t
-
-    type, public, extends(Maybe_t) :: JustTestCaseWithGenerator_t
-        private
-        type(TestCaseWithGenerator_t) :: value_
-    contains
-        private
-        procedure, public :: getValue => getValueTestCaseWithGenerator
-    end type JustTestCaseWithGenerator_t
-
-    type, public, extends(Maybe_t) :: JustTestCollection_t
-        private
-        type(TestCollection_t) :: value_
-    contains
-        private
-        procedure, public :: getValue => getValueTestCollection
-    end type JustTestCollection_t
-
-    type, public, extends(Maybe_t) :: JustTestCollectionWithInput_t
-        private
-        type(TestCollectionWithInput_t) :: value_
-    contains
-        private
-        procedure, public :: getValue => getValueTestCollectionWithInput
-    end type JustTestCollectionWithInput_t
+        procedure, public :: getValue => getValueTest
+    end type JustTest_t
 
     type, public, extends(Maybe_t) :: JustTestItem_t
         private
@@ -389,14 +366,6 @@ module Vegetables_m
         private
         procedure, public :: getValue => getValueTestItem
     end type JustTestItem_t
-
-    type, public, extends(Maybe_t) :: JustTransformingTestCollection_t
-        private
-        type(TransformingTestCollection_t) :: value_
-    contains
-        private
-        procedure, public :: getValue => getValueTransformingTestCollection
-    end type JustTransformingTestCollection_t
 
     interface assertDoesntInclude
         module procedure assertDoesntIncludeCC
@@ -599,14 +568,8 @@ module Vegetables_m
     end interface it
 
     interface Just
-        module procedure JustInputTestCase
-        module procedure JustTestCase
-        module procedure JustTestCaseWithExamples
-        module procedure JustTestCaseWithGenerator
-        module procedure JustTestCollection
-        module procedure JustTestCollectionWithInput
+        module procedure JustTest
         module procedure JustTestItem
-        module procedure JustTransformingTestCollection
     end interface Just
 
     interface makeDoesntIncludeFailureMessage
@@ -2531,9 +2494,9 @@ contains
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
 
-        allocate(TestCollection_t :: test_collection%test)
+        allocate(SimpleTestCollection_t :: test_collection%test)
         select type (test => test_collection%test)
-        type is (TestCollection_t)
+        type is (SimpleTestCollection_t)
             test = TestCollection(description, tests)
         end select
     end function describeBasic
@@ -2592,20 +2555,6 @@ contains
         failure = Result_(IndividualResult(char(message), .false.))
     end function failS
 
-    pure function filterInputTestCase(self, filter_string) result(maybe)
-        use strff, only: operator(.includes.)
-
-        class(InputTestCase_t), intent(in) :: self
-        type(VARYING_STRING), intent(in) :: filter_string
-        class(Maybe_t), allocatable :: maybe
-
-        if (self%description_.includes.filter_string) then
-            allocate(maybe, source = Just(self))
-        else
-            allocate(maybe, source = NOTHING)
-        end if
-    end function filterInputTestCase
-
     pure function filterTestCase(self, filter_string) result(maybe)
         use strff, only: operator(.includes.)
 
@@ -2620,34 +2569,6 @@ contains
         end if
     end function filterTestCase
 
-    pure function filterTestCaseWithExamples(self, filter_string) result(maybe)
-        use strff, only: operator(.includes.)
-
-        class(TestCaseWithExamples_t), intent(in) :: self
-        type(VARYING_STRING), intent(in) :: filter_string
-        class(Maybe_t), allocatable :: maybe
-
-        if (self%description_.includes.filter_string) then
-            allocate(maybe, source = Just(self))
-        else
-            allocate(maybe, source = NOTHING)
-        end if
-    end function filterTestCaseWithExamples
-
-    pure function filterTestCaseWithGenerator(self, filter_string) result(maybe)
-        use strff, only: operator(.includes.)
-
-        class(TestCaseWithGenerator_t), intent(in) :: self
-        type(VARYING_STRING), intent(in) :: filter_string
-        class(Maybe_t), allocatable :: maybe
-
-        if (self%description_.includes.filter_string) then
-            allocate(maybe, source = Just(self))
-        else
-            allocate(maybe, source = NOTHING)
-        end if
-    end function filterTestCaseWithGenerator
-
     pure function filterTestCollection(self, filter_string) result(maybe)
         use strff, only: operator(.includes.)
 
@@ -2656,7 +2577,7 @@ contains
         class(Maybe_t), allocatable :: maybe
 
         type(MaybeItem_t), allocatable :: filtered_tests(:)
-        type(TestCollection_t) :: new_collection
+        class(TestCollection_t), allocatable :: new_collection
         integer :: num_input_tests
         logical, allocatable :: passed_filter(:)
 
@@ -2669,7 +2590,8 @@ contains
             allocate(passed_filter(num_input_tests))
             passed_filter = filtered_tests%hasValue()
             if (any(passed_filter)) then
-                new_collection%description_ = self%description_
+                allocate(new_collection, source = self)
+                deallocate(new_collection%tests)
                 allocate(new_collection%tests(count(passed_filter)))
                 new_collection%tests = getTestItems(filtered_tests)
                 allocate(maybe, source = Just(new_collection))
@@ -2679,38 +2601,6 @@ contains
         end if
     end function filterTestCollection
 
-    pure function filterTestCollectionWithInput(self, filter_string) result(maybe)
-        use strff, only: operator(.includes.)
-
-        class(TestCollectionWithInput_t), intent(in) :: self
-        type(VARYING_STRING), intent(in) :: filter_string
-        class(Maybe_t), allocatable :: maybe
-
-        type(MaybeItem_t), allocatable :: filtered_tests(:)
-        type(TestCollectionWithInput_t) :: new_collection
-        integer :: num_input_tests
-        logical, allocatable :: passed_filter(:)
-
-        if (self%description_.includes.filter_string) then
-            allocate(maybe, source = Just(self))
-        else
-            num_input_tests = size(self%tests)
-            allocate(filtered_tests(num_input_tests))
-            filtered_tests = self%tests%filter(filter_string)
-            allocate(passed_filter(num_input_tests))
-            passed_filter = filtered_tests%hasValue()
-            if (any(passed_filter)) then
-                new_collection%description_ = self%description_
-                new_collection%input = self%input
-                allocate(new_collection%tests(count(passed_filter)))
-                new_collection%tests = getTestItems(filtered_tests)
-                allocate(maybe, source = Just(new_collection))
-            else
-                allocate(maybe, source = NOTHING)
-            end if
-        end if
-    end function filterTestCollectionWithInput
-
     elemental function filterTestItem(self, filter_string) result(maybe)
         class(TestItem_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
@@ -2719,81 +2609,16 @@ contains
         class(Maybe_t), allocatable :: filtered
         type(TestItem_t) :: test_item
 
-        select type (test => self%test)
-        type is (InputTestCase_t)
-            allocate(filtered, source = test%filter(filter_string))
-        type is (TestCase_t)
-            allocate(filtered, source = test%filter(filter_string))
-        type is (TestCaseWithExamples_t)
-            allocate(filtered, source = test%filter(filter_string))
-        type is (TestCaseWithGenerator_t)
-            allocate(filtered, source = test%filter(filter_string))
-        type is (TestCollection_t)
-            allocate(filtered, source = test%filter(filter_string))
-        type is (TestCollectionWithInput_t)
-            allocate(filtered, source = test%filter(filter_string))
-        type is (TransformingTestCollection_t)
-            allocate(filtered, source = test%filter(filter_string))
-        end select
+        allocate(filtered, source = self%test%filter(filter_string))
 
         select type (filtered)
-        type is (JustInputTestCase_t)
-            allocate(test_item%test, source = filtered%getValue())
-            allocate(maybe%maybe, source = Just(test_item))
-        type is (JustTestCase_t)
-            allocate(test_item%test, source = filtered%getValue())
-            allocate(maybe%maybe, source = Just(test_item))
-        type is (JustTestCaseWithExamples_t)
-            allocate(test_item%test, source = filtered%getValue())
-            allocate(maybe%maybe, source = Just(test_item))
-        type is (JustTestCaseWithGenerator_t)
-            allocate(test_item%test, source = filtered%getValue())
-            allocate(maybe%maybe, source = Just(test_item))
-        type is (JustTestCollection_t)
-            allocate(test_item%test, source = filtered%getValue())
-            allocate(maybe%maybe, source = Just(test_item))
-        type is (JustTestCollectionWithInput_t)
-            allocate(test_item%test, source = filtered%getValue())
-            allocate(maybe%maybe, source = Just(test_item))
-        type is (JustTransformingTestCollection_t)
+        type is (JustTest_t)
             allocate(test_item%test, source = filtered%getValue())
             allocate(maybe%maybe, source = Just(test_item))
         type is (Nothing_t)
             allocate(maybe%maybe, source = NOTHING)
         end select
     end function filterTestItem
-
-    pure function filterTransformingTestCollection(self, filter_string) result(maybe)
-        use strff, only: operator(.includes.)
-
-        class(TransformingTestCollection_t), intent(in) :: self
-        type(VARYING_STRING), intent(in) :: filter_string
-        class(Maybe_t), allocatable :: maybe
-
-        type(MaybeItem_t), allocatable :: filtered_tests(:)
-        type(TransformingTestCollection_t) :: new_collection
-        integer :: num_input_tests
-        logical, allocatable :: passed_filter(:)
-
-        if (self%description_.includes.filter_string) then
-            allocate(maybe, source = Just(self))
-        else
-            num_input_tests = size(self%tests)
-            allocate(filtered_tests(num_input_tests))
-            filtered_tests = self%tests%filter(filter_string)
-            allocate(passed_filter(num_input_tests))
-            passed_filter = filtered_tests%hasValue()
-            if (any(passed_filter)) then
-                new_collection%description_ = self%description_
-                new_collection%transformer => self%transformer
-                allocate(new_collection%tests(count(passed_filter)))
-                new_collection%tests = getTestItems(filtered_tests)
-                allocate(maybe, source = Just(new_collection))
-            else
-                allocate(maybe, source = NOTHING)
-            end if
-        end if
-    end function filterTransformingTestCollection
 
     pure function Generated(value_)
         class(*), intent(in) :: value_
@@ -3013,47 +2838,12 @@ contains
         end do
     end function getTestItems
 
-    pure function getValueInputTestCase(just_) result(value_)
-        class(JustInputTestCase_t), intent(in) :: just_
-        type(InputTestCase_t) :: value_
+    pure function getValueTest(just_) result(value_)
+        class(JustTest_t), intent(in) :: just_
+        class(Test_t), allocatable :: value_
 
-        value_ = just_%value_
-    end function getValueInputTestCase
-
-    pure function getValueTestCase(just_) result(value_)
-        class(JustTestCase_t), intent(in) :: just_
-        type(TestCase_t) :: value_
-
-        value_ = just_%value_
-    end function getValueTestCase
-
-    pure function getValueTestCaseWithExamples(just_) result(value_)
-        class(JustTestCaseWithExamples_t), intent(in) :: just_
-        type(TestCaseWithExamples_t) :: value_
-
-        value_ = just_%value_
-    end function getValueTestCaseWithExamples
-
-    pure function getValueTestCaseWithGenerator(just_) result(value_)
-        class(JustTestCaseWithGenerator_t), intent(in) :: just_
-        type(TestCaseWithGenerator_t) :: value_
-
-        value_ = just_%value_
-    end function getValueTestCaseWithGenerator
-
-    pure function getValueTestCollection(just_) result(value_)
-        class(JustTestCollection_t), intent(in) :: just_
-        type(TestCollection_t) :: value_
-
-        value_ = just_%value_
-    end function getValueTestCollection
-
-    pure function getValueTestCollectionWithInput(just_) result(value_)
-        class(JustTestCollectionWithInput_t), intent(in) :: just_
-        type(TestCollectionWithInput_t) :: value_
-
-        value_ = just_%value_
-    end function getValueTestCollectionWithInput
+        allocate(value_, source = just_%value_)
+    end function getValueTest
 
     pure function getValueTestItem(just_) result(value_)
         class(JustTestItem_t), intent(in) :: just_
@@ -3061,13 +2851,6 @@ contains
 
         value_ = just_%value_
     end function getValueTestItem
-
-    pure function getValueTransformingTestCollection(just_) result(value_)
-        class(JustTransformingTestCollection_t), intent(in) :: just_
-        type(TransformingTestCollection_t) :: value_
-
-        value_ = just_%value_
-    end function getValueTransformingTestCollection
 
     pure function givenBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
@@ -3144,22 +2927,6 @@ contains
         test_case%test => func
     end function InputTestCase
 
-    pure function inputTestCaseDescription(self) result(description)
-        class(InputTestCase_t), intent(in) :: self
-        type(VARYING_STRING) :: description
-
-        description = self%description_
-    end function inputTestCaseDescription
-
-    pure function inputTestCaseNumCases(self) result(num_cases)
-        class(InputTestCase_t), intent(in) :: self
-        integer :: num_cases
-
-        associate(a => self)
-        end associate
-        num_cases = 1
-    end function inputTestCaseNumCases
-
     function it_(description, func) result(test_case)
         character(len=*), intent(in) :: description
         procedure(inputTest) :: func
@@ -3177,9 +2944,9 @@ contains
         procedure(test_) :: func
         type(TestItem_t) :: test_case
 
-        allocate(TestCase_t :: test_case%test)
+        allocate(SimpleTestCase_t :: test_case%test)
         select type (test => test_case%test)
-        type is (TestCase_t)
+        type is (SimpleTestCase_t)
             test = TestCase(description, func)
         end select
     end function itBasic
@@ -3210,47 +2977,12 @@ contains
         end select
     end function itWithGenerator
 
-    pure function JustInputTestCase(value_) result(just_)
-        type(InputTestCase_t), intent(in) :: value_
-        type(JustInputTestCase_t) :: just_
+    pure function JustTest(value_) result(just_)
+        class(Test_t), intent(in) :: value_
+        type(JustTest_t) :: just_
 
-        just_ = JustInputTestCase_t(value_)
-    end function JustInputTestCase
-
-    pure function JustTestCase(value_) result(just_)
-        type(TestCase_t), intent(in) :: value_
-        type(JustTestCase_t) :: just_
-
-        just_ = JustTestCase_t(value_)
-    end function JustTestCase
-
-    pure function JustTestCaseWithExamples(value_) result(just_)
-        type(TestCaseWithExamples_t), intent(in) :: value_
-        type(JustTestCaseWithExamples_t) :: just_
-
-        just_ = JustTestCaseWithExamples_t(value_)
-    end function JustTestCaseWithExamples
-
-    pure function JustTestCaseWithGenerator(value_) result(just_)
-        type(TestCaseWithGenerator_t), intent(in) :: value_
-        type(JustTestCaseWithGenerator_t) :: just_
-
-        just_ = JustTestCaseWithGenerator_t(value_)
-    end function JustTestCaseWithGenerator
-
-    pure function JustTestCollection(value_) result(just_)
-        type(TestCollection_t), intent(in) :: value_
-        type(JustTestCollection_t) :: just_
-
-        just_ = JustTestCollection_t(value_)
-    end function JustTestCollection
-
-    pure function JustTestCollectionWithInput(value_) result(just_)
-        type(TestCollectionWithInput_t), intent(in) :: value_
-        type(JustTestCollectionWithInput_t) :: just_
-
-        just_ = JustTestCollectionWithInput_t(value_)
-    end function JustTestCollectionWithInput
+        allocate(just_%value_, source = value_)
+    end function JustTest
 
     pure function JustTestItem(value_) result(just_)
         type(TestItem_t), intent(in) :: value_
@@ -3258,13 +2990,6 @@ contains
 
         just_ = JustTestItem_t(value_)
     end function JustTestItem
-
-    pure function JustTransformingTestCollection(value_) result(just_)
-        type(TransformingTestCollection_t), intent(in) :: value_
-        type(JustTransformingTestCollection_t) :: just_
-
-        just_ = JustTransformingTestCollection_t(value_)
-    end function JustTransformingTestCollection
 
     pure function makeDoesntIncludeFailureMessageCC(search_for, string) result(message)
         use strff, only: indent, hangingIndent
@@ -3761,37 +3486,76 @@ contains
         description = join(individual_descriptions, NEWLINE)
     end function resultVerboseDescription
 
-    function runCase(self) result(result__)
-        class(TestCase_t), intent(in) :: self
-        type(TestCaseResult_t) :: result__
+    function runSimpleTestCaseWithInput(self, input) result(result__)
+        class(SimpleTestCase_t), intent(in) :: self
+        class(*), intent(in) :: input
+        class(TestResult_t), allocatable :: result__
 
-        result__ = TestCaseResult(self%description_, self%test())
-    end function runCase
+        associate(a => input)
+        end associate
 
-    function runCaseWithExamples(self) result(result__)
+        allocate(result__, source = self%run())
+    end function runSimpleTestCaseWithInput
+
+    function runSimpleTestCaseWithoutInput(self) result(result__)
+        class(SimpleTestCase_t), intent(in) :: self
+        class(TestResult_t), allocatable :: result__
+
+        type(TestCaseResult_t) :: the_result
+
+        the_result = TestCaseResult(self%description_, self%test())
+        allocate(result__, source = the_result)
+    end function runSimpleTestCaseWithoutInput
+
+    function runCaseWithExamplesWithInput(self, input) result(result__)
         class(TestCaseWithExamples_t), intent(in) :: self
-        type(TestCaseResult_t) :: result__
+        class(*), intent(in) :: input
+        class(TestResult_t), allocatable :: result__
+
+        associate(a => input)
+        end associate
+
+        allocate(result__, source = self%run())
+    end function runCaseWithExamplesWithInput
+
+    function runCaseWithExamplesWithoutInput(self) result(result__)
+        class(TestCaseWithExamples_t), intent(in) :: self
+        class(TestResult_t), allocatable :: result__
 
         integer :: i
         type(Result_t) :: results
+        type(TestCaseResult_t) :: the_result
 
         do i = 1, size(self%examples)
             results = results.and.self%test(self%examples(i)%value_)
         end do
-        result__ = TestCaseResult(self%description_, results)
-    end function runCaseWithExamples
+        the_result = TestCaseResult(self%description_, results)
+        allocate(result__, source = the_result)
+    end function runCaseWithExamplesWithoutInput
 
-    function runCaseWithGenerator(self) result(result__)
+    function runCaseWithGeneratorWithInput(self, input) result(result__)
+        class(TestCaseWithGenerator_t), intent(in) :: self
+        class(*), intent(in) :: input
+        class(TestResult_t), allocatable :: result__
+
+        associate(a => input)
+        end associate
+
+        allocate(result__, source = self%run())
+    end function runCaseWithGeneratorWithInput
+
+    function runCaseWithGeneratorWithoutInput(self) result(result__)
         use strff, only: toString
 
         class(TestCaseWithGenerator_t), intent(in) :: self
-        type(TestCaseResult_t) :: result__
+        class(TestResult_t), allocatable :: result__
 
         type(Generated_t) :: generated_value
         integer :: i
         class(ShrinkResult_t), allocatable :: simpler_value
         type(Result_t) :: new_result
         type(Result_t) :: previous_result
+        type(TestCaseResult_t) :: the_result
 
         do i = 1, NUM_GENERATOR_TESTS
             generated_value = self%generator%generate()
@@ -3804,9 +3568,10 @@ contains
             if (.NOT.previous_result%passed()) exit
         end do
         if (i > NUM_GENERATOR_TESTS) then
-            result__ = TestCaseResult( &
+            the_result = TestCaseResult( &
                     self%description_, &
                     succeed("Passed after " // toString(NUM_GENERATOR_TESTS) // " examples"))
+            allocate(result__, source = the_result)
         else
             do
                 select type (the_value => generated_value%value_)
@@ -3824,9 +3589,10 @@ contains
                         new_result = self%test(the_value)
                     end select
                     if (new_result%passed()) then
-                        result__ = TestCaseResult( &
+                        the_result = TestCaseResult( &
                                 self%description_, &
                                 fail('Found simplest example causing failure').and.previous_result)
+                        allocate(result__, source = the_result)
                         return
                     else
                         previous_result = new_result
@@ -3840,116 +3606,122 @@ contains
                         new_result = self%test(the_value)
                     end select
                     if (new_result%passed()) then
-                        result__ = TestCaseResult( &
+                        the_result = TestCaseResult( &
                                 self%description_, &
                                 fail('Found simplest example causing failure').and.previous_result)
+                        allocate(result__, source = the_result)
                         return
                     else
-                        result__ = TestCaseResult( &
+                        the_result = TestCaseResult( &
                                 self%description_, &
                                 fail('Fails with the simplest possible example').and.new_result)
+                        allocate(result__, source = the_result)
                         return
                     end if
                 class default
-                    result__ = TestCaseResult( &
+                    the_result = TestCaseResult( &
                             self%description_, &
                             fail("Got an unknown type when trying to shrink last value").and.previous_result)
+                    allocate(result__, source = the_result)
                     return
                 end select
                 deallocate(simpler_value)
             end do
         end if
-    end function runCaseWithGenerator
+    end function runCaseWithGeneratorWithoutInput
 
-    function runCaseWithInput(self, input) result(result__)
+    function runInputCaseWithInput(self, input) result(result__)
         class(InputTestCase_t), intent(in) :: self
         class(*), intent(in) :: input
-        type(TestCaseResult_t) :: result__
+        class(TestResult_t), allocatable :: result__
 
-        result__ = TestCaseResult(self%description_, self%test(input))
-    end function runCaseWithInput
+        type(TestCaseResult_t) :: the_result
 
-    function runCollection(self) result(result__)
-        class(TestCollection_t), intent(in) :: self
-        type(TestCollectionResult_t) :: result__
+        the_result = TestCaseResult(self%description_, self%test(input))
+        allocate(result__, source = the_result)
+    end function runInputCaseWithInput
+
+    function runInputCaseWithoutInput(self) result(result__)
+        class(InputTestCase_t), intent(in) :: self
+        class(TestResult_t), allocatable :: result__
+
+        type(TestCaseResult_t) :: the_result
+
+        the_result = TestCaseResult(self%description_, fail("No input provided"))
+        allocate(result__, source = the_result)
+    end function runInputCaseWithoutInput
+
+    function runSimpleCollectionWithInput(self, input) result(result__)
+        class(SimpleTestCollection_t), intent(in) :: self
+        class(*), intent(in) :: input
+        class(TestResult_t), allocatable :: result__
+
+        associate(a => input)
+        end associate
+
+        allocate(result__, source = self%run())
+    end function runSimpleCollectionWithInput
+
+    function runSimpleCollectionWithoutInput(self) result(result__)
+        class(SimpleTestCollection_t), intent(in) :: self
+        class(TestResult_t), allocatable :: result__
 
         integer :: i
         integer :: num_tests
         type(TestResultItem_t), allocatable :: results(:)
+        type(TestCollectionResult_t) :: the_result
 
         num_tests = size(self%tests)
         allocate(results(num_tests))
         do i = 1, num_tests
             results(i) = self%tests(i)%run()
         end do
-        result__ = TestCollectionResult(self%description_, results)
-    end function runCollection
+        the_result = TestCollectionResult(self%description_, results)
+        allocate(result__, source = the_result)
+    end function runSimpleCollectionWithoutInput
 
-    function runCollectionThatHasInput(self) result(result__)
+    function runCollectionThatHasInputWithInput(self, input) result(result__)
         class(TestCollectionWithInput_t), intent(in) :: self
-        type(TestCollectionResult_t) :: result__
+        class(*), intent(in) :: input
+        class(TestResult_t), allocatable :: result__
+
+        associate(a => input)
+        end associate
+
+        allocate(result__, source = self%run())
+    end function runCollectionThatHasInputWithInput
+
+    function runCollectionThatHasInputWithoutInput(self) result(result__)
+        class(TestCollectionWithInput_t), intent(in) :: self
+        class(TestResult_t), allocatable :: result__
 
         integer :: i
         integer :: num_tests
         type(TestResultItem_t), allocatable :: results(:)
+        type(TestCollectionResult_t) :: the_result
 
         num_tests = size(self%tests)
         allocate(results(num_tests))
         do i = 1, num_tests
-            results(i) = self%tests(i)%runWithInput(self%input)
+            results(i) = self%tests(i)%run(self%input)
         end do
-        result__ = TestCollectionResult(self%description_, results)
-    end function runCollectionThatHasInput
+        the_result = TestCollectionResult(self%description_, results)
+        allocate(result__, source = the_result)
+    end function runCollectionThatHasInputWithoutInput
 
-    function runTestItem(self) result(result_item)
+    function runTestItemWithoutInput(self) result(result_item)
         class(TestItem_t), intent(in) :: self
         type(TestResultItem_t) :: result_item
 
-        select type (test => self%test)
-        type is (InputTestCase_t)
-            allocate( &
-                    result_item%result_, &
-                    source = TestCaseResult( &
-                            test%description_, fail("No input provided")))
-        type is (TestCase_t)
-            allocate(result_item%result_, source = test%run())
-        type is (TestCaseWithExamples_t)
-            allocate(result_item%result_, source = test%run())
-        type is (TestCaseWithGenerator_t)
-            allocate(result_item%result_, source = test%run())
-        type is (TestCollection_t)
-            allocate(result_item%result_, source = test%run())
-        type is (TestCollectionWithInput_t)
-            allocate(result_item%result_, source = test%run())
-        type is (TransformingTestCollection_t)
-            allocate( &
-                    result_item%result_, &
-                    source = TestCaseResult( &
-                            test%description_, fail("No input provided")))
-        end select
-    end function runTestItem
+        allocate(result_item%result_, source = self%test%run())
+    end function runTestItemWithoutInput
 
     function runTestItemWithInput(self, input) result(result_item)
         class(TestItem_t), intent(in) :: self
         class(*), intent(in) :: input
         type(TestResultItem_t) :: result_item
 
-        select type (test => self%test)
-        type is (InputTestCase_t)
-            allocate(result_item%result_, source = test%run(input))
-        type is (TestCase_t)
-            allocate(result_item%result_, source = test%run())
-        type is (TestCaseWithExamples_t)
-            allocate(result_item%result_, source = test%run())
-        type is (TestCaseWithGenerator_t)
-            allocate(result_item%result_, source = test%run())
-        type is (TestCollection_t)
-            allocate(result_item%result_, source = test%run())
-        type is (TestCollectionWithInput_t)
-            allocate(result_item%result_, source = test%run())
-        type is (TransformingTestCollection_t)
-            allocate(result_item%result_, source = test%run(input))
-        end select
+        allocate(result_item%result_, source = self%test%run(input))
     end function runTestItemWithInput
 
     subroutine runTests(tests)
@@ -4023,14 +3795,15 @@ contains
         end if
     end subroutine
 
-    function runTransformingCollection(self, input) result(result__)
+    function runTransformingCollectionWithInput(self, input) result(result__)
         class(TransformingTestCollection_t), intent(in) :: self
         class(*), intent(in) :: input
-        type(TestCollectionResult_t) :: result__
+        class(TestResult_t), allocatable :: result__
 
         integer :: i
         integer :: num_tests
         type(TestResultItem_t), allocatable :: results(:)
+        type(TestCollectionResult_t) :: the_result
         type(Transformed_t) :: transformed_
 
         transformed_ = self%transformer(input)
@@ -4038,20 +3811,31 @@ contains
         type is (Result_t)
             allocate(results(1))
             allocate(TestCaseResult_t :: results(1)%result_)
-            select type (the_result => results(1)%result_)
+            select type (the_result_ => results(1)%result_)
             type is (TestCaseResult_t)
-                the_result = TestCaseResult("Transformation Failed", next_input)
+                the_result_ = TestCaseResult("Transformation Failed", next_input)
             end select
-            result__ = TestCollectionResult(self%description_, results)
+            the_result = TestCollectionResult(self%description_, results)
         class default
             num_tests = size(self%tests)
             allocate(results(num_tests))
             do i = 1, num_tests
                 results(i) = self%tests(i)%runWithInput(next_input)
             end do
-            result__ = TestCollectionResult(self%description_, results)
+            the_result = TestCollectionResult(self%description_, results)
         end select
-    end function runTransformingCollection
+        allocate(result__, source = the_result)
+    end function runTransformingCollectionWithInput
+
+    function runTransformingCollectionWithoutInput(self) result(result__)
+        class(TransformingTestCollection_t), intent(in) :: self
+        class(TestResult_t), allocatable :: result__
+
+        type(TestCaseResult_t) :: the_result
+
+        the_result = TestCaseResult(self%description_, fail("No input provided"))
+        allocate(result__, source = the_result)
+    end function runTransformingCollectionWithoutInput
 
     pure function shrinkAsciiString(value_) result(shrunk)
         class(*), intent(in) :: value_
@@ -4122,7 +3906,7 @@ contains
     function TestCase(description, func) result(test_case)
         character(len=*), intent(in) :: description
         procedure(test_) :: func
-        type(TestCase_t) :: test_case
+        type(SimpleTestCase_t) :: test_case
 
         test_case%description_ = description
         test_case%test => func
@@ -4254,42 +4038,10 @@ contains
         test_case%test => func
     end function TestCaseWithGenerator
 
-    pure function testCaseWithExamplesDescription(self) result(description)
-        class(TestCaseWithExamples_t), intent(in) :: self
-        type(VARYING_STRING) :: description
-
-        description = self%description_
-    end function testCaseWithExamplesDescription
-
-    pure function testCaseWithExamplesNumCases(self) result(num_cases)
-        class(TestCaseWithExamples_t), intent(in) :: self
-        integer :: num_cases
-
-        associate(a => self)
-        end associate
-        num_cases = 1
-    end function testCaseWithExamplesNumCases
-
-    pure function testCaseWithGeneratorDescription(self) result(description)
-        class(TestCaseWithGenerator_t), intent(in) :: self
-        type(VARYING_STRING) :: description
-
-        description = self%description_
-    end function testCaseWithGeneratorDescription
-
-    pure function testCaseWithGeneratorNumCases(self) result(num_cases)
-        class(TestCaseWithGenerator_t), intent(in) :: self
-        integer :: num_cases
-
-        associate(a => self)
-        end associate
-        num_cases = 1
-    end function testCaseWithGeneratorNumCases
-
     pure function TestCollection(description, tests) result(test_collection)
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
-        type(TestCollection_t) :: test_collection
+        type(SimpleTestCollection_t) :: test_collection
 
         test_collection%description_ = description
         allocate(test_collection%tests(size(tests)))
@@ -4427,33 +4179,6 @@ contains
         test_collection%tests = tests
     end function TestCollectionWithInput
 
-    pure function testCollectionWithInputDescription(self) result(description)
-        use strff, only: hangingIndent, join
-
-        class(TestCollectionWithInput_t), intent(in) :: self
-        type(VARYING_STRING) :: description
-
-        type(VARYING_STRING), allocatable :: descriptions(:)
-        integer :: i
-        integer :: num_cases
-
-        num_cases = size(self%tests)
-        allocate(descriptions(num_cases))
-        do concurrent (i = 1:num_cases)
-            descriptions(i) = self%tests(i)%description()
-        end do
-        description = hangingIndent( &
-                self%description_ // NEWLINE // join(descriptions, NEWLINE), &
-                INDENTATION)
-    end function testCollectionWithInputDescription
-
-    pure function testCollectionWithInputNumCases(self) result(num_cases)
-        class(TestCollectionWithInput_t), intent(in) :: self
-        integer :: num_cases
-
-        num_cases = sum(self%tests%numCases())
-    end function testCollectionWithInputNumCases
-
     pure function testItemDescription(self) result(description)
         class(TestItem_t), intent(in) :: self
         type(VARYING_STRING) :: description
@@ -4523,9 +4248,9 @@ contains
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: test_collection
 
-        allocate(TestCollection_t :: test_collection%test)
+        allocate(SimpleTestCollection_t :: test_collection%test)
         select type (test => test_collection%test)
-        type is (TestCollection_t)
+        type is (SimpleTestCollection_t)
             test = TestCollection("Test that", tests)
         end select
     end function testThat
@@ -4572,33 +4297,6 @@ contains
         allocate(test_collection%tests(size(tests)))
         test_collection%tests = tests
     end function TransformingTestCollection
-
-    pure function transformingTestCollectionDescription(self) result(description)
-        use strff, only: hangingIndent, join
-
-        class(TransformingTestCollection_t), intent(in) :: self
-        type(VARYING_STRING) :: description
-
-        type(VARYING_STRING), allocatable :: descriptions(:)
-        integer :: i
-        integer :: num_cases
-
-        num_cases = size(self%tests)
-        allocate(descriptions(num_cases))
-        do concurrent (i = 1:num_cases)
-            descriptions(i) = self%tests(i)%description()
-        end do
-        description = hangingIndent( &
-                self%description_ // NEWLINE // join(descriptions, NEWLINE), &
-                INDENTATION)
-    end function transformingTestCollectionDescription
-
-    pure function transformingTestCollectionNumCases(self) result(num_cases)
-        class(TransformingTestCollection_t), intent(in) :: self
-        integer :: num_cases
-
-        num_cases = sum(self%tests%numCases())
-    end function transformingTestCollectionNumCases
 
     pure function whenBasic(description, tests) result(test_collection)
         character(len=*), intent(in) :: description

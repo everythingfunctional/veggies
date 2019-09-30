@@ -26,7 +26,7 @@ contains
         type(Result_t) :: result_
 
         select type (example_case)
-        type is (TestCase_t)
+        class is (TestCase_t)
             result_ = assertIncludes(EXAMPLE_DESCRIPTION, example_case%description())
         class default
             result_ = fail("Expected to get a TestCase_t")
@@ -40,7 +40,7 @@ contains
         type(Result_t) :: result_
 
         select type (example_case)
-        type is (TestCase_t)
+        class is (TestCase_t)
             result_ = assertEquals(1, example_case%numCases())
         class default
             result_ = fail("Expected to get a TestCase_t")
@@ -48,15 +48,15 @@ contains
     end function checkNumCases
 
     function checkSpeed(example_case) result(result_)
-        use Vegetables_m, only: Result_t, TestCase_t, assertFasterThan, fail
+        use Vegetables_m, only: Result_t, SimpleTestCase_t, assertFasterThan, fail
 
         class(*), intent(in) :: example_case
         type(Result_t) :: result_
 
-        type(TestCase_t) :: internal_case
+        type(SimpleTestCase_t) :: internal_case
 
         select type (example_case)
-        type is (TestCase_t)
+        type is (SimpleTestCase_t)
             internal_case = example_case
             result_ = assertFasterThan(1.0d-6, runCase, 100)
         class default
@@ -66,7 +66,7 @@ contains
         subroutine runCase
             use Vegetables_m, only: TestCaseResult_t
 
-            type(TestCaseResult_t) :: internal_result
+            class(TestCaseResult_t), allocatable :: internal_result
 
             internal_result = internal_case%run()
         end subroutine

@@ -6,11 +6,11 @@ module collection_properties_test
 contains
     function test_collection_properties() result(test)
         use example_collections_m, only: examplePassingCollection
-        use Vegetables_m, only: TestCollection_t, TestItem_t, describe, it_
+        use Vegetables_m, only: SimpleTestCollection_t, TestItem_t, describe, it_
 
         type(TestItem_t) :: test
 
-        type(TestCollection_t) :: example_collection
+        type(SimpleTestCollection_t) :: example_collection
         type(TestItem_t) :: individual_tests(4)
 
         example_collection = examplePassingCollection()
@@ -29,7 +29,7 @@ contains
         type(Result_t) :: result_
 
         select type (example_collection)
-        type is (TestCollection_t)
+        class is (TestCollection_t)
             result_ = assertEquals(NUM_CASES_IN_PASSING, example_collection%numCases())
         class default
             result_ = fail("Expected to get a TestCollection_t")
@@ -44,7 +44,7 @@ contains
         type(Result_t) :: result_
 
         select type (example_collection)
-        type is (TestCollection_t)
+        class is (TestCollection_t)
             result_ = assertIncludes( &
                     EXAMPLE_COLLECTION_DESCRIPTION, example_collection%description())
         class default
@@ -62,7 +62,7 @@ contains
         type(Result_t) :: result_
 
         select type (example_collection)
-        type is (TestCollection_t)
+        class is (TestCollection_t)
             result_ = &
                     assertIncludes( &
                             EXAMPLE_CASE_DESCRIPTION_1, example_collection%description()) &
@@ -75,15 +75,15 @@ contains
 
     function checkSpeed(example_collection) result(result_)
         use Vegetables_m, only: &
-                Result_t, TestCollection_t, assertFasterThan, fail
+                Result_t, SimpleTestCollection_t, assertFasterThan, fail
 
         class(*), intent(in) :: example_collection
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: internal_collection
+        type(SimpleTestCollection_t) :: internal_collection
 
         select type (example_collection)
-        type is (TestCollection_t)
+        type is (SimpleTestCollection_t)
             internal_collection = example_collection
             result_ = assertFasterThan(1.0d-5, runCollection, 100)
         class default
@@ -91,9 +91,9 @@ contains
         end select
     contains
         subroutine runCollection
-            use Vegetables_m, only: TestCollectionResult_t
+            use Vegetables_m, only: TestResult_t
 
-            type(TestCollectionResult_t) :: internal_result
+            class(TestResult_t), allocatable :: internal_result
 
             internal_result = internal_collection%run()
         end subroutine

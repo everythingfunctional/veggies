@@ -9,30 +9,31 @@ module example_cases_m
 contains
     function examplePassingTestCase() result(test_case)
         use example_asserts_m, only: exampleMultipleAsserts
-        use Vegetables_m, only: TestCase_t, TestCase
+        use Vegetables_m, only: SimpleTestCase_t, TestCase
 
-        type(TestCase_t) :: test_case
+        type(SimpleTestCase_t) :: test_case
 
         test_case = TestCase(EXAMPLE_DESCRIPTION, exampleMultipleAsserts)
     end function examplePassingTestCase
 
     function exampleFailingTestCase() result(test_case)
         use example_asserts_m, only: exampleMultipleAssertsWithFail
-        use Vegetables_m, only: TestCase_t, TestCase
+        use Vegetables_m, only: SimpleTestCase_t, TestCase
 
-        type(TestCase_t) :: test_case
+        type(SimpleTestCase_t) :: test_case
 
         test_case = TestCase(EXAMPLE_DESCRIPTION, exampleMultipleAssertsWithFail)
     end function exampleFailingTestCase
 
     function runCase(example_case) result(example_result)
-        use Vegetables_m, only: TestCase_t, Transformed_t, fail, Transformed
+        use Vegetables_m, only: &
+                SimpleTestCase_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_case
         type(Transformed_t) :: example_result
 
         select type (example_case)
-        type is (TestCase_t)
+        type is (SimpleTestCase_t)
             example_result = Transformed(example_case%run())
         class default
             example_result = Transformed(fail("Expected to get a TestCase_t"))

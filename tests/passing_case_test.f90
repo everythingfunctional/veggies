@@ -6,12 +6,12 @@ module passing_case_test
 contains
     function test_passing_case_behaviors() result(test)
         use example_cases_m, only: examplePassingTestCase, runCase
-        use Vegetables_m, only: TestCase_t, TestItem_t, given, then_, when
+        use Vegetables_m, only: SimpleTestCase_t, TestItem_t, given, then_, when
 
         type(TestItem_t) :: test
 
         type(TestItem_t) :: collection(1)
-        type(TestCase_t) :: example_case
+        type(SimpleTestCase_t) :: example_case
         type(TestItem_t) :: individual_tests(8)
 
         example_case = examplePassingTestCase()

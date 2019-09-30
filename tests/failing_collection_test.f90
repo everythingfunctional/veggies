@@ -6,12 +6,12 @@ module failing_collection_test
 contains
     function test_failing_collection_behaviors() result(tests)
         use example_collections_m, only: exampleFailingCollection, runCollection
-        use Vegetables_m, only: TestCollection_t, TestItem_t, given, then_, when
+        use Vegetables_m, only: SimpleTestCollection_t, TestItem_t, given, then_, when
 
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: collection(1)
-        type(TestCollection_t) :: example_collection
+        type(SimpleTestCollection_t) :: example_collection
         type(TestItem_t) :: individual_tests(15)
 
         example_collection = exampleFailingCollection()

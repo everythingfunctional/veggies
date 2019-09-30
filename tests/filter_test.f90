@@ -6,12 +6,12 @@ module filter_test
 contains
     function test_filter_case() result(tests)
         use example_cases_m, only: examplePassingTestCase
-        use Vegetables_m, only: TestItem_t, TestCase_t, Given, Then_, When
+        use Vegetables_m, only: TestItem_t, SimpleTestCase_t, Given, Then_, When
 
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: collection(2)
-        type(TestCase_t) :: example_case
+        type(SimpleTestCase_t) :: example_case
         type(TestItem_t) :: first(1)
         type(TestItem_t) :: second(1)
 
@@ -31,12 +31,12 @@ contains
 
     function test_filter_collection() result(tests)
         use example_collections_m, only: examplePassingCollection
-        use Vegetables_m, only: TestItem_t, TestCollection_t, Given, Then_, When
+        use Vegetables_m, only: TestItem_t, SimpleTestCollection_t, Given, Then_, When
 
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: collection(3)
-        type(TestCollection_t) :: example_collection
+        type(SimpleTestCollection_t) :: example_collection
         type(TestItem_t) :: first(1)
         type(TestItem_t) :: second(1)
         type(TestItem_t) :: third(1)
@@ -71,7 +71,7 @@ contains
         class(Maybe_t), allocatable :: maybe
 
         select type (example_case)
-        type is (TestCase_t)
+        class is (TestCase_t)
             allocate(maybe, source = example_case%filter(var_str(NOT_IN_DESCRIPTION)))
             filtered = Transformed(maybe)
         class default
@@ -90,7 +90,7 @@ contains
         class(Maybe_t), allocatable :: maybe
 
         select type (example_collection)
-        type is (TestCollection_t)
+        class is (TestCollection_t)
             allocate(maybe, source = example_collection%filter(var_str(NOT_IN_DESCRIPTIONS)))
             filtered = Transformed(maybe)
         class default
@@ -109,7 +109,7 @@ contains
         class(Maybe_t), allocatable :: maybe
 
         select type (example_case)
-        type is (TestCase_t)
+        class is (TestCase_t)
             allocate(maybe, source = example_case%filter(var_str(EXAMPLE_DESCRIPTION)))
             filtered = Transformed(maybe)
         class default
@@ -128,7 +128,7 @@ contains
         class(Maybe_t), allocatable :: maybe
 
         select type (example_collection)
-        type is (TestCollection_t)
+        class is (TestCollection_t)
             allocate(maybe, source = example_collection%filter(var_str(EXAMPLE_COLLECTION_DESCRIPTION)))
             filtered = Transformed(maybe)
         class default
@@ -147,7 +147,7 @@ contains
         class(Maybe_t), allocatable :: maybe
 
         select type (example_collection)
-        type is (TestCollection_t)
+        class is (TestCollection_t)
             allocate(maybe, source = example_collection%filter(var_str(EXAMPLE_CASE_DESCRIPTION_1)))
             filtered = Transformed(maybe)
         class default
@@ -186,15 +186,15 @@ contains
     function checkCaseIsSame(filtered) result(result_)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
         use Vegetables_m, only: &
-                Result_t, JustTestCase_t, TestCase_t, assertEquals, fail
+                Result_t, JustTest_t, Test_t, assertEquals, fail
 
         class(*), intent(in) :: filtered
         type(Result_t) :: result_
 
-        type(TestCase_t) :: test_case
+        class(Test_t), allocatable :: test_case
 
         select type (filtered)
-        type is (JustTestCase_t)
+        type is (JustTest_t)
             test_case = filtered%getValue()
             result_ = assertEquals(EXAMPLE_DESCRIPTION, test_case%description())
         class default
@@ -206,19 +206,20 @@ contains
         use example_collections_m, only: examplePassingCollection
         use Vegetables_m, only: &
                 Result_t, &
-                JustTestCollection_t, &
-                TestCollection_t, &
+                JustTest_t, &
+                SimpleTestCollection_t, &
+                Test_t, &
                 assertEquals, &
                 fail
 
         class(*), intent(in) :: filtered
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: filtered_collection
-        type(TestCollection_t) :: example_collection
+        class(Test_t), allocatable :: filtered_collection
+        type(SimpleTestCollection_t) :: example_collection
 
         select type (filtered)
-        type is (JustTestCollection_t)
+        type is (JustTest_t)
             example_collection = examplePassingCollection()
             filtered_collection = filtered%getValue()
             result_ = assertEquals(example_collection%description(), filtered_collection%description())
@@ -230,18 +231,18 @@ contains
     function checkCollectionSingleCase(filtered) result(result_)
         use Vegetables_m, only: &
                 Result_t, &
-                JustTestCollection_t, &
-                TestCollection_t, &
+                JustTest_t, &
+                Test_t, &
                 assertEquals, &
                 fail
 
         class(*), intent(in) :: filtered
         type(Result_t) :: result_
 
-        type(TestCollection_t) :: filtered_collection
+        class(Test_t), allocatable :: filtered_collection
 
         select type (filtered)
-        type is (JustTestCollection_t)
+        type is (JustTest_t)
             filtered_collection = filtered%getValue()
             result_ = assertEquals(1, filtered_collection%numCases())
         class default

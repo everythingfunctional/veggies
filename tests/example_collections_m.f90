@@ -60,9 +60,10 @@ contains
     end function exampleFailingTestCase
 
     function exampleFailingCollection() result(test_collection)
-        use Vegetables_m, only: TestCollection_t, TestItem_t, TestCollection
+        use Vegetables_m, only: &
+                SimpleTestCollection_t, TestItem_t, TestCollection
 
-        type(TestCollection_t) :: test_collection
+        type(SimpleTestCollection_t) :: test_collection
 
         type(TestItem_t) :: cases(3)
 
@@ -85,9 +86,10 @@ contains
     end function middleCollection
 
     function examplePassingCollection() result(test_collection)
-        use Vegetables_m, only: TestCollection_t, TestItem_t, TestCollection
+        use Vegetables_m, only: &
+                SimpleTestCollection_t, TestItem_t, TestCollection
 
-        type(TestCollection_t) :: test_collection
+        type(SimpleTestCollection_t) :: test_collection
 
         type(TestItem_t) :: items(2)
 
@@ -97,13 +99,14 @@ contains
     end function examplePassingCollection
 
     function runCollection(example_collection) result(example_results)
-        use Vegetables_m, only: TestCollection_t, Transformed_t, fail, Transformed
+        use Vegetables_m, only: &
+                SimpleTestCollection_t, Transformed_t, fail, Transformed
 
         class(*), intent(in) :: example_collection
         type(Transformed_t) :: example_results
 
         select type (example_collection)
-        type is (TestCollection_t)
+        type is (SimpleTestCollection_t)
             example_results = Transformed(example_collection%run())
         class default
             example_results = Transformed(fail("Expected to get a TestCase_t"))
