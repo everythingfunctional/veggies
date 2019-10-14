@@ -772,7 +772,8 @@ module Vegetables_m
             makeWithinFailureMessage, &
             makeWithinSuccessMessage, &
             runTests, &
-            ShrinkResult, &
+            ShrunkValue, &
+            SimplestValue, &
             succeed, &
             testThat, &
             Then__, &
@@ -5529,11 +5530,11 @@ contains
         type is (StringInput_t)
             if (len(input%value_) <= 1) then
                 new_input%value_ = ""
-                shrunk = ShrinkResult(new_input, .true.)
+                shrunk = SimplestValue(new_input)
             else
                 new_input%value_ = extract( &
                         input%value_, 1, len(input%value_) - 1)
-                shrunk = ShrinkResult(new_input, .false.)
+                shrunk = ShrunkValue(new_input)
             end if
         end select
     end function shrinkAsciiString
@@ -5548,10 +5549,10 @@ contains
         type is (IntegerInput_t)
             if (input%value_ == 0) then
                 new_input%value_ = 0
-                shrunk = ShrinkResult(new_input, .true.)
+                shrunk = SimplestValue(new_input)
             else
                 new_input%value_ = input%value_ / 2
-                shrunk = ShrinkResult(new_input, .false.)
+                shrunk = ShrunkValue(new_input)
             end if
         end select
     end function shrinkInteger
@@ -5564,6 +5565,20 @@ contains
         allocate(ShrinkResult%input, source = value_)
         ShrinkResult%simplest = simplest
     end function ShrinkResult
+
+    function ShrunkValue(value_)
+        class(Input_t), intent(in) :: value_
+        type(ShrinkResult_t) :: ShrunkValue
+
+        ShrunkValue = ShrinkResult(value_, .false.)
+    end function ShrunkValue
+
+    function SimplestValue(value_)
+        class(Input_t), intent(in) :: value_
+        type(ShrinkResult_t) :: SimplestValue
+
+        SimplestValue = ShrinkResult(value_, .true.)
+    end function SimplestValue
 
     function SimpleTestCase(description, test)
         use iso_varying_string, only: VARYING_STRING

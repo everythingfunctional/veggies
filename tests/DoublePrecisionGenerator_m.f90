@@ -34,7 +34,12 @@ contains
     end function generate
 
     function shrink(input) result(shrunk)
-        use Vegetables_m, only: DoublePrecisionInput_t, Input_t, ShrinkResult_t, ShrinkResult
+        use Vegetables_m, only: &
+                DoublePrecisionInput_t, &
+                Input_t, &
+                ShrinkResult_t, &
+                ShrunkValue, &
+                SimplestValue
 
         class(Input_t), intent(in) :: input
         type(ShrinkResult_t) :: shrunk
@@ -45,10 +50,10 @@ contains
         type is (DoublePrecisionInput_t)
             if (effectivelyZero(input%value_)) then
                 new_input%value_ = 0.0d0
-                shrunk = ShrinkResult(new_input, .true.)
+                shrunk = SimplestValue(new_input)
             else
                 new_input%value_ = input%value_ / 2.0d0
-                shrunk = ShrinkResult(new_input, .false.)
+                shrunk = ShrunkValue(new_input)
             end if
         end select
     end function shrink
