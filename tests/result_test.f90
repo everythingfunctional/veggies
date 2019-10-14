@@ -63,7 +63,7 @@ contains
 
         multiple_asserts = succeed("First").and.fail("Second")
 
-        result_ = assertEquals(1, multiple_asserts%numFailing())
+        result_ = assertEquals(1, multiple_asserts%numFailingAsserts())
     end function checkNumFailingAsserts
 
     function checkVerboseIncludes() result(result_)

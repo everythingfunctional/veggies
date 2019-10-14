@@ -1,64 +1,191 @@
 module Vegetables_m
-    use iso_varying_string
+    use iso_varying_string, only: VARYING_STRING
 
     implicit none
     private
 
-    type :: VegetableString_t
+    type :: Options_t
         private
-        type(VARYING_STRING) :: string
-    end type VegetableString_t
+        logical :: colorize
+        logical :: quiet
+        logical :: verbose
+        logical :: filter_tests
+        type(VARYING_STRING) :: filter_string
+    end type
+
+    type, public, abstract :: Input_t
+    end type Input_t
+
+    type, public, extends(Input_t) :: DoublePrecisionInput_t
+        double precision :: value_
+    end type DoublePrecisionInput_t
+
+    type, public, extends(Input_t) :: IntegerInput_t
+        integer :: value_
+    end type IntegerInput_t
+
+    type, public, extends(Input_t) :: StringInput_t
+        type(VARYING_STRING) :: value_
+    end type StringInput_t
+
+    type, public :: Transformed_t
+        private
+        class(Input_t), allocatable :: input
+    end type Transformed_t
+
+    type, public :: Example_t
+        private
+        class(Input_t), allocatable :: input
+    end type Example_t
 
     type, public :: Generated_t
         private
-        class(*), allocatable :: value_
+        class(Input_t), allocatable :: input
     end type Generated_t
 
-    type, public, abstract :: ShrinkResult_t
+    type, public :: ShrinkResult_t
         private
-        class(*), allocatable :: value_
+        class(Input_t), allocatable :: input
+        logical :: simplest
     end type ShrinkResult_t
-
-    type, public, extends(ShrinkResult_t) :: ShrunkValue_t
-    end type ShrunkValue_t
-
-    type, public, extends(ShrinkResult_t) :: SimplestValue_t
-    end type SimplestValue_t
 
     type, public, abstract :: Generator_t
     contains
         private
         procedure(generate_), public, deferred :: generate
-        procedure(shrink_), public, nopass, deferred :: shrink
+        procedure(shrink_), nopass, public, deferred :: shrink
     end type Generator_t
 
     type, public, extends(Generator_t) :: AsciiStringGenerator_t
     contains
         private
         procedure, public :: generate => generateAsciiString
-        procedure, public, nopass :: shrink => shrinkAsciiString
+        procedure, nopass, public :: shrink => shrinkAsciiString
     end type AsciiStringGenerator_t
 
     type, public, extends(Generator_t) :: IntegerGenerator_t
     contains
         private
         procedure, public :: generate => generateInteger
-        procedure, public, nopass :: shrink => shrinkInteger
+        procedure, nopass, public :: shrink => shrinkInteger
     end type IntegerGenerator_t
 
-    type, public, abstract :: Maybe_t
-    end type Maybe_t
-
-    type :: MaybeItem_t
+    type, abstract :: Test_t
         private
-        class(Maybe_t), allocatable :: maybe
+        type(VARYING_STRING) :: description_
     contains
         private
-        procedure, public :: hasValue
-    end type MaybeItem_t
+        procedure(testDescription), public, deferred :: description
+        procedure(filter_), public, deferred :: filter
+        procedure(testCount), public, deferred :: numCases
+        procedure(runWithInput_), deferred :: runWithInput
+        procedure(runWithoutInput_), deferred :: runWithoutInput
+        generic :: run => runWithInput, runWithoutInput
+        procedure(testDescription), deferred :: repr
+    end type Test_t
 
-    type, public, extends(Maybe_t) :: Nothing_t
-    end type Nothing_t
+    type, public :: TestItem_t
+        private
+        class(Test_t), allocatable :: test
+    contains
+        private
+        procedure, public :: description => testItemDescription
+        procedure, public :: filter => testItemFilter
+        procedure, public :: numCases => testItemNumCases
+        procedure :: runWithInput => testItemRunWithInput
+        procedure :: runWithoutInput => testItemRunWithoutInput
+        generic, public :: run => runWithInput, runWithoutInput
+        procedure :: repr => testItemRepr
+    end type TestItem_t
+
+    type, public, abstract, extends(Test_t) :: TestCase_t
+    contains
+        private
+        procedure, public :: description => testCaseDescription
+        procedure, public :: filter => testCaseFilter
+        procedure, public :: numCases => testCaseNumCases
+    end type TestCase_t
+
+    type, public, extends(TestCase_t) :: SimpleTestCase_t
+        private
+        procedure(simpleTest), nopass, pointer :: test
+    contains
+        private
+        procedure :: runWithInput => simpleTestCaseRunWithInput
+        procedure :: runWithoutInput => simpleTestCaseRunWithoutInput
+        procedure :: repr => simpleTestCaseRepr
+    end type SimpleTestCase_t
+
+    type, public, extends(TestCase_t) :: InputTestCase_t
+        private
+        procedure(inputTest), nopass, pointer :: test
+    contains
+        private
+        procedure :: runWithInput => inputTestCaseRunWithInput
+        procedure :: runWithoutInput => inputTestCaseRunWithoutInput
+        procedure :: repr => inputTestCaseRepr
+    end type InputTestCase_t
+
+    type, public, extends(TestCase_t) :: TestCaseWithExamples_t
+        private
+        type(Example_t), allocatable :: examples(:)
+        procedure(inputTest), nopass, pointer :: test
+    contains
+        private
+        procedure :: runWithInput => testCaseWithExamplesRunWithInput
+        procedure :: runWithoutInput => testCaseWithExamplesRunWithoutInput
+        procedure :: repr => testCaseWithExamplesRepr
+    end type TestCaseWithExamples_t
+
+    type, public, extends(TestCase_t) :: TestCaseWithGenerator_t
+        private
+        class(Generator_t), allocatable :: generator
+        procedure(inputTest), nopass, pointer :: test
+    contains
+        private
+        procedure :: runWithInput => testCaseWithGeneratorRunWithInput
+        procedure :: runWithoutInput => testCaseWithGeneratorRunWithoutInput
+        procedure :: repr => testCaseWithGeneratorRepr
+    end type TestCaseWithGenerator_t
+
+    type, public, abstract, extends(Test_t) :: TestCollection_t
+        private
+        type(TestItem_t), allocatable :: tests(:)
+    contains
+        private
+        procedure, public :: description => testCollectionDescription
+        procedure, public :: filter => testCollectionFilter
+        procedure, public :: numCases => testCollectionNumCases
+    end type TestCollection_t
+
+    type, public, extends(TestCollection_t) :: SimpleTestCollection_t
+    contains
+        private
+        procedure :: runWithInput => simpleTestCollectionRunWithInput
+        procedure :: runWithoutInput => simpleTestCollectionRunWithoutInput
+        procedure :: repr => simpleTestCollectionRepr
+    end type SimpleTestCollection_t
+
+    type, public, extends(TestCollection_t) :: TestCollectionWithInput_t
+        private
+        class(Input_t), allocatable :: input
+    contains
+        private
+        procedure :: runWithInput => testCollectionWithInputRunWithInput
+        procedure :: runWithoutInput => testCollectionWithInputRunWithoutInput
+        procedure :: repr => testCollectionWithInputRepr
+        final :: testCollectionWithInputDestructor
+    end type TestCollectionWithInput_t
+
+    type, public, extends(TestCollection_t) :: TransformingTestCollection_t
+        private
+        procedure(transformer_), nopass, pointer :: transformer
+    contains
+        private
+        procedure :: runWithInput => transformingTestCollectionRunWithInput
+        procedure :: runWithoutInput => transformingTestCollectionRunWithoutInput
+        procedure :: repr => transformingTestCollectionRepr
+    end type TransformingTestCollection_t
 
     type :: IndividualResult_t
         private
@@ -68,6 +195,7 @@ module Vegetables_m
         private
         procedure :: failureDescription => individualResultFailureDescription
         procedure :: verboseDescription => individualResultVerboseDescription
+        procedure :: repr => individualResultRepr
     end type IndividualResult_t
 
     type, public :: Result_t
@@ -75,61 +203,109 @@ module Vegetables_m
         type(IndividualResult_t), allocatable :: results(:)
     contains
         private
-        generic, public :: operator(.and.) => combineResults
         procedure :: combineResults
-        procedure, public :: failureDescription => resultFailureDescription
+        generic, public :: operator(.and.) => combineResults
         procedure, public :: numAsserts => resultNumAsserts
-        procedure, public :: numFailing => resultNumFailing
+        procedure, public :: numFailingAsserts => resultNumFailingAsserts
         procedure, public :: passed => resultPassed
+        procedure, public :: failureDescription => resultFailureDescription
         procedure, public :: verboseDescription => resultVerboseDescription
+        procedure :: repr => resultRepr
     end type Result_t
 
-    type, abstract, public :: Test_t
-        private
-        type(VARYING_STRING) :: description_
-    contains
-        private
-        procedure(testDescription), deferred, public :: description
-        procedure(filter_), deferred, public :: filter
-        procedure(testNum), deferred, public :: numCases
-        procedure(runWithInput_), deferred :: runWithInput
-        procedure(runWithoutInput_), deferred :: runWithoutInput
-        generic, public :: run => runWithInput, runWithoutInput
-    end type Test_t
-
-    type, abstract, public :: TestResult_t
+    type, abstract :: TestResult_t
         private
         type(VARYING_STRING) :: description
     contains
         private
-        procedure(testResultDescription), deferred, public :: failureDescription
-        procedure(testResultNum), deferred, public :: numAsserts
-        procedure(testResultNum), deferred, public :: numCases
-        procedure(testResultNum), deferred, public :: numFailingAsserts
-        procedure(testResultNum), deferred, public :: numFailingCases
-        procedure(testQuestion), deferred, public :: passed
-        procedure(testResultDescription), deferred, public :: verboseDescription
+        procedure(testResultCount), public, deferred :: numAsserts
+        procedure(testResultCount), public, deferred :: numCases
+        procedure(testResultCount), public, deferred :: numFailingAsserts
+        procedure(testResultCount), public, deferred :: numFailingCases
+        procedure(testResultPassed), public, deferred :: passed
+        procedure(testResultColorizedDescription), public, deferred :: &
+                failureDescription
+        procedure(testResultColorizedDescription), public, deferred :: &
+                verboseDescription
+        procedure(testResultDescription), deferred :: repr
     end type TestResult_t
 
-    type, public :: Transformed_t
+    type, public :: TestResultItem_t
         private
-        class(*), allocatable :: value_
-    end type Transformed_t
+        class(TestResult_t), allocatable :: result_
+    contains
+        private
+        procedure, public :: numAsserts => testResultItemNumAsserts
+        procedure, public :: numCases => testResultItemNumCases
+        procedure, public :: numFailingAsserts => testResultItemNumFailingAsserts
+        procedure, public :: numFailingCases => testResultItemNumFailingCases
+        procedure, public :: passed => testResultItemPassed
+        procedure, public :: failureDescription => testResultItemFailureDescription
+        procedure, public :: verboseDescription => testResultItemVerboseDescription
+        procedure :: repr => testResultItemRepr
+    end type TestResultItem_t
 
-    type, public :: Example_t
+    type, public, extends(TestResult_t) :: TestCaseResult_t
         private
-        class(*), allocatable :: value_
-    end type Example_t
+        type(Result_t) :: result_
+    contains
+        private
+        procedure, public :: numAsserts => testCaseResultNumAsserts
+        procedure, public :: numCases => testCaseResultNumCases
+        procedure, public :: numFailingAsserts => testCaseResultNumFailingAsserts
+        procedure, public :: numFailingCases => testCaseResultNumFailingCases
+        procedure, public :: passed => testCaseResultPassed
+        procedure, public :: failureDescription => &
+                testCaseResultFailureDescription
+        procedure, public :: verboseDescription => &
+                testCaseResultVerboseDescription
+        procedure :: repr => testCaseResultRepr
+        final :: testCaseResultDestructor
+    end type TestCaseResult_t
+
+    type, public, extends(TestResult_t) :: TestCollectionResult_t
+        private
+        type(TestResultItem_t), allocatable :: results(:)
+    contains
+        private
+        procedure, public :: numAsserts => testCollectionResultNumAsserts
+        procedure, public :: numCases => testCollectionResultNumCases
+        procedure, public :: numFailingAsserts => &
+                testCollectionResultNumFailingAsserts
+        procedure, public :: numFailingCases => &
+                testCollectionResultNumFailingCases
+        procedure, public :: passed => testCollectionResultPassed
+        procedure, public :: failureDescription => &
+                testCollectionResultFailureDescription
+        procedure, public :: verboseDescription => &
+                testCollectionResultVerboseDescription
+        procedure :: repr => testCollectionResultRepr
+    end type TestCollectionResult_t
+
+    type :: FilterResult_t
+        class(Test_t), allocatable :: test
+        logical :: matched
+    end type FilterResult_t
+
+    type, public :: FilterItemResult_t
+        type(TestItem_t) :: test
+        logical :: matched
+    end type FilterItemResult_t
+
+    type, public, extends(Input_t) :: TransformationFailure_t
+        type(Result_t) :: result_
+    end type TransformationFailure_t
 
     abstract interface
         subroutine computation_
         end subroutine computation_
 
-        pure function filter_(self, filter_string) result(maybe)
-            import :: Test_t, Maybe_t, VARYING_STRING
+        function filter_(self, filter_string) result(filter_result)
+            use iso_varying_string, only: VARYING_STRING
+            import Test_t, FilterResult_t
             class(Test_t), intent(in) :: self
             type(VARYING_STRING), intent(in) :: filter_string
-            class(Maybe_t), allocatable :: maybe
+            type(FilterResult_t) :: filter_result
         end function filter_
 
         function generate_(self) result(generated_value)
@@ -139,239 +315,88 @@ module Vegetables_m
         end function generate_
 
         function inputTest(input) result(result_)
-            import :: Result_t
-            class(*), intent(in) :: input
+            import Input_t, Result_t
+            class(Input_t), intent(in) :: input
             type(Result_t) :: result_
         end function inputTest
 
         function runWithInput_(self, input) result(result_)
-            import Test_t, TestResult_t
+            import Input_t, Test_t, TestResultItem_t
             class(Test_t), intent(in) :: self
-            class(*), intent(in) :: input
-            class(TestResult_t), allocatable :: result_
+            class(Input_t), intent(in) :: input
+            type(TestResultItem_t) :: result_
         end function runWithInput_
 
         function runWithoutInput_(self) result(result_)
-            import Test_t, TestResult_t
+            import Test_t, TestResultItem_t
             class(Test_t), intent(in) :: self
-            class(TestResult_t), allocatable :: result_
+            type(TestResultItem_t) :: result_
         end function runWithoutInput_
 
-        function shrink_(value_) result(shrunk_value)
-            import :: ShrinkResult_t
-            class(*), intent(in) :: value_
-            class(ShrinkResult_t), allocatable :: shrunk_value
+        function shrink_(input) result(shrunk)
+            import Input_t, ShrinkResult_t
+            class(Input_t), intent(in) :: input
+            type(ShrinkResult_t) :: shrunk
         end function shrink_
 
-        function test_() result(result_)
-            import :: Result_t
+        function simpleTest() result(result_)
+            import Result_t
             type(Result_t) :: result_
-        end function
+        end function simpleTest
 
-        pure function testDescription(self) result(description)
-            import :: Test_t, VARYING_STRING
+        pure function testCount(self) result(num)
+            import Test_t
+            class(Test_t), intent(in) :: self
+            integer :: num
+        end function testCount
+
+        function testDescription(self) result(description)
+            use iso_varying_string, only: VARYING_STRING
+            import Test_t
             class(Test_t), intent(in) :: self
             type(VARYING_STRING) :: description
         end function testDescription
 
-        pure function testNum(self) result(num)
-            import :: Test_t
-            class(Test_t), intent(in) :: self
-            integer :: num
-        end function testNum
-
-        pure function testQuestion(self) result(answer)
-            import :: TestResult_t
-            class(TestResult_t), intent(in) :: self
-            logical :: answer
-        end function testQuestion
-
-        pure function testResultDescription(self, colorize) result(description)
-            import :: TestResult_t, VARYING_STRING
+        function testResultColorizedDescription( &
+                self, colorize) result(description)
+            use iso_varying_string, only: VARYING_STRING
+            import TestResult_t
             class(TestResult_t), intent(in) :: self
             logical, intent(in) :: colorize
             type(VARYING_STRING) :: description
-        end function testResultDescription
+        end function testResultColorizedDescription
 
-        pure function testResultNum(self) result(num)
-            import :: TestResult_t
+        pure function testResultCount(self) result(num)
+            import TestResult_t
             class(TestResult_t), intent(in) :: self
             integer :: num
-        end function testResultNum
+        end function testResultCount
+
+        function testResultDescription(self) result(description)
+            use iso_varying_string, only: VARYING_STRING
+            import TestResult_t
+            class(TestResult_t), intent(in) :: self
+            type(VARYING_STRING) :: description
+        end function testResultDescription
+
+        pure function testResultPassed(self) result(passed)
+            import TestResult_t
+            class(TestResult_t), intent(in) :: self
+            logical :: passed
+        end function testResultPassed
 
         function transformer_(input) result(output)
-            import Transformed_t
-            class(*), intent(in) :: input
+            import Input_t, Transformed_t
+            class(Input_t), intent(in) :: input
             type(Transformed_t) :: output
         end function transformer_
     end interface
 
-    type, public :: TestItem_t
-        private
-        class(Test_t), allocatable :: test
-    contains
-        private
-        procedure, public :: description => testItemDescription
-        procedure, public :: filter => filterTestItem
-        procedure, public :: numCases => testItemNumCases
-        procedure :: runWithInput => runTestItemWithInput
-        procedure :: runWithoutInput => runTestItemWithoutInput
-        generic, public :: run => runWithInput, runWithoutInput
-    end type TestItem_t
-
-    type, abstract, extends(Test_t), public :: TestCase_t
-    contains
-        private
-        procedure, public :: description => testCaseDescription
-        procedure, public :: filter => filterTestCase
-        procedure, public :: numCases => testCaseNumCases
-    end type TestCase_t
-
-    type, extends(TestCase_t), public :: SimpleTestCase_t
-        private
-        procedure(test_), nopass, pointer :: test
-    contains
-        private
-        procedure :: runWithInput => runSimpleTestCaseWithInput
-        procedure :: runWithoutInput => runSimpleTestCaseWithoutInput
-    end type SimpleTestCase_t
-
-    type, extends(TestCase_t), public :: InputTestCase_t
-        private
-        procedure(inputTest), nopass, pointer :: test
-    contains
-        private
-        procedure :: runWithInput => runInputCaseWithInput
-        procedure :: runWithoutInput => runInputCaseWithoutInput
-    end type InputTestCase_t
-
-    type, extends(TestCase_t), public :: TestCaseWithExamples_t
-        private
-        type(Example_t), allocatable :: examples(:)
-        procedure(inputTest), nopass, pointer :: test
-    contains
-        private
-        procedure :: runWithInput => runCaseWithExamplesWithInput
-        procedure :: runWithoutInput => runCaseWithExamplesWithoutInput
-    end type TestCaseWithExamples_t
-
-    type, extends(TestCase_t), public :: TestCaseWithGenerator_t
-        private
-        class(Generator_t), allocatable :: generator
-        procedure(inputTest), nopass, pointer :: test
-    contains
-        private
-        procedure :: runWithInput => runCaseWithGeneratorWithInput
-        procedure :: runWithoutInput => runCaseWithGeneratorWithoutInput
-    end type TestCaseWithGenerator_t
-
-    type, abstract, extends(Test_t), public :: TestCollection_t
-        private
-        type(TestItem_t), allocatable :: tests(:)
-    contains
-        private
-        procedure, public :: description => testCollectionDescription
-        procedure, public :: filter => filterTestCollection
-        procedure, public :: numCases => testCollectionNumCases
-    end type TestCollection_t
-
-    type, extends(TestCollection_t), public :: SimpleTestCollection_t
-    contains
-        private
-        procedure :: runWithInput => runSimpleCollectionWithInput
-        procedure :: runWithoutInput => runSimpleCollectionWithoutInput
-    end type SimpleTestCollection_t
-
-    type, extends(TestCollection_t), public :: TestCollectionWithInput_t
-        private
-        class(*), allocatable :: input
-    contains
-        private
-        procedure :: runWithInput => runCollectionThatHasInputWithInput
-        procedure :: runWithoutInput => runCollectionThatHasInputWithoutInput
-    end type TestCollectionWithInput_t
-
-    type, extends(TestCollection_t), public :: TransformingTestCollection_t
-        private
-        procedure(transformer_), nopass, pointer :: transformer
-    contains
-        private
-        procedure :: runWithInput => runTransformingCollectionWithInput
-        procedure :: runWithoutInput => runTransformingCollectionWithoutInput
-    end type TransformingTestCollection_t
-
-    type, public :: TestResultItem_t
-        private
-        class(TestResult_t), allocatable :: result_
-    contains
-        private
-        procedure, public :: failureDescription => testResultItemFailureDescription
-        procedure, public :: numAsserts => testResultItemNumAsserts
-        procedure, public :: numCases => testResultItemNumCases
-        procedure, public :: numFailingAsserts => testResultItemNumFailingAsserts
-        procedure, public :: numFailingCases => testResultItemNumFailing
-        procedure, public :: passed => testItemPassed
-        procedure, public :: verboseDescription => testResultItemVerboseDescription
-    end type TestResultItem_t
-
-    type, extends(TestResult_t), public :: TestCaseResult_t
-        private
-        type(Result_t) :: result_
-    contains
-        private
-        procedure, public :: failureDescription => testCaseFailureDescription
-        procedure, public :: numAsserts => testCaseNumAsserts
-        procedure, public :: numCases => testCaseResultNumCases
-        procedure, public :: numFailingAsserts => testCaseNumFailingAsserts
-        procedure, public :: numFailingCases => testCaseNumFailing
-        procedure, public :: passed => testCasePassed
-        procedure, public :: verboseDescription => testCaseVerboseDescription
-    end type TestCaseResult_t
-
-    type, extends(TestResult_t), public :: TestCollectionResult_t
-        private
-        type(TestResultItem_t), allocatable :: results(:)
-    contains
-        private
-        procedure, public :: failureDescription => testCollectionFailureDescription
-        procedure, public :: numAsserts => testCollectionNumAsserts
-        procedure, public :: numCases => testCollectionResultNumCases
-        procedure, public :: numFailingAsserts => testCollectionNumFailingAsserts
-        procedure, public :: numFailingCases => testCollectionNumFailing
-        procedure, public :: passed => testCollectionPassed
-        procedure, public :: verboseDescription => testCollectionVerboseDescription
-    end type TestCollectionResult_t
-
-    type :: Options_t
-        private
-        logical :: colorize
-        logical :: quiet
-        logical :: verbose
-        logical :: filter_tests
-        type(VARYING_STRING) :: filter_string
-    end type Options_t
-
-    type, public, extends(Maybe_t) :: JustTest_t
-        private
-        class(Test_t), allocatable :: value_
-    contains
-        private
-        procedure, public :: getValue => getValueTest
-    end type JustTest_t
-
-    type, public, extends(Maybe_t) :: JustTestItem_t
-        private
-        type(TestItem_t) :: value_
-    contains
-        private
-        procedure, public :: getValue => getValueTestItem
-    end type JustTestItem_t
-
     interface assertDoesntInclude
-        module procedure assertDoesntIncludeCC
-        module procedure assertDoesntIncludeCS
-        module procedure assertDoesntIncludeSC
-        module procedure assertDoesntIncludeSS
+        module procedure assertDoesntIncludeBasicCC
+        module procedure assertDoesntIncludeBasicCS
+        module procedure assertDoesntIncludeBasicSC
+        module procedure assertDoesntIncludeBasicSS
         module procedure assertDoesntIncludeWithMessageCCC
         module procedure assertDoesntIncludeWithMessageCCS
         module procedure assertDoesntIncludeWithMessageCSC
@@ -399,8 +424,8 @@ module Vegetables_m
     end interface assertDoesntInclude
 
     interface assertEmpty
-        module procedure assertEmptyC
-        module procedure assertEmptyS
+        module procedure assertEmptyBasicC
+        module procedure assertEmptyBasicS
         module procedure assertEmptyWithMessageCC
         module procedure assertEmptyWithMessageCS
         module procedure assertEmptyWithMessageSC
@@ -423,7 +448,7 @@ module Vegetables_m
         module procedure assertEqualsDoublePrecisionWithMessagesCS
         module procedure assertEqualsDoublePrecisionWithMessagesSC
         module procedure assertEqualsDoublePrecisionWithMessagesSS
-        module procedure assertEqualsInteger
+        module procedure assertEqualsIntegerBasic
         module procedure assertEqualsIntegerWithMessageC
         module procedure assertEqualsIntegerWithMessageS
         module procedure assertEqualsIntegerWithMessagesCC
@@ -481,13 +506,34 @@ module Vegetables_m
     end interface assertEqualsWithinRelative
 
     interface assertFasterThan
-        module procedure assertFasterThanBasic
-        module procedure assertFasterThanWithMessagesC
-        module procedure assertFasterThanWithMessagesS
-        module procedure assertFasterThanWithMessagesCC
-        module procedure assertFasterThanWithMessagesCS
-        module procedure assertFasterThanWithMessagesSC
-        module procedure assertFasterThanWithMessagesSS
+        module procedure assertFasterThanAbsoluteBracketed
+        module procedure assertFasterThanAbsoluteBracketedWithMessageC
+        module procedure assertFasterThanAbsoluteBracketedWithMessageS
+        module procedure assertFasterThanAbsoluteBracketedWithMessagesCC
+        module procedure assertFasterThanAbsoluteBracketedWithMessagesCS
+        module procedure assertFasterThanAbsoluteBracketedWithMessagesSC
+        module procedure assertFasterThanAbsoluteBracketedWithMessagesSS
+        module procedure assertFasterThanAbsoluteSimple
+        module procedure assertFasterThanAbsoluteSimpleWithMessageC
+        module procedure assertFasterThanAbsoluteSimpleWithMessageS
+        module procedure assertFasterThanAbsoluteSimpleWithMessagesCC
+        module procedure assertFasterThanAbsoluteSimpleWithMessagesCS
+        module procedure assertFasterThanAbsoluteSimpleWithMessagesSC
+        module procedure assertFasterThanAbsoluteSimpleWithMessagesSS
+        module procedure assertFasterThanRelativeBracketed
+        module procedure assertFasterThanRelativeBracketedWithMessageC
+        module procedure assertFasterThanRelativeBracketedWithMessageS
+        module procedure assertFasterThanRelativeBracketedWithMessagesCC
+        module procedure assertFasterThanRelativeBracketedWithMessagesCS
+        module procedure assertFasterThanRelativeBracketedWithMessagesSC
+        module procedure assertFasterThanRelativeBracketedWithMessagesSS
+        module procedure assertFasterThanRelativeSimple
+        module procedure assertFasterThanRelativeSimpleWithMessageC
+        module procedure assertFasterThanRelativeSimpleWithMessageS
+        module procedure assertFasterThanRelativeSimpleWithMessagesCC
+        module procedure assertFasterThanRelativeSimpleWithMessagesCS
+        module procedure assertFasterThanRelativeSimpleWithMessagesSC
+        module procedure assertFasterThanRelativeSimpleWithMessagesSS
     end interface assertFasterThan
 
     interface assertIncludes
@@ -546,31 +592,25 @@ module Vegetables_m
         module procedure delimitS
     end interface delimit
 
-    interface describe
-        module procedure describeBasic
-        module procedure describeWithInput
-    end interface describe
+    interface Describe
+        module procedure DescribeBasic
+        module procedure DescribeWithInput
+    end interface Describe
 
     interface fail
         module procedure failC
         module procedure failS
     end interface fail
 
-    interface given
-        module procedure givenBasic
-        module procedure givenWithInput
-    end interface given
+    interface Given
+        module procedure GivenWithInput
+    end interface Given
 
-    interface it
-        module procedure itBasic
-        module procedure itWithExamples
-        module procedure itWithGenerator
-    end interface it
-
-    interface Just
-        module procedure JustTest
-        module procedure JustTestItem
-    end interface Just
+    interface It
+        module procedure ItBasic
+        module procedure ItWithExamples
+        module procedure ItWithGenerator
+    end interface It
 
     interface makeDoesntIncludeFailureMessage
         module procedure makeDoesntIncludeFailureMessageCC
@@ -603,6 +643,28 @@ module Vegetables_m
         module procedure makeEqualsSuccessMessageS
     end interface makeEqualsSuccessMessage
 
+    interface makeFasterThanFailureMessage
+        module procedure makeFasterThanFailureMessageCCC
+        module procedure makeFasterThanFailureMessageCCS
+        module procedure makeFasterThanFailureMessageCSC
+        module procedure makeFasterThanFailureMessageCSS
+        module procedure makeFasterThanFailureMessageSCC
+        module procedure makeFasterThanFailureMessageSCS
+        module procedure makeFasterThanFailureMessageSSC
+        module procedure makeFasterThanFailureMessageSSS
+    end interface makeFasterThanFailureMessage
+
+    interface makeFasterThanSuccessMessage
+        module procedure makeFasterThanSuccessMessageCCC
+        module procedure makeFasterThanSuccessMessageCCS
+        module procedure makeFasterThanSuccessMessageCSC
+        module procedure makeFasterThanSuccessMessageCSS
+        module procedure makeFasterThanSuccessMessageSCC
+        module procedure makeFasterThanSuccessMessageSCS
+        module procedure makeFasterThanSuccessMessageSSC
+        module procedure makeFasterThanSuccessMessageSSS
+    end interface makeFasterThanSuccessMessage
+
     interface makeIncludesFailureMessage
         module procedure makeIncludesFailureMessageCC
         module procedure makeIncludesFailureMessageCS
@@ -628,26 +690,25 @@ module Vegetables_m
         module procedure makeWithinFailureMessageSSS
     end interface makeWithinFailureMessage
 
-    interface makeWithinSuccesMessage
-        module procedure makeWithinSuccesMessageCCC
-        module procedure makeWithinSuccesMessageCCS
-        module procedure makeWithinSuccesMessageCSC
-        module procedure makeWithinSuccesMessageCSS
-        module procedure makeWithinSuccesMessageSCC
-        module procedure makeWithinSuccesMessageSCS
-        module procedure makeWithinSuccesMessageSSC
-        module procedure makeWithinSuccesMessageSSS
-    end interface makeWithinSuccesMessage
+    interface makeWithinSuccessMessage
+        module procedure makeWithinSuccessMessageCCC
+        module procedure makeWithinSuccessMessageCCS
+        module procedure makeWithinSuccessMessageCSC
+        module procedure makeWithinSuccessMessageCSS
+        module procedure makeWithinSuccessMessageSCC
+        module procedure makeWithinSuccessMessageSCS
+        module procedure makeWithinSuccessMessageSSC
+        module procedure makeWithinSuccessMessageSSS
+    end interface makeWithinSuccessMessage
 
     interface succeed
         module procedure succeedC
         module procedure succeedS
     end interface succeed
 
-    interface TestCaseResult
-        module procedure TestCaseResultC
-        module procedure TestCaseResultS
-    end interface TestCaseResult
+    interface When
+        module procedure whenWithTransformer
+    end interface When
 
     interface withUserMessage
         module procedure withUserMessageCC
@@ -656,30 +717,22 @@ module Vegetables_m
         module procedure withUserMessageSS
     end interface withUserMessage
 
-    interface when
-        module procedure whenBasic
-        module procedure whenWithInput
-        module procedure whenWithTransformer
-    end interface
-
     type(AsciiStringGenerator_t), parameter, public :: &
             ASCII_STRING_GENERATOR = AsciiStringGenerator_t()
     type(IntegerGenerator_t), parameter, public :: &
             INTEGER_GENERATOR = IntegerGenerator_t()
 
-    integer, parameter :: dp = kind(0.0d0)
     character(len=*), parameter, public :: EMPTY_SUCCESS_MESSAGE = "String was empty"
     integer, parameter :: INDENTATION = 4
-    double precision, parameter :: MACHINE_EPSILON = EPSILON(0.0_dp)
-    double precision, parameter :: MACHINE_TINY = TINY(0.0_dp)
+    double precision, parameter :: MACHINE_EPSILON = epsilon(0.0d0)
+    double precision, parameter :: MACHINE_TINY = tiny(0.0d0)
     integer, parameter :: MAX_INT = HUGE(1)
-    character(len=*), parameter :: NEWLINE = NEW_LINE('A')
     character(len=*), parameter, public :: NOT_FAILURE_MESSAGE = "Expected to not be true"
     character(len=*), parameter, public :: NOT_SUCCESS_MESSAGE = "Was not true"
-    type(Nothing_t), parameter :: NOTHING = Nothing_t()
     integer :: NUM_GENERATOR_TESTS = 100
     character(len=*), parameter, public :: THAT_FAILURE_MESSAGE = "Expected to be true"
     character(len=*), parameter, public :: THAT_SUCCESS_MESSAGE = "Was true"
+
 
     public :: &
             assertDoesntInclude, &
@@ -691,12 +744,11 @@ module Vegetables_m
             assertIncludes, &
             assertNot, &
             assertThat, &
-            describe, &
             delimit, &
+            Describe, &
             Example, &
             fail, &
             Generated, &
-            given, &
             getRandomAsciiCharacter, &
             getRandomAsciiString, &
             getRandomAsciiStringWithMaxLength, &
@@ -705,145 +757,216 @@ module Vegetables_m
             getRandomInteger, &
             getRandomIntegerWithRange, &
             getRandomLogical, &
-            it, &
-            it_, &
+            Given, &
+            It, &
+            It_, &
             makeDoesntIncludeFailureMessage, &
             makeDoesntIncludeSuccessMessage, &
             makeEmptyFailureMessage, &
             makeEqualsFailureMessage, &
             makeEqualsSuccessMessage, &
+            makeFasterThanFailureMessage, &
+            makeFasterThanSuccessMessage, &
             makeIncludesFailureMessage, &
             makeIncludesSuccessMessage, &
             makeWithinFailureMessage, &
-            makeWithinSuccesMessage, &
+            makeWithinSuccessMessage, &
             runTests, &
-            ShrunkValue, &
-            SimplestValue, &
-            SimpleTestCase, &
-            SimpleTestCollection, &
+            ShrinkResult, &
             succeed, &
             testThat, &
-            then, &
-            then_, &
+            Then__, &
             Transformed, &
-            withUserMessage, &
-            when
+            When, &
+            withUserMessage
 contains
-    pure function assertDoesntIncludeCC(search_for, string) result(result__)
+    function assertDoesntIncludeBasicCC(search_for, string) result(result__)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(search_for, string, "", "")
-    end function assertDoesntIncludeCC
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                var_str(string), &
+                var_str(""), &
+                var_str(""))
+    end function assertDoesntIncludeBasicCC
 
-    pure function assertDoesntIncludeCS(search_for, string) result(result__)
+    function assertDoesntIncludeBasicCS(search_for, string) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(search_for, char(string), "", "")
-    end function assertDoesntIncludeCS
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                string, &
+                var_str(""), &
+                var_str(""))
+    end function assertDoesntIncludeBasicCS
 
-    pure function assertDoesntIncludeSC(search_for, string) result(result__)
+    function assertDoesntIncludeBasicSC(search_for, string) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(char(search_for), string, "", "")
-    end function assertDoesntIncludeSC
+        result__ = assertDoesntInclude( &
+                search_for, &
+                var_str(string), &
+                var_str(""), &
+                var_str(""))
+    end function assertDoesntIncludeBasicSC
 
-    pure function assertDoesntIncludeSS(search_for, string) result(result__)
+    function assertDoesntIncludeBasicSS(search_for, string) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(char(search_for), char(string), "", "")
-    end function assertDoesntIncludeSS
+        result__ = assertDoesntInclude( &
+                search_for, &
+                string, &
+                var_str(""), &
+                var_str(""))
+    end function assertDoesntIncludeBasicSS
 
-    pure function assertDoesntIncludeWithMessageCCC( &
+    function assertDoesntIncludeWithMessageCCC( &
             search_for, string, message) result(result__)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(search_for, string, message, message)
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                var_str(string), &
+                var_str(message), &
+                var_str(message))
     end function assertDoesntIncludeWithMessageCCC
 
-    pure function assertDoesntIncludeWithMessageCCS( &
+    function assertDoesntIncludeWithMessageCCS( &
             search_for, string, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(search_for, string, char(message), char(message))
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                var_str(string), &
+                message, &
+                message)
     end function assertDoesntIncludeWithMessageCCS
 
-    pure function assertDoesntIncludeWithMessageCSC( &
+    function assertDoesntIncludeWithMessageCSC( &
             search_for, string, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(search_for, char(string), message, message)
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                string, &
+                var_str(message), &
+                var_str(message))
     end function assertDoesntIncludeWithMessageCSC
 
-    pure function assertDoesntIncludeWithMessageCSS( &
+    function assertDoesntIncludeWithMessageCSS( &
             search_for, string, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(search_for, char(string), char(message), char(message))
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                string, &
+                message, &
+                message)
     end function assertDoesntIncludeWithMessageCSS
 
-    pure function assertDoesntIncludeWithMessageSCC( &
+    function assertDoesntIncludeWithMessageSCC( &
             search_for, string, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(char(search_for), string, message, message)
+        result__ = assertDoesntInclude( &
+                search_for, &
+                var_str(string), &
+                var_str(message), &
+                var_str(message))
     end function assertDoesntIncludeWithMessageSCC
 
-    pure function assertDoesntIncludeWithMessageSCS( &
+    function assertDoesntIncludeWithMessageSCS( &
             search_for, string, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(char(search_for), string, char(message), char(message))
+        result__ = assertDoesntInclude( &
+                search_for, &
+                var_str(string), &
+                message, &
+                message)
     end function assertDoesntIncludeWithMessageSCS
 
-    pure function assertDoesntIncludeWithMessageSSC( &
+    function assertDoesntIncludeWithMessageSSC( &
             search_for, string, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(char(search_for), char(string), message, message)
+        result__ = assertDoesntInclude( &
+                search_for, &
+                string, &
+                var_str(message), &
+                var_str(message))
     end function assertDoesntIncludeWithMessageSSC
 
-    pure function assertDoesntIncludeWithMessageSSS( &
+    function assertDoesntIncludeWithMessageSSS( &
             search_for, string, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING
+
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertDoesntInclude(char(search_for), char(string), char(message), char(message))
+        result__ = assertDoesntInclude( &
+                search_for, &
+                string, &
+                message, &
+                message)
     end function assertDoesntIncludeWithMessageSSS
 
-    pure function assertDoesntIncludeWithMessagesCCCC( &
+    function assertDoesntIncludeWithMessagesCCCC( &
             search_for, string, success_message, failure_message) result(result__)
-        use strff, only: operator(.includes.)
+        use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
@@ -851,233 +974,461 @@ contains
         character(len=*), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        if(.not.(string.includes.search_for)) then
-            result__ = succeed(withUserMessage(&
-                    makeDoesntIncludeSuccessMessage(search_for, string), &
-                    success_message))
-        else
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                var_str(string), &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertDoesntIncludeWithMessagesCCCC
+
+    function assertDoesntIncludeWithMessagesCCCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                var_str(string), &
+                var_str(success_message), &
+                failure_message)
+    end function assertDoesntIncludeWithMessagesCCCS
+
+    function assertDoesntIncludeWithMessagesCCSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                var_str(string), &
+                success_message, &
+                var_str(failure_message))
+    end function assertDoesntIncludeWithMessagesCCSC
+
+    function assertDoesntIncludeWithMessagesCCSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                var_str(string), &
+                success_message, &
+                failure_message)
+    end function assertDoesntIncludeWithMessagesCCSS
+
+    function assertDoesntIncludeWithMessagesCSCC( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                string, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertDoesntIncludeWithMessagesCSCC
+
+    function assertDoesntIncludeWithMessagesCSCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                string, &
+                var_str(success_message), &
+                failure_message)
+    end function assertDoesntIncludeWithMessagesCSCS
+
+    function assertDoesntIncludeWithMessagesCSSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                string, &
+                success_message, &
+                var_str(failure_message))
+    end function assertDoesntIncludeWithMessagesCSSC
+
+    function assertDoesntIncludeWithMessagesCSSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                var_str(search_for), &
+                string, &
+                success_message, &
+                failure_message)
+    end function assertDoesntIncludeWithMessagesCSSS
+
+    function assertDoesntIncludeWithMessagesSCCC( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                search_for, &
+                var_str(string), &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertDoesntIncludeWithMessagesSCCC
+
+    function assertDoesntIncludeWithMessagesSCCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                search_for, &
+                var_str(string), &
+                var_str(success_message), &
+                failure_message)
+    end function assertDoesntIncludeWithMessagesSCCS
+
+    function assertDoesntIncludeWithMessagesSCSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                search_for, &
+                var_str(string), &
+                success_message, &
+                var_str(failure_message))
+    end function assertDoesntIncludeWithMessagesSCSC
+
+    function assertDoesntIncludeWithMessagesSCSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                search_for, &
+                var_str(string), &
+                success_message, &
+                failure_message)
+    end function assertDoesntIncludeWithMessagesSCSS
+
+    function assertDoesntIncludeWithMessagesSSCC( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                search_for, &
+                string, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertDoesntIncludeWithMessagesSSCC
+
+    function assertDoesntIncludeWithMessagesSSCS( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                search_for, &
+                string, &
+                var_str(success_message), &
+                failure_message)
+    end function assertDoesntIncludeWithMessagesSSCS
+
+    function assertDoesntIncludeWithMessagesSSSC( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertDoesntInclude( &
+                search_for, &
+                string, &
+                success_message, &
+                var_str(failure_message))
+    end function assertDoesntIncludeWithMessagesSSSC
+
+    function assertDoesntIncludeWithMessagesSSSS( &
+            search_for, string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: operator(.includes.)
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        if (string.includes.search_for) then
             result__ = fail(withUserMessage( &
                     makeDoesntIncludeFailureMessage(search_for, string), &
                     failure_message))
+        else
+            result__ = succeed(withUserMessage( &
+                    makeDoesntIncludeSuccessMessage(search_for, string), &
+                    success_message))
         end if
-    end function assertDoesntIncludeWithMessagesCCCC
-
-    pure function assertDoesntIncludeWithMessagesCCCS( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(search_for, string, success_message, char(failure_message))
-    end function assertDoesntIncludeWithMessagesCCCS
-
-    pure function assertDoesntIncludeWithMessagesCCSC( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(search_for, string, char(success_message), failure_message)
-    end function assertDoesntIncludeWithMessagesCCSC
-
-    pure function assertDoesntIncludeWithMessagesCCSS( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(search_for, string, char(success_message), char(failure_message))
-    end function assertDoesntIncludeWithMessagesCCSS
-
-    pure function assertDoesntIncludeWithMessagesCSCC( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(search_for, char(string), success_message, failure_message)
-    end function assertDoesntIncludeWithMessagesCSCC
-
-    pure function assertDoesntIncludeWithMessagesCSCS( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(search_for, char(string), success_message, char(failure_message))
-    end function assertDoesntIncludeWithMessagesCSCS
-
-    pure function assertDoesntIncludeWithMessagesCSSC( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(search_for, char(string), char(success_message), failure_message)
-    end function assertDoesntIncludeWithMessagesCSSC
-
-    pure function assertDoesntIncludeWithMessagesCSSS( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(search_for, char(string), char(success_message), char(failure_message))
-    end function assertDoesntIncludeWithMessagesCSSS
-
-    pure function assertDoesntIncludeWithMessagesSCCC( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(char(search_for), string, success_message, failure_message)
-    end function assertDoesntIncludeWithMessagesSCCC
-
-    pure function assertDoesntIncludeWithMessagesSCCS( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(char(search_for), string, success_message, char(failure_message))
-    end function assertDoesntIncludeWithMessagesSCCS
-
-    pure function assertDoesntIncludeWithMessagesSCSC( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(char(search_for), string, char(success_message), failure_message)
-    end function assertDoesntIncludeWithMessagesSCSC
-
-    pure function assertDoesntIncludeWithMessagesSCSS( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(char(search_for), string, char(success_message), char(failure_message))
-    end function assertDoesntIncludeWithMessagesSCSS
-
-    pure function assertDoesntIncludeWithMessagesSSCC( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(char(search_for), char(string), success_message, failure_message)
-    end function assertDoesntIncludeWithMessagesSSCC
-
-    pure function assertDoesntIncludeWithMessagesSSCS( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(char(search_for), char(string), success_message, char(failure_message))
-    end function assertDoesntIncludeWithMessagesSSCS
-
-    pure function assertDoesntIncludeWithMessagesSSSC( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(char(search_for), char(string), char(success_message), failure_message)
-    end function assertDoesntIncludeWithMessagesSSSC
-
-    pure function assertDoesntIncludeWithMessagesSSSS( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertDoesntInclude(char(search_for), char(string), char(success_message), char(failure_message))
     end function assertDoesntIncludeWithMessagesSSSS
 
-    pure function assertEmptyC(string) result(result__)
+    function assertEmptyBasicC(string) result(result__)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertEmpty(string, "", "")
-    end function assertEmptyC
+        result__ = assertEmpty( &
+                var_str(string), &
+                var_str(""), &
+                var_str(""))
+    end function assertEmptyBasicC
 
-    pure function assertEmptyS(string) result(result__)
+    function assertEmptyBasicS(string) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertEmpty(char(string), "", "")
-    end function assertEmptyS
+        result__ = assertEmpty( &
+                string, &
+                var_str(""), &
+                var_str(""))
+    end function assertEmptyBasicS
 
-    pure function assertEmptyWithMessageCC(string, message) result(result__)
+    function assertEmptyWithMessageCC(string, message) result(result__)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertEmpty(string, message, message)
+        result__ = assertEmpty( &
+                var_str(string), &
+                var_str(message), &
+                var_str(message))
     end function assertEmptyWithMessageCC
 
-    pure function assertEmptyWithMessageCS(string, message) result(result__)
+    function assertEmptyWithMessageCS(string, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertEmpty(string, char(message), char(message))
+        result__ = assertEmpty( &
+                var_str(string), &
+                message, &
+                message)
     end function assertEmptyWithMessageCS
 
-    pure function assertEmptyWithMessageSC(string, message) result(result__)
+    function assertEmptyWithMessageSC(string, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertEmpty(char(string), message, message)
+        result__ = assertEmpty( &
+                string, &
+                var_str(message), &
+                var_str(message))
     end function assertEmptyWithMessageSC
 
-    pure function assertEmptyWithMessageSS(string, message) result(result__)
+    function assertEmptyWithMessageSS(string, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING
+
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertEmpty(char(string), char(message), char(message))
+        result__ = assertEmpty( &
+                string, &
+                message, &
+                message)
     end function assertEmptyWithMessageSS
 
-    pure function assertEmptyWithMessagesCCC(&
+    function assertEmptyWithMessagesCCC( &
             string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty( &
+                var_str(string), &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertEmptyWithMessagesCCC
+
+    function assertEmptyWithMessagesCCS( &
+            string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty( &
+                var_str(string), &
+                var_str(success_message), &
+                failure_message)
+    end function assertEmptyWithMessagesCCS
+
+    function assertEmptyWithMessagesCSC( &
+            string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty( &
+                var_str(string), &
+                success_message, &
+                var_str(failure_message))
+    end function assertEmptyWithMessagesCSC
+
+    function assertEmptyWithMessagesCSS( &
+            string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty( &
+                var_str(string), &
+                success_message, &
+                failure_message)
+    end function assertEmptyWithMessagesCSS
+
+    function assertEmptyWithMessagesSCC( &
+            string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty( &
+                string, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertEmptyWithMessagesSCC
+
+    function assertEmptyWithMessagesSCS( &
+            string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty( &
+                string, &
+                var_str(success_message), &
+                failure_message)
+    end function assertEmptyWithMessagesSCS
+
+    function assertEmptyWithMessagesSSC( &
+            string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEmpty( &
+                string, &
+                success_message, &
+                var_str(failure_message))
+    end function assertEmptyWithMessagesSSC
+
+    function assertEmptyWithMessagesSSS( &
+            string, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, operator(==)
+
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
         if (string == "") then
@@ -1085,728 +1436,243 @@ contains
                     EMPTY_SUCCESS_MESSAGE, success_message))
         else
             result__ = fail(withUserMessage( &
-                    makeEmptyFailureMessage(string), &
-                    failure_message))
+                    makeEmptyFailureMessage(string), failure_message))
         end if
-    end function assertEmptyWithMessagesCCC
-
-    pure function assertEmptyWithMessagesCCS(&
-            string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEmpty(string, success_message, char(failure_message))
-    end function assertEmptyWithMessagesCCS
-
-    pure function assertEmptyWithMessagesCSC(&
-            string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEmpty(string, char(success_message), failure_message)
-    end function assertEmptyWithMessagesCSC
-
-    pure function assertEmptyWithMessagesCSS(&
-            string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEmpty(string, char(success_message), char(failure_message))
-    end function assertEmptyWithMessagesCSS
-
-    pure function assertEmptyWithMessagesSCC(&
-            string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEmpty(char(string), success_message, failure_message)
-    end function assertEmptyWithMessagesSCC
-
-    pure function assertEmptyWithMessagesSCS(&
-            string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEmpty(char(string), success_message, char(failure_message))
-    end function assertEmptyWithMessagesSCS
-
-    pure function assertEmptyWithMessagesSSC(&
-            string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEmpty(char(string), char(success_message), failure_message)
-    end function assertEmptyWithMessagesSSC
-
-    pure function assertEmptyWithMessagesSSS(&
-            string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEmpty(char(string), char(success_message), char(failure_message))
     end function assertEmptyWithMessagesSSS
 
-    pure function assertEqualsDoublePrecision(expected, actual) result(result__)
+    function assertEqualsDoublePrecision( &
+            expected, &
+            actual) &
+            result(result__)
+        use iso_varying_string, only: var_str
+
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, "", "")
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                var_str(""), &
+                var_str(""))
     end function assertEqualsDoublePrecision
 
-    pure function assertEqualsDoublePrecisionWithMessageC( &
-            expected, actual, message) result(result__)
+    function assertEqualsDoublePrecisionWithMessageC( &
+            expected, &
+            actual, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, message, message)
+        result__ = assertEquals( &
+                expected, actual, var_str(message), var_str(message))
     end function assertEqualsDoublePrecisionWithMessageC
 
-    pure function assertEqualsDoublePrecisionWithMessageS( &
-            expected, actual, message) result(result__)
+    function assertEqualsDoublePrecisionWithMessageS( &
+            expected, &
+            actual, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, char(message), char(message))
+        result__ = assertEquals(expected, actual, message, message)
     end function assertEqualsDoublePrecisionWithMessageS
 
-    pure function assertEqualsDoublePrecisionWithMessagesCC( &
-            expected, actual, success_message, failure_message) result(result__)
+    function assertEqualsDoublePrecisionWithMessagesCC( &
+            expected, &
+            actual, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertEqualsWithinAbsolute( &
-                expected, actual, MACHINE_EPSILON, success_message, failure_message)
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                var_str(success_message), &
+                var_str(failure_message))
     end function assertEqualsDoublePrecisionWithMessagesCC
 
-    pure function assertEqualsDoublePrecisionWithMessagesCS( &
-            expected, actual, success_message, failure_message) result(result__)
+    function assertEqualsDoublePrecisionWithMessagesCS( &
+            expected, &
+            actual, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         character(len=*), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, success_message, char(failure_message))
+        result__ = assertEquals( &
+                expected, actual, var_str(success_message), failure_message)
     end function assertEqualsDoublePrecisionWithMessagesCS
 
-    pure function assertEqualsDoublePrecisionWithMessagesSC( &
-            expected, actual, success_message, failure_message) result(result__)
+    function assertEqualsDoublePrecisionWithMessagesSC( &
+            expected, &
+            actual, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, char(success_message), failure_message)
+        result__ = assertEquals( &
+                expected, actual, success_message, var_str(failure_message))
     end function assertEqualsDoublePrecisionWithMessagesSC
 
-    pure function assertEqualsDoublePrecisionWithMessagesSS( &
-            expected, actual, success_message, failure_message) result(result__)
+    function assertEqualsDoublePrecisionWithMessagesSS( &
+            expected, &
+            actual, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, char(success_message), char(failure_message))
+        result__ = assertEqualsWithinAbsolute( &
+                expected, &
+                actual, &
+                MACHINE_EPSILON, &
+                success_message, &
+                failure_message)
     end function assertEqualsDoublePrecisionWithMessagesSS
 
-    pure function assertEqualsStringsCC(expected, actual) result(result__)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, actual, "", "")
-    end function assertEqualsStringsCC
-
-    pure function assertEqualsStringsCS(expected, actual) result(result__)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, char(actual), "", "")
-    end function assertEqualsStringsCS
-
-    pure function assertEqualsStringsSC(expected, actual) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), actual, "", "")
-    end function assertEqualsStringsSC
-
-    pure function assertEqualsStringsSS(expected, actual) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), char(actual), "", "")
-    end function assertEqualsStringsSS
-
-    pure function assertEqualsStringsWithMessageCCC( &
-            expected, actual, message) result(result__)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, actual, message, message)
-    end function assertEqualsStringsWithMessageCCC
-
-    pure function assertEqualsStringsWithMessageCCS( &
-            expected, actual, message) result(result__)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, actual, char(message), char(message))
-    end function assertEqualsStringsWithMessageCCS
-
-    pure function assertEqualsStringsWithMessageCSC( &
-            expected, actual, message) result(result__)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        character(len=*), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, char(actual), message, message)
-    end function assertEqualsStringsWithMessageCSC
-
-    pure function assertEqualsStringsWithMessageCSS( &
-            expected, actual, message) result(result__)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, char(actual), char(message), char(message))
-    end function assertEqualsStringsWithMessageCSS
-
-    pure function assertEqualsStringsWithMessageSCC( &
-            expected, actual, message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), actual, message, message)
-    end function assertEqualsStringsWithMessageSCC
-
-    pure function assertEqualsStringsWithMessageSCS( &
-            expected, actual, message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), actual, char(message), char(message))
-    end function assertEqualsStringsWithMessageSCS
-
-    pure function assertEqualsStringsWithMessageSSC( &
-            expected, actual, message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        character(len=*), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), char(actual), message, message)
-    end function assertEqualsStringsWithMessageSSC
-
-    pure function assertEqualsStringsWithMessageSSS( &
-            expected, actual, message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), char(actual), char(message), char(message))
-    end function assertEqualsStringsWithMessageSSS
-
-    pure function assertEqualsStringsWithMessagesCCCC( &
-            expected, actual, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        if (expected == actual) then
-            result__ = succeed(withUserMessage( &
-                    makeEqualsSuccessMessage(var_str(expected)), &
-                    success_message))
-        else
-            result__ = fail(withUserMessage( &
-                    makeEqualsFailureMessage(var_str(expected), var_str(actual)), &
-                    failure_message))
-        end if
-    end function assertEqualsStringsWithMessagesCCCC
-
-    pure function assertEqualsStringsWithMessagesCCCS( &
-            expected, actual, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, actual, success_message, char(failure_message))
-    end function assertEqualsStringsWithMessagesCCCS
-
-    pure function assertEqualsStringsWithMessagesCCSC( &
-            expected, actual, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, actual, char(success_message), failure_message)
-    end function assertEqualsStringsWithMessagesCCSC
-
-    pure function assertEqualsStringsWithMessagesCCSS( &
-            expected, actual, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, actual, char(success_message), char(failure_message))
-    end function assertEqualsStringsWithMessagesCCSS
-
-    pure function assertEqualsStringsWithMessagesCSCC( &
-            expected, actual, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, char(actual), success_message, failure_message)
-    end function assertEqualsStringsWithMessagesCSCC
-
-    pure function assertEqualsStringsWithMessagesCSCS( &
-            expected, actual, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, char(actual), success_message, char(failure_message))
-    end function assertEqualsStringsWithMessagesCSCS
-
-    pure function assertEqualsStringsWithMessagesCSSC( &
-            expected, actual, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, char(actual), char(success_message), failure_message)
-    end function assertEqualsStringsWithMessagesCSSC
-
-    pure function assertEqualsStringsWithMessagesCSSS( &
-            expected, actual, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(expected, char(actual), char(success_message), char(failure_message))
-    end function assertEqualsStringsWithMessagesCSSS
-
-    pure function assertEqualsStringsWithMessagesSCCC( &
-            expected, actual, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), actual, success_message, failure_message)
-    end function assertEqualsStringsWithMessagesSCCC
-
-    pure function assertEqualsStringsWithMessagesSCCS( &
-            expected, actual, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), actual, success_message, char(failure_message))
-    end function assertEqualsStringsWithMessagesSCCS
-
-    pure function assertEqualsStringsWithMessagesSCSC( &
-            expected, actual, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), actual, char(success_message), failure_message)
-    end function assertEqualsStringsWithMessagesSCSC
-
-    pure function assertEqualsStringsWithMessagesSCSS( &
-            expected, actual, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), actual, char(success_message), char(failure_message))
-    end function assertEqualsStringsWithMessagesSCSS
-
-    pure function assertEqualsStringsWithMessagesSSCC( &
-            expected, actual, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), char(actual), success_message, failure_message)
-    end function assertEqualsStringsWithMessagesSSCC
-
-    pure function assertEqualsStringsWithMessagesSSCS( &
-            expected, actual, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), char(actual), success_message, char(failure_message))
-    end function assertEqualsStringsWithMessagesSSCS
-
-    pure function assertEqualsStringsWithMessagesSSSC( &
-            expected, actual, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), char(actual), char(success_message), failure_message)
-    end function assertEqualsStringsWithMessagesSSSC
-
-    pure function assertEqualsStringsWithMessagesSSSS( &
-            expected, actual, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEquals(char(expected), char(actual), char(success_message), char(failure_message))
-    end function assertEqualsStringsWithMessagesSSSS
-
-    pure function assertEqualsWithinAbsoluteBasic( &
-            expected, actual, tolerance) result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinAbsolute(expected, actual, tolerance, "", "")
-    end function assertEqualsWithinAbsoluteBasic
-
-    pure function assertEqualsWithinAbsoluteWithMessageC( &
-            expected, actual, tolerance, message) result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        character(len=*), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinAbsolute( &
-                expected, actual, tolerance, message, message)
-    end function assertEqualsWithinAbsoluteWithMessageC
-
-    pure function assertEqualsWithinAbsoluteWithMessageS( &
-            expected, actual, tolerance, message) result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        type(VARYING_STRING), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinAbsolute( &
-                expected, actual, tolerance, char(message), char(message))
-    end function assertEqualsWithinAbsoluteWithMessageS
-
-    pure function assertEqualsWithinAbsoluteWithMessagesCC( &
-            expected, &
-            actual, &
-            tolerance, &
-            success_message, &
-            failure_message) &
-            result(result__)
+    function assertEqualsIntegerBasic(expected, actual) result(result__)
+        use iso_varying_string, only: var_str
         use strff, only: toString
 
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        if (equalsWithinAbsolute(expected, actual, tolerance)) then
-            result__ = succeed(withUserMessage( &
-                    makeWithinSuccesMessage( &
-                            toString(expected), &
-                            toString(actual), &
-                            toString(tolerance)), &
-                    success_message))
-        else
-            result__ = fail(withUserMessage( &
-                    makeWithinFailureMessage( &
-                            toString(expected), &
-                            toString(actual), &
-                            toString(tolerance)), &
-                    failure_message))
-        end if
-    end function assertEqualsWithinAbsoluteWithMessagesCC
-
-    pure function assertEqualsWithinAbsoluteWithMessagesCS( &
-            expected, &
-            actual, &
-            tolerance, &
-            success_message, &
-            failure_message) &
-            result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinAbsolute( &
-                expected, actual, tolerance, success_message, char(failure_message))
-    end function assertEqualsWithinAbsoluteWithMessagesCS
-
-    pure function assertEqualsWithinAbsoluteWithMessagesSC( &
-            expected, &
-            actual, &
-            tolerance, &
-            success_message, &
-            failure_message) &
-            result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinAbsolute( &
-                expected, actual, tolerance, char(success_message), failure_message)
-    end function assertEqualsWithinAbsoluteWithMessagesSC
-
-    pure function assertEqualsWithinAbsoluteWithMessagesSS( &
-            expected, &
-            actual, &
-            tolerance, &
-            success_message, &
-            failure_message) &
-            result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinAbsolute( &
-                expected, actual, tolerance, char(success_message), char(failure_message))
-    end function assertEqualsWithinAbsoluteWithMessagesSS
-
-    pure function assertEqualsWithinRelativeBasic( &
-            expected, actual, tolerance) result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinRelative(expected, actual, tolerance, "", "")
-    end function assertEqualsWithinRelativeBasic
-
-    pure function assertEqualsWithinRelativeWithMessageC( &
-            expected, actual, tolerance, message) result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        character(len=*), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinRelative( &
-                expected, actual, tolerance, message, message)
-    end function assertEqualsWithinRelativeWithMessageC
-
-    pure function assertEqualsWithinRelativeWithMessageS( &
-            expected, actual, tolerance, message) result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        type(VARYING_STRING), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinRelative( &
-                expected, actual, tolerance, char(message), char(message))
-    end function assertEqualsWithinRelativeWithMessageS
-
-    pure function assertEqualsWithinRelativeWithMessagesCC( &
-            expected, &
-            actual, &
-            tolerance, &
-            success_message, &
-            failure_message) &
-            result(result__)
-        use strff, only: toString
-
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        if (equalsWithinRelative(expected, actual, tolerance)) then
-            result__ = succeed(withUserMessage( &
-                    makeWithinSuccesMessage( &
-                            toString(expected), &
-                            toString(actual), &
-                            toString(tolerance * 100.0_dp) // "%"), &
-                    success_message))
-        else
-            result__ = fail(withUserMessage( &
-                    makeWithinFailureMessage( &
-                            toString(expected), &
-                            toString(actual), &
-                            toString(tolerance * 100.0_dp) // "%"), &
-                    failure_message))
-        end if
-    end function assertEqualsWithinRelativeWithMessagesCC
-
-    pure function assertEqualsWithinRelativeWithMessagesCS( &
-            expected, &
-            actual, &
-            tolerance, &
-            success_message, &
-            failure_message) &
-            result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinRelative( &
-                expected, actual, tolerance, success_message, char(failure_message))
-    end function assertEqualsWithinRelativeWithMessagesCS
-
-    pure function assertEqualsWithinRelativeWithMessagesSC( &
-            expected, &
-            actual, &
-            tolerance, &
-            success_message, &
-            failure_message) &
-            result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinRelative( &
-                expected, actual, tolerance, char(success_message), failure_message)
-    end function assertEqualsWithinRelativeWithMessagesSC
-
-    pure function assertEqualsWithinRelativeWithMessagesSS( &
-            expected, &
-            actual, &
-            tolerance, &
-            success_message, &
-            failure_message) &
-            result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertEqualsWithinRelative( &
-                expected, actual, tolerance, char(success_message), char(failure_message))
-    end function assertEqualsWithinRelativeWithMessagesSS
-
-    pure function assertEqualsInteger(expected, actual) result(result__)
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, "", "")
-    end function assertEqualsInteger
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                var_str(""), &
+                var_str(""))
+    end function assertEqualsIntegerBasic
 
-    pure function assertEqualsIntegerWithMessageC( &
+    function assertEqualsIntegerWithMessageC( &
             expected, actual, message) result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, message, message)
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                var_str(message), &
+                var_str(message))
     end function assertEqualsIntegerWithMessageC
 
-    pure function assertEqualsIntegerWithMessageS( &
+    function assertEqualsIntegerWithMessageS( &
             expected, actual, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, char(message), char(message))
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                message, &
+                message)
     end function assertEqualsIntegerWithMessageS
 
-    pure function assertEqualsIntegerWithMessagesCC( &
+    function assertEqualsIntegerWithMessagesCC( &
             expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: var_str
         use strff, only: toString
 
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertEqualsIntegerWithMessagesCC
+
+    function assertEqualsIntegerWithMessagesCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, actual, var_str(success_message), failure_message)
+    end function assertEqualsIntegerWithMessagesCS
+
+    function assertEqualsIntegerWithMessagesSC( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, actual, success_message, var_str(failure_message))
+    end function assertEqualsIntegerWithMessagesSC
+
+    function assertEqualsIntegerWithMessagesSS( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        integer, intent(in) :: expected
+        integer, intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
         if (expected == actual) then
@@ -1819,310 +1685,2282 @@ contains
                             toString(expected), toString(actual)), &
                     failure_message))
         end if
-    end function assertEqualsIntegerWithMessagesCC
+    end function assertEqualsIntegerWithMessagesSS
 
-    pure function assertEqualsIntegerWithMessagesCS( &
+    function assertEqualsStringsCC( &
+            expected, actual) result(result__)
+        use iso_varying_string, only: var_str
+
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                var_str(expected), &
+                var_str(actual), &
+                var_str(""), &
+                var_str(""))
+    end function assertEqualsStringsCC
+
+    function assertEqualsStringsCS( &
+            expected, actual) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                var_str(expected), &
+                actual, &
+                var_str(""), &
+                var_str(""))
+    end function assertEqualsStringsCS
+
+    function assertEqualsStringsSC( &
+            expected, actual) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                var_str(actual), &
+                var_str(""), &
+                var_str(""))
+    end function assertEqualsStringsSC
+
+    function assertEqualsStringsSS( &
+            expected, actual) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                var_str(""), &
+                var_str(""))
+    end function assertEqualsStringsSS
+
+    function assertEqualsStringsWithMessageCCC( &
+            expected, actual, message) result(result__)
+        use iso_varying_string, only: var_str
+
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                var_str(expected), &
+                var_str(actual), &
+                var_str(message), &
+                var_str(message))
+    end function assertEqualsStringsWithMessageCCC
+
+    function assertEqualsStringsWithMessageCCS( &
+            expected, actual, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                var_str(expected), &
+                var_str(actual), &
+                message, &
+                message)
+    end function assertEqualsStringsWithMessageCCS
+
+    function assertEqualsStringsWithMessageCSC( &
+            expected, actual, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                var_str(expected), &
+                actual, &
+                var_str(message), &
+                var_str(message))
+    end function assertEqualsStringsWithMessageCSC
+
+    function assertEqualsStringsWithMessageCSS( &
+            expected, actual, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                var_str(expected), &
+                actual, &
+                message, &
+                message)
+    end function assertEqualsStringsWithMessageCSS
+
+    function assertEqualsStringsWithMessageSCC( &
+            expected, actual, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                var_str(actual), &
+                var_str(message), &
+                var_str(message))
+    end function assertEqualsStringsWithMessageSCC
+
+    function assertEqualsStringsWithMessageSCS( &
+            expected, actual, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                var_str(actual), &
+                message, &
+                message)
+    end function assertEqualsStringsWithMessageSCS
+
+    function assertEqualsStringsWithMessageSSC( &
+            expected, actual, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                var_str(message), &
+                var_str(message))
+    end function assertEqualsStringsWithMessageSSC
+
+    function assertEqualsStringsWithMessageSSS( &
+            expected, actual, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                message, &
+                message)
+    end function assertEqualsStringsWithMessageSSS
+
+    function assertEqualsStringsWithMessagesCCCC( &
             expected, actual, success_message, failure_message) result(result__)
-        integer, intent(in) :: expected
-        integer, intent(in) :: actual
+        use iso_varying_string, only: var_str
+
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                var_str(expected), &
+                var_str(actual), &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertEqualsStringsWithMessagesCCCC
+
+    function assertEqualsStringsWithMessagesCCCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, success_message, char(failure_message))
-    end function assertEqualsIntegerWithMessagesCS
+        result__ = assertEquals( &
+                var_str(expected), &
+                var_str(actual), &
+                var_str(success_message), &
+                failure_message)
+    end function assertEqualsStringsWithMessagesCCCS
 
-    pure function assertEqualsIntegerWithMessagesSC( &
+    function assertEqualsStringsWithMessagesCCSC( &
             expected, actual, success_message, failure_message) result(result__)
-        integer, intent(in) :: expected
-        integer, intent(in) :: actual
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, char(success_message), failure_message)
-    end function assertEqualsIntegerWithMessagesSC
+        result__ = assertEquals( &
+                var_str(expected), &
+                var_str(actual), &
+                success_message, &
+                var_str(failure_message))
+    end function assertEqualsStringsWithMessagesCCSC
 
-    pure function assertEqualsIntegerWithMessagesSS( &
+    function assertEqualsStringsWithMessagesCCSS( &
             expected, actual, success_message, failure_message) result(result__)
-        integer, intent(in) :: expected
-        integer, intent(in) :: actual
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertEquals(expected, actual, char(success_message), char(failure_message))
-    end function assertEqualsIntegerWithMessagesSS
+        result__ = assertEquals( &
+                var_str(expected), &
+                var_str(actual), &
+                success_message, &
+                failure_message)
+    end function assertEqualsStringsWithMessagesCCSS
 
-    function assertFasterThanBasic(seconds, computation, times) result(result__)
-        double precision, intent(in) :: seconds
-        procedure(computation_) :: computation
-        integer, intent(in) :: times
+    function assertEqualsStringsWithMessagesCSCC( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertFasterThan(seconds, computation, times, "", "")
-    end function assertFasterThanBasic
+        result__ = assertEquals( &
+                var_str(expected), &
+                actual, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertEqualsStringsWithMessagesCSCC
 
-    function assertFasterThanWithMessagesC( &
-            seconds, computation, times, message) result(result__)
-        double precision, intent(in) :: seconds
+    function assertEqualsStringsWithMessagesCSCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                var_str(expected), &
+                actual, &
+                var_str(success_message), &
+                failure_message)
+    end function assertEqualsStringsWithMessagesCSCS
+
+    function assertEqualsStringsWithMessagesCSSC( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                var_str(expected), &
+                actual, &
+                success_message, &
+                var_str(failure_message))
+    end function assertEqualsStringsWithMessagesCSSC
+
+    function assertEqualsStringsWithMessagesCSSS( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                var_str(expected), &
+                actual, &
+                success_message, &
+                failure_message)
+    end function assertEqualsStringsWithMessagesCSSS
+
+    function assertEqualsStringsWithMessagesSCCC( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                var_str(actual), &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertEqualsStringsWithMessagesSCCC
+
+    function assertEqualsStringsWithMessagesSCCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                var_str(actual), &
+                var_str(success_message), &
+                failure_message)
+    end function assertEqualsStringsWithMessagesSCCS
+
+    function assertEqualsStringsWithMessagesSCSC( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                var_str(actual), &
+                success_message, &
+                var_str(failure_message))
+    end function assertEqualsStringsWithMessagesSCSC
+
+    function assertEqualsStringsWithMessagesSCSS( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                var_str(actual), &
+                success_message, &
+                failure_message)
+    end function assertEqualsStringsWithMessagesSCSS
+
+    function assertEqualsStringsWithMessagesSSCC( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertEqualsStringsWithMessagesSSCC
+
+    function assertEqualsStringsWithMessagesSSCS( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                var_str(success_message), &
+                failure_message)
+    end function assertEqualsStringsWithMessagesSSCS
+
+    function assertEqualsStringsWithMessagesSSSC( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEquals( &
+                expected, &
+                actual, &
+                success_message, &
+                var_str(failure_message))
+    end function assertEqualsStringsWithMessagesSSSC
+
+    function assertEqualsStringsWithMessagesSSSS( &
+            expected, actual, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, operator(==)
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        if (expected == actual) then
+            result__ = succeed(withUserMessage( &
+                    makeEqualsSuccessMessage(expected), &
+                    success_message))
+        else
+            result__ = fail(withUserMessage( &
+                    makeEqualsFailureMessage(expected, actual), &
+                    failure_message))
+        end if
+    end function assertEqualsStringsWithMessagesSSSS
+
+    function assertEqualsWithinAbsoluteBasic( &
+            expected, &
+            actual, &
+            tolerance) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinAbsolute( &
+                expected, &
+                actual, &
+                tolerance, &
+                var_str(""), &
+                var_str(""))
+    end function assertEqualsWithinAbsoluteBasic
+
+    function assertEqualsWithinAbsoluteWithMessageC( &
+            expected, &
+            actual, &
+            tolerance, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinAbsolute( &
+                expected, &
+                actual, &
+                tolerance, &
+                var_str(message), &
+                var_str(message))
+    end function assertEqualsWithinAbsoluteWithMessageC
+
+    function assertEqualsWithinAbsoluteWithMessageS( &
+            expected, &
+            actual, &
+            tolerance, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinAbsolute( &
+                expected, &
+                actual, &
+                tolerance, &
+                message, &
+                message)
+    end function assertEqualsWithinAbsoluteWithMessageS
+
+    function assertEqualsWithinAbsoluteWithMessagesCC( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinAbsolute( &
+                expected, &
+                actual, &
+                tolerance, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertEqualsWithinAbsoluteWithMessagesCC
+
+    function assertEqualsWithinAbsoluteWithMessagesCS( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinAbsolute( &
+                expected, &
+                actual, &
+                tolerance, &
+                var_str(success_message), &
+                failure_message)
+    end function assertEqualsWithinAbsoluteWithMessagesCS
+
+    function assertEqualsWithinAbsoluteWithMessagesSC( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinAbsolute( &
+                expected, &
+                actual, &
+                tolerance, &
+                success_message, &
+                var_str(failure_message))
+    end function assertEqualsWithinAbsoluteWithMessagesSC
+
+    function assertEqualsWithinAbsoluteWithMessagesSS( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        if (equalsWithinAbsolute(expected, actual, tolerance)) then
+            result__ = succeed(withUserMessage( &
+                    makeWithinSuccessMessage( &
+                            toString(expected), &
+                            toString(actual), &
+                            toString(tolerance)), &
+                    success_message))
+        else
+            result__ = fail(withUserMessage( &
+                    makeWithinFailureMessage( &
+                            toString(expected), &
+                            toString(actual), &
+                            toString(tolerance)), &
+                    failure_message))
+        end if
+    end function assertEqualsWithinAbsoluteWithMessagesSS
+
+    function assertEqualsWithinRelativeBasic( &
+            expected, &
+            actual, &
+            tolerance) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, &
+                actual, &
+                tolerance, &
+                var_str(""), &
+                var_str(""))
+    end function assertEqualsWithinRelativeBasic
+
+    function assertEqualsWithinRelativeWithMessageC( &
+            expected, &
+            actual, &
+            tolerance, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, &
+                actual, &
+                tolerance, &
+                var_str(message), &
+                var_str(message))
+    end function assertEqualsWithinRelativeWithMessageC
+
+    function assertEqualsWithinRelativeWithMessageS( &
+            expected, &
+            actual, &
+            tolerance, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, &
+                actual, &
+                tolerance, &
+                message, &
+                message)
+    end function assertEqualsWithinRelativeWithMessageS
+
+    function assertEqualsWithinRelativeWithMessagesCC( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, &
+                actual, &
+                tolerance, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertEqualsWithinRelativeWithMessagesCC
+
+    function assertEqualsWithinRelativeWithMessagesCS( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, &
+                actual, &
+                tolerance, &
+                var_str(success_message), &
+                failure_message)
+    end function assertEqualsWithinRelativeWithMessagesCS
+
+    function assertEqualsWithinRelativeWithMessagesSC( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertEqualsWithinRelative( &
+                expected, &
+                actual, &
+                tolerance, &
+                success_message, &
+                var_str(failure_message))
+    end function assertEqualsWithinRelativeWithMessagesSC
+
+    function assertEqualsWithinRelativeWithMessagesSS( &
+            expected, &
+            actual, &
+            tolerance, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: toString
+
+        double precision, intent(in) :: expected
+        double precision, intent(in) :: actual
+        double precision, intent(in) :: tolerance
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        if (equalsWithinRelative(expected, actual, tolerance)) then
+            result__ = succeed(withUserMessage( &
+                    makeWithinSuccessMessage( &
+                            toString(expected), &
+                            toString(actual), &
+                            toString(tolerance * 100.0d0) // "%"), &
+                    success_message))
+        else
+            result__ = fail(withUserMessage( &
+                    makeWithinFailureMessage( &
+                            toString(expected), &
+                            toString(actual), &
+                            toString(tolerance * 100.0d0) // "%"), &
+                    failure_message))
+        end if
+    end function assertEqualsWithinRelativeWithMessagesSS
+
+    function assertFasterThanAbsoluteBracketed( &
+            reference, &
+            before, &
+            computation, &
+            after, &
+            iterations) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
+        procedure(computation_) :: before
         procedure(computation_) :: computation
-        integer, intent(in) :: times
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                before, &
+                computation, &
+                after, &
+                iterations, &
+                var_str(""), &
+                var_str(""))
+    end function assertFasterThanAbsoluteBracketed
+
+    function assertFasterThanAbsoluteBracketedWithMessageC( &
+            reference, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
         result__ = assertFasterThan( &
-                seconds, &
+                reference, &
+                before, &
                 computation, &
-                times, &
-                message, &
-                message)
-    end function assertFasterThanWithMessagesC
+                after, &
+                iterations, &
+                var_str(message), &
+                var_str(message))
+    end function assertFasterThanAbsoluteBracketedWithMessageC
 
-    function assertFasterThanWithMessagesS( &
-            seconds, computation, times, message) result(result__)
-        double precision, intent(in) :: seconds
+    function assertFasterThanAbsoluteBracketedWithMessageS( &
+            reference, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
+        procedure(computation_) :: before
         procedure(computation_) :: computation
-        integer, intent(in) :: times
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
         result__ = assertFasterThan( &
-                seconds, &
+                reference, &
+                before, &
                 computation, &
-                times, &
-                char(message), &
-                char(message))
-    end function assertFasterThanWithMessagesS
+                after, &
+                iterations, &
+                message, &
+                message)
+    end function assertFasterThanAbsoluteBracketedWithMessageS
 
-    function assertFasterThanWithMessagesCC( &
-            seconds, &
+    function assertFasterThanAbsoluteBracketedWithMessagesCC( &
+            reference, &
+            before, &
             computation, &
-            times, &
+            after, &
+            iterations, &
             success_message, &
             failure_message) &
             result(result__)
+        use iso_varying_string, only: var_str
         use strff, only: toString
 
-        double precision, intent(in) :: seconds
+        double precision, intent(in) :: reference
+        procedure(computation_) :: before
         procedure(computation_) :: computation
-        integer, intent(in) :: times
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                before, &
+                computation, &
+                after, &
+                iterations, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertFasterThanAbsoluteBracketedWithMessagesCC
+
+    function assertFasterThanAbsoluteBracketedWithMessagesCS( &
+            reference, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                before, &
+                computation, &
+                after, &
+                iterations, &
+                var_str(success_message), &
+                failure_message)
+    end function assertFasterThanAbsoluteBracketedWithMessagesCS
+
+    function assertFasterThanAbsoluteBracketedWithMessagesSC( &
+            reference, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                before, &
+                computation, &
+                after, &
+                iterations, &
+                success_message, &
+                var_str(failure_message))
+    end function assertFasterThanAbsoluteBracketedWithMessagesSC
+
+    function assertFasterThanAbsoluteBracketedWithMessagesSS( &
+            reference, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
         integer :: i
         double precision :: start_time
         double precision :: end_time
+        double precision :: total_time
         double precision :: average_time
 
-        call cpu_time(start_time)
-        do i = 1, times
+        total_time = 0.0d0
+        do i = 1, iterations
+            call before
+            call cpu_time(start_time)
             call computation
+            call cpu_time(end_time)
+            call after
+            total_time = total_time + (end_time - start_time)
         end do
-        call cpu_time(end_time)
-        average_time = (end_time - start_time) / dble(times)
-        if (average_time < seconds) then
+        average_time = total_time / dble(iterations)
+        if (average_time < reference) then
             result__ = succeed(withUserMessage( &
-                    "Ran faster than " // toString(seconds) &
-                    // " seconds. Averaged " // toString(average_time) &
-                    // " seconds over " // toString(times) // " runs.", &
+                    makeFasterThanSuccessMessage( &
+                            toString(reference), &
+                            toString(average_time), &
+                            toString(iterations)), &
                     success_message))
         else
             result__ = fail(withUserMessage( &
-                    "Ran slower than " // toString(seconds) &
-                    // " seconds. Averaged " // toString(average_time) &
-                    // " seconds over " // toString(times) // " runs.", &
+                    makeFasterThanFailureMessage( &
+                            toString(reference), &
+                            toString(average_time), &
+                            toString(iterations)), &
                     failure_message))
         end if
-    end function assertFasterThanWithMessagesCC
+    end function assertFasterThanAbsoluteBracketedWithMessagesSS
 
-    function assertFasterThanWithMessagesCS( &
-            seconds, &
+    function assertFasterThanAbsoluteSimple( &
+            reference, &
             computation, &
-            times, &
+            iterations) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                computation, &
+                iterations, &
+                var_str(""), &
+                var_str(""))
+    end function assertFasterThanAbsoluteSimple
+
+    function assertFasterThanAbsoluteSimpleWithMessageC( &
+            reference, &
+            computation, &
+            iterations, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                computation, &
+                iterations, &
+                var_str(message), &
+                var_str(message))
+    end function assertFasterThanAbsoluteSimpleWithMessageC
+
+    function assertFasterThanAbsoluteSimpleWithMessageS( &
+            reference, &
+            computation, &
+            iterations, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                computation, &
+                iterations, &
+                message, &
+                message)
+    end function assertFasterThanAbsoluteSimpleWithMessageS
+
+    function assertFasterThanAbsoluteSimpleWithMessagesCC( &
+            reference, &
+            computation, &
+            iterations, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: seconds
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
         procedure(computation_) :: computation
-        integer, intent(in) :: times
+        integer, intent(in) :: iterations
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                computation, &
+                iterations, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertFasterThanAbsoluteSimpleWithMessagesCC
+
+    function assertFasterThanAbsoluteSimpleWithMessagesCS( &
+            reference, &
+            computation, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
         character(len=*), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
         result__ = assertFasterThan( &
-                seconds, &
+                reference, &
                 computation, &
-                times, &
-                success_message, &
-                char(failure_message))
-    end function assertFasterThanWithMessagesCS
+                iterations, &
+                var_str(success_message), &
+                failure_message)
+    end function assertFasterThanAbsoluteSimpleWithMessagesCS
 
-    function assertFasterThanWithMessagesSC( &
-            seconds, &
+    function assertFasterThanAbsoluteSimpleWithMessagesSC( &
+            reference, &
             computation, &
-            times, &
+            iterations, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: seconds
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
         procedure(computation_) :: computation
-        integer, intent(in) :: times
+        integer, intent(in) :: iterations
         type(VARYING_STRING), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
         type(Result_t) :: result__
 
         result__ = assertFasterThan( &
-                seconds, &
+                reference, &
                 computation, &
-                times, &
-                char(success_message), &
-                failure_message)
-    end function assertFasterThanWithMessagesSC
+                iterations, &
+                success_message, &
+                var_str(failure_message))
+    end function assertFasterThanAbsoluteSimpleWithMessagesSC
 
-    function assertFasterThanWithMessagesSS( &
-            seconds, &
+    function assertFasterThanAbsoluteSimpleWithMessagesSS( &
+            reference, &
             computation, &
-            times, &
+            iterations, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: seconds
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        double precision, intent(in) :: reference
         procedure(computation_) :: computation
-        integer, intent(in) :: times
+        integer, intent(in) :: iterations
         type(VARYING_STRING), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertFasterThan( &
-                seconds, &
-                computation, &
-                times, &
-                char(success_message), &
-                char(failure_message))
-    end function assertFasterThanWithMessagesSS
+        integer :: i
+        double precision :: start_time
+        double precision :: end_time
+        double precision :: total_time
+        double precision :: average_time
 
-    pure function assertIncludesCC(search_for, string) result(result__)
+        total_time = 0.0d0
+        do i = 1, iterations
+            call cpu_time(start_time)
+            call computation
+            call cpu_time(end_time)
+            total_time = total_time + (end_time - start_time)
+        end do
+        average_time = total_time / dble(iterations)
+        if (average_time < reference) then
+            result__ = succeed(withUserMessage( &
+                    makeFasterThanSuccessMessage( &
+                            toString(reference), &
+                            toString(average_time), &
+                            toString(iterations)), &
+                    success_message))
+        else
+            result__ = fail(withUserMessage( &
+                    makeFasterThanFailureMessage( &
+                            toString(reference), &
+                            toString(average_time), &
+                            toString(iterations)), &
+                    failure_message))
+        end if
+    end function assertFasterThanAbsoluteSimpleWithMessagesSS
+
+    function assertFasterThanRelativeBracketed( &
+            reference_before, &
+            reference, &
+            reference_after, &
+            before, &
+            computation, &
+            after, &
+            iterations) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        procedure(computation_) :: reference_before
+        procedure(computation_) :: reference
+        procedure(computation_) :: reference_after
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference_before, &
+                reference, &
+                reference_after, &
+                before, &
+                computation, &
+                after, &
+                iterations, &
+                var_str(""), &
+                var_str(""))
+    end function assertFasterThanRelativeBracketed
+
+    function assertFasterThanRelativeBracketedWithMessageC( &
+            reference_before, &
+            reference, &
+            reference_after, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        procedure(computation_) :: reference_before
+        procedure(computation_) :: reference
+        procedure(computation_) :: reference_after
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference_before, &
+                reference, &
+                reference_after, &
+                before, &
+                computation, &
+                after, &
+                iterations, &
+                var_str(message), &
+                var_str(message))
+    end function assertFasterThanRelativeBracketedWithMessageC
+
+    function assertFasterThanRelativeBracketedWithMessageS( &
+            reference_before, &
+            reference, &
+            reference_after, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        procedure(computation_) :: reference_before
+        procedure(computation_) :: reference
+        procedure(computation_) :: reference_after
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference_before, &
+                reference, &
+                reference_after, &
+                before, &
+                computation, &
+                after, &
+                iterations, &
+                message, &
+                message)
+    end function assertFasterThanRelativeBracketedWithMessageS
+
+    function assertFasterThanRelativeBracketedWithMessagesCC( &
+            reference_before, &
+            reference, &
+            reference_after, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        procedure(computation_) :: reference_before
+        procedure(computation_) :: reference
+        procedure(computation_) :: reference_after
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference_before, &
+                reference, &
+                reference_after, &
+                before, &
+                computation, &
+                after, &
+                iterations, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertFasterThanRelativeBracketedWithMessagesCC
+
+    function assertFasterThanRelativeBracketedWithMessagesCS( &
+            reference_before, &
+            reference, &
+            reference_after, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        procedure(computation_) :: reference_before
+        procedure(computation_) :: reference
+        procedure(computation_) :: reference_after
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference_before, &
+                reference, &
+                reference_after, &
+                before, &
+                computation, &
+                after, &
+                iterations, &
+                var_str(success_message), &
+                failure_message)
+    end function assertFasterThanRelativeBracketedWithMessagesCS
+
+    function assertFasterThanRelativeBracketedWithMessagesSC( &
+            reference_before, &
+            reference, &
+            reference_after, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        procedure(computation_) :: reference_before
+        procedure(computation_) :: reference
+        procedure(computation_) :: reference_after
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference_before, &
+                reference, &
+                reference_after, &
+                before, &
+                computation, &
+                after, &
+                iterations, &
+                success_message, &
+                var_str(failure_message))
+    end function assertFasterThanRelativeBracketedWithMessagesSC
+
+    function assertFasterThanRelativeBracketedWithMessagesSS( &
+            reference_before, &
+            reference, &
+            reference_after, &
+            before, &
+            computation, &
+            after, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        procedure(computation_) :: reference_before
+        procedure(computation_) :: reference
+        procedure(computation_) :: reference_after
+        procedure(computation_) :: before
+        procedure(computation_) :: computation
+        procedure(computation_) :: after
+        integer, intent(in) :: iterations
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        integer :: i
+        double precision :: start_time
+        double precision :: end_time
+        double precision :: total_time
+        double precision :: average_time
+        double precision :: reference_start_time
+        double precision :: reference_end_time
+        double precision :: reference_total_time
+        double precision :: reference_average_time
+
+        total_time = 0.0d0
+        reference_total_time = 0.0d0
+        do i = 1, iterations
+            call reference_before
+            call cpu_time(reference_start_time)
+            call reference
+            call cpu_time(reference_end_time)
+            call reference_after
+            reference_total_time = &
+                    reference_total_time &
+                    + (reference_end_time - reference_start_time)
+            call before
+            call cpu_time(start_time)
+            call computation
+            call cpu_time(end_time)
+            call after
+            total_time = total_time + (end_time - start_time)
+        end do
+        reference_average_time = reference_total_time / dble(iterations)
+        average_time = total_time / dble(iterations)
+        if (average_time < reference_average_time) then
+            result__ = succeed(withUserMessage( &
+                    makeFasterThanSuccessMessage( &
+                            toString(reference_average_time), &
+                            toString(average_time), &
+                            toString(iterations)), &
+                    success_message))
+        else
+            result__ = fail(withUserMessage( &
+                    makeFasterThanFailureMessage( &
+                            toString(reference_average_time), &
+                            toString(average_time), &
+                            toString(iterations)), &
+                    failure_message))
+        end if
+    end function assertFasterThanRelativeBracketedWithMessagesSS
+
+    function assertFasterThanRelativeSimple( &
+            reference, &
+            computation, &
+            iterations) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        procedure(computation_) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                computation, &
+                iterations, &
+                var_str(""), &
+                var_str(""))
+    end function assertFasterThanRelativeSimple
+
+    function assertFasterThanRelativeSimpleWithMessageC( &
+            reference, &
+            computation, &
+            iterations, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        procedure(computation_) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
+        character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                computation, &
+                iterations, &
+                var_str(message), &
+                var_str(message))
+    end function assertFasterThanRelativeSimpleWithMessageC
+
+    function assertFasterThanRelativeSimpleWithMessageS( &
+            reference, &
+            computation, &
+            iterations, &
+            message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        procedure(computation_) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
+        type(VARYING_STRING), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                computation, &
+                iterations, &
+                message, &
+                message)
+    end function assertFasterThanRelativeSimpleWithMessageS
+
+    function assertFasterThanRelativeSimpleWithMessagesCC( &
+            reference, &
+            computation, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: var_str
+        use strff, only: toString
+
+        procedure(computation_) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                computation, &
+                iterations, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertFasterThanRelativeSimpleWithMessagesCC
+
+    function assertFasterThanRelativeSimpleWithMessagesCS( &
+            reference, &
+            computation, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        procedure(computation_) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                computation, &
+                iterations, &
+                var_str(success_message), &
+                failure_message)
+    end function assertFasterThanRelativeSimpleWithMessagesCS
+
+    function assertFasterThanRelativeSimpleWithMessagesSC( &
+            reference, &
+            computation, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+        use strff, only: toString
+
+        procedure(computation_) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertFasterThan( &
+                reference, &
+                computation, &
+                iterations, &
+                success_message, &
+                var_str(failure_message))
+    end function assertFasterThanRelativeSimpleWithMessagesSC
+
+    function assertFasterThanRelativeSimpleWithMessagesSS( &
+            reference, &
+            computation, &
+            iterations, &
+            success_message, &
+            failure_message) &
+            result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: toString
+
+        procedure(computation_) :: reference
+        procedure(computation_) :: computation
+        integer, intent(in) :: iterations
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        integer :: i
+        double precision :: start_time
+        double precision :: end_time
+        double precision :: total_time
+        double precision :: average_time
+        double precision :: reference_start_time
+        double precision :: reference_end_time
+        double precision :: reference_total_time
+        double precision :: reference_average_time
+
+        total_time = 0.0d0
+        reference_total_time = 0.0d0
+        do i = 1, iterations
+            call cpu_time(reference_start_time)
+            call reference
+            call cpu_time(reference_end_time)
+            reference_total_time = &
+                    reference_total_time &
+                    + (reference_end_time - reference_start_time)
+            call cpu_time(start_time)
+            call computation
+            call cpu_time(end_time)
+            total_time = total_time + (end_time - start_time)
+        end do
+        reference_average_time = reference_total_time / dble(iterations)
+        average_time = total_time / dble(iterations)
+        if (average_time < reference_average_time) then
+            result__ = succeed(withUserMessage( &
+                    makeFasterThanSuccessMessage( &
+                            toString(reference_average_time), &
+                            toString(average_time), &
+                            toString(iterations)), &
+                    success_message))
+        else
+            result__ = fail(withUserMessage( &
+                    makeFasterThanFailureMessage( &
+                            toString(reference_average_time), &
+                            toString(average_time), &
+                            toString(iterations)), &
+                    failure_message))
+        end if
+    end function assertFasterThanRelativeSimpleWithMessagesSS
+
+    function assertIncludesCC( &
+                search_for, &
+                string) &
+                result(result__)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertIncludes(search_for, string, "", "")
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                var_str(string), &
+                var_str(""), &
+                var_str(""))
     end function assertIncludesCC
 
-    pure function assertIncludesCS(search_for, string) result(result__)
+    function assertIncludesCS( &
+                search_for, &
+                string) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertIncludes(search_for, char(string), "", "")
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                string, &
+                var_str(""), &
+                var_str(""))
     end function assertIncludesCS
 
-    pure function assertIncludesSC(search_for, string) result(result__)
+    function assertIncludesSC( &
+                search_for, &
+                string) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertIncludes(char(search_for), string, "", "")
+        result__ = assertIncludes( &
+                search_for, &
+                var_str(string), &
+                var_str(""), &
+                var_str(""))
     end function assertIncludesSC
 
-    pure function assertIncludesSS(search_for, string) result(result__)
+    function assertIncludesSS( &
+                search_for, &
+                string) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(Result_t) :: result__
 
-        result__ = assertIncludes(char(search_for), char(string), "", "")
+        result__ = assertIncludes( &
+                search_for, &
+                string, &
+                var_str(""), &
+                var_str(""))
     end function assertIncludesSS
 
-    pure function assertIncludesWithMessageCCC( &
-            search_for, string, message) result(result__)
+    function assertIncludesWithMessageCCC( &
+                search_for, &
+                string, &
+                message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertIncludes(search_for, string, message, message)
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                var_str(string), &
+                var_str(message), &
+                var_str(message))
     end function assertIncludesWithMessageCCC
 
-    pure function assertIncludesWithMessageCCS( &
-            search_for, string, message) result(result__)
+    function assertIncludesWithMessageCCS( &
+                search_for, &
+                string, &
+                message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertIncludes(search_for, string, char(message), char(message))
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                var_str(string), &
+                message, &
+                message)
     end function assertIncludesWithMessageCCS
 
-    pure function assertIncludesWithMessageCSC( &
-            search_for, string, message) result(result__)
+    function assertIncludesWithMessageCSC( &
+                search_for, &
+                string, &
+                message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertIncludes(search_for, char(string), message, message)
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                string, &
+                var_str(message), &
+                var_str(message))
     end function assertIncludesWithMessageCSC
 
-    pure function assertIncludesWithMessageCSS( &
-            search_for, string, message) result(result__)
+    function assertIncludesWithMessageCSS( &
+                search_for, &
+                string, &
+                message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertIncludes(search_for, char(string), char(message), char(message))
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                string, &
+                message, &
+                message)
     end function assertIncludesWithMessageCSS
 
-    pure function assertIncludesWithMessageSCC( &
-            search_for, string, message) result(result__)
+    function assertIncludesWithMessageSCC( &
+                search_for, &
+                string, &
+                message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertIncludes(char(search_for), string, message, message)
+        result__ = assertIncludes( &
+                search_for, &
+                var_str(string), &
+                var_str(message), &
+                var_str(message))
     end function assertIncludesWithMessageSCC
 
-    pure function assertIncludesWithMessageSCS( &
-            search_for, string, message) result(result__)
+    function assertIncludesWithMessageSCS( &
+                search_for, &
+                string, &
+                message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertIncludes(char(search_for), string, char(message), char(message))
+        result__ = assertIncludes( &
+                search_for, &
+                var_str(string), &
+                message, &
+                message)
     end function assertIncludesWithMessageSCS
 
-    pure function assertIncludesWithMessageSSC( &
-            search_for, string, message) result(result__)
+    function assertIncludesWithMessageSSC( &
+                search_for, &
+                string, &
+                message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertIncludes(char(search_for), char(string), message, message)
+        result__ = assertIncludes( &
+                search_for, &
+                string, &
+                var_str(message), &
+                var_str(message))
     end function assertIncludesWithMessageSSC
 
-    pure function assertIncludesWithMessageSSS( &
-            search_for, string, message) result(result__)
+    function assertIncludesWithMessageSSS( &
+                search_for, &
+                string, &
+                message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING
+
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertIncludes(char(search_for), char(string), char(message), char(message))
+        result__ = assertIncludes( &
+                search_for, &
+                string, &
+                message, &
+                message)
     end function assertIncludesWithMessageSSS
 
-    pure function assertIncludesWithMessagesCCCC( &
-            search_for, string, success_message, failure_message) result(result__)
-        use strff, only: operator(.includes.)
+    function assertIncludesWithMessagesCCCC( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                var_str(string), &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertIncludesWithMessagesCCCC
+
+    function assertIncludesWithMessagesCCCS( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                var_str(string), &
+                var_str(success_message), &
+                failure_message)
+    end function assertIncludesWithMessagesCCCS
+
+    function assertIncludesWithMessagesCCSC( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                var_str(string), &
+                success_message, &
+                var_str(failure_message))
+    end function assertIncludesWithMessagesCCSC
+
+    function assertIncludesWithMessagesCCSS( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                var_str(string), &
+                success_message, &
+                failure_message)
+    end function assertIncludesWithMessagesCCSS
+
+    function assertIncludesWithMessagesCSCC( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                string, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertIncludesWithMessagesCSCC
+
+    function assertIncludesWithMessagesCSCS( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                string, &
+                var_str(success_message), &
+                failure_message)
+    end function assertIncludesWithMessagesCSCS
+
+    function assertIncludesWithMessagesCSSC( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                string, &
+                success_message, &
+                var_str(failure_message))
+    end function assertIncludesWithMessagesCSSC
+
+    function assertIncludesWithMessagesCSSS( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                var_str(search_for), &
+                string, &
+                success_message, &
+                failure_message)
+    end function assertIncludesWithMessagesCSSS
+
+    function assertIncludesWithMessagesSCCC( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, &
+                var_str(string), &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertIncludesWithMessagesSCCC
+
+    function assertIncludesWithMessagesSCCS( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, &
+                var_str(string), &
+                var_str(success_message), &
+                failure_message)
+    end function assertIncludesWithMessagesSCCS
+
+    function assertIncludesWithMessagesSCSC( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, &
+                var_str(string), &
+                success_message, &
+                var_str(failure_message))
+    end function assertIncludesWithMessagesSCSC
+
+    function assertIncludesWithMessagesSCSS( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, &
+                var_str(string), &
+                success_message, &
+                failure_message)
+    end function assertIncludesWithMessagesSCSS
+
+    function assertIncludesWithMessagesSSCC( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, &
+                string, &
+                var_str(success_message), &
+                var_str(failure_message))
+    end function assertIncludesWithMessagesSSCC
+
+    function assertIncludesWithMessagesSSCS( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, &
+                string, &
+                var_str(success_message), &
+                failure_message)
+    end function assertIncludesWithMessagesSSCS
+
+    function assertIncludesWithMessagesSSSC( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertIncludes( &
+                search_for, &
+                string, &
+                success_message, &
+                var_str(failure_message))
+    end function assertIncludesWithMessagesSSSC
+
+    function assertIncludesWithMessagesSSSS( &
+                search_for, &
+                string, &
+                success_message, &
+                failure_message) &
+                result(result__)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: operator(.includes.)
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
         if (string.includes.search_for) then
@@ -2134,285 +3972,169 @@ contains
                     makeIncludesFailureMessage(search_for, string), &
                     failure_message))
         end if
-    end function assertIncludesWithMessagesCCCC
-
-    pure function assertIncludesWithMessagesCCCS( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                search_for, string, success_message, char(failure_message))
-    end function assertIncludesWithMessagesCCCS
-
-    pure function assertIncludesWithMessagesCCSC( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                search_for, string, char(success_message), failure_message)
-    end function assertIncludesWithMessagesCCSC
-
-    pure function assertIncludesWithMessagesCCSS( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                search_for, string, char(success_message), char(failure_message))
-    end function assertIncludesWithMessagesCCSS
-
-    pure function assertIncludesWithMessagesCSCC( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                search_for, char(string), success_message, failure_message)
-    end function assertIncludesWithMessagesCSCC
-
-    pure function assertIncludesWithMessagesCSCS( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                search_for, char(string), success_message, char(failure_message))
-    end function assertIncludesWithMessagesCSCS
-
-    pure function assertIncludesWithMessagesCSSC( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                search_for, char(string), char(success_message), failure_message)
-    end function assertIncludesWithMessagesCSSC
-
-    pure function assertIncludesWithMessagesCSSS( &
-            search_for, string, success_message, failure_message) result(result__)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                search_for, char(string), char(success_message), char(failure_message))
-    end function assertIncludesWithMessagesCSSS
-
-    pure function assertIncludesWithMessagesSCCC( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                char(search_for), string, success_message, failure_message)
-    end function assertIncludesWithMessagesSCCC
-
-    pure function assertIncludesWithMessagesSCCS( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                char(search_for), string, success_message, char(failure_message))
-    end function assertIncludesWithMessagesSCCS
-
-    pure function assertIncludesWithMessagesSCSC( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                char(search_for), string, char(success_message), failure_message)
-    end function assertIncludesWithMessagesSCSC
-
-    pure function assertIncludesWithMessagesSCSS( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                char(search_for), string, char(success_message), char(failure_message))
-    end function assertIncludesWithMessagesSCSS
-
-    pure function assertIncludesWithMessagesSSCC( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                char(search_for), char(string), success_message, failure_message)
-    end function assertIncludesWithMessagesSSCC
-
-    pure function assertIncludesWithMessagesSSCS( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                char(search_for), char(string), success_message, char(failure_message))
-    end function assertIncludesWithMessagesSSCS
-
-    pure function assertIncludesWithMessagesSSSC( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                char(search_for), char(string), char(success_message), failure_message)
-    end function assertIncludesWithMessagesSSSC
-
-    pure function assertIncludesWithMessagesSSSS( &
-            search_for, string, success_message, failure_message) result(result__)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertIncludes( &
-                char(search_for), char(string), char(success_message), char(failure_message))
     end function assertIncludesWithMessagesSSSS
 
-    pure function assertNotBasic(condition) result(result__)
+    function assertNotBasic(condition) result(result__)
+        use iso_varying_string, only: var_str
+
         logical, intent(in) :: condition
         type(Result_t) :: result__
 
-        result__ = assertNot(condition, "", "")
+        result__ = assertNot(condition, var_str(""), var_str(""))
     end function assertNotBasic
 
-    pure function assertNotWithMessageC(condition, message) result(result__)
+    function assertNotWithMessageC(condition, message) result(result__)
+        use iso_varying_string, only: var_str
+
         logical, intent(in) :: condition
         character(len=*), intent(in) :: message
+        type(Result_t) :: result__
+
+        result__ = assertNot(condition, var_str(message), var_str(message))
+    end function assertNotWithMessageC
+
+    function assertNotWithMessageS(condition, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING
+
+        logical, intent(in) :: condition
+        type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
         result__ = assertNot(condition, message, message)
-    end function assertNotWithMessageC
-
-    pure function assertNotWithMessageS(condition, message) result(result__)
-        logical, intent(in) :: condition
-        type(VARYING_STRING), intent(in) :: message
-        type(Result_t) :: result__
-
-        result__ = assertNot(condition, char(message), char(message))
     end function assertNotWithMessageS
 
-    pure function assertNotWithMessagesCC( &
+    function assertNotWithMessagesCC( &
             condition, success_message, failure_message) result(result__)
+        use iso_varying_string, only: var_str
+
         logical, intent(in) :: condition
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        if (.not. condition) then
-            result__ = succeed(withUserMessage( &
-                    NOT_SUCCESS_MESSAGE, success_message))
-        else
-            result__ = fail(withUserMessage( &
-                    NOT_FAILURE_MESSAGE, failure_message))
-        end if
+        result__ = assertNot( &
+                condition, var_str(success_message), var_str(failure_message))
     end function assertNotWithMessagesCC
 
-    pure function assertNotWithMessagesCS( &
+    function assertNotWithMessagesCS( &
             condition, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         logical, intent(in) :: condition
         character(len=*), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertNot(condition, success_message, char(failure_message))
+        result__ = assertNot( &
+                condition, var_str(success_message), failure_message)
     end function assertNotWithMessagesCS
 
-    pure function assertNotWithMessagesSC( &
+    function assertNotWithMessagesSC( &
             condition, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         logical, intent(in) :: condition
         type(VARYING_STRING), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertNot(condition, char(success_message), failure_message)
+        result__ = assertNot( &
+                condition, success_message, var_str(failure_message))
     end function assertNotWithMessagesSC
 
-    pure function assertNotWithMessagesSS( &
+    function assertNotWithMessagesSS( &
             condition, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING
+
         logical, intent(in) :: condition
         type(VARYING_STRING), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
-        result__ = assertNot(condition, char(success_message), char(failure_message))
+        if (condition) then
+            result__ = fail(withUserMessage( &
+                    NOT_FAILURE_MESSAGE, failure_message))
+        else
+            result__ = succeed(withUserMessage( &
+                    NOT_SUCCESS_MESSAGE, success_message))
+        end if
     end function assertNotWithMessagesSS
 
-    pure function assertThatBasic(condition) result(result__)
+    function assertThatBasic(condition) result(result__)
+        use iso_varying_string, only: var_str
+
         logical, intent(in) :: condition
         type(Result_t) :: result__
 
-        result__ = assertThat(condition, "", "")
+        result__ = assertThat(condition, var_str(""), var_str(""))
     end function assertThatBasic
 
-    pure function assertThatWithMessageC(condition, message) result(result__)
+    function assertThatWithMessageC(condition, message) result(result__)
+        use iso_varying_string, only: var_str
+
         logical, intent(in) :: condition
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertThat(condition, message, message)
+        result__ = assertThat(condition, var_str(message), var_str(message))
     end function assertThatWithMessageC
 
-    pure function assertThatWithMessageS(condition, message) result(result__)
+    function assertThatWithMessageS(condition, message) result(result__)
+        use iso_varying_string, only: VARYING_STRING
+
         logical, intent(in) :: condition
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
 
-        result__ = assertThat(condition, char(message), char(message))
+        result__ = assertThat(condition, message, message)
     end function assertThatWithMessageS
 
-    pure function assertThatWithMessagesCC( &
+    function assertThatWithMessagesCC( &
             condition, success_message, failure_message) result(result__)
+        use iso_varying_string, only: var_str
+
         logical, intent(in) :: condition
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertThat( &
+                condition, var_str(success_message), var_str(failure_message))
+    end function assertThatWithMessagesCC
+
+    function assertThatWithMessagesCS( &
+            condition, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        logical, intent(in) :: condition
+        character(len=*), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertThat( &
+                condition, var_str(success_message), failure_message)
+    end function assertThatWithMessagesCS
+
+    function assertThatWithMessagesSC( &
+            condition, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        logical, intent(in) :: condition
+        type(VARYING_STRING), intent(in) :: success_message
+        character(len=*), intent(in) :: failure_message
+        type(Result_t) :: result__
+
+        result__ = assertThat( &
+                condition, success_message, var_str(failure_message))
+    end function assertThatWithMessagesSC
+
+    function assertThatWithMessagesSS( &
+            condition, success_message, failure_message) result(result__)
+        use iso_varying_string, only: VARYING_STRING
+
+        logical, intent(in) :: condition
+        type(VARYING_STRING), intent(in) :: success_message
+        type(VARYING_STRING), intent(in) :: failure_message
         type(Result_t) :: result__
 
         if (condition) then
@@ -2422,36 +4144,6 @@ contains
             result__ = fail(withUserMessage( &
                     THAT_FAILURE_MESSAGE, failure_message))
         end if
-    end function assertThatWithMessagesCC
-
-    pure function assertThatWithMessagesCS( &
-            condition, success_message, failure_message) result(result__)
-        logical, intent(in) :: condition
-        character(len=*), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertThat(condition, success_message, char(failure_message))
-    end function assertThatWithMessagesCS
-
-    pure function assertThatWithMessagesSC( &
-            condition, success_message, failure_message) result(result__)
-        logical, intent(in) :: condition
-        type(VARYING_STRING), intent(in) :: success_message
-        character(len=*), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertThat(condition, char(success_message), failure_message)
-    end function assertThatWithMessagesSC
-
-    pure function assertThatWithMessagesSS( &
-            condition, success_message, failure_message) result(result__)
-        logical, intent(in) :: condition
-        type(VARYING_STRING), intent(in) :: success_message
-        type(VARYING_STRING), intent(in) :: failure_message
-        type(Result_t) :: result__
-
-        result__ = assertThat(condition, char(success_message), char(failure_message))
     end function assertThatWithMessagesSS
 
     pure function combineResults(lhs, rhs) result(combined)
@@ -2475,40 +4167,48 @@ contains
         end if
     end function combineResults
 
-    pure function delimitC(string) result(delimited)
+    function delimitC(string) result(delimited)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: delimited
 
-        delimited = "|" // string // "|"
+        delimited = delimit(var_str(string))
     end function delimitC
 
-    pure function delimitS(string) result(delimited)
+    function delimitS(string) result(delimited)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: delimited
 
         delimited = "|" // string // "|"
     end function delimitS
 
-    pure function describeBasic(description, tests) result(test_collection)
+    function DescribeBasic(description, tests) result(item)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
-        type(TestItem_t) :: test_collection
+        type(TestItem_t) :: item
 
-        allocate(test_collection%test, source = SimpleTestCollection( &
-                description, tests))
-    end function describeBasic
+        allocate(item%test, source = SimpleTestCollection( &
+                var_str(description), tests))
+    end function DescribeBasic
 
-    pure function describeWithInput(description, input, tests) result(test_collection)
+    function DescribeWithInput(description, input, tests) result(item)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: description
-        class(*), intent(in) :: input
+        class(Input_t), intent(in) :: input
         type(TestItem_t), intent(in) :: tests(:)
-        type(TestItem_t) :: test_collection
+        type(TestItem_t) :: item
 
-        allocate(test_collection%test, source = TestCollectionWithInput( &
-                description, input, tests))
-    end function describeWithInput
+        allocate(item%test, source = TestCollectionWithInput( &
+                var_str(description), input, tests))
+    end function DescribeWithInput
 
-    pure function equalsWithinAbsolute(expected, actual, tolerance)
+    function equalsWithinAbsolute(expected, actual, tolerance)
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2528,124 +4228,69 @@ contains
                 .or. (abs(expected - actual) / abs(expected) <= tolerance)
     end function equalsWithinRelative
 
-    pure function Example(value_)
-        class(*), intent(in) :: value_
+    function Example(input)
+        class(Input_t), intent(in) :: input
         type(Example_t) :: Example
 
-        allocate(Example%value_, source = value_)
+        allocate(Example%input, source = input)
     end function Example
 
-    pure function failC(message) result(failure)
+    function failC(message) result(failure)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
 
-        failure = Result_(IndividualResult(message, .false.))
+        failure = fail(var_str(message))
     end function failC
 
-    pure function failS(message) result(failure)
+    function failS(message) result(failure)
+        use iso_varying_string, only: VARYING_STRING
+
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: failure
 
-        failure = Result_(IndividualResult(char(message), .false.))
+        allocate(failure%results(1))
+        failure%results(1) = IndividualResult(message, .false.)
     end function failS
-
-    pure function filterTestCase(self, filter_string) result(maybe)
-        use strff, only: operator(.includes.)
-
-        class(TestCase_t), intent(in) :: self
-        type(VARYING_STRING), intent(in) :: filter_string
-        class(Maybe_t), allocatable :: maybe
-
-        if (self%description_.includes.filter_string) then
-            allocate(maybe, source = Just(self))
-        else
-            allocate(maybe, source = NOTHING)
-        end if
-    end function filterTestCase
-
-    pure function filterTestCollection(self, filter_string) result(maybe)
-        use strff, only: operator(.includes.)
-
-        class(TestCollection_t), intent(in) :: self
-        type(VARYING_STRING), intent(in) :: filter_string
-        class(Maybe_t), allocatable :: maybe
-
-        type(MaybeItem_t), allocatable :: filtered_tests(:)
-        class(TestCollection_t), allocatable :: new_collection
-        integer :: num_input_tests
-        logical, allocatable :: passed_filter(:)
-
-        if (self%description_.includes.filter_string) then
-            allocate(maybe, source = Just(self))
-        else
-            num_input_tests = size(self%tests)
-            allocate(filtered_tests(num_input_tests))
-            filtered_tests = self%tests%filter(filter_string)
-            allocate(passed_filter(num_input_tests))
-            passed_filter = filtered_tests%hasValue()
-            if (any(passed_filter)) then
-                allocate(new_collection, source = self)
-                deallocate(new_collection%tests)
-                allocate(new_collection%tests(count(passed_filter)))
-                new_collection%tests = getTestItems(filtered_tests)
-                allocate(maybe, source = Just(new_collection))
-            else
-                allocate(maybe, source = NOTHING)
-            end if
-        end if
-    end function filterTestCollection
-
-    elemental function filterTestItem(self, filter_string) result(maybe)
-        class(TestItem_t), intent(in) :: self
-        type(VARYING_STRING), intent(in) :: filter_string
-        type(MaybeItem_t) :: maybe
-
-        class(Maybe_t), allocatable :: filtered
-        type(TestItem_t) :: test_item
-
-        allocate(filtered, source = self%test%filter(filter_string))
-
-        select type (filtered)
-        type is (JustTest_t)
-            allocate(test_item%test, source = filtered%getValue())
-            allocate(maybe%maybe, source = Just(test_item))
-        type is (Nothing_t)
-            allocate(maybe%maybe, source = NOTHING)
-        end select
-    end function filterTestItem
-
-    pure function Generated(value_)
-        class(*), intent(in) :: value_
-        type(Generated_t) :: Generated
-
-        select type (value_)
-        type is (character(len=*))
-            allocate(Generated%value_, source = VString(value_))
-        class default
-            allocate(Generated%value_, source = value_)
-        end select
-    end function Generated
 
     function generateAsciiString(self) result(generated_value)
         class(AsciiStringGenerator_t), intent(in) :: self
         type(Generated_t) :: generated_value
 
+        type(StringInput_t) :: the_input
+
         associate(a => self)
         end associate
-        generated_value = Generated(getRandomAsciiString())
+
+        the_input%value_ = getRandomAsciiString()
+        generated_value = Generated(the_input)
     end function generateAsciiString
 
     function generateInteger(self) result(generated_value)
         class(IntegerGenerator_t), intent(in) :: self
         type(Generated_t) :: generated_value
 
+        type(IntegerInput_t) :: the_input
+
         associate(a => self)
         end associate
-        generated_value = Generated(getRandomInteger())
+
+        the_input%value_ = getRandomInteger()
+        generated_value = Generated(the_input)
     end function generateInteger
+
+    function Generated(value_)
+        class(Input_t), intent(in) :: value_
+        type(Generated_t) :: generated
+
+        allocate(Generated%input, source = value_)
+    end function Generated
 
     function getOptions() result(options)
         use iso_fortran_env, only: error_unit, output_unit
+        use iso_varying_string, only: assignment(=), put_line
+        use strff, only: NEWLINE
 
         type(Options_t) :: options
 
@@ -2707,6 +4352,9 @@ contains
         end do
     contains
         pure function usageMessage(program_name_)
+            use iso_varying_string, only: VARYING_STRING, assignment(=)
+            use strff, only: NEWLINE
+
             character(len=*), intent(in) :: program_name_
             type(VARYING_STRING) :: usageMessage
 
@@ -2738,12 +4386,16 @@ contains
     end function getRandomAsciiCharacter
 
     function getRandomAsciiString() result(random_string)
+        use iso_varying_string, only: VARYING_STRING
+
         type(VARYING_STRING) :: random_string
 
         random_string = getRandomAsciiStringWithMaxLength(1024)
     end function getRandomAsciiString
 
     function getRandomAsciiStringWithMaxLength(max_length) result(random_string)
+        use iso_varying_string, only: VARYING_STRING, assignment(=)
+
         integer, intent(in) :: max_length
         type(VARYING_STRING) :: random_string
 
@@ -2807,93 +4459,64 @@ contains
         end if
     end function getRandomLogical
 
-    pure function getTestItems(maybes) result(test_items)
-        type(MaybeItem_t), intent(in) :: maybes(:)
-        type(TestItem_t), allocatable :: test_items(:)
-
-        logical :: are_values(size(maybes))
-        integer :: i
-        type(MaybeItem_t), allocatable :: maybe_outputs(:)
-        integer :: num_outputs
-
-        are_values = maybes%hasValue()
-        num_outputs = count(are_values)
-        allocate(maybe_outputs(num_outputs))
-        maybe_outputs = pack(maybes, are_values)
-        allocate(test_items(num_outputs))
-        do i = 1, num_outputs
-            select type (maybe => maybe_outputs(i)%maybe)
-            type is (JustTestItem_t)
-                test_items(i) = maybe%getValue()
-            end select
-        end do
-    end function getTestItems
-
-    pure function getValueTest(just_) result(value_)
-        class(JustTest_t), intent(in) :: just_
-        class(Test_t), allocatable :: value_
-
-        allocate(value_, source = just_%value_)
-    end function getValueTest
-
-    pure function getValueTestItem(just_) result(value_)
-        class(JustTestItem_t), intent(in) :: just_
-        type(TestItem_t) :: value_
-
-        value_ = just_%value_
-    end function getValueTestItem
-
-    pure function givenBasic(description, tests) result(test_collection)
+    function GivenWithInput(description, input, tests) result(item)
         character(len=*), intent(in) :: description
+        class(Input_t), intent(in) :: input
         type(TestItem_t), intent(in) :: tests(:)
-        type(TestItem_t) :: test_collection
+        type(TestItem_t) :: item
 
-        test_collection = describe("Given " // description, tests)
-    end function givenBasic
+        item = Describe("Given " // description, input, tests)
+    end function GivenWithInput
 
-    pure function givenWithInput(description, input, tests) result(test_collection)
-        character(len=*), intent(in) :: description
-        class(*), intent(in) :: input
-        type(TestItem_t), intent(in) :: tests(:)
-        type(TestItem_t) :: test_collection
+    function IndividualResult(message, passed)
+        use iso_varying_string, only: VARYING_STRING
 
-        test_collection = describe("Given " // description, input, tests)
-    end function givenWithInput
-
-    elemental function hasValue(self)
-        class(MaybeItem_t), intent(in) :: self
-        logical :: hasValue
-
-        select type (maybe => self%maybe)
-        type is (Nothing_t)
-            hasValue = .false.
-        class default
-            hasValue = .true.
-        end select
-    end function hasValue
-
-    pure function IndividualResult(message, passed_)
-        character(len=*), intent(in) :: message
-        logical, intent(in) :: passed_
+        type(VARYING_STRING), intent(in) :: message
+        logical, intent(in) :: passed
         type(IndividualResult_t) :: IndividualResult
 
         IndividualResult%message = message
-        IndividualResult%passed_ = passed_
+        IndividualResult%passed_ = passed
     end function IndividualResult
 
-    pure function individualResultFailureDescription(self, colorize) result(description)
+    function individualResultFailureDescription( &
+            self, colorize) result(description)
+        use iso_varying_string, only: &
+                VARYING_STRING, assignment(=), operator(//)
+
         class(IndividualResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
 
-        if (colorize) then
-            description = char(27) // "[31m" // self%message // char(27) // "[0m"
+        if (self%passed_) then
+            description = ""
         else
-            description = self%message
+            if (colorize) then
+                description = char(27) // "[31m" // self%message // char(27) // "[0m"
+            else
+                description = self%message
+            end if
         end if
     end function individualResultFailureDescription
 
-    pure function individualResultVerboseDescription(self, colorize) result(description)
+    function individualResultRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, toString, NEWLINE
+
+        class(IndividualResult_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        string = hangingIndent( &
+                "IndividualResult(" // NEWLINE &
+                    // "message = """ // self%message // """," // NEWLINE &
+                    // "passed = " // toString(self%passed_), &
+                INDENTATION) // NEWLINE // ")"
+    end function individualResultRepr
+
+    function individualResultVerboseDescription( &
+            self, colorize) result(description)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+
         class(IndividualResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -2909,519 +4532,845 @@ contains
         end if
     end function individualResultVerboseDescription
 
-    function InputTestCase(description, func) result(test_case)
-        character(len=*), intent(in) :: description
-        procedure(inputTest) :: func
-        type(InputTestCase_t) :: test_case
+    function InputTestCase(description, test)
+        use iso_varying_string, only: VARYING_STRING
 
-        test_case%description_ = description
-        test_case%test => func
+        type(VARYING_STRING), intent(in) :: description
+        procedure(inputTest) :: test
+        type(InputTestCase_t) :: InputTestCase
+
+        InputTestCase%description_ = description
+        InputTestCase%test => test
     end function InputTestCase
 
-    function it_(description, func) result(test_case)
+    function inputTestCaseRunWithInput(self, input) result(result_)
+        class(InputTestCase_t), intent(in) :: self
+        class(Input_t), intent(in) :: input
+        type(TestResultItem_t) :: result_
+
+        allocate(result_%result_, source = TestCaseResult( &
+                self%description_, self%test(input)))
+    end function inputTestCaseRunWithInput
+
+    function inputTestCaseRunWithoutInput(self) result(result_)
+        class(InputTestCase_t), intent(in) :: self
+        type(TestResultItem_t) :: result_
+
+        allocate(result_%result_, source = TestCaseResult( &
+                self%description_, fail("No input provided")))
+    end function inputTestCaseRunWithoutInput
+
+    function inputTestCaseRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, toString, NEWLINE
+
+        class(InputTestCase_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        string = hangingIndent( &
+                "InputTestCase_t(" // NEWLINE &
+                    // "description = """ // self%description_ // """," // NEWLINE &
+                    // "test @ " // toString(loc(self%test)), &
+                INDENTATION) // NEWLINE // ")"
+    end function inputTestCaseRepr
+
+    function ItBasic(description, test) result(item)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: description
-        procedure(inputTest) :: func
-        type(TestItem_t) :: test_case
+        procedure(simpleTest) :: test
+        type(TestItem_t) :: item
 
-        allocate(test_case%test, source = InputTestCase(description, func))
-    end function it_
+        allocate(item%test, source = SimpleTestCase(var_str(description), test))
+    end function ItBasic
 
-    function itBasic(description, func) result(test_case)
-        character(len=*), intent(in) :: description
-        procedure(test_) :: func
-        type(TestItem_t) :: test_case
+    function ItWithExamples(description, examples, test) result(item)
+        use iso_varying_string, only: var_str
 
-        allocate(test_case%test, source = SimpleTestCase(description, func))
-    end function itBasic
-
-    function itWithExamples(description, examples, func) result(test_case)
         character(len=*), intent(in) :: description
         type(Example_t), intent(in) :: examples(:)
-        procedure(inputTest) :: func
-        type(TestItem_t) :: test_case
+        procedure(inputTest) :: test
+        type(TestItem_t) :: item
 
-        allocate(test_case%test, source = TestCaseWithExamples( &
-                description, examples, func))
-    end function itWithExamples
+        allocate(item%test, source = TestCaseWithExamples( &
+                var_str(description), examples, test))
+    end function ItWithExamples
 
-    function itWithGenerator(description, generator, func) result(test_case)
+    function ItWithGenerator(description, generator, test) result(item)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: description
         class(Generator_t), intent(in) :: generator
-        procedure(inputTest) :: func
-        type(TestItem_t) :: test_case
+        procedure(inputTest) :: test
+        type(TestItem_t) :: item
 
-        allocate(test_case%test, source = TestCaseWithGenerator( &
-                description, generator, func))
-    end function itWithGenerator
+        allocate(item%test, source = TestCaseWithGenerator( &
+                var_str(description), generator, test))
+    end function ItWithGenerator
 
-    pure function JustTest(value_) result(just_)
-        class(Test_t), intent(in) :: value_
-        type(JustTest_t) :: just_
+    function It_(description, test) result(item)
+        use iso_varying_string, only: var_str
 
-        allocate(just_%value_, source = value_)
-    end function JustTest
+        character(len=*), intent(in) :: description
+        procedure(inputTest) :: test
+        type(TestItem_t) :: item
 
-    pure function JustTestItem(value_) result(just_)
-        type(TestItem_t), intent(in) :: value_
-        type(JustTestItem_t) :: just_
+        allocate(item%test, source = InputTestCase(var_str(description), test))
+    end function It_
 
-        just_%value_ = value_
-    end function JustTestItem
-
-    pure function makeDoesntIncludeFailureMessageCC(search_for, string) result(message)
-        use strff, only: indent, hangingIndent
+    function makeDoesntIncludeFailureMessageCC( &
+            search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
 
-        message = hangingIndent( &
-                "Expected" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(string, 1)), &
-                        INDENTATION) // NEWLINE &
-                // "to not include" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(search_for, 1)), &
-                        INDENTATION), &
-                INDENTATION)
+        message = makeDoesntIncludeFailureMessage( &
+                var_str(search_for), var_str(string))
     end function makeDoesntIncludeFailureMessageCC
 
-    pure function makeDoesntIncludeFailureMessageCS(search_for, string) result(message)
+    function makeDoesntIncludeFailureMessageCS( &
+            search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
 
-        message = makeDoesntIncludeFailureMessage(search_for, char(string))
+        message = makeDoesntIncludeFailureMessage( &
+                var_str(search_for), string)
     end function makeDoesntIncludeFailureMessageCS
 
-    pure function makeDoesntIncludeFailureMessageSC(search_for, string) result(message)
+    function makeDoesntIncludeFailureMessageSC( &
+            search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
 
-        message = makeDoesntIncludeFailureMessage(char(search_for), string)
+        message = makeDoesntIncludeFailureMessage( &
+                search_for, var_str(string))
     end function makeDoesntIncludeFailureMessageSC
 
-    pure function makeDoesntIncludeFailureMessageSS(search_for, string) result(message)
+    function makeDoesntIncludeFailureMessageSS( &
+            search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: indent, hangingIndent, NEWLINE
+
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeDoesntIncludeFailureMessage(char(search_for), char(string))
-    end function makeDoesntIncludeFailureMessageSS
-
-    pure function makeDoesntIncludeSuccessMessageCC(search_for, string) result(message)
-        use strff, only: indent, hangingIndent
-
-        character(len=*), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = hangingIndent( &
-                "The string" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(string, 1)), &
-                        INDENTATION) // NEWLINE &
-                // "did not include" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(search_for, 1)), &
-                        INDENTATION), &
-                INDENTATION)
-    end function makeDoesntIncludeSuccessMessageCC
-
-    pure function makeDoesntIncludeSuccessMessageCS(search_for, string) result(message)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeDoesntIncludeSuccessMessage(search_for, char(string))
-    end function makeDoesntIncludeSuccessMessageCS
-
-    pure function makeDoesntIncludeSuccessMessageSC(search_for, string) result(message)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeDoesntIncludeSuccessMessage(char(search_for), string)
-    end function makeDoesntIncludeSuccessMessageSC
-
-    pure function makeDoesntIncludeSuccessMessageSS(search_for, string) result(message)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeDoesntIncludeSuccessMessage(char(search_for), char(string))
-    end function makeDoesntIncludeSuccessMessageSS
-
-    pure function makeEmptyFailureMessageC(string) result(message)
-        use strff, only: indent, hangingIndent
-
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = hangingIndent( &
-                "The string" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(string, 1)), &
-                        INDENTATION) // NEWLINE &
-                // "wasn't empty", &
-                INDENTATION)
-    end function makeEmptyFailureMessageC
-
-    pure function makeEmptyFailureMessageS(string) result(message)
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeEmptyFailureMessage(char(string))
-    end function makeEmptyFailureMessageS
-
-    pure function makeEqualsFailureMessageCC(expected, actual) result(message)
-        use strff, only: indent, hangingIndent
-
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
         type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "Expected" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(expected, 1)), &
-                        INDENTATION) // NEWLINE &
-                // "but got" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(actual, 1)), &
-                        INDENTATION), &
+                    // indent( &
+                            delimit(hangingIndent(string, 1)), &
+                            INDENTATION) // NEWLINE &
+                    // "to not include" // NEWLINE &
+                    // indent( &
+                            delimit(hangingIndent(search_for, 1)), &
+                            INDENTATION), &
                 INDENTATION)
+    end function makeDoesntIncludeFailureMessageSS
+
+    function makeDoesntIncludeSuccessMessageCC( &
+            search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeDoesntIncludeSuccessMessage( &
+                var_str(search_for), var_str(string))
+    end function makeDoesntIncludeSuccessMessageCC
+
+    function makeDoesntIncludeSuccessMessageCS( &
+            search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeDoesntIncludeSuccessMessage( &
+                var_str(search_for), string)
+    end function makeDoesntIncludeSuccessMessageCS
+
+    function makeDoesntIncludeSuccessMessageSC( &
+            search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeDoesntIncludeSuccessMessage( &
+                search_for, var_str(string))
+    end function makeDoesntIncludeSuccessMessageSC
+
+    function makeDoesntIncludeSuccessMessageSS( &
+            search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: indent, hangingIndent, NEWLINE
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = hangingIndent( &
+                "The string" // NEWLINE &
+                    // indent( &
+                            delimit(hangingIndent(string, 1)), &
+                            INDENTATION) // NEWLINE &
+                    // "did not include" // NEWLINE &
+                    // indent( &
+                            delimit(hangingIndent(search_for, 1)), &
+                            INDENTATION), &
+                INDENTATION)
+    end function makeDoesntIncludeSuccessMessageSS
+
+    function makeEmptyFailureMessageC(string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeEmptyFailureMessage(var_str(string))
+    end function makeEmptyFailureMessageC
+
+    function makeEmptyFailureMessageS(string) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: indent, hangingIndent, NEWLINE
+
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = hangingIndent( &
+                "The string" // NEWLINE &
+                    // indent( &
+                            delimit(hangingIndent(string, 1)), &
+                            INDENTATION) // NEWLINE &
+                    // "wasn't empty", &
+                INDENTATION)
+    end function makeEmptyFailureMessageS
+
+    function makeEqualsFailureMessageCC(expected, actual) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING) :: message
+
+        message = makeEqualsFailureMessage(var_str(expected), var_str(actual))
     end function makeEqualsFailureMessageCC
 
-    pure function makeEqualsFailureMessageCS(expected, actual) result(message)
+    function makeEqualsFailureMessageCS(expected, actual) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING) :: message
 
-        message = makeEqualsFailureMessage(expected, char(actual))
+        message = makeEqualsFailureMessage(var_str(expected), actual)
     end function makeEqualsFailureMessageCS
 
-    pure function makeEqualsFailureMessageSC(expected, actual) result(message)
+    function makeEqualsFailureMessageSC(expected, actual) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING) :: message
 
-        message = makeEqualsFailureMessage(char(expected), actual)
+        message = makeEqualsFailureMessage(expected, var_str(actual))
     end function makeEqualsFailureMessageSC
 
-    pure function makeEqualsFailureMessageSS(expected, actual) result(message)
+    function makeEqualsFailureMessageSS(expected, actual) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: indent, hangingIndent, NEWLINE
+
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING) :: message
 
-        message = makeEqualsFailureMessage(char(expected), char(actual))
+        message = hangingIndent( &
+                "Expected" // NEWLINE &
+                    // indent( &
+                            delimit(hangingIndent(expected, 1)), &
+                            INDENTATION) // NEWLINE &
+                    // "but got" // NEWLINE &
+                    // indent( &
+                            delimit(hangingIndent(actual, 1)), &
+                            INDENTATION), &
+                INDENTATION)
     end function makeEqualsFailureMessageSS
 
-    pure function makeEqualsSuccessMessageC(expected) result(message)
-        use strff, only: indent, hangingIndent
+    function makeEqualsSuccessMessageC(expected) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: expected
+        type(VARYING_STRING) :: message
+
+        message = makeEqualsSuccessMessage(var_str(expected))
+    end function makeEqualsSuccessMessageC
+
+    function makeEqualsSuccessMessageS(expected) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: indent, hangingIndent, NEWLINE
+
+        type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "Expected and got" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(expected, 1)), &
-                        INDENTATION), &
+                    // indent( &
+                            delimit(hangingIndent(expected, 1)), &
+                            INDENTATION), &
                 INDENTATION)
-    end function makeEqualsSuccessMessageC
-
-    pure function makeEqualsSuccessMessageS(expected) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING) :: message
-
-        message = makeEqualsSuccessMessage(char(expected))
     end function makeEqualsSuccessMessageS
 
-    pure function makeIncludesFailureMessageCC(search_for, string) result(message)
-        use strff, only: indent, hangingIndent
+    function makeFasterThanFailureMessageCCC( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: var_str
+
+        character(len=*), intent(in) :: reference
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanFailureMessage( &
+                var_str(reference), var_str(actual), var_str(iterations))
+    end function makeFasterThanFailureMessageCCC
+
+    function makeFasterThanFailureMessageCCS( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: reference
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanFailureMessage( &
+                var_str(reference), var_str(actual), iterations)
+    end function makeFasterThanFailureMessageCCS
+
+    function makeFasterThanFailureMessageCSC( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: reference
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanFailureMessage( &
+                var_str(reference), actual, var_str(iterations))
+    end function makeFasterThanFailureMessageCSC
+
+    function makeFasterThanFailureMessageCSS( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: reference
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanFailureMessage( &
+                var_str(reference), actual, iterations)
+    end function makeFasterThanFailureMessageCSS
+
+    function makeFasterThanFailureMessageSCC( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: reference
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanFailureMessage( &
+                reference, var_str(actual), var_str(iterations))
+    end function makeFasterThanFailureMessageSCC
+
+    function makeFasterThanFailureMessageSCS( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: reference
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanFailureMessage( &
+                reference, var_str(actual), iterations)
+    end function makeFasterThanFailureMessageSCS
+
+    function makeFasterThanFailureMessageSSC( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: reference
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanFailureMessage( &
+                reference, actual, var_str(iterations))
+    end function makeFasterThanFailureMessageSSC
+
+    function makeFasterThanFailureMessageSSS( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+
+        type(VARYING_STRING), intent(in) :: reference
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = &
+                "Computation took " // actual &
+                // ", which was slower than the reference time of " &
+                // reference // ", averaged over " // iterations // " iterations."
+    end function makeFasterThanFailureMessageSSS
+
+    function makeFasterThanSuccessMessageCCC( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: var_str
+
+        character(len=*), intent(in) :: reference
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanSuccessMessage( &
+                var_str(reference), var_str(actual), var_str(iterations))
+    end function makeFasterThanSuccessMessageCCC
+
+    function makeFasterThanSuccessMessageCCS( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: reference
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanSuccessMessage( &
+                var_str(reference), var_str(actual), iterations)
+    end function makeFasterThanSuccessMessageCCS
+
+    function makeFasterThanSuccessMessageCSC( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: reference
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanSuccessMessage( &
+                var_str(reference), actual, var_str(iterations))
+    end function makeFasterThanSuccessMessageCSC
+
+    function makeFasterThanSuccessMessageCSS( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: reference
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanSuccessMessage( &
+                var_str(reference), actual, iterations)
+    end function makeFasterThanSuccessMessageCSS
+
+    function makeFasterThanSuccessMessageSCC( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: reference
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanSuccessMessage( &
+                reference, var_str(actual), var_str(iterations))
+    end function makeFasterThanSuccessMessageSCC
+
+    function makeFasterThanSuccessMessageSCS( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: reference
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanSuccessMessage( &
+                reference, var_str(actual), iterations)
+    end function makeFasterThanSuccessMessageSCS
+
+    function makeFasterThanSuccessMessageSSC( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: reference
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = makeFasterThanSuccessMessage( &
+                reference, actual, var_str(iterations))
+    end function makeFasterThanSuccessMessageSSC
+
+    function makeFasterThanSuccessMessageSSS( &
+            reference, actual, iterations) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+
+        type(VARYING_STRING), intent(in) :: reference
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: iterations
+        type(VARYING_STRING) :: message
+
+        message = &
+                "Computation took " // actual &
+                // ", which was faster than the reference time of " &
+                // reference // ", averaged over " // iterations // " iterations."
+    end function makeFasterThanSuccessMessageSSS
+
+    function makeIncludesFailureMessageCC(search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesFailureMessage( &
+                var_str(search_for), var_str(string))
+    end function makeIncludesFailureMessageCC
+
+    function makeIncludesFailureMessageCS(search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesFailureMessage(var_str(search_for), string)
+    end function makeIncludesFailureMessageCS
+
+    function makeIncludesFailureMessageSC(search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesFailureMessage(search_for, var_str(string))
+    end function makeIncludesFailureMessageSC
+
+    function makeIncludesFailureMessageSS(search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: indent, hangingIndent, NEWLINE
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "Expected" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(string, 1)), &
-                        INDENTATION) // NEWLINE &
-                // "to include" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(search_for, 1)), &
-                        INDENTATION), &
+                    // indent( &
+                            delimit(hangingIndent(string, 1)), &
+                            INDENTATION) // NEWLINE &
+                    // "to include" // NEWLINE &
+                    // indent( &
+                            delimit(hangingIndent(search_for, 1)), &
+                            INDENTATION), &
                 INDENTATION)
-    end function makeIncludesFailureMessageCC
-
-    pure function makeIncludesFailureMessageCS(search_for, string) result(message)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeIncludesFailureMessage(search_for, char(string))
-    end function makeIncludesFailureMessageCS
-
-    pure function makeIncludesFailureMessageSC(search_for, string) result(message)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeIncludesFailureMessage(char(search_for), string)
-    end function makeIncludesFailureMessageSC
-
-    pure function makeIncludesFailureMessageSS(search_for, string) result(message)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeIncludesFailureMessage(char(search_for), char(string))
     end function makeIncludesFailureMessageSS
 
-    pure function makeIncludesSuccessMessageCC(search_for, string) result(message)
-        use strff, only: indent, hangingIndent
+    function makeIncludesSuccessMessageCC(search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesSuccessMessage( &
+                var_str(search_for), var_str(string))
+    end function makeIncludesSuccessMessageCC
+
+    function makeIncludesSuccessMessageCS(search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesSuccessMessage(var_str(search_for), string)
+    end function makeIncludesSuccessMessageCS
+
+    function makeIncludesSuccessMessageSC(search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: search_for
+        character(len=*), intent(in) :: string
+        type(VARYING_STRING) :: message
+
+        message = makeIncludesSuccessMessage(search_for, var_str(string))
+    end function makeIncludesSuccessMessageSC
+
+    function makeIncludesSuccessMessageSS(search_for, string) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: indent, hangingIndent, NEWLINE
+
+        type(VARYING_STRING), intent(in) :: search_for
+        type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
 
         message = hangingIndent( &
                 "The string" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(string, 1)), &
-                        INDENTATION) // NEWLINE &
-                // "included" // NEWLINE &
-                // indent( &
-                        delimit(hangingIndent(search_for, 1)), &
-                        INDENTATION), &
+                    // indent( &
+                            delimit(hangingIndent(string, 1)), &
+                            INDENTATION) // NEWLINE &
+                    // "included" // NEWLINE &
+                    // indent( &
+                            delimit(hangingIndent(search_for, 1)), &
+                            INDENTATION), &
                 INDENTATION)
-    end function makeIncludesSuccessMessageCC
-
-    pure function makeIncludesSuccessMessageCS(search_for, string) result(message)
-        character(len=*), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeIncludesSuccessMessage(search_for, char(string))
-    end function makeIncludesSuccessMessageCS
-
-    pure function makeIncludesSuccessMessageSC(search_for, string) result(message)
-        type(VARYING_STRING), intent(in) :: search_for
-        character(len=*), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeIncludesSuccessMessage(char(search_for), string)
-    end function makeIncludesSuccessMessageSC
-
-    pure function makeIncludesSuccessMessageSS(search_for, string) result(message)
-        type(VARYING_STRING), intent(in) :: search_for
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING) :: message
-
-        message = makeIncludesSuccessMessage(char(search_for), char(string))
     end function makeIncludesSuccessMessageSS
 
-    pure function makeWithinFailureMessageCCC( &
+    function makeWithinFailureMessageCCC( &
             expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage( &
+                var_str(expected), var_str(actual), var_str(tolerance))
+    end function makeWithinFailureMessageCCC
+
+    function makeWithinFailureMessageCCS( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage( &
+                var_str(expected), var_str(actual), tolerance)
+    end function makeWithinFailureMessageCCS
+
+    function makeWithinFailureMessageCSC( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage( &
+                var_str(expected), actual, var_str(tolerance))
+    end function makeWithinFailureMessageCSC
+
+    function makeWithinFailureMessageCSS( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage( &
+                var_str(expected), actual, tolerance)
+    end function makeWithinFailureMessageCSS
+
+    function makeWithinFailureMessageSCC( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage( &
+                expected, var_str(actual), var_str(tolerance))
+    end function makeWithinFailureMessageSCC
+
+    function makeWithinFailureMessageSCS( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage( &
+                expected, var_str(actual), tolerance)
+    end function makeWithinFailureMessageSCS
+
+    function makeWithinFailureMessageSSC( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinFailureMessage( &
+                expected, actual, var_str(tolerance))
+    end function makeWithinFailureMessageSSC
+
+    function makeWithinFailureMessageSSS( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
         type(VARYING_STRING) :: message
 
         message = &
-                "Expected " // delimit(actual) // " to be  within " &
+                "Expected " // delimit(actual) // " to be within " &
                 // delimit("±" // tolerance) // " of " // delimit(expected)
-    end function makeWithinFailureMessageCCC
-
-    pure function makeWithinFailureMessageCCS( &
-            expected, actual, tolerance) result(message)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinFailureMessage(expected, actual, char(tolerance))
-    end function makeWithinFailureMessageCCS
-
-    pure function makeWithinFailureMessageCSC( &
-            expected, actual, tolerance) result(message)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        character(len=*), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinFailureMessage(expected, char(actual), tolerance)
-    end function makeWithinFailureMessageCSC
-
-    pure function makeWithinFailureMessageCSS( &
-            expected, actual, tolerance) result(message)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinFailureMessage(expected, char(actual), char(tolerance))
-    end function makeWithinFailureMessageCSS
-
-    pure function makeWithinFailureMessageSCC( &
-            expected, actual, tolerance) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinFailureMessage(char(expected), actual, tolerance)
-    end function makeWithinFailureMessageSCC
-
-    pure function makeWithinFailureMessageSCS( &
-            expected, actual, tolerance) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinFailureMessage(char(expected), actual, char(tolerance))
-    end function makeWithinFailureMessageSCS
-
-    pure function makeWithinFailureMessageSSC( &
-            expected, actual, tolerance) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        character(len=*), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinFailureMessage(char(expected), char(actual), tolerance)
-    end function makeWithinFailureMessageSSC
-
-    pure function makeWithinFailureMessageSSS( &
-            expected, actual, tolerance) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinFailureMessage(char(expected), char(actual), char(tolerance))
     end function makeWithinFailureMessageSSS
 
-    pure function makeWithinSuccesMessageCCC( &
+    function makeWithinSuccessMessageCCC( &
             expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccessMessage( &
+                var_str(expected), var_str(actual), var_str(tolerance))
+    end function makeWithinSuccessMessageCCC
+
+    function makeWithinSuccessMessageCCS( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccessMessage( &
+                var_str(expected), var_str(actual), tolerance)
+    end function makeWithinSuccessMessageCCS
+
+    function makeWithinSuccessMessageCSC( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccessMessage( &
+                var_str(expected), actual, var_str(tolerance))
+    end function makeWithinSuccessMessageCSC
+
+    function makeWithinSuccessMessageCSS( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccessMessage( &
+                var_str(expected), actual, tolerance)
+    end function makeWithinSuccessMessageCSS
+
+    function makeWithinSuccessMessageSCC( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccessMessage( &
+                expected, var_str(actual), var_str(tolerance))
+    end function makeWithinSuccessMessageSCC
+
+    function makeWithinSuccessMessageSCS( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        character(len=*), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccessMessage( &
+                expected, var_str(actual), tolerance)
+    end function makeWithinSuccessMessageSCS
+
+    function makeWithinSuccessMessageSSC( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        character(len=*), intent(in) :: tolerance
+        type(VARYING_STRING) :: message
+
+        message = makeWithinSuccessMessage( &
+                expected, actual, var_str(tolerance))
+    end function makeWithinSuccessMessageSSC
+
+    function makeWithinSuccessMessageSSS( &
+            expected, actual, tolerance) result(message)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+
+        type(VARYING_STRING), intent(in) :: expected
+        type(VARYING_STRING), intent(in) :: actual
+        type(VARYING_STRING), intent(in) :: tolerance
         type(VARYING_STRING) :: message
 
         message = &
                 delimit(actual) // " was within " // delimit("±" // tolerance) &
                 // " of " // delimit(expected)
-    end function makeWithinSuccesMessageCCC
+    end function makeWithinSuccessMessageSSS
 
-    pure function makeWithinSuccesMessageCCS( &
-            expected, actual, tolerance) result(message)
-        character(len=*), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinSuccesMessage(expected, actual, char(tolerance))
-    end function makeWithinSuccesMessageCCS
-
-    pure function makeWithinSuccesMessageCSC( &
-            expected, actual, tolerance) result(message)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        character(len=*), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinSuccesMessage(expected, char(actual), tolerance)
-    end function makeWithinSuccesMessageCSC
-
-    pure function makeWithinSuccesMessageCSS( &
-            expected, actual, tolerance) result(message)
-        character(len=*), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinSuccesMessage(expected, char(actual), char(tolerance))
-    end function makeWithinSuccesMessageCSS
-
-    pure function makeWithinSuccesMessageSCC( &
-            expected, actual, tolerance) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        character(len=*), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinSuccesMessage(char(expected), actual, tolerance)
-    end function makeWithinSuccesMessageSCC
-
-    pure function makeWithinSuccesMessageSCS( &
-            expected, actual, tolerance) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        character(len=*), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinSuccesMessage(char(expected), actual, char(tolerance))
-    end function makeWithinSuccesMessageSCS
-
-    pure function makeWithinSuccesMessageSSC( &
-            expected, actual, tolerance) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        character(len=*), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinSuccesMessage(char(expected), char(actual), tolerance)
-    end function makeWithinSuccesMessageSSC
-
-    pure function makeWithinSuccesMessageSSS( &
-            expected, actual, tolerance) result(message)
-        type(VARYING_STRING), intent(in) :: expected
-        type(VARYING_STRING), intent(in) :: actual
-        type(VARYING_STRING), intent(in) :: tolerance
-        type(VARYING_STRING) :: message
-
-        message = makeWithinSuccesMessage(char(expected), char(actual), char(tolerance))
-    end function makeWithinSuccesMessageSSS
-
-    pure function Result_(individual_result)
-        type(IndividualResult_t), intent(in) :: individual_result
-        type(Result_t) :: Result_
-
-        allocate(Result_%results(1))
-        Result_%results(1) = individual_result
-    end function Result_
-
-    pure function resultFailureDescription(self, colorize) result(description)
-        use strff, only: join
+    function resultFailureDescription(self, colorize) result(description)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: join, NEWLINE
 
         class(Result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
 
-        logical :: failed_mask(size(self%results))
-        type(IndividualResult_t), allocatable :: failed_results(:)
         integer :: i
-        type(VARYING_STRING), allocatable :: individual_descriptions(:)
+        type(VARYING_STRING) :: individual_descriptions(size(self%results))
 
-        failed_mask = .not.self%results%passed_
-        allocate(failed_results(count(failed_mask)))
-        failed_results = pack(self%results, mask=failed_mask)
-        allocate(individual_descriptions(size(failed_results)))
-        do i = 1, size(failed_results)
-            individual_descriptions(i) = failed_results(i)%failureDescription(colorize)
+        do i = 1, size(self%results)
+            individual_descriptions(i) =  &
+                    self%results(i)%failureDescription(colorize)
         end do
-        if (size(failed_results) > 0) then
-            description = join(individual_descriptions, NEWLINE)
-        else
-            description = ""
-        end if
+        description = join(individual_descriptions, NEWLINE)
     end function resultFailureDescription
 
     pure function resultNumAsserts(self) result(num_asserts)
@@ -3431,12 +5380,12 @@ contains
         num_asserts = size(self%results)
     end function resultNumAsserts
 
-    pure function resultNumFailing(self) result(num_asserts)
+    pure function resultNumFailingAsserts(self) result(num_asserts)
         class(Result_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = count(.not.self%results%passed_)
-    end function resultNumFailing
+    end function resultNumFailingAsserts
 
     pure function resultPassed(self) result(passed)
         class(Result_t), intent(in) :: self
@@ -3445,268 +5394,55 @@ contains
         passed = all(self%results%passed_)
     end function resultPassed
 
-    pure function resultVerboseDescription(self, colorize) result(description)
-        use strff, only: join
+    function resultRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, indent, join, NEWLINE
+
+        class(Result_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        type(VARYING_STRING) :: strings(size(self%results))
+        integer :: i
+
+        do i = 1, size(self%results)
+            strings(i) = self%results(i)%repr()
+        end do
+
+        string = hangingIndent( &
+                "Result_t(" // NEWLINE &
+                    // "results = [" // NEWLINE &
+                    // indent( &
+                            join(strings, "," // NEWLINE), &
+                            INDENTATION) // NEWLINE // "]", &
+                INDENTATION) // NEWLINE // ")"
+    end function resultRepr
+
+    function resultVerboseDescription(self, colorize) result(description)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: join, NEWLINE
 
         class(Result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
 
         integer :: i
-        type(VARYING_STRING), allocatable :: individual_descriptions(:)
+        type(VARYING_STRING) :: individual_descriptions(size(self%results))
 
-        allocate(individual_descriptions(size(self%results)))
         do i = 1, size(self%results)
-            individual_descriptions(i) = self%results(i)%verboseDescription(colorize)
+            individual_descriptions(i) =  &
+                    self%results(i)%verboseDescription(colorize)
         end do
         description = join(individual_descriptions, NEWLINE)
     end function resultVerboseDescription
 
-    function runSimpleTestCaseWithInput(self, input) result(result__)
-        class(SimpleTestCase_t), intent(in) :: self
-        class(*), intent(in) :: input
-        class(TestResult_t), allocatable :: result__
-
-        associate(a => input)
-        end associate
-
-        allocate(result__, source = self%run())
-    end function runSimpleTestCaseWithInput
-
-    function runSimpleTestCaseWithoutInput(self) result(result__)
-        class(SimpleTestCase_t), intent(in) :: self
-        class(TestResult_t), allocatable :: result__
-
-        type(TestCaseResult_t) :: the_result
-
-        the_result = TestCaseResult(self%description_, self%test())
-        allocate(result__, source = the_result)
-    end function runSimpleTestCaseWithoutInput
-
-    function runCaseWithExamplesWithInput(self, input) result(result__)
-        class(TestCaseWithExamples_t), intent(in) :: self
-        class(*), intent(in) :: input
-        class(TestResult_t), allocatable :: result__
-
-        associate(a => input)
-        end associate
-
-        allocate(result__, source = self%run())
-    end function runCaseWithExamplesWithInput
-
-    function runCaseWithExamplesWithoutInput(self) result(result__)
-        class(TestCaseWithExamples_t), intent(in) :: self
-        class(TestResult_t), allocatable :: result__
-
-        integer :: i
-        type(Result_t) :: results
-        type(TestCaseResult_t) :: the_result
-
-        do i = 1, size(self%examples)
-            results = results.and.self%test(self%examples(i)%value_)
-        end do
-        the_result = TestCaseResult(self%description_, results)
-        allocate(result__, source = the_result)
-    end function runCaseWithExamplesWithoutInput
-
-    function runCaseWithGeneratorWithInput(self, input) result(result__)
-        class(TestCaseWithGenerator_t), intent(in) :: self
-        class(*), intent(in) :: input
-        class(TestResult_t), allocatable :: result__
-
-        associate(a => input)
-        end associate
-
-        allocate(result__, source = self%run())
-    end function runCaseWithGeneratorWithInput
-
-    function runCaseWithGeneratorWithoutInput(self) result(result__)
-        use strff, only: toString
-
-        class(TestCaseWithGenerator_t), intent(in) :: self
-        class(TestResult_t), allocatable :: result__
-
-        type(Generated_t) :: generated_value
-        integer :: i
-        class(ShrinkResult_t), allocatable :: simpler_value
-        type(Result_t) :: new_result
-        type(Result_t) :: previous_result
-        type(TestCaseResult_t) :: the_result
-
-        do i = 1, NUM_GENERATOR_TESTS
-            generated_value = self%generator%generate()
-            select type (the_value => generated_value%value_)
-            type is (VegetableString_t)
-                previous_result = self%test(the_value%string)
-            class default
-                previous_result = self%test(the_value)
-            end select
-            if (.NOT.previous_result%passed()) exit
-        end do
-        if (i > NUM_GENERATOR_TESTS) then
-            the_result = TestCaseResult( &
-                    self%description_, &
-                    succeed("Passed after " // toString(NUM_GENERATOR_TESTS) // " examples"))
-            allocate(result__, source = the_result)
-        else
-            do
-                select type (the_value => generated_value%value_)
-                type is (VegetableString_t)
-                    allocate(simpler_value, source = self%generator%shrink(the_value%string))
-                class default
-                    allocate(simpler_value, source = self%generator%shrink(the_value))
-                end select
-                select type (simpler_value)
-                type is (ShrunkValue_t)
-                    select type (the_value => simpler_value%value_)
-                    type is (VegetableString_t)
-                        new_result = self%test(the_value%string)
-                    class default
-                        new_result = self%test(the_value)
-                    end select
-                    if (new_result%passed()) then
-                        the_result = TestCaseResult( &
-                                self%description_, &
-                                fail('Found simplest example causing failure').and.previous_result)
-                        allocate(result__, source = the_result)
-                        return
-                    else
-                        previous_result = new_result
-                        generated_value = Generated(simpler_value%value_)
-                    end if
-                type is (SimplestValue_t)
-                    select type (the_value => simpler_value%value_)
-                    type is (VegetableString_t)
-                        new_result = self%test(the_value%string)
-                    class default
-                        new_result = self%test(the_value)
-                    end select
-                    if (new_result%passed()) then
-                        the_result = TestCaseResult( &
-                                self%description_, &
-                                fail('Found simplest example causing failure').and.previous_result)
-                        allocate(result__, source = the_result)
-                        return
-                    else
-                        the_result = TestCaseResult( &
-                                self%description_, &
-                                fail('Fails with the simplest possible example').and.new_result)
-                        allocate(result__, source = the_result)
-                        return
-                    end if
-                class default
-                    the_result = TestCaseResult( &
-                            self%description_, &
-                            fail("Got an unknown type when trying to shrink last value").and.previous_result)
-                    allocate(result__, source = the_result)
-                    return
-                end select
-                deallocate(simpler_value)
-            end do
-        end if
-    end function runCaseWithGeneratorWithoutInput
-
-    function runInputCaseWithInput(self, input) result(result__)
-        class(InputTestCase_t), intent(in) :: self
-        class(*), intent(in) :: input
-        class(TestResult_t), allocatable :: result__
-
-        type(TestCaseResult_t) :: the_result
-
-        the_result = TestCaseResult(self%description_, self%test(input))
-        allocate(result__, source = the_result)
-    end function runInputCaseWithInput
-
-    function runInputCaseWithoutInput(self) result(result__)
-        class(InputTestCase_t), intent(in) :: self
-        class(TestResult_t), allocatable :: result__
-
-        type(TestCaseResult_t) :: the_result
-
-        the_result = TestCaseResult(self%description_, fail("No input provided"))
-        allocate(result__, source = the_result)
-    end function runInputCaseWithoutInput
-
-    function runSimpleCollectionWithInput(self, input) result(result__)
-        class(SimpleTestCollection_t), intent(in) :: self
-        class(*), intent(in) :: input
-        class(TestResult_t), allocatable :: result__
-
-        associate(a => input)
-        end associate
-
-        allocate(result__, source = self%run())
-    end function runSimpleCollectionWithInput
-
-    function runSimpleCollectionWithoutInput(self) result(result__)
-        class(SimpleTestCollection_t), intent(in) :: self
-        class(TestResult_t), allocatable :: result__
-
-        integer :: i
-        integer :: num_tests
-        type(TestResultItem_t), allocatable :: results(:)
-        type(TestCollectionResult_t) :: the_result
-
-        num_tests = size(self%tests)
-        allocate(results(num_tests))
-        do i = 1, num_tests
-            results(i) = self%tests(i)%run()
-        end do
-        the_result = TestCollectionResult(self%description_, results)
-        allocate(result__, source = the_result)
-    end function runSimpleCollectionWithoutInput
-
-    function runCollectionThatHasInputWithInput(self, input) result(result__)
-        class(TestCollectionWithInput_t), intent(in) :: self
-        class(*), intent(in) :: input
-        class(TestResult_t), allocatable :: result__
-
-        associate(a => input)
-        end associate
-
-        allocate(result__, source = self%run())
-    end function runCollectionThatHasInputWithInput
-
-    function runCollectionThatHasInputWithoutInput(self) result(result__)
-        class(TestCollectionWithInput_t), intent(in) :: self
-        class(TestResult_t), allocatable :: result__
-
-        integer :: i
-        integer :: num_tests
-        type(TestResultItem_t), allocatable :: results(:)
-        type(TestCollectionResult_t) :: the_result
-
-        num_tests = size(self%tests)
-        allocate(results(num_tests))
-        do i = 1, num_tests
-            results(i) = self%tests(i)%run(self%input)
-        end do
-        the_result = TestCollectionResult(self%description_, results)
-        allocate(result__, source = the_result)
-    end function runCollectionThatHasInputWithoutInput
-
-    function runTestItemWithoutInput(self) result(result_item)
-        class(TestItem_t), intent(in) :: self
-        type(TestResultItem_t) :: result_item
-
-        allocate(result_item%result_, source = self%test%run())
-    end function runTestItemWithoutInput
-
-    function runTestItemWithInput(self, input) result(result_item)
-        class(TestItem_t), intent(in) :: self
-        class(*), intent(in) :: input
-        type(TestResultItem_t) :: result_item
-
-        allocate(result_item%result_, source = self%test%run(input))
-    end function runTestItemWithInput
-
     subroutine runTests(tests)
         use iso_fortran_env, only: error_unit, output_unit
+        use iso_varying_string, only: operator(//), put_line
         use strff, only: toString
 
-        type(TestItem_t) :: tests
+        type(TestItem_t), intent(in) :: tests
 
-        type(MaybeItem_t) :: maybe_tests
+        type(FilterItemResult_t) :: filtered_tests
         type(Options_t) :: options
         type(TestResultItem_t) :: results
         type(TestItem_t) :: tests_to_run
@@ -3714,199 +5450,301 @@ contains
         options = getOptions()
 
         if (options%filter_tests) then
-            maybe_tests = tests%filter(options%filter_string)
-            select type (maybe => maybe_tests%maybe)
-            type is (JustTestItem_t)
-                tests_to_run = maybe%getValue()
-            type is (Nothing_t)
+            filtered_tests = tests%filter(options%filter_string)
+            if (filtered_tests%matched) then
+                tests_to_run = filtered_tests%test
+            else
                 call put_line(error_unit, "No matching tests found")
                 call exit(1)
-            end select
+            end if
         else
             tests_to_run = tests
         end if
+
         call put_line(output_unit, "Running Tests")
         call put_line(output_unit, "")
-        if (.not.options%quiet) then
+
+        if(.not.options%quiet) then
             call put_line(output_unit, tests_to_run%description())
             call put_line(output_unit, "")
         end if
+
         call put_line( &
                 output_unit, &
                 "A total of " // toString(tests_to_run%numCases()) // " test cases")
+        call put_line(output_unit, "")
+
         results = tests_to_run%run()
+
         if (results%passed()) then
-            call put_line(output_unit, "")
             call put_line(output_unit, "All Passed")
+            call put_line(output_unit, "")
             if (options%verbose) then
                 call put_line( &
-                        output_unit, results%verboseDescription(options%colorize))
+                        output_unit, &
+                        results%verboseDescription(options%colorize))
+                call put_line(output_unit, "")
             end if
             call put_line( &
                     output_unit, &
                     "A total of " // toString(results%numCases()) &
-                    // " test cases containg a total of " &
-                    // toString(results%numAsserts()) // " assertions")
+                        // " test cases containing a total of " &
+                        // toString(results%numAsserts()) // " assertions")
             call put_line(output_unit, "")
         else
-            call put_line(error_unit, "")
             call put_line(error_unit, "Failed")
+            call put_line(error_unit, "")
             if (options%verbose) then
                 call put_line( &
-                        error_unit, results%verboseDescription(options%colorize))
+                        error_unit, &
+                        results%verboseDescription(options%colorize))
             else
                 call put_line( &
-                        error_unit, results%failureDescription(options%colorize))
+                        error_unit, &
+                        results%failureDescription(options%colorize))
             end if
+            call put_line(error_unit, "")
             call put_line( &
                     error_unit, &
                     toString(results%numFailingCases()) // " of " &
-                    // toString(results%numCases()) // " cases failed")
+                        // toString(results%numCases()) // " cases failed")
             call put_line( &
                     error_unit, &
                     toString(results%numFailingAsserts()) // " of " &
-                    // toString(results%numAsserts()) // " assertions failed")
+                        // toString(results%numAsserts()) // " assertions failed")
             call put_line(error_unit, "")
             call exit(1)
         end if
-    end subroutine
+    end subroutine runTests
 
-    function runTransformingCollectionWithInput(self, input) result(result__)
-        class(TransformingTestCollection_t), intent(in) :: self
-        class(*), intent(in) :: input
-        class(TestResult_t), allocatable :: result__
+    function shrinkAsciiString(input) result(shrunk)
+        use iso_varying_string, only: assignment(=), extract, len
 
-        integer :: i
-        integer :: num_tests
-        type(TestResultItem_t), allocatable :: results(:)
-        type(TestCollectionResult_t) :: the_result
-        type(Transformed_t) :: transformed_
+        class(Input_t), intent(in) :: input
+        type(ShrinkResult_t) :: shrunk
 
-        transformed_ = self%transformer(input)
-        select type (next_input => transformed_%value_)
-        type is (Result_t)
-            allocate(results(1))
-            allocate(TestCaseResult_t :: results(1)%result_)
-            select type (the_result_ => results(1)%result_)
-            type is (TestCaseResult_t)
-                the_result_ = TestCaseResult("Transformation Failed", next_input)
-            end select
-            the_result = TestCollectionResult(self%description_, results)
-        class default
-            num_tests = size(self%tests)
-            allocate(results(num_tests))
-            do i = 1, num_tests
-                results(i) = self%tests(i)%runWithInput(next_input)
-            end do
-            the_result = TestCollectionResult(self%description_, results)
-        end select
-        allocate(result__, source = the_result)
-    end function runTransformingCollectionWithInput
+        type(StringInput_t) :: new_input
 
-    function runTransformingCollectionWithoutInput(self) result(result__)
-        class(TransformingTestCollection_t), intent(in) :: self
-        class(TestResult_t), allocatable :: result__
-
-        type(TestCaseResult_t) :: the_result
-
-        the_result = TestCaseResult(self%description_, fail("No input provided"))
-        allocate(result__, source = the_result)
-    end function runTransformingCollectionWithoutInput
-
-    pure function shrinkAsciiString(value_) result(shrunk)
-        class(*), intent(in) :: value_
-        class(ShrinkResult_t), allocatable :: shrunk
-
-        select type (value_)
-        type is (VARYING_STRING)
-            if (len(value_) <= 1) then
-                allocate(shrunk, source = SimplestValue(var_str("")))
+        select type (input)
+        type is (StringInput_t)
+            if (len(input%value_) <= 1) then
+                new_input%value_ = ""
+                shrunk = ShrinkResult(new_input, .true.)
             else
-                allocate(shrunk, source = ShrunkValue(extract(value_, 1, len(value_)-1)))
+                new_input%value_ = extract( &
+                        input%value_, 1, len(input%value_) - 1)
+                shrunk = ShrinkResult(new_input, .false.)
             end if
         end select
     end function shrinkAsciiString
 
-    pure function shrinkInteger(value_) result(shrunk)
-        class(*), intent(in) :: value_
-        class(ShrinkResult_t), allocatable :: shrunk
+    function shrinkInteger(input) result(shrunk)
+        class(Input_t), intent(in) :: input
+        type(ShrinkResult_t) :: shrunk
 
-        select type (value_)
-        type is (integer)
-            if (value_ == 0) then
-                allocate(shrunk, source = SimplestValue(0))
+        type(IntegerInput_t) :: new_input
+
+        select type (input)
+        type is (IntegerInput_t)
+            if (input%value_ == 0) then
+                new_input%value_ = 0
+                shrunk = ShrinkResult(new_input, .true.)
             else
-                allocate(shrunk, source = ShrunkValue(value_/2))
+                new_input%value_ = input%value_ / 2
+                shrunk = ShrinkResult(new_input, .false.)
             end if
         end select
-    end function
+    end function shrinkInteger
 
-    pure function ShrunkValue(value_)
-        class(*), intent(in) :: value_
-        type(ShrunkValue_t) :: ShrunkValue
+    function ShrinkResult(value_, simplest)
+        class(Input_t), intent(in) :: value_
+        logical, intent(in) :: simplest
+        type(ShrinkResult_t) :: ShrinkResult
 
-        select type (value_)
-        type is (character(len=*))
-            allocate(ShrunkValue%value_, source = vString(value_))
-        class default
-            allocate(ShrunkValue%value_, source = value_)
-        end select
-    end function ShrunkValue
+        allocate(ShrinkResult%input, source = value_)
+        ShrinkResult%simplest = simplest
+    end function ShrinkResult
 
-    pure function SimplestValue(value_)
-        class(*), intent(in) :: value_
-        type(SimplestValue_t) :: SimplestValue
+    function SimpleTestCase(description, test)
+        use iso_varying_string, only: VARYING_STRING
 
-        select type (value_)
-        type is (character(len=*))
-            allocate(SimplestValue%value_, source = VString(value_))
-        class default
-            allocate(SimplestValue%value_, source = value_)
-        end select
-    end function SimplestValue
+        type(VARYING_STRING), intent(in) :: description
+        procedure(simpleTest) :: test
+        type(SimpleTestCase_t) :: SimpleTestCase
 
-    function SimpleTestCase(description, func) result(test_case)
-        character(len=*), intent(in) :: description
-        procedure(test_) :: func
-        type(SimpleTestCase_t) :: test_case
-
-        test_case%description_ = description
-        test_case%test => func
+        SimpleTestCase%description_ = description
+        SimpleTestCase%test => test
     end function SimpleTestCase
 
-    pure function SimpleTestCollection(description, tests) result(test_collection)
-        character(len=*), intent(in) :: description
-        type(TestItem_t), intent(in) :: tests(:)
-        type(SimpleTestCollection_t) :: test_collection
+    function simpleTestCaseRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, toString, NEWLINE
 
-        test_collection%description_ = description
-        allocate(test_collection%tests(size(tests)))
-        test_collection%tests = tests
+        class(SimpleTestCase_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        string = hangingIndent( &
+                "SimpleTestCase_t(" // NEWLINE &
+                    // "description = """ // self%description_ // """," // NEWLINE &
+                    // "test @ " // toString(loc(self%test)), &
+                INDENTATION) // NEWLINE // ")"
+    end function simpleTestCaseRepr
+
+    function simpleTestCaseRunWithInput(self, input) result(result_)
+        class(SimpleTestCase_t), intent(in) :: self
+        class(Input_t), intent(in) :: input
+        type(TestResultItem_t) :: result_
+
+        associate(a => input)
+        end associate
+
+        result_ = self%run()
+    end function simpleTestCaseRunWithInput
+
+    function simpleTestCaseRunWithoutInput(self) result(result_)
+        class(SimpleTestCase_t), intent(in) :: self
+        type(TestResultItem_t) :: result_
+
+        allocate(result_%result_, source = TestCaseResult( &
+                self%description_, self%test()))
+    end function simpleTestCaseRunWithoutInput
+
+    function SimpleTestCollection(description, tests)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(SimpleTestCollection_t) :: SimpleTestCollection
+
+        SimpleTestCollection%description_ = description
+        allocate(SimpleTestCollection%tests, source = tests)
     end function SimpleTestCollection
 
-    pure function succeedC(message) result(success)
+    function simpleTestCollectionRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, indent, join, NEWLINE
+
+        class(SimpleTestCollection_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        type(VARYING_STRING) :: strings(size(self%tests))
+        integer :: i
+
+        do i = 1, size(self%tests)
+            strings(i) = self%tests(i)%repr()
+        end do
+
+        string = hangingIndent( &
+                "SimpleTestCollection_t(" // NEWLINE &
+                    // "description = """ // self%description_ // """," // NEWLINE &
+                    // "tests = [" // NEWLINE &
+                    // indent( &
+                            join(strings, "," // NEWLINE), &
+                            INDENTATION) // NEWLINE // "]", &
+                INDENTATION) // NEWLINE // ")"
+    end function simpleTestCollectionRepr
+
+    function simpleTestCollectionRunWithInput(self, input) result(result_)
+        class(SimpleTestCollection_t), intent(in) :: self
+        class(Input_t), intent(in) :: input
+        type(TestResultItem_t) :: result_
+
+        associate(a => input)
+        end associate
+
+        result_ = self%run()
+    end function simpleTestCollectionRunWithInput
+
+    function simpleTestCollectionRunWithoutInput(self) result(result_)
+        class(SimpleTestCollection_t), intent(in) :: self
+        type(TestResultItem_t) :: result_
+
+        integer :: i
+        type(TestResultItem_t) :: results(size(self%tests))
+
+        do i = 1, size(self%tests)
+            results(i) = self%tests(i)%run()
+        end do
+        allocate(result_%result_, source = TestCollectionResult( &
+                self%description_, results))
+    end function simpleTestCollectionRunWithoutInput
+
+    function succeedC(message) result(success)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: message
         type(Result_t) :: success
 
-        success = Result_(IndividualResult(message, .true.))
+        success = succeed(var_str(message))
     end function succeedC
 
-    pure function succeedS(message) result(success)
+    function succeedS(message) result(success)
+        use iso_varying_string, only: VARYING_STRING
+
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: success
 
-        success = Result_(IndividualResult(char(message), .true.))
+        allocate(success%results(1))
+        success%results(1) = IndividualResult(message, .true.)
     end function succeedS
 
-    pure function testCaseDescription(self) result(description)
+    function testCaseDescription(self) result(description)
+        use iso_varying_string, only: VARYING_STRING
+
         class(TestCase_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
         description = self%description_
     end function testCaseDescription
 
-    pure function testCaseFailureDescription(self, colorize) result(description)
-        use strff, only: hangingIndent
+    function testCaseFilter(self, filter_string) result(filter_result)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: operator(.includes.)
+
+        class(TestCase_t), intent(in) :: self
+        type(VARYING_STRING), intent(in) :: filter_string
+        type(FilterResult_t) :: filter_result
+
+        if (self%description_.includes.filter_string) then
+            filter_result%matched = .true.
+            allocate(filter_result%test, source = self)
+        else
+            filter_result%matched = .false.
+        end if
+    end function testCaseFilter
+
+    pure function testCaseNumCases(self) result(num_cases)
+        class(TestCase_t), intent(in) :: self
+        integer :: num_cases
+
+        associate(a => self)
+        end associate
+
+        num_cases = 1
+    end function testCaseNumCases
+
+    function TestCaseResult(description, result_)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        type(Result_t), intent(in) :: result_
+        type(TestCaseResult_t) :: TestCaseResult
+
+        TestCaseResult%description = description
+        TestCaseResult%result_ = result_
+    end function TestCaseResult
+
+    subroutine testCaseResultDestructor(self)
+        type(TestCaseResult_t), intent(inout) :: self
+
+        deallocate(self%result_%results)
+    end subroutine testCaseResultDestructor
+
+    function testCaseResultFailureDescription( &
+            self, colorize) result(description)
+        use iso_varying_string, only: &
+                VARYING_STRING, assignment(=), operator(//)
+        use strff, only: hangingIndent, NEWLINE
 
         class(TestCaseResult_t), intent(in) :: self
         logical, intent(in) :: colorize
@@ -3916,28 +5754,37 @@ contains
             description = ""
         else
             description = hangingIndent( &
-                    self%description // NEWLINE // self%result_%failureDescription(colorize), &
+                    self%description // NEWLINE &
+                        // self%result_%failureDescription(colorize), &
                     INDENTATION)
         end if
-    end function testCaseFailureDescription
+    end function testCaseResultFailureDescription
 
-    pure function testCaseNumAsserts(self) result(num_asserts)
+    pure function testCaseResultNumAsserts(self) result(num_asserts)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%result_%numAsserts()
-    end function testCaseNumAsserts
+    end function testCaseResultNumAsserts
 
-    pure function testCaseNumCases(self) result(num_cases)
-        class(TestCase_t), intent(in) :: self
+    pure function testCaseResultNumCases(self) result(num_cases)
+        class(TestCaseResult_t), intent(in) :: self
         integer :: num_cases
 
         associate(a => self)
         end associate
-        num_cases = 1
-    end function testCaseNumCases
 
-    pure function testCaseNumFailing(self) result(num_cases)
+        num_cases = 1
+    end function testCaseResultNumCases
+
+    pure function testCaseResultNumFailingAsserts(self) result(num_asserts)
+        class(TestCaseResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = self%result_%numFailingAsserts()
+    end function testCaseResultNumFailingAsserts
+
+    pure function testCaseResultNumFailingCases(self) result(num_cases)
         class(TestCaseResult_t), intent(in) :: self
         integer :: num_cases
 
@@ -3946,97 +5793,201 @@ contains
         else
             num_cases = 1
         end if
-    end function testCaseNumFailing
+    end function testCaseResultNumFailingCases
 
-    pure function testCaseNumFailingAsserts(self) result(num_asserts)
-        class(TestCaseResult_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = self%result_%numFailing()
-    end function testCaseNumFailingAsserts
-
-    pure function testCasePassed(self) result(passed)
+    pure function testCaseResultPassed(self) result(passed)
         class(TestCaseResult_t), intent(in) :: self
         logical :: passed
 
         passed = self%result_%passed()
-    end function testCasePassed
+    end function testCaseResultPassed
 
-    pure function TestCaseResultC(description, result__) result(test_case_result)
-        character(len=*), intent(in) :: description
-        type(Result_t), intent(in) :: result__
-        type(TestCaseResult_t) :: test_case_result
+    function testCaseResultRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, NEWLINE
 
-        test_case_result%description = description
-        test_case_result%result_ = result__
-    end function TestCaseResultC
-
-    pure function TestCaseResultS(description, result__) result(test_case_result)
-        type(VARYING_STRING), intent(in) :: description
-        type(Result_t), intent(in) :: result__
-        type(TestCaseResult_t) :: test_case_result
-
-        test_case_result%description = description
-        test_case_result%result_ = result__
-    end function TestCaseResultS
-
-    pure function testCaseResultNumCases(self) result(num_cases)
         class(TestCaseResult_t), intent(in) :: self
-        integer :: num_cases
+        type(VARYING_STRING) :: string
 
-        associate(a => self)
-        end associate
-        num_cases = 1
-    end function testCaseResultNumCases
+        string = hangingIndent( &
+                "TestCaseResult_t(" // NEWLINE &
+                    // "description = """ // self%description // """," // NEWLINE &
+                    // "result = " // self%result_%repr(), &
+                INDENTATION) // NEWLINE // ")"
+    end function testCaseResultRepr
 
-    pure function testCaseVerboseDescription(self, colorize) result(description)
-        use strff, only: hangingIndent
+    function testCaseResultVerboseDescription( &
+            self, colorize) result(description)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, NEWLINE
 
         class(TestCaseResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
 
         description = hangingIndent( &
-                self%description // NEWLINE // self%result_%verboseDescription(colorize), &
+                self%description // NEWLINE &
+                    // self%result_%verboseDescription(colorize), &
                 INDENTATION)
-    end function testCaseVerboseDescription
+    end function testCaseResultVerboseDescription
 
-    function TestCaseWithExamples(description, examples, func) result(test_case)
-        character(len=*), intent(in) :: description
+    function TestCaseWithExamples(description, examples, test)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
         type(Example_t), intent(in) :: examples(:)
-        procedure(inputTest) :: func
-        type(TestCaseWithExamples_t) :: test_case
+        procedure(inputTest) :: test
+        type(TestCaseWithExamples_t) :: TestCaseWithExamples
 
-        test_case%description_ = description
-        allocate(test_case%examples(size(examples)))
-        test_case%examples = examples
-        test_case%test => func
+        TestCaseWithExamples%description_ = description
+        allocate(TestCaseWithExamples%examples, source = examples)
+        TestCaseWithExamples%test => test
     end function TestCaseWithExamples
 
-    function TestCaseWithGenerator(description, generator, func) result(test_case)
-        character(len=*), intent(in) :: description
-        class(Generator_t), intent(in) :: generator
-        procedure(inputTest) :: func
-        type(TestCaseWithGenerator_t) :: test_case
+    function testCaseWithExamplesRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, toString, NEWLINE
 
-        test_case%description_ = description
-        allocate(test_case%generator, source = generator)
-        test_case%test => func
+        class(TestCaseWithExamples_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        string = hangingIndent( &
+                "TestCaseWithExamples_t(" // NEWLINE &
+                    // "description = """ // self%description_ // """," // NEWLINE &
+                    // "num_examples = " // toString(size(self%examples)) // "," // NEWLINE &
+                    // "test @ " // toString(loc(self%test)), &
+                INDENTATION) // NEWLINE // ")"
+    end function testCaseWithExamplesRepr
+
+    function testCaseWithExamplesRunWithInput(self, input) result(result_)
+        class(TestCaseWithExamples_t), intent(in) :: self
+        class(Input_t), intent(in) :: input
+        type(TestResultItem_t) :: result_
+
+        associate(a => input)
+        end associate
+
+        result_ = self%run()
+    end function testCaseWithExamplesRunWithInput
+
+    function testCaseWithExamplesRunWithoutInput(self) result(result_)
+        class(TestCaseWithExamples_t), intent(in) :: self
+        type(TestResultItem_t) :: result_
+
+        integer :: i
+        type(Result_t) :: results
+
+        do i = 1, size(self%examples)
+            results = results.and.self%test(self%examples(i)%input)
+        end do
+        allocate(result_%result_, source = TestCaseResult( &
+                self%description_, results))
+    end function testCaseWithExamplesRunWithoutInput
+
+    function TestCaseWithGenerator(description, generator, test)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        class(Generator_t), intent(in) :: generator
+        procedure(inputTest) :: test
+        type(TestCaseWithGenerator_t) :: TestCaseWithGenerator
+
+        TestCaseWithGenerator%description_ = description
+        allocate(TestCaseWithGenerator%generator, source = generator)
+        TestCaseWithGenerator%test => test
     end function TestCaseWithGenerator
 
-    pure function testCollectionDescription(self) result(description)
-        use strff, only: hangingIndent, join
+    function testCaseWithGeneratorRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, toString, NEWLINE
+
+        class(TestCaseWithGenerator_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        string = hangingIndent( &
+                "TestCaseWithGenerator_t(" // NEWLINE &
+                    // "description = """ // self%description_ // """," // NEWLINE &
+                    // "generator @ " // toString(loc(self%generator)) // "," // NEWLINE &
+                    // "test @ " // toString(loc(self%test)), &
+                INDENTATION) // NEWLINE // ")"
+    end function testCaseWithGeneratorRepr
+
+    function testCaseWithGeneratorRunWithInput(self, input) result(result_)
+        class(TestCaseWithGenerator_t), intent(in) :: self
+        class(Input_t), intent(in) :: input
+        type(TestResultItem_t) :: result_
+
+        associate(a => input)
+        end associate
+
+        result_ = self%run()
+    end function testCaseWithGeneratorRunWithInput
+
+    function testCaseWithGeneratorRunWithoutInput(self) result(result_)
+        use iso_varying_string, only: operator(//)
+        use strff, only: toString
+
+        class(TestCaseWithGenerator_t), intent(in) :: self
+        type(TestResultItem_t) :: result_
+
+        type(Generated_t) :: generated_value
+        integer :: i
+        type(Result_t) :: new_result
+        type(Result_t) :: previous_result
+        type(ShrinkResult_t) :: simpler_value
+
+        do i = 1, NUM_GENERATOR_TESTS
+            generated_value = self%generator%generate()
+            previous_result = self%test(generated_value%input)
+            if (.not.previous_result%passed()) exit
+        end do
+        if (i > NUM_GENERATOR_TESTS) then
+            allocate(result_%result_, source = TestCaseResult( &
+                    self%description_, &
+                    succeed("Passed after " // toString(NUM_GENERATOR_TESTS) // " examples")))
+        else
+            do
+                simpler_value = self%generator%shrink(generated_value%input)
+                if (simpler_value%simplest) then
+                    new_result = self%test(simpler_value%input)
+                    if (new_result%passed()) then
+                        allocate(result_%result_, source = TestCaseResult( &
+                                self%description_, &
+                                fail('Found simplest example causing failure').and.previous_result))
+                        return
+                    else
+                        allocate(result_%result_, source = TestCaseResult( &
+                                self%description_, &
+                                fail('Fails with the simplest possible example').and.new_result))
+                        return
+                    end if
+                else
+                    new_result = self%test(simpler_value%input)
+                    if (new_result%passed()) then
+                        allocate(result_%result_, source = TestCaseResult( &
+                                self%description_, &
+                                fail('Found simplest example causing failure').and.previous_result))
+                        return
+                    else
+                        previous_result = new_result
+                        generated_value = Generated(simpler_value%input)
+                    end if
+                end if
+            end do
+        end if
+    end function testCaseWithGeneratorRunWithoutInput
+
+    function testCollectionDescription(self) result(description)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, join, NEWLINE
 
         class(TestCollection_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
-        type(VARYING_STRING), allocatable :: descriptions(:)
+        type(VARYING_STRING) :: descriptions(size(self%tests))
         integer :: i
-        integer :: num_cases
 
-        num_cases = size(self%tests)
-        allocate(descriptions(num_cases))
-        do concurrent (i = 1:num_cases)
+        do i = 1, size(self%tests)
             descriptions(i) = self%tests(i)%description()
         end do
         description = hangingIndent( &
@@ -4044,37 +5995,37 @@ contains
                 INDENTATION)
     end function testCollectionDescription
 
-    pure function testCollectionFailureDescription(self, colorize) result(description)
-        use strff, only: hangingIndent, join
+    function testCollectionFilter(self, filter_string) result(filter_result)
+        use iso_varying_string, only: VARYING_STRING
+        use strff, only: operator(.includes.)
 
-        class(TestCollectionResult_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(VARYING_STRING) :: description
+        class(TestCollection_t), intent(in) :: self
+        type(VARYING_STRING), intent(in) :: filter_string
+        type(FilterResult_t) :: filter_result
 
-        type(VARYING_STRING), allocatable :: descriptions(:)
+        class(TestCollection_t), allocatable :: new_collection
+        type(FilterItemResult_t) :: filter_results(size(self%tests))
         integer :: i
-        integer :: num_cases
 
-        if (self%passed()) then
-            description = ""
+        if (self%description_.includes.filter_string) then
+            filter_result%matched = .true.
+            allocate(filter_result%test, source = self)
         else
-            num_cases = size(self%results)
-            allocate(descriptions(num_cases))
-            do concurrent (i = 1:num_cases)
-                descriptions(i) = self%results(i)%failureDescription(colorize)
+            do i = 1, size(self%tests)
+                filter_results(i) = self%tests(i)%filter(filter_string)
             end do
-            description = hangingIndent( &
-                    self%description // NEWLINE // join(descriptions, NEWLINE), &
-                    INDENTATION)
+            if (any(filter_results%matched)) then
+                allocate(new_collection, source = self)
+                deallocate(new_collection%tests)
+                allocate(new_collection%tests, source = &
+                        pack(filter_results%test, mask=filter_results%matched))
+                filter_result%matched = .true.
+                allocate(filter_result%test, source = new_collection)
+            else
+                filter_result%matched = .false.
+            end if
         end if
-    end function testCollectionFailureDescription
-
-    pure function testCollectionNumAsserts(self) result(num_asserts)
-        class(TestCollectionResult_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = sum(self%results%numAsserts())
-    end function testCollectionNumAsserts
+    end function testCollectionFilter
 
     pure function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self
@@ -4083,36 +6034,48 @@ contains
         num_cases = sum(self%tests%numCases())
     end function testCollectionNumCases
 
-    pure function testCollectionNumFailing(self) result(num_cases)
+    function TestCollectionResult(description, results)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        type(TestResultItem_t), intent(in) :: results(:)
+        type(TestCollectionResult_t) :: TestCollectionResult
+
+        TestCollectionResult%description = description
+        allocate(TestCollectionResult%results, source = results)
+    end function TestCollectionResult
+
+    function testCollectionResultFailureDescription( &
+            self, colorize) result(description)
+        use iso_varying_string, only: &
+                VARYING_STRING, assignment(=), operator(//)
+        use strff, only: hangingIndent, join, NEWLINE
+
         class(TestCollectionResult_t), intent(in) :: self
-        integer :: num_cases
+        logical, intent(in) :: colorize
+        type(VARYING_STRING) :: description
 
-        num_cases = sum(self%results%numFailingCases())
-    end function testCollectionNumFailing
+        type(VARYING_STRING) :: descriptions(size(self%results))
+        integer :: i
 
-    pure function testCollectionNumFailingAsserts(self) result(num_asserts)
+        if (self%passed()) then
+            description = ""
+        else
+            do i = 1, size(self%results)
+                descriptions(i) = self%results(i)%failureDescription(colorize)
+            end do
+            description = hangingIndent( &
+                    self%description // NEWLINE // join(descriptions, NEWLINE), &
+                    INDENTATION)
+        end if
+    end function testCollectionResultFailureDescription
+
+    pure function testCollectionResultNumAsserts(self) result(num_asserts)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_asserts
 
-        num_asserts = sum(self%results%numFailingAsserts())
-    end function testCollectionNumFailingAsserts
-
-    pure function testCollectionPassed(self) result(passed)
-        class(TestCollectionResult_t), intent(in) :: self
-        logical :: passed
-
-        passed = all(self%results%passed())
-    end function testCollectionPassed
-
-    pure function TestCollectionResult(description, results) result(test_collection_result)
-        type(VARYING_STRING), intent(in) :: description
-        type(TestResultItem_t), intent(in) :: results(:)
-        type(TestCollectionResult_t) :: test_collection_result
-
-        test_collection_result%description = description
-        allocate(test_collection_result%results(size(results)))
-        test_collection_result%results = results
-    end function TestCollectionResult
+        num_asserts = sum(self%results%numAsserts())
+    end function testCollectionResultNumAsserts
 
     pure function testCollectionResultNumCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
@@ -4121,46 +6084,167 @@ contains
         num_cases = sum(self%results%numCases())
     end function testCollectionResultNumCases
 
-    pure function testCollectionVerboseDescription(self, colorize) result(description)
-        use strff, only: hangingIndent, join
+    pure function testCollectionResultNumFailingAsserts(self) result(num_asserts)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_asserts
+
+        num_asserts = sum(self%results%numFailingAsserts())
+    end function testCollectionResultNumFailingAsserts
+
+    pure function testCollectionResultNumFailingCases(self) result(num_cases)
+        class(TestCollectionResult_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = sum(self%results%numFailingCases())
+    end function testCollectionResultNumFailingCases
+
+    pure function testCollectionResultPassed(self) result(passed)
+        class(TestCollectionResult_t), intent(in) :: self
+        logical :: passed
+
+        passed = all(self%results%passed())
+    end function testCollectionResultPassed
+
+    function testCollectionResultRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, indent, join, NEWLINE
+
+        class(TestCollectionResult_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        type(VARYING_STRING) :: strings(size(self%results))
+        integer :: i
+
+        do i = 1, size(self%results)
+            strings(i) = self%results(i)%repr()
+        end do
+
+        string = hangingIndent( &
+                "TestCollectionResult_t(" // NEWLINE &
+                    // "description = """ // self%description // """," // NEWLINE &
+                    // "tests = [" // NEWLINE &
+                    // indent( &
+                            join(strings, "," // NEWLINE), &
+                            INDENTATION) // NEWLINE // "]", &
+                INDENTATION) // NEWLINE // ")"
+    end function testCollectionResultRepr
+
+    function testCollectionResultVerboseDescription( &
+            self, colorize) result(description)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, join, NEWLINE
 
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
 
-        type(VARYING_STRING), allocatable :: descriptions(:)
+        type(VARYING_STRING) :: descriptions(size(self%results))
         integer :: i
-        integer :: num_cases
 
-        num_cases = size(self%results)
-        allocate(descriptions(num_cases))
-        do concurrent (i = 1:num_cases)
+        do i = 1, size(self%results)
             descriptions(i) = self%results(i)%verboseDescription(colorize)
         end do
         description = hangingIndent( &
                 self%description // NEWLINE // join(descriptions, NEWLINE), &
                 INDENTATION)
-    end function testCollectionVerboseDescription
+    end function testCollectionResultVerboseDescription
 
-    pure function TestCollectionWithInput( &
-            description, input, tests) result(test_collection)
-        character(len=*), intent(in) :: description
-        class(*), intent(in) :: input
+    function TestCollectionWithInput(description, input, tests)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        class(Input_t), intent(in) :: input
         type(TestItem_t), intent(in) :: tests(:)
-        type(TestCollectionWithInput_t) :: test_collection
+        type(TestCollectionWithInput_t) :: TestCollectionWithInput
 
-        test_collection%description_ = description
-        test_collection%input = input
-        allocate(test_collection%tests(size(tests)))
-        test_collection%tests = tests
+        TestCollectionWithInput%description_ = description
+        allocate(TestCollectionWithInput%input, source = input)
+        allocate(TestCollectionWithInput%tests, source = tests)
     end function TestCollectionWithInput
 
-    pure function testItemDescription(self) result(description)
+    subroutine testCollectionWithInputDestructor(self)
+        type(TestCollectionWithInput_t), intent(inout) :: self
+
+        deallocate(self%input)
+        deallocate(self%tests)
+    end subroutine testCollectionWithInputDestructor
+
+    function testCollectionWithInputRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, indent, join, toString, NEWLINE
+
+        class(TestCollectionWithInput_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        type(VARYING_STRING) :: strings(size(self%tests))
+        integer :: i
+
+        do i = 1, size(self%tests)
+            strings(i) = self%tests(i)%repr()
+        end do
+
+        string = hangingIndent( &
+                "TestCollectionWithInput_t(" // NEWLINE &
+                    // "description = """ // self%description_ // """," // NEWLINE &
+                    // "input @ " // toString(loc(self%input)) // "," // NEWLINE &
+                    // "tests = [" // NEWLINE &
+                    // indent( &
+                            join(strings, "," // NEWLINE), &
+                            INDENTATION) // NEWLINE // "]", &
+                INDENTATION) // NEWLINE // ")"
+    end function testCollectionWithInputRepr
+
+    function testCollectionWithInputRunWithInput(self, input) result(result_)
+        class(TestCollectionWithInput_t), intent(in) :: self
+        class(Input_t), intent(in) :: input
+        type(TestResultItem_t) :: result_
+
+        associate(a => input)
+        end associate
+
+        result_ = self%run()
+    end function testCollectionWithInputRunWithInput
+
+    function testCollectionWithInputRunWithoutInput(self) result(result_)
+        class(TestCollectionWithInput_t), intent(in) :: self
+        type(TestResultItem_t) :: result_
+
+        integer :: i
+        type(TestResultItem_t) :: results(size(self%tests))
+
+        do i = 1, size(self%tests)
+            results(i) = self%tests(i)%run(self%input)
+        end do
+        allocate(result_%result_, source = TestCollectionResult( &
+                self%description_, results))
+    end function testCollectionWithInputRunWithoutInput
+
+    function testItemDescription(self) result(description)
+        use iso_varying_string, only: VARYING_STRING
+
         class(TestItem_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
         description = self%test%description()
     end function testItemDescription
+
+    function testItemFilter(self, filter_string) result(filter_result)
+        use iso_varying_string, only: VARYING_STRING
+
+        class(TestItem_t), intent(in) :: self
+        type(VARYING_STRING), intent(in) :: filter_string
+        type(FilterItemResult_t) :: filter_result
+
+        type(FilterResult_t) :: test_filter_result
+
+        test_filter_result = self%test%filter(filter_string)
+        if (test_filter_result%matched) then
+            filter_result%matched = .true.
+            allocate(filter_result%test%test, source = test_filter_result%test)
+        else
+            filter_result%matched = .false.
+        end if
+    end function testItemFilter
 
     elemental function testItemNumCases(self) result(num_cases)
         class(TestItem_t), intent(in) :: self
@@ -4169,14 +6253,38 @@ contains
         num_cases = self%test%numCases()
     end function testItemNumCases
 
-    elemental function testItemPassed(self) result(passed)
-        class(TestResultItem_t), intent(in) :: self
-        logical :: passed
+    function testItemRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, NEWLINE
 
-        passed = self%result_%passed()
-    end function testItemPassed
+        class(TestItem_t), intent(in) :: self
+        type(VARYING_STRING) :: string
 
-    pure function testResultItemFailureDescription(self, colorize) result(description)
+        string = hangingIndent( &
+                "TestItem_t(" // NEWLINE &
+                    // "test = " // self%test%repr(), &
+                INDENTATION) // NEWLINE // ")"
+    end function testItemRepr
+
+    function testItemRunWithInput(self, input) result(result_)
+        class(TestItem_t), intent(in) :: self
+        class(Input_t), intent(in) :: input
+        type(TestResultItem_t) :: result_
+
+        result_ = self%test%run(input)
+    end function testItemRunWithInput
+
+    function testItemRunWithoutInput(self) result(result_)
+        class(TestItem_t), intent(in) :: self
+        type(TestResultItem_t) :: result_
+
+        result_ = self%test%run()
+    end function testItemRunWithoutInput
+
+    function testResultItemFailureDescription( &
+            self, colorize) result(description)
+        use iso_varying_string, only: VARYING_STRING
+
         class(TestResultItem_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -4198,13 +6306,6 @@ contains
         num_cases = self%result_%numCases()
     end function testResultItemNumCases
 
-    elemental function testResultItemNumFailing(self) result(num_cases)
-        class(TestResultItem_t), intent(in) :: self
-        integer :: num_cases
-
-        num_cases = self%result_%numFailingCases()
-    end function testResultItemNumFailing
-
     elemental function testResultItemNumFailingAsserts(self) result(num_asserts)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_asserts
@@ -4212,7 +6313,37 @@ contains
         num_asserts = self%result_%numFailingAsserts()
     end function testResultItemNumFailingAsserts
 
-    pure function testResultItemVerboseDescription(self, colorize) result(description)
+    elemental function testResultItemNumFailingCases(self) result(num_cases)
+        class(TestResultItem_t), intent(in) :: self
+        integer :: num_cases
+
+        num_cases = self%result_%numFailingCases()
+    end function testResultItemNumFailingCases
+
+    elemental function testResultItemPassed(self) result(passed)
+        class(TestResultItem_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%result_%passed()
+    end function testResultItemPassed
+
+    function testResultItemRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, NEWLINE
+
+        class(TestResultItem_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        string = hangingIndent( &
+                "TestResultItem_t(" // NEWLINE &
+                    // "result = " // self%result_%repr(), &
+                INDENTATION) // NEWLINE // ")"
+    end function testResultItemRepr
+
+    function testResultItemVerboseDescription( &
+            self, colorize) result(description)
+        use iso_varying_string, only: VARYING_STRING
+
         class(TestResultItem_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -4220,99 +6351,148 @@ contains
         description = self%result_%verboseDescription(colorize)
     end function testResultItemVerboseDescription
 
-    pure function testThat(tests) result(test_collection)
-        type(TestItem_t), intent(in) :: tests(:)
-        type(TestItem_t) :: test_collection
+    function testThat(tests) result(item)
+        type(TestItem_t) :: tests(:)
+        type(TestItem_t) :: item
 
-        allocate(test_collection%test, source = SimpleTestCollection( &
-                "Test that", tests))
+        item = Describe("Test that", tests)
     end function testThat
 
-    function then(description, func) result(test_case)
+    function Then__(description, test) result(item)
         character(len=*), intent(in) :: description
-        procedure(test_) :: func
-        type(TestItem_t) :: test_case
+        procedure(inputTest) :: test
+        type(TestItem_t) :: item
 
-        test_case = it("Then " // description, func)
-    end function then
+        item = It_("Then " // description, test)
+    end function Then__
 
-    function then_(description, func) result(test_case)
-        character(len=*), intent(in) :: description
-        procedure(inputTest) :: func
-        type(TestItem_t) :: test_case
-
-        test_case = it_("Then " // description, func)
-    end function then_
-
-    pure function VString(chars) result(string)
-        character(len=*), intent(in) :: chars
-        type(VegetableString_t) :: string
-
-        string%string = chars
-    end function VString
-
-    pure function Transformed(input)
-        class(*), intent(in) :: input
+    function Transformed(input)
+        class(Input_t), intent(in) :: input
         type(Transformed_t) :: Transformed
 
-        Transformed%value_ = input
-    end function
+        allocate(Transformed%input, source = input)
+    end function Transformed
 
-    function TransformingTestCollection( &
-            description, func, tests) result(test_collection)
-        character(len=*), intent(in) :: description
-        procedure(transformer_) :: func
+    function TransformingTestCollection(description, transformer, tests)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        procedure(transformer_) :: transformer
         type(TestItem_t), intent(in) :: tests(:)
-        type(TransformingTestCollection_t) :: test_collection
+        type(TransformingTestCollection_t) :: TransformingTestCollection
 
-        test_collection%description_ = description
-        test_collection%transformer => func
-        allocate(test_collection%tests(size(tests)))
-        test_collection%tests = tests
+        TransformingTestCollection%description_ = description
+        TransformingTestCollection%transformer => transformer
+        allocate(TransformingTestCollection%tests, source = tests)
     end function TransformingTestCollection
 
-    pure function whenBasic(description, tests) result(test_collection)
+    function transformingTestCollectionRepr(self) result(string)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+        use strff, only: hangingIndent, indent, join, toString, NEWLINE
+
+        class(TransformingTestCollection_t), intent(in) :: self
+        type(VARYING_STRING) :: string
+
+        type(VARYING_STRING) :: strings(size(self%tests))
+        integer :: i
+
+        do i = 1, size(self%tests)
+            strings(i) = self%tests(i)%repr()
+        end do
+
+        string = hangingIndent( &
+                "TransformingTestCollection_t(" // NEWLINE &
+                    // "description = """ // self%description_ // """," // NEWLINE &
+                    // "transformer @ " // toString(loc(self%transformer)) // "," // NEWLINE &
+                    // "tests = [" // NEWLINE &
+                    // indent( &
+                            join(strings, "," // NEWLINE), &
+                            INDENTATION) // NEWLINE // "]", &
+                INDENTATION) // NEWLINE // ")"
+    end function transformingTestCollectionRepr
+
+    function transformingTestCollectionRunWithInput(self, input) result(result_)
+        class(TransformingTestCollection_t), intent(in) :: self
+        class(Input_t), intent(in) :: input
+        type(TestResultItem_t) :: result_
+
+        integer :: i
+        type(TestResultItem_t) :: results(size(self%tests))
+        type(Transformed_t) :: transformed_
+
+        transformed_ = self%transformer(input)
+        select type (transformed_input => transformed_%input)
+        type is (TransformationFailure_t)
+            allocate(result_%result_, source = testCaseResult( &
+                    self%description_, transformed_input%result_))
+        class default
+            do i = 1, size(self%tests)
+                results(i) = self%tests(i)%run(transformed_input)
+            end do
+            allocate(result_%result_, source = TestCollectionResult( &
+                    self%description_, results))
+        end select
+    end function transformingTestCollectionRunWithInput
+
+    function transformingTestCollectionRunWithoutInput(self) result(result_)
+        class(TransformingTestCollection_t), intent(in) :: self
+        type(TestResultItem_t) :: result_
+
+        allocate(result_%result_, source = TestCaseResult( &
+                self%description_, fail("No input provided")))
+    end function transformingTestCollectionRunWithoutInput
+
+    function whenWithTransformer(description, transformer, tests) result(item)
+        use iso_varying_string, only: var_str
+
         character(len=*), intent(in) :: description
+        procedure(transformer_) :: transformer
         type(TestItem_t), intent(in) :: tests(:)
-        type(TestItem_t) :: test_collection
+        type(TestItem_t) :: item
 
-        test_collection = describe("When " // description, tests)
-    end function whenBasic
-
-    pure function whenWithInput(description, input, tests) result(test_collection)
-        character(len=*), intent(in) :: description
-        class(*), intent(in) :: input
-        type(TestItem_t), intent(in) :: tests(:)
-        type(TestItem_t) :: test_collection
-
-        test_collection = describe("When " // description, input, tests)
-    end function whenWithInput
-
-    function whenWithTransformer(description, func, tests) result(test_collection)
-        character(len=*), intent(in) :: description
-        procedure(transformer_) :: func
-        type(TestItem_t), intent(in) :: tests(:)
-        type(TestItem_t) :: test_collection
-
-        allocate(test_collection%test, source = TransformingTestCollection( &
-                "When " // description, func, tests))
+        allocate(item%test, source = TransformingTestCollection( &
+                var_str("When " // description), transformer, tests))
     end function whenWithTransformer
 
-    pure function withoutLastCharacter(string)
-        type(VARYING_STRING), intent(in) :: string
-        type(VARYING_STRING) :: withoutLastCharacter
-
-        type(VARYING_STRING) :: trimmed
-
-        trimmed = trim(string)
-        withoutLastCharacter = extract(trimmed, 1, len(trimmed)-1)
-    end function withoutLastCharacter
-
-    pure function withUserMessageCC(message, user_message) result(whole_message)
-        use strff, only: indent, hangingIndent
+    function withUserMessageCC(message, user_message) result(whole_message)
+        use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: message
         character(len=*), intent(in) :: user_message
+        type(VARYING_STRING) :: whole_message
+
+        whole_message = withUserMessage( &
+                var_str(message), var_str(user_message))
+    end function withUserMessageCC
+
+    function withUserMessageCS(message, user_message) result(whole_message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        character(len=*), intent(in) :: message
+        type(VARYING_STRING), intent(in) :: user_message
+        type(VARYING_STRING) :: whole_message
+
+        whole_message = withUserMessage(var_str(message), user_message)
+    end function withUserMessageCS
+
+    function withUserMessageSC(message, user_message) result(whole_message)
+        use iso_varying_string, only: VARYING_STRING, var_str
+
+        type(VARYING_STRING), intent(in) :: message
+        character(len=*), intent(in) :: user_message
+        type(VARYING_STRING) :: whole_message
+
+        whole_message = withUserMessage( &
+                message, var_str(user_message))
+    end function withUserMessageSC
+
+    function withUserMessageSS(message, user_message) result(whole_message)
+        use iso_varying_string, only: &
+                VARYING_STRING, operator(//), operator(==)
+        use strff, only: indent, hangingIndent, NEWLINE
+
+        type(VARYING_STRING), intent(in) :: message
+        type(VARYING_STRING), intent(in) :: user_message
         type(VARYING_STRING) :: whole_message
 
         if (user_message == "") then
@@ -4323,33 +6503,10 @@ contains
                     // indent( &
                             hangingIndent( &
                                     "User Message:" // NEWLINE &
-                                    // delimit(hangingIndent(user_message, 1)), &
+                                        // delimit(hangingIndent( &
+                                                user_message, 1)), &
                                     INDENTATION), &
                             INDENTATION)
         end if
-    end function withUserMessageCC
-
-    pure function withUserMessageCS(message, user_message) result(whole_message)
-        character(len=*), intent(in) :: message
-        type(VARYING_STRING), intent(in) :: user_message
-        type(VARYING_STRING) :: whole_message
-
-        whole_message = withUserMessage(message, char(user_message))
-    end function withUserMessageCS
-
-    pure function withUserMessageSC(message, user_message) result(whole_message)
-        type(VARYING_STRING), intent(in) :: message
-        character(len=*), intent(in) :: user_message
-        type(VARYING_STRING) :: whole_message
-
-        whole_message = withUserMessage(char(message), user_message)
-    end function withUserMessageSC
-
-    pure function withUserMessageSS(message, user_message) result(whole_message)
-        type(VARYING_STRING), intent(in) :: message
-        type(VARYING_STRING), intent(in) :: user_message
-        type(VARYING_STRING) :: whole_message
-
-        whole_message = withUserMessage(char(message), char(user_message))
     end function withUserMessageSS
 end module Vegetables_m

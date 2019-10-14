@@ -21,13 +21,20 @@ contains
         tests = describe("assertEquals with double precision values", individual_tests)
     end function test_assert_equals_integers
 
-    function checkPassForSameNumber(example) result(result_)
+    function checkPassForSameNumber(the_example) result(result_)
         use iso_varying_string, only: var_str
-        use Vegetables_m, only: Result_t, assertEquals, assertThat, fail
+        use Vegetables_m, only: &
+                DoublePrecisionInput_t, &
+                Input_t, &
+                Result_t, &
+                assertEquals, &
+                assertThat, &
+                fail
 
-        class(*), intent(in) :: example
+        class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 
+        double precision :: example
         type(Result_t) :: example_result
         type(Result_t) :: example_result_c
         type(Result_t) :: example_result_s
@@ -36,8 +43,9 @@ contains
         type(Result_t) :: example_result_sc
         type(Result_t) :: example_result_ss
 
-        select type (example)
-        type is (double precision)
+        select type (the_example)
+        type is (DoublePrecisionInput_t)
+                example = the_example%value_
                 example_result = assertEquals(example, example)
                 example_result_c = assertEquals(example, example, BOTH_MESSAGE)
                 example_result_s = assertEquals(example, example, var_str(BOTH_MESSAGE))

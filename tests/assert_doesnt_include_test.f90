@@ -9,15 +9,15 @@ module assert_doesnt_include_test
     public :: test_assert_includes
 contains
     function test_assert_includes() result(tests)
-        use Vegetables_m, only: TestItem_t, describe, it, ASCII_STRING_GENERATOR
+        use Vegetables_m, only: TestItem_t, Describe, It, ASCII_STRING_GENERATOR
 
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: individual_tests(2)
 
-        individual_tests(1) = it("passes with different strings", checkPassForDifferentStrings)
-        individual_tests(2) = it("fails with the same string", ASCII_STRING_GENERATOR, checkFailForSameString)
-        tests = describe("assertDoesntInclude", individual_tests)
+        individual_tests(1) = It("passes with different strings", checkPassForDifferentStrings)
+        individual_tests(2) = It("fails with the same string", ASCII_STRING_GENERATOR, checkFailForSameString)
+        tests = Describe("assertDoesntInclude", individual_tests)
     end function test_assert_includes
 
     function checkPassForDifferentStrings() result(result_)
@@ -249,11 +249,17 @@ contains
                         example_result_ssss%verboseDescription(.false.))
     end function checkPassForDifferentStrings
 
-    function checkFailForSameString(example) result(result_)
+    function checkFailForSameString(the_example) result(result_)
         use iso_varying_string, only: VARYING_STRING, char, var_str
-        use Vegetables_m, only: Result_t, assertDoesntInclude, assertNot, fail
+        use Vegetables_m, only: &
+                Input_t, &
+                Result_t, &
+                StringInput_t, &
+                assertDoesntInclude, &
+                assertNot, &
+                fail
 
-        class(*), intent(in) :: example
+        class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 
         type(Result_t) :: example_result_cc
@@ -284,9 +290,11 @@ contains
         type(Result_t) :: example_result_sscs
         type(Result_t) :: example_result_sssc
         type(Result_t) :: example_result_ssss
+        type(VARYING_STRING) :: example
 
-        select type (example)
-        type is (VARYING_STRING)
+        select type (the_example)
+        type is (StringInput_t)
+            example = the_example%value_
             example_result_cc = assertDoesntInclude( &
                     char(example), char(example))
             example_result_cs = assertDoesntInclude( &
@@ -477,7 +485,7 @@ contains
                             example_result_ssss%passed(), &
                             example_result_ssss%verboseDescription(.false.))
         class default
-            result_ = fail("Expected a VARYING_STRING")
+            result_ = fail("Expected a StringInput_t")
         end select
     end function checkFailForSameString
 end module assert_doesnt_include_test

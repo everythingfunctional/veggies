@@ -5,103 +5,108 @@ module failing_collection_test
     public :: test_failing_collection_behaviors
 contains
     function test_failing_collection_behaviors() result(tests)
-        use example_collections_m, only: exampleFailingCollection, runCollection
-        use Vegetables_m, only: SimpleTestCollection_t, TestItem_t, given, then_, when
+        use example_collections_m, only: exampleFailingCollection
+        use Helpers_m, only: TestItemInput_t, runTest
+        use Vegetables_m, only: TestItem_t, Given, Then__, When
 
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: collection(1)
-        type(SimpleTestCollection_t) :: example_collection
+        type(TestItemInput_t) :: the_collection
         type(TestItem_t) :: individual_tests(15)
 
-        example_collection = exampleFailingCollection()
-        individual_tests(1) = then_("it knows it failed", checkCollectionFails)
-        individual_tests(2) = then_("it knows how many cases there were", checkNumCases)
-        individual_tests(3) = then_("it knows how many cases failed", checkNumFailingCases)
-        individual_tests(4) = then_("it's verbose description includes the given description", checkVerboseTopDescription)
-        individual_tests(5) = then_( &
+        the_collection%input = exampleFailingCollection()
+        individual_tests(1) = Then__("it knows it failed", checkCollectionFails)
+        individual_tests(2) = Then__("it knows how many cases there were", checkNumCases)
+        individual_tests(3) = Then__("it knows how many cases failed", checkNumFailingCases)
+        individual_tests(4) = Then__("it's verbose description includes the given description", checkVerboseTopDescription)
+        individual_tests(5) = Then__( &
                 "it's verbose description includes the individual case descriptions", &
                 checkVerboseCaseDescriptions)
-        individual_tests(6) = then_("it's verbose description includes the failure message", checkVerboseForFailureMessage)
-        individual_tests(7) = then_("it's verbose description includes the success message", checkVerboseForSuccessMessage)
-        individual_tests(8) = then_("it's failure description includes the given description", checkFailureForTopDescription)
-        individual_tests(9) = then_("it's failure description includes the failing case description", checkFailureCaseDescription)
-        individual_tests(10) = then_( &
+        individual_tests(6) = Then__("it's verbose description includes the failure message", checkVerboseForFailureMessage)
+        individual_tests(7) = Then__("it's verbose description includes the success message", checkVerboseForSuccessMessage)
+        individual_tests(8) = Then__("it's failure description includes the given description", checkFailureForTopDescription)
+        individual_tests(9) = Then__("it's failure description includes the failing case description", checkFailureCaseDescription)
+        individual_tests(10) = Then__( &
                 "it's failure description does not include the passing case descriptions", &
                 checkFailureNoPassingDescriptions)
-        individual_tests(11) = then_("it's failure description includes the failure message", checkFailureForMessage)
-        individual_tests(12) = then_( &
+        individual_tests(11) = Then__("it's failure description includes the failure message", checkFailureForMessage)
+        individual_tests(12) = Then__( &
                 "it's failure description does not include the success message", &
                 checkFailureNoSuccessMessage)
-        individual_tests(13) = then_("it's failure description does not include blank lines", checkFailureNoBlankLines)
-        individual_tests(14) = then_("it knows how many asserts there were", checkNumAsserts)
-        individual_tests(15) = then_("it knows how many asserts failed", checkNumFailingAsserts)
-        collection(1) = when("it is run", runCollection, individual_tests)
-        tests = given("a failing test collection", example_collection, collection)
+        individual_tests(13) = Then__("it's failure description does not include blank lines", checkFailureNoBlankLines)
+        individual_tests(14) = Then__("it knows how many asserts there were", checkNumAsserts)
+        individual_tests(15) = Then__("it knows how many asserts failed", checkNumFailingAsserts)
+        collection(1) = When("it is run", runTest, individual_tests)
+        tests = Given("a failing test collection", the_collection, collection)
     end function test_failing_collection_behaviors
 
     function checkCollectionFails(example_results) result(result_)
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertNot, fail
+                Input_t, Result_t, assertNot, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
-            result_ = assertNot(example_results%passed(), "It didn't pass", "It passed")
+        type is (TestResultItemInput_t)
+            result_ = assertNot(example_results%input%passed())
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkCollectionFails
 
     function checkNumCases(example_results) result(result_)
         use example_collections_m, only: NUM_CASES_IN_FAILING
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertEquals, fail
+                Input_t, Result_t, assertEquals, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
-            result_ = assertEquals(NUM_CASES_IN_FAILING, example_results%numCases())
+        type is (TestResultItemInput_t)
+            result_ = assertEquals(NUM_CASES_IN_FAILING, example_results%input%numCases())
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkNumCases
 
     function checkNumFailingCases(example_results) result(result_)
         use example_collections_m, only: NUM_FAILING_CASES
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertEquals, fail
+                Input_t, Result_t, assertEquals, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
-            result_ = assertEquals(NUM_FAILING_CASES, example_results%numFailingCases())
+        type is (TestResultItemInput_t)
+            result_ = assertEquals(NUM_FAILING_CASES, example_results%input%numFailingCases())
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkNumFailingCases
 
     function checkVerboseTopDescription(example_results) result(result_)
         use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertIncludes, fail
+                Input_t, Result_t, assertIncludes, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
+        type is (TestResultItemInput_t)
             result_ = assertIncludes( &
                     EXAMPLE_COLLECTION_DESCRIPTION, &
-                    example_results%verboseDescription(.false.))
+                    example_results%input%verboseDescription(.false.))
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkVerboseTopDescription
 
@@ -110,206 +115,218 @@ contains
                 EXAMPLE_CASE_DESCRIPTION_1, &
                 EXAMPLE_CASE_DESCRIPTION_2, &
                 EXAMPLE_FAILING_CASE_DESCRIPTION
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertIncludes, fail
+                Input_t, Result_t, assertIncludes, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
+        type is (TestResultItemInput_t)
             result_ = &
                     assertIncludes( &
                             EXAMPLE_CASE_DESCRIPTION_1, &
-                            example_results%verboseDescription(.false.)) &
+                            example_results%input%verboseDescription(.false.)) &
                     .and.assertIncludes( &
                             EXAMPLE_CASE_DESCRIPTION_2, &
-                            example_results%verboseDescription(.false.)) &
+                            example_results%input%verboseDescription(.false.)) &
                     .and.assertIncludes( &
                             EXAMPLE_FAILING_CASE_DESCRIPTION, &
-                            example_results%verboseDescription(.false.))
+                            example_results%input%verboseDescription(.false.))
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkVerboseCaseDescriptions
 
     function checkVerboseForFailureMessage(example_results) result(result_)
         use example_collections_m, only: FAILURE_MESSAGE
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertIncludes, fail
+                Input_t, Result_t, assertIncludes, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
+        type is (TestResultItemInput_t)
             result_ = assertIncludes( &
                     FAILURE_MESSAGE, &
-                    example_results%verboseDescription(.false.))
+                    example_results%input%verboseDescription(.false.))
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkVerboseForFailureMessage
 
     function checkVerboseForSuccessMessage(example_results) result(result_)
         use example_asserts_m, only: SUCCESS_MESSAGE
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertIncludes, fail
+                Input_t, Result_t, assertIncludes, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
+        type is (TestResultItemInput_t)
             result_ = assertIncludes( &
                     SUCCESS_MESSAGE, &
-                    example_results%verboseDescription(.false.))
+                    example_results%input%verboseDescription(.false.))
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkVerboseForSuccessMessage
 
     function checkFailureForTopDescription(example_results) result(result_)
         use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertIncludes, fail
+                Input_t, Result_t, assertIncludes, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
+        type is (TestResultItemInput_t)
             result_ = assertIncludes( &
                     EXAMPLE_COLLECTION_DESCRIPTION, &
-                    example_results%failureDescription(.false.))
+                    example_results%input%failureDescription(.false.))
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkFailureForTopDescription
 
     function checkFailureCaseDescription(example_results) result(result_)
         use example_collections_m, only: EXAMPLE_FAILING_CASE_DESCRIPTION
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertIncludes, fail
+                Input_t, Result_t, assertIncludes, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
+        type is (TestResultItemInput_t)
             result_ = assertIncludes( &
                     EXAMPLE_FAILING_CASE_DESCRIPTION, &
-                    example_results%failureDescription(.false.))
+                    example_results%input%failureDescription(.false.))
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkFailureCaseDescription
 
     function checkFailureNoPassingDescriptions(example_results) result(result_)
         use example_collections_m, only: &
                 EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertDoesntInclude, fail
+                Input_t, Result_t, assertDoesntInclude, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
+        type is (TestResultItemInput_t)
             result_ = &
                     assertDoesntInclude( &
                             EXAMPLE_CASE_DESCRIPTION_1, &
-                            example_results%failureDescription(.false.)) &
+                            example_results%input%failureDescription(.false.)) &
                     .and.assertDoesntInclude( &
                             EXAMPLE_CASE_DESCRIPTION_2, &
-                            example_results%failureDescription(.false.))
+                            example_results%input%failureDescription(.false.))
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkFailureNoPassingDescriptions
 
     function checkFailureForMessage(example_results) result(result_)
         use example_collections_m, only: FAILURE_MESSAGE
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertIncludes, fail
+                Input_t, Result_t, assertIncludes, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
+        type is (TestResultItemInput_t)
             result_ = assertIncludes( &
                     FAILURE_MESSAGE, &
-                    example_results%failureDescription(.false.))
+                    example_results%input%failureDescription(.false.))
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkFailureForMessage
 
     function checkFailureNoSuccessMessage(example_results) result(result_)
         use example_asserts_m, only: SUCCESS_MESSAGE
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertDoesntInclude, fail
+                Input_t, Result_t, assertDoesntInclude, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
+        type is (TestResultItemInput_t)
             result_ = assertDoesntInclude( &
                     SUCCESS_MESSAGE, &
-                    example_results%failureDescription(.false.))
+                    example_results%input%failureDescription(.false.))
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkFailureNoSuccessMessage
 
     function checkFailureNoBlankLines(example_results) result(result_)
+        use Helpers_m, only: TestResultItemInput_t
+        use strff, only: NEWLINE
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertDoesntInclude, fail
+                Input_t, Result_t, assertDoesntInclude, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
+        type is (TestResultItemInput_t)
             result_ = assertDoesntInclude( &
-                    NEW_LINE('A') // NEW_LINE('A'), &
-                    example_results%failureDescription(.false.))
+                    NEWLINE // NEWLINE, &
+                    example_results%input%failureDescription(.false.))
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkFailureNoBlankLines
 
     function checkNumAsserts(example_results) result(result_)
         use example_collections_m, only: NUM_ASSERTS_IN_FAILING
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertEquals, fail
+                Input_t, Result_t, assertEquals, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
-            result_ = assertEquals(NUM_ASSERTS_IN_FAILING, example_results%numAsserts())
+        type is (TestResultItemInput_t)
+            result_ = assertEquals(NUM_ASSERTS_IN_FAILING, example_results%input%numAsserts())
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkNumAsserts
 
     function checkNumFailingAsserts(example_results) result(result_)
         use example_collections_m, only: NUM_FAILING_ASSERTS
+        use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
-                Result_t, TestCollectionResult_t, assertEquals, fail
+                Input_t, Result_t, assertEquals, fail
 
-        class(*), intent(in) :: example_results
+        class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
         select type (example_results)
-        type is (TestCollectionResult_t)
-            result_ = assertEquals(NUM_FAILING_ASSERTS, example_results%numFailingAsserts())
+        type is (TestResultItemInput_t)
+            result_ = assertEquals(NUM_FAILING_ASSERTS, example_results%input%numFailingAsserts())
         class default
-            result_ = fail("Expected to get a TestCollectionResult_t")
+            result_ = fail("Expected to get a TestResultItemInput_t")
         end select
     end function checkNumFailingAsserts
 end module failing_collection_test

@@ -16,28 +16,39 @@ module DoublePrecisionGenerator_m
 contains
     function generate(self) result(random_double)
         use Vegetables_m, only: &
-                Generated_t, Generated, getRandomDoublePrecisionWithMagnitude
+                DoublePrecisionInput_t, &
+                Generated_t, &
+                Generated, &
+                getRandomDoublePrecisionWithMagnitude
 
         class(DoublePrecisionGenerator_t), intent(in) :: self
         type(Generated_t) :: random_double
 
+        type(DoublePrecisionInput_t) :: the_input
+
         associate(a => self)
         end associate
-        random_double = Generated(getRandomDoublePrecisionWithMagnitude(1.0d12))
+
+        the_input%value_ = getRandomDoublePrecisionWithMagnitude(1.0d12)
+        random_double = Generated(the_input)
     end function generate
 
-    pure function shrink(value_) result(shrunk)
-        use Vegetables_m, only: ShrinkResult_t, ShrunkValue, SimplestValue
+    function shrink(input) result(shrunk)
+        use Vegetables_m, only: DoublePrecisionInput_t, Input_t, ShrinkResult_t, ShrinkResult
 
-        class(*), intent(in) :: value_
-        class(ShrinkResult_t), allocatable :: shrunk
+        class(Input_t), intent(in) :: input
+        type(ShrinkResult_t) :: shrunk
 
-        select type (value_)
-        type is (double precision)
-            if (effectivelyZero(value_)) then
-                allocate(shrunk, source = SimplestValue(0.0d0))
+        type(DoublePrecisionInput_t) :: new_input
+
+        select type (input)
+        type is (DoublePrecisionInput_t)
+            if (effectivelyZero(input%value_)) then
+                new_input%value_ = 0.0d0
+                shrunk = ShrinkResult(new_input, .true.)
             else
-                allocate(shrunk, source = ShrunkValue(value_ / 2.0d0))
+                new_input%value_ = input%value_ / 2.0d0
+                shrunk = ShrinkResult(new_input, .false.)
             end if
         end select
     end function shrink

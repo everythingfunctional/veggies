@@ -31,14 +31,20 @@ contains
         tests = describe("assertEqualsWithinRelative", individual_tests)
     end function test_assert_equals_within_relative
 
-    function checkPassForSameNumber(example) result(result_)
+    function checkPassForSameNumber(the_example) result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: &
-                Result_t, assertEqualsWithinRelative, assertThat, fail
+                DoublePrecisionInput_t, &
+                Input_t, &
+                Result_t, &
+                assertEqualsWithinRelative, &
+                assertThat, &
+                fail
 
-        class(*), intent(in) :: example
+        class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 
+        double precision :: example
         type(Result_t) :: example_result
         type(Result_t) :: example_result_c
         type(Result_t) :: example_result_s
@@ -47,8 +53,9 @@ contains
         type(Result_t) :: example_result_sc
         type(Result_t) :: example_result_ss
 
-        select type (example)
-        type is (double precision)
+        select type (the_example)
+        type is (DoublePrecisionInput_t)
+            example = the_example%value_
             example_result = assertEqualsWithinRelative( &
                     example, example, TINY(0.0d0))
             example_result_c = assertEqualsWithinRelative( &
@@ -106,14 +113,20 @@ contains
         end select
     end function checkPassForSameNumber
 
-    function checkFailForDifferentNumbers(example) result(result_)
+    function checkFailForDifferentNumbers(the_example) result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: &
-                Result_t, assertEqualsWithinRelative, assertNot, fail
+                DoublePrecisionInput_t, &
+                Input_t, &
+                Result_t, &
+                assertEqualsWithinRelative, &
+                assertNot, &
+                fail
 
-        class(*), intent(in) :: example
+        class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 
+        double precision :: example
         type(Result_t) :: example_result
         type(Result_t) :: example_result_c
         type(Result_t) :: example_result_s
@@ -122,8 +135,9 @@ contains
         type(Result_t) :: example_result_sc
         type(Result_t) :: example_result_ss
 
-        select type (example)
-        type is (double precision)
+        select type (the_example)
+        type is (DoublePrecisionInput_t)
+            example = the_example%value_
             example_result = assertEqualsWithinRelative( &
                     example, example*1.11d0, 0.1d0)
             example_result_c = assertEqualsWithinRelative( &
@@ -181,14 +195,20 @@ contains
         end select
     end function checkFailForDifferentNumbers
 
-    function checkPassForCloseNumbers(example) result(result_)
+    function checkPassForCloseNumbers(the_example) result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: &
-                Result_t, assertEqualsWithinRelative, assertThat, fail
+                DoublePrecisionInput_t, &
+                Input_t, &
+                Result_t, &
+                assertEqualsWithinRelative, &
+                assertThat, &
+                fail
 
-        class(*), intent(in) :: example
+        class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 
+        double precision :: example
         type(Result_t) :: example_result
         type(Result_t) :: example_result_c
         type(Result_t) :: example_result_s
@@ -197,8 +217,9 @@ contains
         type(Result_t) :: example_result_sc
         type(Result_t) :: example_result_ss
 
-        select type (example)
-        type is (double precision)
+        select type (the_example)
+        type is (DoublePrecisionInput_t)
+            example = the_example%value_
             example_result = assertEqualsWithinRelative( &
                     example, example*1.09d0, 0.1d0)
             example_result_c = assertEqualsWithinRelative( &

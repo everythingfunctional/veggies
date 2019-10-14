@@ -20,13 +20,20 @@ contains
         tests = describe("assertEquals with strings", individual_tests)
     end function test_assert_equals_strings
 
-    function checkPassForSameStrings(example) result(result_)
+    function checkPassForSameStrings(the_example) result(result_)
         use iso_varying_string, only: VARYING_STRING, char, var_str
-        use Vegetables_m, only: Result_t, assertEquals, assertThat, fail
+        use Vegetables_m, only: &
+                Input_t, &
+                Result_t, &
+                StringInput_t, &
+                assertEquals, &
+                assertThat, &
+                fail
 
-        class(*), intent(in) :: example
+        class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 
+        type(VARYING_STRING) :: example
         type(Result_t) :: example_result_cc
         type(Result_t) :: example_result_cs
         type(Result_t) :: example_result_sc
@@ -56,8 +63,9 @@ contains
         type(Result_t) :: example_result_sssc
         type(Result_t) :: example_result_ssss
 
-        select type (example)
-        type is (VARYING_STRING)
+        select type (the_example)
+        type is (StringInput_t)
+            example = the_example%value_
             example_result_cc = assertEquals(char(example), char(example))
             example_result_cs = assertEquals(char(example), example)
             example_result_sc = assertEquals(example, char(example))

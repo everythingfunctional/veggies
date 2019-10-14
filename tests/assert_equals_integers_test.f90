@@ -20,11 +20,17 @@ contains
         tests = describe("assertEquals with integers", individual_tests)
     end function test_assert_equals_integers
 
-    function checkPassForSameInteger(input) result(result_)
+    function checkPassForSameInteger(the_input) result(result_)
         use iso_varying_string, only: var_str
-        use Vegetables_m, only: Result_t, assertEquals, assertThat, fail
+        use Vegetables_m, only: &
+                Input_t, &
+                IntegerInput_t, &
+                Result_t, &
+                assertEquals, &
+                assertThat, &
+                fail
 
-        class(*), intent(in) :: input
+        class(Input_t), intent(in) :: the_input
         type(Result_t) :: result_
 
         type(Result_t) :: example_result
@@ -34,9 +40,11 @@ contains
         type(Result_t) :: example_result_cs
         type(Result_t) :: example_result_sc
         type(Result_t) :: example_result_ss
+        integer :: input
 
-        select type (input)
-        type is (integer)
+        select type (the_input)
+        type is (IntegerInput_t)
+            input = the_input%value_
             example_result = assertEquals(input, input)
             example_result_c = assertEquals(input, input, BOTH_MESSAGE)
             example_result_s = assertEquals(input, input, var_str(BOTH_MESSAGE))

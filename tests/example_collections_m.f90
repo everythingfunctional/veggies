@@ -23,7 +23,11 @@ module example_collections_m
     integer, parameter, public :: NUM_FAILING_ASSERTS = 1
     integer, parameter, public :: NUM_FAILING_CASES = 1
 
-    public :: exampleFailingCollection, examplePassingCollection, runCollection
+    public :: &
+            exampleFailingCollection, &
+            examplePassingCollection, &
+            exampleTestCase1, &
+            exampleTestCase2
 contains
     function exampleTestCase1() result(test_case)
         use example_asserts_m, only: exampleMultipleAsserts
@@ -60,17 +64,16 @@ contains
     end function exampleFailingTestCase
 
     function exampleFailingCollection() result(test_collection)
-        use Vegetables_m, only: &
-                SimpleTestCollection_t, TestItem_t, SimpleTestCollection
+        use Vegetables_m, only: TestItem_t, Describe
 
-        type(SimpleTestCollection_t) :: test_collection
+        type(TestItem_t) :: test_collection
 
         type(TestItem_t) :: cases(3)
 
         cases(1) = exampleTestCase1()
         cases(2) = exampleTestCase2()
         cases(3) = exampleFailingTestCase()
-        test_collection = SimpleTestCollection(EXAMPLE_COLLECTION_DESCRIPTION, cases)
+        test_collection = Describe(EXAMPLE_COLLECTION_DESCRIPTION, cases)
     end function exampleFailingCollection
 
     function middleCollection() result(test_collection)
@@ -82,34 +85,18 @@ contains
 
         cases(1) = exampleTestCase1()
         cases(2) = exampleTestCase2()
-        test_collection = describe(MIDDLE_COLLECTION_DESCRIPTION, cases)
+        test_collection = Describe(MIDDLE_COLLECTION_DESCRIPTION, cases)
     end function middleCollection
 
     function examplePassingCollection() result(test_collection)
-        use Vegetables_m, only: &
-                SimpleTestCollection_t, TestItem_t, SimpleTestCollection
+        use Vegetables_m, only: TestItem_t, Describe
 
-        type(SimpleTestCollection_t) :: test_collection
+        type(TestItem_t) :: test_collection
 
         type(TestItem_t) :: items(2)
 
         items(1) = middleCollection()
         items(2) = exampleTestCase2()
-        test_collection = SimpleTestCollection(EXAMPLE_COLLECTION_DESCRIPTION, items)
+        test_collection = Describe(EXAMPLE_COLLECTION_DESCRIPTION, items)
     end function examplePassingCollection
-
-    function runCollection(example_collection) result(example_results)
-        use Vegetables_m, only: &
-                SimpleTestCollection_t, Transformed_t, fail, Transformed
-
-        class(*), intent(in) :: example_collection
-        type(Transformed_t) :: example_results
-
-        select type (example_collection)
-        type is (SimpleTestCollection_t)
-            example_results = Transformed(example_collection%run())
-        class default
-            example_results = Transformed(fail("Expected to get a TestCase_t"))
-        end select
-    end function runCollection
 end module example_collections_m
