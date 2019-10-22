@@ -593,8 +593,10 @@ module Vegetables_m
     end interface delimit
 
     interface Describe
-        module procedure DescribeBasic
-        module procedure DescribeWithInput
+        module procedure DescribeBasicC
+        module procedure DescribeBasicS
+        module procedure DescribeWithInputC
+        module procedure DescribeWithInputS
     end interface Describe
 
     interface fail
@@ -603,14 +605,23 @@ module Vegetables_m
     end interface fail
 
     interface Given
-        module procedure GivenWithInput
+        module procedure GivenWithInputC
+        module procedure GivenWithInputS
     end interface Given
 
     interface It
-        module procedure ItBasic
-        module procedure ItWithExamples
-        module procedure ItWithGenerator
+        module procedure ItBasicC
+        module procedure ItBasicS
+        module procedure ItWithExamplesC
+        module procedure ItWithExamplesS
+        module procedure ItWithGeneratorC
+        module procedure ItWithGeneratorS
     end interface It
+
+    interface It_
+        module procedure ItInputC
+        module procedure ItInputS
+    end interface It_
 
     interface makeDoesntIncludeFailureMessage
         module procedure makeDoesntIncludeFailureMessageCC
@@ -706,8 +717,14 @@ module Vegetables_m
         module procedure succeedS
     end interface succeed
 
+    interface Then__
+        module procedure ThenInputC
+        module procedure ThenInputS
+    end interface Then__
+
     interface When
-        module procedure whenWithTransformer
+        module procedure whenWithTransformerC
+        module procedure whenWithTransformerS
     end interface When
 
     interface withUserMessage
@@ -4186,7 +4203,7 @@ contains
         delimited = "|" // string // "|"
     end function delimitS
 
-    function DescribeBasic(description, tests) result(item)
+    function DescribeBasicC(description, tests) result(item)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: description
@@ -4195,9 +4212,20 @@ contains
 
         allocate(item%test, source = SimpleTestCollection( &
                 var_str(description), tests))
-    end function DescribeBasic
+    end function DescribeBasicC
 
-    function DescribeWithInput(description, input, tests) result(item)
+    function DescribeBasicS(description, tests) result(item)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        allocate(item%test, source = SimpleTestCollection( &
+                description, tests))
+    end function DescribeBasicS
+
+    function DescribeWithInputC(description, input, tests) result(item)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: description
@@ -4207,7 +4235,19 @@ contains
 
         allocate(item%test, source = TestCollectionWithInput( &
                 var_str(description), input, tests))
-    end function DescribeWithInput
+    end function DescribeWithInputC
+
+    function DescribeWithInputS(description, input, tests) result(item)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        class(Input_t), intent(in) :: input
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        allocate(item%test, source = TestCollectionWithInput( &
+                description, input, tests))
+    end function DescribeWithInputS
 
     function equalsWithinAbsolute(expected, actual, tolerance)
         double precision, intent(in) :: expected
@@ -4460,14 +4500,25 @@ contains
         end if
     end function getRandomLogical
 
-    function GivenWithInput(description, input, tests) result(item)
+    function GivenWithInputC(description, input, tests) result(item)
         character(len=*), intent(in) :: description
         class(Input_t), intent(in) :: input
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: item
 
         item = Describe("Given " // description, input, tests)
-    end function GivenWithInput
+    end function GivenWithInputC
+
+    function GivenWithInputS(description, input, tests) result(item)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+
+        type(VARYING_STRING), intent(in) :: description
+        class(Input_t), intent(in) :: input
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        item = Describe("Given " // description, input, tests)
+    end function GivenWithInputS
 
     function IndividualResult(message, passed)
         use iso_varying_string, only: VARYING_STRING
@@ -4575,7 +4626,7 @@ contains
                 INDENTATION) // NEWLINE // ")"
     end function inputTestCaseRepr
 
-    function ItBasic(description, test) result(item)
+    function ItBasicC(description, test) result(item)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: description
@@ -4583,9 +4634,39 @@ contains
         type(TestItem_t) :: item
 
         allocate(item%test, source = SimpleTestCase(var_str(description), test))
-    end function ItBasic
+    end function ItBasicC
 
-    function ItWithExamples(description, examples, test) result(item)
+    function ItBasicS(description, test) result(item)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        procedure(simpleTest) :: test
+        type(TestItem_t) :: item
+
+        allocate(item%test, source = SimpleTestCase(description, test))
+    end function ItBasicS
+
+    function ItInputC(description, test) result(item)
+        use iso_varying_string, only: var_str
+
+        character(len=*), intent(in) :: description
+        procedure(inputTest) :: test
+        type(TestItem_t) :: item
+
+        allocate(item%test, source = InputTestCase(var_str(description), test))
+    end function ItInputC
+
+    function ItInputS(description, test) result(item)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        procedure(inputTest) :: test
+        type(TestItem_t) :: item
+
+        allocate(item%test, source = InputTestCase(description, test))
+    end function ItInputS
+
+    function ItWithExamplesC(description, examples, test) result(item)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: description
@@ -4595,9 +4676,21 @@ contains
 
         allocate(item%test, source = TestCaseWithExamples( &
                 var_str(description), examples, test))
-    end function ItWithExamples
+    end function ItWithExamplesC
 
-    function ItWithGenerator(description, generator, test) result(item)
+    function ItWithExamplesS(description, examples, test) result(item)
+        use iso_varying_string, only: VARYING_STRING
+
+        type(VARYING_STRING), intent(in) :: description
+        type(Example_t), intent(in) :: examples(:)
+        procedure(inputTest) :: test
+        type(TestItem_t) :: item
+
+        allocate(item%test, source = TestCaseWithExamples( &
+                description, examples, test))
+    end function ItWithExamplesS
+
+    function ItWithGeneratorC(description, generator, test) result(item)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: description
@@ -4607,17 +4700,19 @@ contains
 
         allocate(item%test, source = TestCaseWithGenerator( &
                 var_str(description), generator, test))
-    end function ItWithGenerator
+    end function ItWithGeneratorC
 
-    function It_(description, test) result(item)
-        use iso_varying_string, only: var_str
+    function ItWithGeneratorS(description, generator, test) result(item)
+        use iso_varying_string, only: VARYING_STRING
 
-        character(len=*), intent(in) :: description
+        type(VARYING_STRING), intent(in) :: description
+        class(Generator_t), intent(in) :: generator
         procedure(inputTest) :: test
         type(TestItem_t) :: item
 
-        allocate(item%test, source = InputTestCase(var_str(description), test))
-    end function It_
+        allocate(item%test, source = TestCaseWithGenerator( &
+                description, generator, test))
+    end function ItWithGeneratorS
 
     function makeDoesntIncludeFailureMessageCC( &
             search_for, string) result(message)
@@ -6373,13 +6468,23 @@ contains
         item = Describe("Test that", tests)
     end function testThat
 
-    function Then__(description, test) result(item)
+    function ThenInputC(description, test) result(item)
         character(len=*), intent(in) :: description
         procedure(inputTest) :: test
         type(TestItem_t) :: item
 
         item = It_("Then " // description, test)
-    end function Then__
+    end function ThenInputC
+
+    function ThenInputS(description, test) result(item)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+
+        type(VARYING_STRING), intent(in) :: description
+        procedure(inputTest) :: test
+        type(TestItem_t) :: item
+
+        item = It_("Then " // description, test)
+    end function ThenInputS
 
     function Transformed(input)
         class(Input_t), intent(in) :: input
@@ -6457,7 +6562,7 @@ contains
                 self%description_, fail("No input provided")))
     end function transformingTestCollectionRunWithoutInput
 
-    function whenWithTransformer(description, transformer, tests) result(item)
+    function whenWithTransformerC(description, transformer, tests) result(item)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: description
@@ -6467,7 +6572,19 @@ contains
 
         allocate(item%test, source = TransformingTestCollection( &
                 var_str("When " // description), transformer, tests))
-    end function whenWithTransformer
+    end function whenWithTransformerC
+
+    function whenWithTransformerS(description, transformer, tests) result(item)
+        use iso_varying_string, only: VARYING_STRING, operator(//)
+
+        type(VARYING_STRING), intent(in) :: description
+        procedure(transformer_) :: transformer
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        allocate(item%test, source = TransformingTestCollection( &
+                "When " // description, transformer, tests))
+    end function whenWithTransformerS
 
     function withUserMessageCC(message, user_message) result(whole_message)
         use iso_varying_string, only: VARYING_STRING, var_str
