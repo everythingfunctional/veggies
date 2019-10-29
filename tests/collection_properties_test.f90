@@ -104,25 +104,25 @@ contains
         subroutine runCollection
             use Vegetables_m, only: TestResultItem_t
 
+            integer :: i
             type(TestResultItem_t) :: internal_result
 
-            internal_result = internal_collection%run()
+            do i = 1, 100
+                internal_result = internal_collection%run()
+            end do
         end subroutine runCollection
 
         subroutine runCases
             use Vegetables_m, only: TestResultItem_t
 
-            type(TestResultItem_t) :: the_results(9)
+            integer :: i
+            type(TestResultItem_t) :: the_results(3)
 
-            the_results(1) = the_cases(1)%run()
-            the_results(2) = the_cases(2)%run()
-            the_results(3) = the_cases(3)%run()
-            the_results(4) = the_cases(1)%run()
-            the_results(5) = the_cases(2)%run()
-            the_results(6) = the_cases(3)%run()
-            the_results(7) = the_cases(1)%run()
-            the_results(8) = the_cases(2)%run()
-            the_results(9) = the_cases(3)%run()
+            do i = 1, 300
+                the_results(1) = the_cases(1)%run()
+                the_results(2) = the_cases(2)%run()
+                the_results(3) = the_cases(3)%run()
+            end do
         end subroutine runCases
     end function checkSpeed
 end module collection_properties_test

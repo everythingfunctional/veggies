@@ -72,20 +72,24 @@ contains
         subroutine runCase
             use Vegetables_m, only: TestResultItem_t
 
+            integer :: i
             type(TestResultItem_t) :: internal_result
 
-            internal_result = internal_case%run()
+            do i = 1, 100
+                internal_result = internal_case%run()
+            end do
         end subroutine runCase
 
         subroutine runAssertions
             use example_asserts_m, only: exampleMultipleAsserts
             use Vegetables_m, only: Result_t
 
-            type(Result_t) :: results(3)
+            integer :: i
+            type(Result_t) :: result__
 
-            results(1) = exampleMultipleAsserts()
-            results(2) = exampleMultipleAsserts()
-            results(3) = exampleMultipleAsserts()
+            do i = 1, 300
+                result__ = exampleMultipleAsserts()
+            end do
         end subroutine runAssertions
     end function checkSpeed
 end module single_case_properties_test
