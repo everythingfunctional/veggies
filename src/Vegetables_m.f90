@@ -4445,9 +4445,11 @@ contains
         integer :: num_characters
 
         num_characters = getRandomIntegerWithRange(0, max_length)
+        !$omp parallel do
         do i = 1, num_characters
             characters(i:i) = getRandomAsciiCharacter()
         end do
+        !$omp end parallel do
         random_string = characters(1:num_characters)
     end function getRandomAsciiStringWithMaxLength
 
@@ -5462,10 +5464,12 @@ contains
         integer :: i
         type(VARYING_STRING) :: individual_descriptions(size(self%results))
 
+        !$omp parallel do
         do i = 1, size(self%results)
             individual_descriptions(i) =  &
                     self%results(i)%failureDescription(colorize)
         end do
+        !$omp end parallel do
         description = join(individual_descriptions, NEWLINE)
     end function resultFailureDescription
 
@@ -5500,10 +5504,11 @@ contains
         type(VARYING_STRING) :: strings(size(self%results))
         integer :: i
 
+        !$omp parallel do
         do i = 1, size(self%results)
             strings(i) = self%results(i)%repr()
         end do
-
+        !$omp end parallel do
         string = hangingIndent( &
                 "Result_t(" // NEWLINE &
                     // "results = [" // NEWLINE &
@@ -5524,10 +5529,12 @@ contains
         integer :: i
         type(VARYING_STRING) :: individual_descriptions(size(self%results))
 
+        !$omp parallel do
         do i = 1, size(self%results)
             individual_descriptions(i) =  &
                     self%results(i)%verboseDescription(colorize)
         end do
+        !$omp end parallel do
         description = join(individual_descriptions, NEWLINE)
     end function resultVerboseDescription
 
@@ -5740,10 +5747,11 @@ contains
         type(VARYING_STRING) :: strings(size(self%tests))
         integer :: i
 
+        !$omp parallel do
         do i = 1, size(self%tests)
             strings(i) = self%tests(i)%repr()
         end do
-
+        !$omp end parallel do
         string = hangingIndent( &
                 "SimpleTestCollection_t(" // NEWLINE &
                     // "description = """ // self%description_ // """," // NEWLINE &
@@ -5772,9 +5780,11 @@ contains
         integer :: i
         type(TestResultItem_t) :: results(size(self%tests))
 
+        !$omp parallel do
         do i = 1, size(self%tests)
             results(i) = self%tests(i)%run()
         end do
+        !$omp end parallel do
         allocate(result_%result_, source = TestCollectionResult( &
                 self%description_, results))
     end function simpleTestCollectionRunWithoutInput
@@ -5987,9 +5997,11 @@ contains
         integer :: i
         type(Result_t) :: results
 
+        !$omp parallel do
         do i = 1, size(self%examples)
             results = results.and.self%test(self%examples(i)%input)
         end do
+        !$omp end parallel do
         allocate(result_%result_, source = TestCaseResult( &
                 self%description_, results))
     end function testCaseWithExamplesRunWithoutInput
@@ -6097,9 +6109,11 @@ contains
         type(VARYING_STRING) :: descriptions(size(self%tests))
         integer :: i
 
+        !$omp parallel do
         do i = 1, size(self%tests)
             descriptions(i) = self%tests(i)%description()
         end do
+        !$omp end parallel do
         description = hangingIndent( &
                 self%description_ // NEWLINE // join(descriptions, NEWLINE), &
                 INDENTATION)
@@ -6121,9 +6135,11 @@ contains
             filter_result%matched = .true.
             allocate(filter_result%test, source = self)
         else
+            !$omp parallel do
             do i = 1, size(self%tests)
                 filter_results(i) = self%tests(i)%filter(filter_string)
             end do
+            !$omp end parallel do
             if (any(filter_results%matched)) then
                 allocate(new_collection, source = self)
                 deallocate(new_collection%tests)
@@ -6171,9 +6187,11 @@ contains
         if (self%passed()) then
             description = ""
         else
+            !$omp parallel do
             do i = 1, size(self%results)
                 descriptions(i) = self%results(i)%failureDescription(colorize)
             end do
+            !$omp end parallel do
             description = hangingIndent( &
                     self%description // NEWLINE // join(descriptions, NEWLINE), &
                     INDENTATION)
@@ -6225,10 +6243,11 @@ contains
         type(VARYING_STRING) :: strings(size(self%results))
         integer :: i
 
+        !$omp parallel do
         do i = 1, size(self%results)
             strings(i) = self%results(i)%repr()
         end do
-
+        !$omp end parallel do
         string = hangingIndent( &
                 "TestCollectionResult_t(" // NEWLINE &
                     // "description = """ // self%description // """," // NEWLINE &
@@ -6251,9 +6270,11 @@ contains
         type(VARYING_STRING) :: descriptions(size(self%results))
         integer :: i
 
+        !$omp parallel do
         do i = 1, size(self%results)
             descriptions(i) = self%results(i)%verboseDescription(colorize)
         end do
+        !$omp end parallel do
         description = hangingIndent( &
                 self%description // NEWLINE // join(descriptions, NEWLINE), &
                 INDENTATION)
@@ -6289,10 +6310,11 @@ contains
         type(VARYING_STRING) :: strings(size(self%tests))
         integer :: i
 
+        !$omp parallel do
         do i = 1, size(self%tests)
             strings(i) = self%tests(i)%repr()
         end do
-
+        !$omp end parallel do
         string = hangingIndent( &
                 "TestCollectionWithInput_t(" // NEWLINE &
                     // "description = """ // self%description_ // """," // NEWLINE &
@@ -6322,9 +6344,11 @@ contains
         integer :: i
         type(TestResultItem_t) :: results(size(self%tests))
 
+        !$omp parallel do
         do i = 1, size(self%tests)
             results(i) = self%tests(i)%run(self%input)
         end do
+        !$omp end parallel do
         allocate(result_%result_, source = TestCollectionResult( &
                 self%description_, results))
     end function testCollectionWithInputRunWithoutInput
@@ -6516,10 +6540,11 @@ contains
         type(VARYING_STRING) :: strings(size(self%tests))
         integer :: i
 
+        !$omp parallel do
         do i = 1, size(self%tests)
             strings(i) = self%tests(i)%repr()
         end do
-
+        !$omp end parallel do
         string = hangingIndent( &
                 "TransformingTestCollection_t(" // NEWLINE &
                     // "description = """ // self%description_ // """," // NEWLINE &
@@ -6546,9 +6571,11 @@ contains
             allocate(result_%result_, source = testCaseResult( &
                     self%description_, transformed_input%result_))
         class default
+            !$omp parallel do
             do i = 1, size(self%tests)
                 results(i) = self%tests(i)%run(transformed_input)
             end do
+            !$omp end parallel do
             allocate(result_%result_, source = TestCollectionResult( &
                     self%description_, results))
         end select
