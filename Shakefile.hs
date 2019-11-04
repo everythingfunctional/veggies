@@ -159,7 +159,7 @@ cExts = [".c", ".C", ".cpp", ".cxx", ".c++"]
 sourceExts = fortranExts ++ cExts
 headerExts = [".h", ".H", ".hpp", ".hxx", ".h++"]
 sourceDirs = ["src", "iso_varying_string" </> "src", "strff" </> "src"]
-flags = ["-Wall", "-Wextra", "-Werror", "-pedantic", "-fopenmp"]
+flags = ["-Wall", "-Wextra", "-Werror", "-pedantic"]
 develFlags = "-g" : flags
 fFlags = []
 cFlags' cIncludeFlags = "-std=c++17" : cIncludeFlags
