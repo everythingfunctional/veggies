@@ -4185,7 +4185,7 @@ contains
         end if
     end function combineResults
 
-    function delimitC(string) result(delimited)
+    pure function delimitC(string) result(delimited)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: string
@@ -4194,7 +4194,7 @@ contains
         delimited = delimit(var_str(string))
     end function delimitC
 
-    function delimitS(string) result(delimited)
+    pure function delimitS(string) result(delimited)
         use iso_varying_string, only: VARYING_STRING, operator(//)
 
         type(VARYING_STRING), intent(in) :: string
@@ -4716,7 +4716,7 @@ contains
                 description, generator, test))
     end function ItWithGeneratorS
 
-    function makeDoesntIncludeFailureMessageCC( &
+    pure function makeDoesntIncludeFailureMessageCC( &
             search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4728,7 +4728,7 @@ contains
                 var_str(search_for), var_str(string))
     end function makeDoesntIncludeFailureMessageCC
 
-    function makeDoesntIncludeFailureMessageCS( &
+    pure function makeDoesntIncludeFailureMessageCS( &
             search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4740,7 +4740,7 @@ contains
                 var_str(search_for), string)
     end function makeDoesntIncludeFailureMessageCS
 
-    function makeDoesntIncludeFailureMessageSC( &
+    pure function makeDoesntIncludeFailureMessageSC( &
             search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4752,7 +4752,7 @@ contains
                 search_for, var_str(string))
     end function makeDoesntIncludeFailureMessageSC
 
-    function makeDoesntIncludeFailureMessageSS( &
+    pure function makeDoesntIncludeFailureMessageSS( &
             search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
         use strff, only: indent, hangingIndent, NEWLINE
@@ -4773,7 +4773,7 @@ contains
                 INDENTATION)
     end function makeDoesntIncludeFailureMessageSS
 
-    function makeDoesntIncludeSuccessMessageCC( &
+    pure function makeDoesntIncludeSuccessMessageCC( &
             search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4785,7 +4785,7 @@ contains
                 var_str(search_for), var_str(string))
     end function makeDoesntIncludeSuccessMessageCC
 
-    function makeDoesntIncludeSuccessMessageCS( &
+    pure function makeDoesntIncludeSuccessMessageCS( &
             search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4797,7 +4797,7 @@ contains
                 var_str(search_for), string)
     end function makeDoesntIncludeSuccessMessageCS
 
-    function makeDoesntIncludeSuccessMessageSC( &
+    pure function makeDoesntIncludeSuccessMessageSC( &
             search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4809,7 +4809,7 @@ contains
                 search_for, var_str(string))
     end function makeDoesntIncludeSuccessMessageSC
 
-    function makeDoesntIncludeSuccessMessageSS( &
+    pure function makeDoesntIncludeSuccessMessageSS( &
             search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
         use strff, only: indent, hangingIndent, NEWLINE
@@ -4830,7 +4830,7 @@ contains
                 INDENTATION)
     end function makeDoesntIncludeSuccessMessageSS
 
-    function makeEmptyFailureMessageC(string) result(message)
+    pure function makeEmptyFailureMessageC(string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: string
@@ -4839,7 +4839,7 @@ contains
         message = makeEmptyFailureMessage(var_str(string))
     end function makeEmptyFailureMessageC
 
-    function makeEmptyFailureMessageS(string) result(message)
+    pure function makeEmptyFailureMessageS(string) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
         use strff, only: indent, hangingIndent, NEWLINE
 
@@ -4855,7 +4855,7 @@ contains
                 INDENTATION)
     end function makeEmptyFailureMessageS
 
-    function makeEqualsFailureMessageCC(expected, actual) result(message)
+    pure function makeEqualsFailureMessageCC(expected, actual) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: expected
@@ -4865,7 +4865,7 @@ contains
         message = makeEqualsFailureMessage(var_str(expected), var_str(actual))
     end function makeEqualsFailureMessageCC
 
-    function makeEqualsFailureMessageCS(expected, actual) result(message)
+    pure function makeEqualsFailureMessageCS(expected, actual) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: expected
@@ -4875,7 +4875,7 @@ contains
         message = makeEqualsFailureMessage(var_str(expected), actual)
     end function makeEqualsFailureMessageCS
 
-    function makeEqualsFailureMessageSC(expected, actual) result(message)
+    pure function makeEqualsFailureMessageSC(expected, actual) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         type(VARYING_STRING), intent(in) :: expected
@@ -4885,7 +4885,7 @@ contains
         message = makeEqualsFailureMessage(expected, var_str(actual))
     end function makeEqualsFailureMessageSC
 
-    function makeEqualsFailureMessageSS(expected, actual) result(message)
+    pure function makeEqualsFailureMessageSS(expected, actual) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
         use strff, only: indent, hangingIndent, NEWLINE
 
@@ -4905,7 +4905,7 @@ contains
                 INDENTATION)
     end function makeEqualsFailureMessageSS
 
-    function makeEqualsSuccessMessageC(expected) result(message)
+    pure function makeEqualsSuccessMessageC(expected) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: expected
@@ -4914,7 +4914,7 @@ contains
         message = makeEqualsSuccessMessage(var_str(expected))
     end function makeEqualsSuccessMessageC
 
-    function makeEqualsSuccessMessageS(expected) result(message)
+    pure function makeEqualsSuccessMessageS(expected) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
         use strff, only: indent, hangingIndent, NEWLINE
 
@@ -4929,7 +4929,7 @@ contains
                 INDENTATION)
     end function makeEqualsSuccessMessageS
 
-    function makeFasterThanFailureMessageCCC( &
+    pure function makeFasterThanFailureMessageCCC( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: var_str
 
@@ -4942,7 +4942,7 @@ contains
                 var_str(reference), var_str(actual), var_str(iterations))
     end function makeFasterThanFailureMessageCCC
 
-    function makeFasterThanFailureMessageCCS( &
+    pure function makeFasterThanFailureMessageCCS( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4955,7 +4955,7 @@ contains
                 var_str(reference), var_str(actual), iterations)
     end function makeFasterThanFailureMessageCCS
 
-    function makeFasterThanFailureMessageCSC( &
+    pure function makeFasterThanFailureMessageCSC( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4968,7 +4968,7 @@ contains
                 var_str(reference), actual, var_str(iterations))
     end function makeFasterThanFailureMessageCSC
 
-    function makeFasterThanFailureMessageCSS( &
+    pure function makeFasterThanFailureMessageCSS( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4981,7 +4981,7 @@ contains
                 var_str(reference), actual, iterations)
     end function makeFasterThanFailureMessageCSS
 
-    function makeFasterThanFailureMessageSCC( &
+    pure function makeFasterThanFailureMessageSCC( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4994,7 +4994,7 @@ contains
                 reference, var_str(actual), var_str(iterations))
     end function makeFasterThanFailureMessageSCC
 
-    function makeFasterThanFailureMessageSCS( &
+    pure function makeFasterThanFailureMessageSCS( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5007,7 +5007,7 @@ contains
                 reference, var_str(actual), iterations)
     end function makeFasterThanFailureMessageSCS
 
-    function makeFasterThanFailureMessageSSC( &
+    pure function makeFasterThanFailureMessageSSC( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5020,7 +5020,7 @@ contains
                 reference, actual, var_str(iterations))
     end function makeFasterThanFailureMessageSSC
 
-    function makeFasterThanFailureMessageSSS( &
+    pure function makeFasterThanFailureMessageSSS( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
 
@@ -5035,7 +5035,7 @@ contains
                 // reference // ", averaged over " // iterations // " iterations."
     end function makeFasterThanFailureMessageSSS
 
-    function makeFasterThanSuccessMessageCCC( &
+    pure function makeFasterThanSuccessMessageCCC( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: var_str
 
@@ -5048,7 +5048,7 @@ contains
                 var_str(reference), var_str(actual), var_str(iterations))
     end function makeFasterThanSuccessMessageCCC
 
-    function makeFasterThanSuccessMessageCCS( &
+    pure function makeFasterThanSuccessMessageCCS( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5061,7 +5061,7 @@ contains
                 var_str(reference), var_str(actual), iterations)
     end function makeFasterThanSuccessMessageCCS
 
-    function makeFasterThanSuccessMessageCSC( &
+    pure function makeFasterThanSuccessMessageCSC( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5074,7 +5074,7 @@ contains
                 var_str(reference), actual, var_str(iterations))
     end function makeFasterThanSuccessMessageCSC
 
-    function makeFasterThanSuccessMessageCSS( &
+    pure function makeFasterThanSuccessMessageCSS( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5087,7 +5087,7 @@ contains
                 var_str(reference), actual, iterations)
     end function makeFasterThanSuccessMessageCSS
 
-    function makeFasterThanSuccessMessageSCC( &
+    pure function makeFasterThanSuccessMessageSCC( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5100,7 +5100,7 @@ contains
                 reference, var_str(actual), var_str(iterations))
     end function makeFasterThanSuccessMessageSCC
 
-    function makeFasterThanSuccessMessageSCS( &
+    pure function makeFasterThanSuccessMessageSCS( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5113,7 +5113,7 @@ contains
                 reference, var_str(actual), iterations)
     end function makeFasterThanSuccessMessageSCS
 
-    function makeFasterThanSuccessMessageSSC( &
+    pure function makeFasterThanSuccessMessageSSC( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5126,7 +5126,7 @@ contains
                 reference, actual, var_str(iterations))
     end function makeFasterThanSuccessMessageSSC
 
-    function makeFasterThanSuccessMessageSSS( &
+    pure function makeFasterThanSuccessMessageSSS( &
             reference, actual, iterations) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
 
@@ -5141,7 +5141,7 @@ contains
                 // reference // ", averaged over " // iterations // " iterations."
     end function makeFasterThanSuccessMessageSSS
 
-    function makeIncludesFailureMessageCC(search_for, string) result(message)
+    pure function makeIncludesFailureMessageCC(search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: search_for
@@ -5152,7 +5152,7 @@ contains
                 var_str(search_for), var_str(string))
     end function makeIncludesFailureMessageCC
 
-    function makeIncludesFailureMessageCS(search_for, string) result(message)
+    pure function makeIncludesFailureMessageCS(search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: search_for
@@ -5162,7 +5162,7 @@ contains
         message = makeIncludesFailureMessage(var_str(search_for), string)
     end function makeIncludesFailureMessageCS
 
-    function makeIncludesFailureMessageSC(search_for, string) result(message)
+    pure function makeIncludesFailureMessageSC(search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         type(VARYING_STRING), intent(in) :: search_for
@@ -5172,7 +5172,7 @@ contains
         message = makeIncludesFailureMessage(search_for, var_str(string))
     end function makeIncludesFailureMessageSC
 
-    function makeIncludesFailureMessageSS(search_for, string) result(message)
+    pure function makeIncludesFailureMessageSS(search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
         use strff, only: indent, hangingIndent, NEWLINE
 
@@ -5192,7 +5192,7 @@ contains
                 INDENTATION)
     end function makeIncludesFailureMessageSS
 
-    function makeIncludesSuccessMessageCC(search_for, string) result(message)
+    pure function makeIncludesSuccessMessageCC(search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: search_for
@@ -5203,7 +5203,7 @@ contains
                 var_str(search_for), var_str(string))
     end function makeIncludesSuccessMessageCC
 
-    function makeIncludesSuccessMessageCS(search_for, string) result(message)
+    pure function makeIncludesSuccessMessageCS(search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: search_for
@@ -5213,7 +5213,7 @@ contains
         message = makeIncludesSuccessMessage(var_str(search_for), string)
     end function makeIncludesSuccessMessageCS
 
-    function makeIncludesSuccessMessageSC(search_for, string) result(message)
+    pure function makeIncludesSuccessMessageSC(search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         type(VARYING_STRING), intent(in) :: search_for
@@ -5223,7 +5223,7 @@ contains
         message = makeIncludesSuccessMessage(search_for, var_str(string))
     end function makeIncludesSuccessMessageSC
 
-    function makeIncludesSuccessMessageSS(search_for, string) result(message)
+    pure function makeIncludesSuccessMessageSS(search_for, string) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
         use strff, only: indent, hangingIndent, NEWLINE
 
@@ -5243,7 +5243,7 @@ contains
                 INDENTATION)
     end function makeIncludesSuccessMessageSS
 
-    function makeWithinFailureMessageCCC( &
+    pure function makeWithinFailureMessageCCC( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5256,7 +5256,7 @@ contains
                 var_str(expected), var_str(actual), var_str(tolerance))
     end function makeWithinFailureMessageCCC
 
-    function makeWithinFailureMessageCCS( &
+    pure function makeWithinFailureMessageCCS( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5269,7 +5269,7 @@ contains
                 var_str(expected), var_str(actual), tolerance)
     end function makeWithinFailureMessageCCS
 
-    function makeWithinFailureMessageCSC( &
+    pure function makeWithinFailureMessageCSC( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5282,7 +5282,7 @@ contains
                 var_str(expected), actual, var_str(tolerance))
     end function makeWithinFailureMessageCSC
 
-    function makeWithinFailureMessageCSS( &
+    pure function makeWithinFailureMessageCSS( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5295,7 +5295,7 @@ contains
                 var_str(expected), actual, tolerance)
     end function makeWithinFailureMessageCSS
 
-    function makeWithinFailureMessageSCC( &
+    pure function makeWithinFailureMessageSCC( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5308,7 +5308,7 @@ contains
                 expected, var_str(actual), var_str(tolerance))
     end function makeWithinFailureMessageSCC
 
-    function makeWithinFailureMessageSCS( &
+    pure function makeWithinFailureMessageSCS( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5321,7 +5321,7 @@ contains
                 expected, var_str(actual), tolerance)
     end function makeWithinFailureMessageSCS
 
-    function makeWithinFailureMessageSSC( &
+    pure function makeWithinFailureMessageSSC( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5334,7 +5334,7 @@ contains
                 expected, actual, var_str(tolerance))
     end function makeWithinFailureMessageSSC
 
-    function makeWithinFailureMessageSSS( &
+    pure function makeWithinFailureMessageSSS( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
 
@@ -5348,7 +5348,7 @@ contains
                 // delimit("±" // tolerance) // " of " // delimit(expected)
     end function makeWithinFailureMessageSSS
 
-    function makeWithinSuccessMessageCCC( &
+    pure function makeWithinSuccessMessageCCC( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5361,7 +5361,7 @@ contains
                 var_str(expected), var_str(actual), var_str(tolerance))
     end function makeWithinSuccessMessageCCC
 
-    function makeWithinSuccessMessageCCS( &
+    pure function makeWithinSuccessMessageCCS( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5374,7 +5374,7 @@ contains
                 var_str(expected), var_str(actual), tolerance)
     end function makeWithinSuccessMessageCCS
 
-    function makeWithinSuccessMessageCSC( &
+    pure function makeWithinSuccessMessageCSC( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5387,7 +5387,7 @@ contains
                 var_str(expected), actual, var_str(tolerance))
     end function makeWithinSuccessMessageCSC
 
-    function makeWithinSuccessMessageCSS( &
+    pure function makeWithinSuccessMessageCSS( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5400,7 +5400,7 @@ contains
                 var_str(expected), actual, tolerance)
     end function makeWithinSuccessMessageCSS
 
-    function makeWithinSuccessMessageSCC( &
+    pure function makeWithinSuccessMessageSCC( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5413,7 +5413,7 @@ contains
                 expected, var_str(actual), var_str(tolerance))
     end function makeWithinSuccessMessageSCC
 
-    function makeWithinSuccessMessageSCS( &
+    pure function makeWithinSuccessMessageSCS( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5426,7 +5426,7 @@ contains
                 expected, var_str(actual), tolerance)
     end function makeWithinSuccessMessageSCS
 
-    function makeWithinSuccessMessageSSC( &
+    pure function makeWithinSuccessMessageSSC( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -5439,7 +5439,7 @@ contains
                 expected, actual, var_str(tolerance))
     end function makeWithinSuccessMessageSSC
 
-    function makeWithinSuccessMessageSSS( &
+    pure function makeWithinSuccessMessageSSS( &
             expected, actual, tolerance) result(message)
         use iso_varying_string, only: VARYING_STRING, operator(//)
 
@@ -6613,7 +6613,7 @@ contains
                 "When " // description, transformer, tests))
     end function whenWithTransformerS
 
-    function withUserMessageCC(message, user_message) result(whole_message)
+    pure function withUserMessageCC(message, user_message) result(whole_message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: message
@@ -6624,7 +6624,7 @@ contains
                 var_str(message), var_str(user_message))
     end function withUserMessageCC
 
-    function withUserMessageCS(message, user_message) result(whole_message)
+    pure function withUserMessageCS(message, user_message) result(whole_message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: message
@@ -6634,7 +6634,7 @@ contains
         whole_message = withUserMessage(var_str(message), user_message)
     end function withUserMessageCS
 
-    function withUserMessageSC(message, user_message) result(whole_message)
+    pure function withUserMessageSC(message, user_message) result(whole_message)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         type(VARYING_STRING), intent(in) :: message
@@ -6645,7 +6645,7 @@ contains
                 message, var_str(user_message))
     end function withUserMessageSC
 
-    function withUserMessageSS(message, user_message) result(whole_message)
+    pure function withUserMessageSS(message, user_message) result(whole_message)
         use iso_varying_string, only: &
                 VARYING_STRING, operator(//), operator(==)
         use strff, only: indent, hangingIndent, NEWLINE
