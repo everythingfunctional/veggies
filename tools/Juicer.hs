@@ -67,7 +67,8 @@ makeProgram testDriverName testInfo =
            , "    subroutine run()"
            ]
         ++ (makeUseStatements testInfo)
-        ++ [ "        use Vegetables_m, only: TestItem_t, testThat, runTests"
+        ++ [ "        use iso_varying_string"
+           , "        use Vegetables_m, only: TestItem_t, testThat, runTests"
            , ""
            , "        type(TestItem_t) :: tests"
            ]
