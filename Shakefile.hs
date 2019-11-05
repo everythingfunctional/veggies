@@ -24,22 +24,18 @@ import           Data.Char                      ( isAsciiLower
                                                 , isDigit
                                                 , toLower
                                                 )
-import           Data.List                      ( intercalate
-                                                , sort
-                                                )
+import           Data.List                      ( sort )
 import           Data.List.Split                ( splitOn )
 import qualified Data.Map                      as Map
 import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Set                      as Set
-import           Data.String.Utils              ( endswith
-                                                , replace
-                                                , startswith
-                                                )
+import           Data.String.Utils              ( endswith )
 import           Development.Shake              ( Action
                                                 , Change(ChangeModtimeAndDigest)
                                                 , CmdOption(Cwd)
                                                 , Exit(Exit)
                                                 , FilePattern
+                                                , Resource
                                                 , Rules
                                                 , Stderr(Stderr)
                                                 , action
@@ -48,10 +44,12 @@ import           Development.Shake              ( Action
                                                 , cmd
                                                 , command
                                                 , command_
+                                                , copyFileChanged
                                                 , getDirectoryFilesIO
                                                 , getShakeOptions
                                                 , liftIO
                                                 , need
+                                                , newResource
                                                 , phony
                                                 , progressSimple
                                                 , removeFilesAfter
@@ -63,14 +61,17 @@ import           Development.Shake              ( Action
                                                 , shakeProgress
                                                 , shakeThreads
                                                 , want
-                                                , (%>)
-                                                , (&%>)
+                                                , withResource
+                                                , (?==)
+                                                , (?>)
                                                 , (&?>)
                                                 , (<//>)
                                                 )
-import           Development.Shake.FilePath     ( dropExtension
+import           Development.Shake.FilePath     ( dropDirectory1
+                                                , dropExtension
                                                 , exe
                                                 , takeDirectory
+                                                , takeDirectory1
                                                 , takeExtension
                                                 , takeFileName
                                                 , (-<.>)
@@ -79,6 +80,7 @@ import           Development.Shake.FilePath     ( dropExtension
                                                 )
 import           Juicer                         ( makeDriver )
 import           System.Directory               ( doesFileExist
+                                                , getCurrentDirectory
                                                 , removeFile
                                                 )
 import           System.Exit                    ( ExitCode
@@ -104,21 +106,15 @@ import           Text.ParserCombinators.ReadP   ( ReadP
 
 -- All the extra type declarations we need
 type ModuleName = String
-type FunctionName = String
 type ProgramName = String
 type ModuleNames = Set.Set ModuleName
 type SpecialCommands = Map.Map FilePath String
 
 data SourceFile =
-    FortranSourceFile {
+    SourceFile {
           getFileName           :: FilePath
-        , getFortranModulesUsed :: ModuleNames
-        , getCModulesUsed       :: ModuleNames
+        , getModulesUsed :: ModuleNames
         , getModulesContained   :: ModuleNames
-    }
-    | CSourceFile {
-          getFileName           :: FilePath
-        , getFortranModulesUsed :: ModuleNames
     } deriving (Eq, Ord, Show)
 
 data Module = Module {
@@ -136,8 +132,7 @@ type Modules = Map.Map ModuleName Module
 type Programs = Set.Set Program
 
 data LineContents =
-      FortranModuleUsed ModuleName
-    | CModuleUsed ModuleName
+      ModuleUsed ModuleName
     | ModuleDefined ModuleName
     | ProgramDefined ProgramName
     | Other deriving (Show)
@@ -152,49 +147,36 @@ data ModuleSearchTree =
 -- A handful of constants that are just basic configuration
 
 -- compiler and flags
-compiler = "g++"
-baseCIncludeFlags = []
-fortranExts = [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
-cExts = [".c", ".C", ".cpp", ".cxx", ".c++"]
-sourceExts = fortranExts ++ cExts
-headerExts = [".h", ".H", ".hpp", ".hxx", ".h++"]
-sourceDirs = ["src", "iso_varying_string" </> "src", "strff" </> "src"]
-flags = ["-Wall", "-Wextra", "-Werror", "-pedantic"]
-develFlags = "-g" : flags
-fFlags = []
-cFlags' cIncludeFlags = "-std=c++17" : cIncludeFlags
-fDevelFlags = [] ++ fFlags ++ develFlags
-cDevelFlags' cFlags = [] ++ cFlags ++ develFlags
-develLinkFlags = develFlags ++ ["-lgfortran"]
+compiler = "gfortran"
+sourceExts = [".f90", ".f", ".F", ".F90", ".f95", ".f03"]
+compilerFlags = ["-g", "-Wall", "-Wextra", "-Werror", "-pedantic"]
+linkFlags = compilerFlags ++ ["-lgfortran"]
 
 -- directories
+sourceDirs = ["src", "iso_varying_string" </> "src", "strff" </> "src"]
+shakeDir = "_shake"
 buildDir = "build"
 testDir = "tests"
-testBuildDir = "test_build"
+testBuildDir = "tests_build"
 
+-- Special files
 testDriverName = "vegetable_driver"
 testDriverSourceFile = testBuildDir </> testDriverName <.> "f90"
 
 -- The main routine that executes the build system
 main :: IO ()
 main = do
-    otherCIncludeDirs <- getCIncludeDirs sourceDirs headerExts
-    let cIncludeFlags = baseCIncludeFlags ++ map ("-I" ++) otherCIncludeDirs
-    let cFlags        = cFlags' cIncludeFlags
-    let cDevelFlags   = cDevelFlags' cFlags
-
     sourceFiles                  <- getDirectoriesFiles sourceDirs sourceExts
     (sources, modules, programs) <- scanSourceFiles Map.empty sourceFiles
-    let sourceSearchTree = Node buildDir modules Set.empty
+    let projectSearchTree = Node buildDir modules Set.empty
 
     testSourceFiles <- getDirectoriesFiles [testDir] sourceExts
     let testCollectionFiles = filter (endswith "_test.f90") testSourceFiles
     let testCollectionModules = Set.fromList
             $ map (takeFileName . dropExtension) testCollectionFiles
-    let testDriverSource = FortranSourceFile
+    let testDriverSource = SourceFile
             testDriverSourceFile
             ("vegetables_m" `Set.insert` testCollectionModules)
-            Set.empty
             Set.empty
     let testDriverProgram = Program testDriverName testDriverSource
     (testSources', testModules, testPrograms') <- scanSourceFiles
@@ -203,27 +185,31 @@ main = do
     let testSources  = testDriverSource `Set.insert` testSources'
     let testPrograms = testDriverProgram `Set.insert` testPrograms'
     let testSearchTree =
-            Node testBuildDir testModules (Set.singleton sourceSearchTree)
+            Node testBuildDir testModules (Set.singleton projectSearchTree)
 
-    let (sourceFilesMap, sourceDependsMap, sourceCommandsMap) =
-            makeSourceRuleMaps fDevelFlags
-                               cDevelFlags
-                               cIncludeFlags
-                               sourceSearchTree
+    let (projectFilesMap, projectDependsMap, projectCommandsMap) =
+            makeSourceRuleMaps compilerFlags
+                               projectSearchTree
                                (Set.toList sources)
     let (testFilesMap, testDependsMap, testCommandsMap) = makeSourceRuleMaps
-            fDevelFlags
-            cDevelFlags
-            cIncludeFlags
+            compilerFlags
             testSearchTree
             (Set.toList testSources)
     let (filesMap, dependsMap, commandsMap) =
-            ( sourceFilesMap `Map.union` testFilesMap
-            , sourceDependsMap `Map.union` testDependsMap
-            , sourceCommandsMap `Map.union` testCommandsMap
+            ( projectFilesMap `Map.union` testFilesMap
+            , projectDependsMap `Map.union` testDependsMap
+            , projectCommandsMap `Map.union` testCommandsMap
+            )
+    let (projectExecutableSet, projectLinkMap) =
+            makeExecutableMaps projectSearchTree (Set.toList programs)
+    let (testExecutableSet, testLinkMap) =
+            makeExecutableMaps testSearchTree (Set.toList testPrograms)
+    let (allExecutableSet, allLinkMap) =
+            ( projectExecutableSet `Set.union` testExecutableSet
+            , projectLinkMap `Map.union` testLinkMap
             )
 
-    shakeArgs shakeOptions { shakeFiles    = "_shake"
+    shakeArgs shakeOptions { shakeFiles    = shakeDir
                            , shakeChange   = ChangeModtimeAndDigest
                            , shakeColor    = True
                            , shakeThreads  = 0
@@ -235,25 +221,22 @@ main = do
                       (fromMaybe undefined (Map.lookup obj dependsMap))
                   fromMaybe undefined (Map.lookup obj commandsMap)
 
-              testDriverSourceFile %> \driver -> do
+              (`Set.member` allExecutableSet) ?> \exe -> do
+                  linkTimeDepends <- liftIO
+                      (fromMaybe undefined (Map.lookup exe allLinkMap))
+                  need linkTimeDepends
+                  cmd compiler linkTimeDepends ["-o", exe] linkFlags
+
+              (== testDriverSourceFile) ?> \driver -> do
                   need testCollectionFiles
                   createDriver driver testCollectionFiles
 
-              mapM_
-                  (makeExecutableRule develLinkFlags
-                                      cIncludeFlags
-                                      sourceSearchTree
-                  )
-                  programs
-
-              mapM_
-                  (makeExecutableRule develLinkFlags
-                                      cIncludeFlags
-                                      testSearchTree
-                  )
-                  testPrograms
-
               want ["tests"]
+              phony "project"
+                  $ need
+                        [ buildDir </> getProgramName prog <.> exe
+                        | prog <- Set.toList programs
+                        ]
               phony "tests" $ do
                   let progs =
                           [ testBuildDir </> getProgramName prog <.> exe
@@ -261,18 +244,12 @@ main = do
                           ]
                   need progs
                   mapM_ (cmd :: FilePath -> Action ()) progs
-
-              phony "cleanBuild" $ removeFilesAfter buildDir ["//"]
+              phony "all" $ need ["project", "tests"]
+              phony "cleanProject" $ removeFilesAfter buildDir ["//"]
               phony "cleanTest" $ removeFilesAfter testBuildDir ["//"]
-              phony "cleanShake" $ removeFilesAfter "_shake" ["//"]
-              phony "clean" $ need ["cleanBuild", "cleanTest"]
+              phony "clean" $ need ["cleanProject", "cleanTest"]
+              phony "cleanShake" $ removeFilesAfter shakeDir ["//"]
               phony "cleanAll" $ need ["clean", "cleanShake"]
-
-getCIncludeDirs :: [FilePath] -> [FilePattern] -> IO [FilePath]
-getCIncludeDirs dirs exts = do
-    headerFiles <- getDirectoriesFiles dirs exts
-    return $ unique (map takeDirectory headerFiles)
-    where unique = Set.toList . Set.fromList
 
 -- A little wrapper around getDirectoryFiles so we can get files from multiple directories
 getDirectoriesFiles :: [FilePath] -> [FilePattern] -> IO [FilePath]
@@ -289,10 +266,7 @@ scanSourceFiles previousModules = foldl
   where
     addNextContents previousContents file = do
         (sources, modules, programs) <- previousContents
-        newContents                  <- if takeExtension file `elem` fortranExts
-            then scanFortranSourceFile (previousModules `Map.union` modules)
-                                       file
-            else scanCSourceFile (previousModules `Map.union` modules) file
+        newContents <- scanSourceFile (previousModules `Map.union` modules) file
         case newContents of
             Left (source, program) ->
                 return
@@ -307,48 +281,40 @@ scanSourceFiles previousModules = foldl
                     , programs
                     )
 
-scanFortranSourceFile
+scanSourceFile
     :: Modules
     -> FilePath
     -> IO (Either (SourceFile, Program) (SourceFile, Modules))
-scanFortranSourceFile previousModules file = do
+scanSourceFile previousModules file = do
     fileLines <- readFileLinesIO file
-    let eitherContents = foldl
-            addLineContents
-            (Right (Set.empty, Set.empty, Set.empty, Nothing))
-            fileLines
+    let eitherContents = foldl addLineContents
+                               (Right (Set.empty, Set.empty, Nothing))
+                               fileLines
     case eitherContents of
         Right contents -> case contents of
-            (modulesContained, fortranModulesUsed, cModulesUsed, Nothing) ->
-                return $ Right
-                    (buildOutputWithModules file
-                                            fortranModulesUsed
-                                            cModulesUsed
-                                            modulesContained
-                    )
-            (modulesContained, fortranModulesUsed, cModulesUsed, Just programName)
-                -> return $ Left
-                    (buildOutputWithProgram file
-                                            fortranModulesUsed
-                                            cModulesUsed
-                                            modulesContained
-                                            programName
-                    )
+            (modulesContained, modulesUsed, Nothing) ->
+                return
+                    $ Right
+                          (buildOutputWithModules file
+                                                  modulesUsed
+                                                  modulesContained
+                          )
+            (modulesContained, modulesUsed, Just programName) ->
+                return
+                    $ Left
+                          (buildOutputWithProgram file
+                                                  modulesUsed
+                                                  modulesContained
+                                                  programName
+                          )
         Left err -> fail $ "*** Error in file " ++ file ++ ": " ++ err
   where
     addLineContents contents line = case contents of
-        Right (previousModulesContained, previousFortranModulesUsed, previousCModulesUsed, maybeProgram)
-            -> case parseFortranLine line of
-                FortranModuleUsed moduleName -> Right
+        Right (previousModulesContained, previousModulesUsed, maybeProgram) ->
+            case parseFortranLine line of
+                ModuleUsed moduleName -> Right
                     ( previousModulesContained
-                    , moduleName `Set.insert` previousFortranModulesUsed
-                    , previousCModulesUsed
-                    , maybeProgram
-                    )
-                CModuleUsed moduleName -> Right
-                    ( previousModulesContained
-                    , previousFortranModulesUsed
-                    , moduleName `Set.insert` previousCModulesUsed
+                    , moduleName `Set.insert` previousModulesUsed
                     , maybeProgram
                     )
                 ModuleDefined moduleName ->
@@ -369,8 +335,7 @@ scanFortranSourceFile previousModules file = do
                                 else Right
                                     ( moduleName
                                         `Set.insert` previousModulesContained
-                                    , previousFortranModulesUsed
-                                    , previousCModulesUsed
+                                    , previousModulesUsed
                                     , maybeProgram
                                     )
                 ProgramDefined programName -> case maybeProgram of
@@ -380,78 +345,18 @@ scanFortranSourceFile previousModules file = do
                             ++ programName'
                             ++ " and "
                             ++ programName
-                    Nothing -> Right
+                    Nothing ->
+                        Right
+                            ( previousModulesContained
+                            , previousModulesUsed
+                            , Just programName
+                            )
+                Other ->
+                    Right
                         ( previousModulesContained
-                        , previousFortranModulesUsed
-                        , previousCModulesUsed
-                        , Just programName
+                        , previousModulesUsed
+                        , maybeProgram
                         )
-                Other -> Right
-                    ( previousModulesContained
-                    , previousFortranModulesUsed
-                    , previousCModulesUsed
-                    , maybeProgram
-                    )
-        Left err -> Left err
-
-scanCSourceFile
-    :: Modules
-    -> FilePath
-    -> IO (Either (SourceFile, Program) (SourceFile, Modules))
-scanCSourceFile previousModules file = do
-    fileLines <- readFileLinesIO file
-    let eitherContents = foldl
-            addLineContents
-            (Right (Set.empty, Set.empty, Set.empty, Nothing))
-            fileLines
-    case eitherContents of
-        Right contents -> case contents of
-            (modulesContained, fortranModulesUsed, cModulesUsed, Nothing) ->
-                return $ Right
-                    (buildOutput file fortranModulesUsed modulesContained)
-            (modulesContained, fortranModulesUsed, cModulesUsed, Just programName)
-                -> undefined
-        Left err -> fail $ "*** Error in file " ++ file ++ ": " ++ err
-  where
-    addLineContents contents line = case contents of
-        Right (previousModulesContained, previousFortranModulesUsed, previousCModulesUsed, maybeProgram)
-            -> case parseCLine line of
-                FortranModuleUsed moduleName -> Right
-                    ( previousModulesContained
-                    , moduleName `Set.insert` previousFortranModulesUsed
-                    , previousCModulesUsed
-                    , maybeProgram
-                    )
-                CModuleUsed moduleName -> undefined
-                ModuleDefined moduleName ->
-                    case Map.lookup moduleName previousModules of
-                        Just module' ->
-                            Left
-                                $  "module "
-                                ++ moduleName
-                                ++ " was already defined in "
-                                ++ getFileName (getModuleSource module')
-                        Nothing ->
-                            if moduleName `Set.member` previousModulesContained
-                                then
-                                    Left
-                                    $  "module "
-                                    ++ moduleName
-                                    ++ " defined twice"
-                                else Right
-                                    ( moduleName
-                                        `Set.insert` previousModulesContained
-                                    , previousFortranModulesUsed
-                                    , previousCModulesUsed
-                                    , maybeProgram
-                                    )
-                ProgramDefined programName -> undefined
-                Other                      -> Right
-                    ( previousModulesContained
-                    , previousFortranModulesUsed
-                    , previousCModulesUsed
-                    , maybeProgram
-                    )
         Left err -> Left err
 
 readFileLinesIO :: FilePath -> IO [String]
@@ -460,17 +365,11 @@ readFileLinesIO file = do
     return $ lines contents
 
 buildOutputWithModules
-    :: FilePath
-    -> ModuleNames
-    -> ModuleNames
-    -> ModuleNames
-    -> (SourceFile, Modules)
-buildOutputWithModules file fortranModulesUsed cModulesUsed modulesContained =
-    let source = FortranSourceFile
-            file
-            (fortranModulesUsed `Set.difference` modulesContained)
-            cModulesUsed
-            modulesContained
+    :: FilePath -> ModuleNames -> ModuleNames -> (SourceFile, Modules)
+buildOutputWithModules file modulesUsed modulesContained =
+    let source = SourceFile file
+                            (modulesUsed `Set.difference` modulesContained)
+                            modulesContained
         modules = foldl (addModuleWithSource source) Map.empty modulesContained
     in  (source, modules)
   where
@@ -481,26 +380,14 @@ buildOutputWithProgram
     :: FilePath
     -> ModuleNames
     -> ModuleNames
-    -> ModuleNames
     -> ProgramName
     -> (SourceFile, Program)
-buildOutputWithProgram file fortranModulesUsed cModulesUsed modulesContained programName
-    = let source = FortranSourceFile
-              file
-              (fortranModulesUsed `Set.difference` modulesContained)
-              cModulesUsed
-              modulesContained
-          program = Program programName source
-      in  (source, program)
-
-buildOutput :: FilePath -> ModuleNames -> ModuleNames -> (SourceFile, Modules)
-buildOutput file fortranModulesUsed modulesContained =
-    let source  = CSourceFile file fortranModulesUsed
-        modules = foldl (addModuleWithSource source) Map.empty modulesContained
-    in  (source, modules)
-  where
-    addModuleWithSource source previousModules moduleName =
-        Map.insert moduleName (Module moduleName source) previousModules
+buildOutputWithProgram file modulesUsed modulesContained programName =
+    let source = SourceFile file
+                            (modulesUsed `Set.difference` modulesContained)
+                            modulesContained
+        program = Program programName source
+    in  (source, program)
 
 parseFortranLine :: String -> LineContents
 parseFortranLine line =
@@ -512,28 +399,12 @@ parseFortranLine line =
     getResult [(contents, _)        ] = contents
     getResult []                      = Other
 
-parseCLine :: String -> LineContents
-parseCLine line =
-    let line'  = map toLower line
-        result = readP_to_S doCLineParse line'
-    in  getResult result
-  where
-    getResult (_ : (contents, _) : _) = contents
-    getResult [(contents, _)        ] = contents
-    getResult []                      = Other
-
 doFortranLineParse :: ReadP LineContents
 doFortranLineParse = option Other fortranUsefulContents
 
-doCLineParse :: ReadP LineContents
-doCLineParse = option Other cUsefulContents
-
 fortranUsefulContents :: ReadP LineContents
 fortranUsefulContents =
-    moduleDeclaration <|> programDeclaration <|> useStatement <|> cUseStatement
-
-cUsefulContents :: ReadP LineContents
-cUsefulContents = moduleDeclaration <|> useStatement
+    moduleDeclaration <|> programDeclaration <|> useStatement
 
 moduleDeclaration :: ReadP LineContents
 moduleDeclaration = do
@@ -560,16 +431,7 @@ useStatement = do
     skipAtLeastOneWhiteSpace
     modName <- validIdentifier
     skipSpaceCommaOrEnd
-    return $ FortranModuleUsed modName
-
-cUseStatement :: ReadP LineContents
-cUseStatement = do
-    comment
-    _ <- string "use"
-    skipAtLeastOneWhiteSpace
-    modName <- validIdentifier
-    skipSpaceCommaOrEnd
-    return $ CModuleUsed modName
+    return $ ModuleUsed modName
 
 skipAtLeastOneWhiteSpace :: ReadP ()
 skipAtLeastOneWhiteSpace = do
@@ -611,27 +473,9 @@ digit = satisfy isDigit
 underscore :: ReadP Char
 underscore = char '_'
 
-comment :: ReadP ()
-comment = firstColumnComment <|> freeFormComment
-
-firstColumnComment :: ReadP ()
-firstColumnComment = do
-    _ <- char 'c' <|> char 'C'
-    skipSpaces
-    return ()
-
-freeFormComment :: ReadP ()
-freeFormComment = do
-    skipSpaces
-    _ <- char '!'
-    skipSpaces
-    return ()
-
 -- Helper routines for generating the build rules
 makeSourceRuleMaps
     :: [String]
-    -> [String]
-    -> [String]
     -> ModuleSearchTree
     -> [SourceFile]
     -> ( Map.Map FilePath [FilePath]
@@ -643,16 +487,14 @@ makeSourceRuleMaps = makeSpecialSourceRuleMaps Map.empty
 makeSpecialSourceRuleMaps
     :: SpecialCommands
     -> [String]
-    -> [String]
-    -> [String]
     -> ModuleSearchTree
     -> [SourceFile]
     -> ( Map.Map FilePath [FilePath]
        , Map.Map FilePath (IO [FilePath])
        , Map.Map FilePath (Action ())
        )
-makeSpecialSourceRuleMaps specialCommands fortranFlags cFlags cIncludeFlags moduleSearchTree sources
-    = foldl
+makeSpecialSourceRuleMaps specialCommands flags moduleSearchTree sources =
+    foldl
         (\(previousFilesMap, previousDependsMap, previousCommandMap) (newFilesMap, newDependsMap, newCommandMap) ->
             ( previousFilesMap `Map.union` newFilesMap
             , previousDependsMap `Map.union` newDependsMap
@@ -661,19 +503,12 @@ makeSpecialSourceRuleMaps specialCommands fortranFlags cFlags cIncludeFlags modu
         )
         (Map.empty, Map.empty, Map.empty)
         (map
-            (makeSpecialSourceRuleMap specialCommands
-                                      fortranFlags
-                                      cFlags
-                                      cIncludeFlags
-                                      moduleSearchTree
-            )
+            (makeSpecialSourceRuleMap specialCommands flags moduleSearchTree)
             sources
         )
 
 makeSpecialSourceRuleMap
     :: SpecialCommands
-    -> [String]
-    -> [String]
     -> [String]
     -> ModuleSearchTree
     -> SourceFile
@@ -681,63 +516,35 @@ makeSpecialSourceRuleMap
        , Map.Map FilePath (IO [FilePath])
        , Map.Map FilePath (Action ())
        )
-makeSpecialSourceRuleMap specialCommands fortranFlags cFlags cIncludeFlags moduleSearchTree source
-    = let
-          buildDir = getNodeDirectory moduleSearchTree
-          compDeps = compileTimeDepends source cIncludeFlags moduleSearchTree
-      in
-          case source of
-              FortranSourceFile src _ _ modulesContained ->
-                  let
-                      objectFileName  = buildDir </> takeFileName src -<.> "o"
-                      moduleFileNames = map ((buildDir </>) . (-<.> "mod"))
-                          $ Set.toList modulesContained
-                      additionalIncludeFlags = map
-                          ("-I" ++)
-                          (getAdditionalBuildDirs moduleSearchTree)
-                      filesMap = foldl
-                          (\previousMap newFile -> Map.insert
-                              newFile
-                              (objectFileName : moduleFileNames)
-                              previousMap
-                          )
-                          Map.empty
-                          (objectFileName : moduleFileNames)
-                      dependsMap = Map.singleton objectFileName compDeps
-                      commandMap =
-                          Map.singleton objectFileName
-                              $ case Map.lookup src specialCommands of
-                                    Just command ->
-                                        cmd command ["-o", objectFileName, src] :: Action
-                                                ()
-                                    Nothing ->
-                                        cmd compiler
-                                            ["-c", "-J" ++ buildDir]
-                                            additionalIncludeFlags
-                                            fortranFlags
-                                            ["-o", objectFileName, src] :: Action
-                                                ()
-                  in
-                      (filesMap, dependsMap, commandMap)
-              CSourceFile src _ ->
-                  let
-                      objectFileName = buildDir </> takeFileName src -<.> "o"
-                      filesMap = Map.singleton objectFileName [objectFileName]
-                      dependsMap = Map.singleton objectFileName compDeps
-                      commandMap =
-                          Map.singleton objectFileName
-                              $ case Map.lookup src specialCommands of
-                                    Just command ->
-                                        cmd command ["-o", objectFileName, src] :: Action
-                                                ()
-                                    Nothing ->
-                                        cmd compiler
-                                            ["-c"]
-                                            cFlags
-                                            ["-o", objectFileName, src] :: Action
-                                                ()
-                  in
-                      (filesMap, dependsMap, commandMap)
+makeSpecialSourceRuleMap specialCommands flags moduleSearchTree source@(SourceFile src _ modulesContained)
+    = let buildDir        = getNodeDirectory moduleSearchTree
+          compDeps        = compileTimeDepends source moduleSearchTree
+          objectFileName  = buildDir </> takeFileName src -<.> "o"
+          moduleFileNames = map ((buildDir </>) . (-<.> "mod"))
+              $ Set.toList modulesContained
+          additionalIncludeFlags =
+                  map ("-I" ++) (getAdditionalBuildDirs moduleSearchTree)
+          filesMap = foldl
+              (\previousMap newFile -> Map.insert
+                  newFile
+                  (objectFileName : moduleFileNames)
+                  previousMap
+              )
+              Map.empty
+              (objectFileName : moduleFileNames)
+          dependsMap = Map.singleton objectFileName compDeps
+          commandMap =
+                  Map.singleton objectFileName
+                      $ case Map.lookup src specialCommands of
+                            Just command ->
+                                cmd command ["-o", objectFileName, src] :: Action ()
+                            Nothing ->
+                                cmd compiler
+                                    ["-c", "-J" ++ buildDir]
+                                    additionalIncludeFlags
+                                    flags
+                                    ["-o", objectFileName, src] :: Action ()
+      in  (filesMap, dependsMap, commandMap)
 
 getAdditionalBuildDirs :: ModuleSearchTree -> [FilePath]
 getAdditionalBuildDirs moduleSearchTree =
@@ -746,108 +553,92 @@ getAdditionalBuildDirs moduleSearchTree =
         fromLowerLevels = concatMap getAdditionalBuildDirs remainingNodes
     in  fromThisLevel ++ fromLowerLevels
 
-makeExecutableRule
-    :: [String] -> [String] -> ModuleSearchTree -> Program -> Rules ()
-makeExecutableRule flags cIncludeFlags moduleSearchTree program =
-    buildDir </> getProgramName program <.> exe %> \x -> do
-        linkTimeDepends' <- liftIO $ linkTimeDepends
-            (getProgramSource program)
-            cIncludeFlags
-            moduleSearchTree
-        need linkTimeDepends'
-        cmd compiler linkTimeDepends' ["-o", x] flags
-    where buildDir = getNodeDirectory moduleSearchTree
+makeExecutableMaps
+    :: ModuleSearchTree
+    -> [Program]
+    -> (Set.Set FilePath, Map.Map FilePath (IO [FilePath]))
+makeExecutableMaps moduleSearchTree programs = foldl
+    (\(previousSet, previousMap) (newSet, newMap) ->
+        (previousSet `Set.union` newSet, previousMap `Map.union` newMap)
+    )
+    (Set.empty, Map.empty)
+    (map (makeExecutableMap moduleSearchTree) programs)
 
-compileTimeDepends
-    :: SourceFile -> [String] -> ModuleSearchTree -> IO [FilePath]
-compileTimeDepends source cIncludeFlags moduleSearchTree = do
-    others <- recursiveCompileTimeDepends source cIncludeFlags moduleSearchTree
+makeExecutableMap
+    :: ModuleSearchTree
+    -> Program
+    -> (Set.Set FilePath, Map.Map FilePath (IO [FilePath]))
+makeExecutableMap moduleSearchTree program =
+    let
+        buildDir   = getNodeDirectory moduleSearchTree
+        executable = buildDir </> getProgramName program <.> exe
+        linkDeps   = linkTimeDepends (getProgramSource program) moduleSearchTree
+    in
+        (Set.singleton executable, Map.singleton executable linkDeps)
+
+compileTimeDepends :: SourceFile -> ModuleSearchTree -> IO [FilePath]
+compileTimeDepends source moduleSearchTree = do
+    others <- recursiveCompileTimeDepends source moduleSearchTree
     return $ getFileName source : others
 
-recursiveCompileTimeDepends
-    :: SourceFile -> [String] -> ModuleSearchTree -> IO [FilePath]
-recursiveCompileTimeDepends source cIncludeFlags moduleSearchTree =
-    case source of
-        FortranSourceFile _ fortranModulesUsed _ _ -> do
-            modules <- foldM collect Set.empty fortranModulesUsed
-            return $ Set.toList modules
+recursiveCompileTimeDepends :: SourceFile -> ModuleSearchTree -> IO [FilePath]
+recursiveCompileTimeDepends source moduleSearchTree = case source of
+    SourceFile _ modulesUsed _ -> do
+        modules <- foldM collect Set.empty modulesUsed
+        return $ Set.toList modules
+      where
+        collect previousModules nextModule =
+            if nextModule `Map.member` getNodeModules moduleSearchTree
+                then
+                    return
+                    $            (   getNodeDirectory moduleSearchTree
+                                 </> nextModule
+                                 <.> "mod"
+                                 )
+                    `Set.insert` previousModules
+                else do
+                    moreMods <- foldM recursePart
+                                      Set.empty
+                                      (getRemainingNodes moduleSearchTree)
+                    return $ moreMods `Set.union` previousModules
           where
-            collect previousModules nextModule =
-                if nextModule `Map.member` getNodeModules moduleSearchTree
-                    then
-                        return
-                        $            (   getNodeDirectory moduleSearchTree
-                                     </> nextModule
-                                     <.> "mod"
-                                     )
-                        `Set.insert` previousModules
-                    else do
-                        moreMods <- foldM
-                            recursePart
-                            Set.empty
-                            (getRemainingNodes moduleSearchTree)
-                        return $ moreMods `Set.union` previousModules
-              where
-                recursePart prev tree = do
-                    more <- recursiveCompileTimeDepends source
-                                                        cIncludeFlags
-                                                        tree
-                    return $ Set.fromList more `Set.union` prev
-        CSourceFile file _ -> getHeaders file cIncludeFlags
+            recursePart prev tree = do
+                more <- recursiveCompileTimeDepends source tree
+                return $ Set.fromList more `Set.union` prev
 
-linkTimeDepends :: SourceFile -> [String] -> ModuleSearchTree -> IO [FilePath]
-linkTimeDepends source cIncludeFlags moduleSearchTree = do
+linkTimeDepends :: SourceFile -> ModuleSearchTree -> IO [FilePath]
+linkTimeDepends source moduleSearchTree = do
     (fromModules, fromHeaders) <- recursiveLinkTimeDepends
-        cIncludeFlags
         (Set.empty, Set.empty)
         source
         moduleSearchTree
     return $ Set.toList (fromModules `Set.union` fromHeaders)
 
 recursiveLinkTimeDepends
-    :: [String]
-    -> (Set.Set FilePath, Set.Set FilePath)
+    :: (Set.Set FilePath, Set.Set FilePath)
     -> SourceFile
     -> ModuleSearchTree
     -> IO (Set.Set FilePath, Set.Set FilePath)
-recursiveLinkTimeDepends cIncludeFlags (fromModules, fromHeaders) source moduleSearchTree
-    = let
-          obj =
-              getNodeDirectory moduleSearchTree
-                  </>  (takeFileName . getFileName) source
-                  -<.> "o"
+recursiveLinkTimeDepends (fromModules, fromHeaders) source@(SourceFile _ modulesUsed _) moduleSearchTree
+    = let obj =
+                  getNodeDirectory moduleSearchTree
+                      </>  (takeFileName . getFileName) source
+                      -<.> "o"
           withCurrentObj = obj `Set.insert` fromModules
-      in
-          if obj `Set.member` fromModules
+      in  if obj `Set.member` fromModules
               then return (fromModules, fromHeaders)
-              else case source of
-                  FortranSourceFile _ fortranModulesUsed cModulesUsed _ ->
-                      foldM
-                          (linkTimeModuleSearch cIncludeFlags moduleSearchTree)
-                          (withCurrentObj, fromHeaders)
-                          (Set.toList
-                              (fortranModulesUsed `Set.union` cModulesUsed)
-                          )
-                  CSourceFile file fortranModulesUsed -> do
-                      headers      <- getHeaders file cIncludeFlags
-                      theseHeaders <- objsFromHeaders headers moduleSearchTree
-                      foldM
-                          (linkTimeModuleSearch cIncludeFlags moduleSearchTree)
-                          ( withCurrentObj
-                          , Set.fromList theseHeaders `Set.union` fromHeaders
-                          )
-                          (Set.toList fortranModulesUsed)
+              else foldM (linkTimeModuleSearch moduleSearchTree)
+                         (withCurrentObj, fromHeaders)
+                         (Set.toList modulesUsed)
 
 linkTimeModuleSearch
-    :: [String]
-    -> ModuleSearchTree
+    :: ModuleSearchTree
     -> (Set.Set FilePath, Set.Set FilePath)
     -> ModuleName
     -> IO (Set.Set FilePath, Set.Set FilePath)
-linkTimeModuleSearch cIncludeFlags moduleSearchTree (fromModules, fromHeaders) moduleName
-    = case maybeModule of
-        Just module' -> recursiveLinkTimeDepends cIncludeFlags
-                                                 (fromModules, fromHeaders)
+linkTimeModuleSearch moduleSearchTree (fromModules, fromHeaders) moduleName =
+    case maybeModule of
+        Just module' -> recursiveLinkTimeDepends (fromModules, fromHeaders)
                                                  (getModuleSource module')
                                                  moduleSearchTree
         Nothing -> foldM collect
@@ -856,30 +647,7 @@ linkTimeModuleSearch cIncludeFlags moduleSearchTree (fromModules, fromHeaders) m
   where
     maybeModule = Map.lookup moduleName (getNodeModules moduleSearchTree)
     collect prevObjs nextSearchTree =
-        linkTimeModuleSearch cIncludeFlags nextSearchTree prevObjs moduleName
-
-getHeaders :: FilePath -> [String] -> IO [FilePath]
-getHeaders file cIncludeFlags = do
-    (exitCode, makeDepends, err) <- readProcessWithExitCode
-        compiler
-        (file : "-MM" : cIncludeFlags)
-        ""
-    case exitCode of
-        ExitSuccess -> return $ filter
-            ((`elem` headerExts) . takeExtension)
-            (splitOn " " makeDepends)
-        ExitFailure _ -> fail err
-
-objsFromHeaders :: [FilePath] -> ModuleSearchTree -> IO [FilePath]
-objsFromHeaders headers moduleSearchTree =
-    map toObj <$> filterM cExists headers
-  where
-    toObj header =
-        getNodeDirectory moduleSearchTree </> takeFileName header -<.> "o"
-    cExists :: FilePath -> IO Bool
-    cExists header = do
-        filesPresent <- mapM (doesFileExist . (header -<.>)) cExts
-        return $ or filesPresent
+        linkTimeModuleSearch nextSearchTree prevObjs moduleName
 
 removeIfExists :: FilePath -> IO ()
 removeIfExists file = removeFile file `catch` handleExists
