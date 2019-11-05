@@ -285,7 +285,7 @@ module Vegetables_m
         subroutine computation_
         end subroutine computation_
 
-        function filter_(self, filter_string) result(filter_result)
+        pure function filter_(self, filter_string) result(filter_result)
             use iso_varying_string, only: VARYING_STRING
             import Test_t, FilterResult_t
             class(Test_t), intent(in) :: self
@@ -5699,7 +5699,7 @@ contains
         description = self%description_
     end function testCaseDescription
 
-    function testCaseFilter(self, filter_string) result(filter_result)
+    pure function testCaseFilter(self, filter_string) result(filter_result)
         use iso_varying_string, only: VARYING_STRING
         use strff, only: operator(.includes.)
 
@@ -5952,7 +5952,7 @@ contains
                 INDENTATION)
     end function testCollectionDescription
 
-    function testCollectionFilter(self, filter_string) result(filter_result)
+    pure function testCollectionFilter(self, filter_string) result(filter_result)
         use iso_varying_string, only: VARYING_STRING
         use strff, only: operator(.includes.)
 
@@ -5962,17 +5962,12 @@ contains
 
         class(TestCollection_t), allocatable :: new_collection
         type(FilterItemResult_t) :: filter_results(size(self%tests))
-        integer :: i
 
         if (self%description_.includes.filter_string) then
             filter_result%matched = .true.
             allocate(filter_result%test, source = self)
         else
-            !$omp parallel do
-            do i = 1, size(self%tests)
-                filter_results(i) = self%tests(i)%filter(filter_string)
-            end do
-            !$omp end parallel do
+            filter_results = self%tests%filter(filter_string)
             if (any(filter_results%matched)) then
                 allocate(new_collection, source = self)
                 deallocate(new_collection%tests)
@@ -6134,7 +6129,7 @@ contains
         description = self%test%description()
     end function testItemDescription
 
-    function testItemFilter(self, filter_string) result(filter_result)
+    elemental function testItemFilter(self, filter_string) result(filter_result)
         use iso_varying_string, only: VARYING_STRING
 
         class(TestItem_t), intent(in) :: self
