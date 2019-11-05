@@ -5466,9 +5466,11 @@ contains
 
         type(TestItem_t), intent(in) :: tests
 
+        double precision :: end_time
         type(FilterItemResult_t) :: filtered_tests
         type(Options_t) :: options
         type(TestResultItem_t) :: results
+        double precision :: start_time
         type(TestItem_t) :: tests_to_run
 
         options = getOptions()
@@ -5498,10 +5500,16 @@ contains
                 "A total of " // toString(tests_to_run%numCases()) // " test cases")
         call put_line(output_unit, "")
 
+        call cpu_time(start_time)
         results = tests_to_run%run()
+        call cpu_time(end_time)
+
 
         if (results%passed()) then
             call put_line(output_unit, "All Passed")
+            call put_line( &
+                    output_unit, &
+                    "Took " // toString(end_time - start_time, 6) // " seconds")
             call put_line(output_unit, "")
             if (options%verbose) then
                 call put_line( &
@@ -5517,6 +5525,9 @@ contains
             call put_line(output_unit, "")
         else
             call put_line(error_unit, "Failed")
+            call put_line( &
+                    error_unit, &
+                    "Took " // toString(end_time - start_time, 6) // " seconds")
             call put_line(error_unit, "")
             if (options%verbose) then
                 call put_line( &
