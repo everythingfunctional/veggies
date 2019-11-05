@@ -35,7 +35,7 @@ contains
         random_double = Generated(the_input)
     end function generate
 
-    function shrink(input) result(shrunk)
+    pure function shrink(input) result(shrunk)
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: &
                 DoublePrecisionInput_t, &

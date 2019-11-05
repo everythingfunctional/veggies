@@ -4254,7 +4254,7 @@ contains
                 .or. (abs(expected - actual) / abs(expected) <= tolerance)
     end function equalsWithinRelative
 
-    function Example(input)
+    pure function Example(input)
         class(Input_t), intent(in) :: input
         type(Example_t) :: Example
 
@@ -4306,7 +4306,7 @@ contains
         generated_value = Generated(the_input)
     end function generateInteger
 
-    function Generated(value_)
+    pure function Generated(value_)
         class(Input_t), intent(in) :: value_
         type(Generated_t) :: generated
 
@@ -5553,7 +5553,7 @@ contains
         end if
     end subroutine runTests
 
-    function shrinkAsciiString(input) result(shrunk)
+    pure function shrinkAsciiString(input) result(shrunk)
         use iso_varying_string, only: assignment(=), extract, len
 
         class(Input_t), intent(in) :: input
@@ -5574,7 +5574,7 @@ contains
         end select
     end function shrinkAsciiString
 
-    function shrinkInteger(input) result(shrunk)
+    pure function shrinkInteger(input) result(shrunk)
         class(Input_t), intent(in) :: input
         type(ShrinkResult_t) :: shrunk
 
@@ -5592,7 +5592,7 @@ contains
         end select
     end function shrinkInteger
 
-    function ShrinkResult(value_, simplest)
+    pure function ShrinkResult(value_, simplest)
         class(Input_t), intent(in) :: value_
         logical, intent(in) :: simplest
         type(ShrinkResult_t) :: ShrinkResult
@@ -5601,14 +5601,14 @@ contains
         ShrinkResult%simplest = simplest
     end function ShrinkResult
 
-    function ShrunkValue(value_)
+    pure function ShrunkValue(value_)
         class(Input_t), intent(in) :: value_
         type(ShrinkResult_t) :: ShrunkValue
 
         ShrunkValue = ShrinkResult(value_, .false.)
     end function ShrunkValue
 
-    function SimplestValue(value_)
+    pure function SimplestValue(value_)
         class(Input_t), intent(in) :: value_
         type(ShrinkResult_t) :: SimplestValue
 
@@ -6283,7 +6283,7 @@ contains
         item = It_("Then " // description, test)
     end function ThenInputS
 
-    function Transformed(input)
+    pure function Transformed(input)
         class(Input_t), intent(in) :: input
         type(Transformed_t) :: Transformed
 
