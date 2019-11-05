@@ -798,7 +798,7 @@ module Vegetables_m
             When, &
             withUserMessage
 contains
-    function assertDoesntIncludeBasicCC(search_for, string) result(result__)
+    pure function assertDoesntIncludeBasicCC(search_for, string) result(result__)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: search_for
@@ -812,7 +812,7 @@ contains
                 var_str(""))
     end function assertDoesntIncludeBasicCC
 
-    function assertDoesntIncludeBasicCS(search_for, string) result(result__)
+    pure function assertDoesntIncludeBasicCS(search_for, string) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: search_for
@@ -826,7 +826,7 @@ contains
                 var_str(""))
     end function assertDoesntIncludeBasicCS
 
-    function assertDoesntIncludeBasicSC(search_for, string) result(result__)
+    pure function assertDoesntIncludeBasicSC(search_for, string) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         type(VARYING_STRING), intent(in) :: search_for
@@ -840,7 +840,7 @@ contains
                 var_str(""))
     end function assertDoesntIncludeBasicSC
 
-    function assertDoesntIncludeBasicSS(search_for, string) result(result__)
+    pure function assertDoesntIncludeBasicSS(search_for, string) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         type(VARYING_STRING), intent(in) :: search_for
@@ -854,7 +854,7 @@ contains
                 var_str(""))
     end function assertDoesntIncludeBasicSS
 
-    function assertDoesntIncludeWithMessageCCC( &
+    pure function assertDoesntIncludeWithMessageCCC( &
             search_for, string, message) result(result__)
         use iso_varying_string, only: var_str
 
@@ -870,7 +870,7 @@ contains
                 var_str(message))
     end function assertDoesntIncludeWithMessageCCC
 
-    function assertDoesntIncludeWithMessageCCS( &
+    pure function assertDoesntIncludeWithMessageCCS( &
             search_for, string, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -886,7 +886,7 @@ contains
                 message)
     end function assertDoesntIncludeWithMessageCCS
 
-    function assertDoesntIncludeWithMessageCSC( &
+    pure function assertDoesntIncludeWithMessageCSC( &
             search_for, string, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -902,7 +902,7 @@ contains
                 var_str(message))
     end function assertDoesntIncludeWithMessageCSC
 
-    function assertDoesntIncludeWithMessageCSS( &
+    pure function assertDoesntIncludeWithMessageCSS( &
             search_for, string, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -918,7 +918,7 @@ contains
                 message)
     end function assertDoesntIncludeWithMessageCSS
 
-    function assertDoesntIncludeWithMessageSCC( &
+    pure function assertDoesntIncludeWithMessageSCC( &
             search_for, string, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -934,7 +934,7 @@ contains
                 var_str(message))
     end function assertDoesntIncludeWithMessageSCC
 
-    function assertDoesntIncludeWithMessageSCS( &
+    pure function assertDoesntIncludeWithMessageSCS( &
             search_for, string, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -950,7 +950,7 @@ contains
                 message)
     end function assertDoesntIncludeWithMessageSCS
 
-    function assertDoesntIncludeWithMessageSSC( &
+    pure function assertDoesntIncludeWithMessageSSC( &
             search_for, string, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -966,7 +966,7 @@ contains
                 var_str(message))
     end function assertDoesntIncludeWithMessageSSC
 
-    function assertDoesntIncludeWithMessageSSS( &
+    pure function assertDoesntIncludeWithMessageSSS( &
             search_for, string, message) result(result__)
         use iso_varying_string, only: VARYING_STRING
 
@@ -982,7 +982,7 @@ contains
                 message)
     end function assertDoesntIncludeWithMessageSSS
 
-    function assertDoesntIncludeWithMessagesCCCC( &
+    pure function assertDoesntIncludeWithMessagesCCCC( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: var_str
 
@@ -999,7 +999,7 @@ contains
                 var_str(failure_message))
     end function assertDoesntIncludeWithMessagesCCCC
 
-    function assertDoesntIncludeWithMessagesCCCS( &
+    pure function assertDoesntIncludeWithMessagesCCCS( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1016,7 +1016,7 @@ contains
                 failure_message)
     end function assertDoesntIncludeWithMessagesCCCS
 
-    function assertDoesntIncludeWithMessagesCCSC( &
+    pure function assertDoesntIncludeWithMessagesCCSC( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1033,7 +1033,7 @@ contains
                 var_str(failure_message))
     end function assertDoesntIncludeWithMessagesCCSC
 
-    function assertDoesntIncludeWithMessagesCCSS( &
+    pure function assertDoesntIncludeWithMessagesCCSS( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1050,7 +1050,7 @@ contains
                 failure_message)
     end function assertDoesntIncludeWithMessagesCCSS
 
-    function assertDoesntIncludeWithMessagesCSCC( &
+    pure function assertDoesntIncludeWithMessagesCSCC( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1067,7 +1067,7 @@ contains
                 var_str(failure_message))
     end function assertDoesntIncludeWithMessagesCSCC
 
-    function assertDoesntIncludeWithMessagesCSCS( &
+    pure function assertDoesntIncludeWithMessagesCSCS( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1084,7 +1084,7 @@ contains
                 failure_message)
     end function assertDoesntIncludeWithMessagesCSCS
 
-    function assertDoesntIncludeWithMessagesCSSC( &
+    pure function assertDoesntIncludeWithMessagesCSSC( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1101,7 +1101,7 @@ contains
                 var_str(failure_message))
     end function assertDoesntIncludeWithMessagesCSSC
 
-    function assertDoesntIncludeWithMessagesCSSS( &
+    pure function assertDoesntIncludeWithMessagesCSSS( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1118,7 +1118,7 @@ contains
                 failure_message)
     end function assertDoesntIncludeWithMessagesCSSS
 
-    function assertDoesntIncludeWithMessagesSCCC( &
+    pure function assertDoesntIncludeWithMessagesSCCC( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1135,7 +1135,7 @@ contains
                 var_str(failure_message))
     end function assertDoesntIncludeWithMessagesSCCC
 
-    function assertDoesntIncludeWithMessagesSCCS( &
+    pure function assertDoesntIncludeWithMessagesSCCS( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1152,7 +1152,7 @@ contains
                 failure_message)
     end function assertDoesntIncludeWithMessagesSCCS
 
-    function assertDoesntIncludeWithMessagesSCSC( &
+    pure function assertDoesntIncludeWithMessagesSCSC( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1169,7 +1169,7 @@ contains
                 var_str(failure_message))
     end function assertDoesntIncludeWithMessagesSCSC
 
-    function assertDoesntIncludeWithMessagesSCSS( &
+    pure function assertDoesntIncludeWithMessagesSCSS( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1186,7 +1186,7 @@ contains
                 failure_message)
     end function assertDoesntIncludeWithMessagesSCSS
 
-    function assertDoesntIncludeWithMessagesSSCC( &
+    pure function assertDoesntIncludeWithMessagesSSCC( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1203,7 +1203,7 @@ contains
                 var_str(failure_message))
     end function assertDoesntIncludeWithMessagesSSCC
 
-    function assertDoesntIncludeWithMessagesSSCS( &
+    pure function assertDoesntIncludeWithMessagesSSCS( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1220,7 +1220,7 @@ contains
                 failure_message)
     end function assertDoesntIncludeWithMessagesSSCS
 
-    function assertDoesntIncludeWithMessagesSSSC( &
+    pure function assertDoesntIncludeWithMessagesSSSC( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1237,7 +1237,7 @@ contains
                 var_str(failure_message))
     end function assertDoesntIncludeWithMessagesSSSC
 
-    function assertDoesntIncludeWithMessagesSSSS( &
+    pure function assertDoesntIncludeWithMessagesSSSS( &
             search_for, string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING
         use strff, only: operator(.includes.)
@@ -1259,7 +1259,7 @@ contains
         end if
     end function assertDoesntIncludeWithMessagesSSSS
 
-    function assertEmptyBasicC(string) result(result__)
+    pure function assertEmptyBasicC(string) result(result__)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: string
@@ -1271,7 +1271,7 @@ contains
                 var_str(""))
     end function assertEmptyBasicC
 
-    function assertEmptyBasicS(string) result(result__)
+    pure function assertEmptyBasicS(string) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         type(VARYING_STRING), intent(in) :: string
@@ -1283,7 +1283,7 @@ contains
                 var_str(""))
     end function assertEmptyBasicS
 
-    function assertEmptyWithMessageCC(string, message) result(result__)
+    pure function assertEmptyWithMessageCC(string, message) result(result__)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: string
@@ -1296,7 +1296,7 @@ contains
                 var_str(message))
     end function assertEmptyWithMessageCC
 
-    function assertEmptyWithMessageCS(string, message) result(result__)
+    pure function assertEmptyWithMessageCS(string, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         character(len=*), intent(in) :: string
@@ -1309,7 +1309,7 @@ contains
                 message)
     end function assertEmptyWithMessageCS
 
-    function assertEmptyWithMessageSC(string, message) result(result__)
+    pure function assertEmptyWithMessageSC(string, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
         type(VARYING_STRING), intent(in) :: string
@@ -1322,7 +1322,7 @@ contains
                 var_str(message))
     end function assertEmptyWithMessageSC
 
-    function assertEmptyWithMessageSS(string, message) result(result__)
+    pure function assertEmptyWithMessageSS(string, message) result(result__)
         use iso_varying_string, only: VARYING_STRING
 
         type(VARYING_STRING), intent(in) :: string
@@ -1335,7 +1335,7 @@ contains
                 message)
     end function assertEmptyWithMessageSS
 
-    function assertEmptyWithMessagesCCC( &
+    pure function assertEmptyWithMessagesCCC( &
             string, success_message, failure_message) result(result__)
         use iso_varying_string, only: var_str
 
@@ -1350,7 +1350,7 @@ contains
                 var_str(failure_message))
     end function assertEmptyWithMessagesCCC
 
-    function assertEmptyWithMessagesCCS( &
+    pure function assertEmptyWithMessagesCCS( &
             string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1365,7 +1365,7 @@ contains
                 failure_message)
     end function assertEmptyWithMessagesCCS
 
-    function assertEmptyWithMessagesCSC( &
+    pure function assertEmptyWithMessagesCSC( &
             string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1380,7 +1380,7 @@ contains
                 var_str(failure_message))
     end function assertEmptyWithMessagesCSC
 
-    function assertEmptyWithMessagesCSS( &
+    pure function assertEmptyWithMessagesCSS( &
             string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1395,7 +1395,7 @@ contains
                 failure_message)
     end function assertEmptyWithMessagesCSS
 
-    function assertEmptyWithMessagesSCC( &
+    pure function assertEmptyWithMessagesSCC( &
             string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1410,7 +1410,7 @@ contains
                 var_str(failure_message))
     end function assertEmptyWithMessagesSCC
 
-    function assertEmptyWithMessagesSCS( &
+    pure function assertEmptyWithMessagesSCS( &
             string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1425,7 +1425,7 @@ contains
                 failure_message)
     end function assertEmptyWithMessagesSCS
 
-    function assertEmptyWithMessagesSSC( &
+    pure function assertEmptyWithMessagesSSC( &
             string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1440,7 +1440,7 @@ contains
                 var_str(failure_message))
     end function assertEmptyWithMessagesSSC
 
-    function assertEmptyWithMessagesSSS( &
+    pure function assertEmptyWithMessagesSSS( &
             string, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, operator(==)
 
@@ -1458,7 +1458,7 @@ contains
         end if
     end function assertEmptyWithMessagesSSS
 
-    function assertEqualsDoublePrecision( &
+    pure function assertEqualsDoublePrecision( &
             expected, &
             actual) &
             result(result__)
@@ -1475,7 +1475,7 @@ contains
                 var_str(""))
     end function assertEqualsDoublePrecision
 
-    function assertEqualsDoublePrecisionWithMessageC( &
+    pure function assertEqualsDoublePrecisionWithMessageC( &
             expected, &
             actual, &
             message) &
@@ -1491,7 +1491,7 @@ contains
                 expected, actual, var_str(message), var_str(message))
     end function assertEqualsDoublePrecisionWithMessageC
 
-    function assertEqualsDoublePrecisionWithMessageS( &
+    pure function assertEqualsDoublePrecisionWithMessageS( &
             expected, &
             actual, &
             message) &
@@ -1506,7 +1506,7 @@ contains
         result__ = assertEquals(expected, actual, message, message)
     end function assertEqualsDoublePrecisionWithMessageS
 
-    function assertEqualsDoublePrecisionWithMessagesCC( &
+    pure function assertEqualsDoublePrecisionWithMessagesCC( &
             expected, &
             actual, &
             success_message, &
@@ -1527,7 +1527,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsDoublePrecisionWithMessagesCC
 
-    function assertEqualsDoublePrecisionWithMessagesCS( &
+    pure function assertEqualsDoublePrecisionWithMessagesCS( &
             expected, &
             actual, &
             success_message, &
@@ -1545,7 +1545,7 @@ contains
                 expected, actual, var_str(success_message), failure_message)
     end function assertEqualsDoublePrecisionWithMessagesCS
 
-    function assertEqualsDoublePrecisionWithMessagesSC( &
+    pure function assertEqualsDoublePrecisionWithMessagesSC( &
             expected, &
             actual, &
             success_message, &
@@ -1563,7 +1563,7 @@ contains
                 expected, actual, success_message, var_str(failure_message))
     end function assertEqualsDoublePrecisionWithMessagesSC
 
-    function assertEqualsDoublePrecisionWithMessagesSS( &
+    pure function assertEqualsDoublePrecisionWithMessagesSS( &
             expected, &
             actual, &
             success_message, &
@@ -1585,7 +1585,7 @@ contains
                 failure_message)
     end function assertEqualsDoublePrecisionWithMessagesSS
 
-    function assertEqualsIntegerBasic(expected, actual) result(result__)
+    pure function assertEqualsIntegerBasic(expected, actual) result(result__)
         use iso_varying_string, only: var_str
         use strff, only: toString
 
@@ -1600,7 +1600,7 @@ contains
                 var_str(""))
     end function assertEqualsIntegerBasic
 
-    function assertEqualsIntegerWithMessageC( &
+    pure function assertEqualsIntegerWithMessageC( &
             expected, actual, message) result(result__)
         use iso_varying_string, only: var_str
         use strff, only: toString
@@ -1617,7 +1617,7 @@ contains
                 var_str(message))
     end function assertEqualsIntegerWithMessageC
 
-    function assertEqualsIntegerWithMessageS( &
+    pure function assertEqualsIntegerWithMessageS( &
             expected, actual, message) result(result__)
         use iso_varying_string, only: VARYING_STRING
         use strff, only: toString
@@ -1634,7 +1634,7 @@ contains
                 message)
     end function assertEqualsIntegerWithMessageS
 
-    function assertEqualsIntegerWithMessagesCC( &
+    pure function assertEqualsIntegerWithMessagesCC( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: var_str
         use strff, only: toString
@@ -1652,7 +1652,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsIntegerWithMessagesCC
 
-    function assertEqualsIntegerWithMessagesCS( &
+    pure function assertEqualsIntegerWithMessagesCS( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
         use strff, only: toString
@@ -1667,7 +1667,7 @@ contains
                 expected, actual, var_str(success_message), failure_message)
     end function assertEqualsIntegerWithMessagesCS
 
-    function assertEqualsIntegerWithMessagesSC( &
+    pure function assertEqualsIntegerWithMessagesSC( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
         use strff, only: toString
@@ -1682,7 +1682,7 @@ contains
                 expected, actual, success_message, var_str(failure_message))
     end function assertEqualsIntegerWithMessagesSC
 
-    function assertEqualsIntegerWithMessagesSS( &
+    pure function assertEqualsIntegerWithMessagesSS( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING
         use strff, only: toString
@@ -1705,7 +1705,7 @@ contains
         end if
     end function assertEqualsIntegerWithMessagesSS
 
-    function assertEqualsStringsCC( &
+    pure function assertEqualsStringsCC( &
             expected, actual) result(result__)
         use iso_varying_string, only: var_str
 
@@ -1720,7 +1720,7 @@ contains
                 var_str(""))
     end function assertEqualsStringsCC
 
-    function assertEqualsStringsCS( &
+    pure function assertEqualsStringsCS( &
             expected, actual) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1735,7 +1735,7 @@ contains
                 var_str(""))
     end function assertEqualsStringsCS
 
-    function assertEqualsStringsSC( &
+    pure function assertEqualsStringsSC( &
             expected, actual) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1750,7 +1750,7 @@ contains
                 var_str(""))
     end function assertEqualsStringsSC
 
-    function assertEqualsStringsSS( &
+    pure function assertEqualsStringsSS( &
             expected, actual) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1765,7 +1765,7 @@ contains
                 var_str(""))
     end function assertEqualsStringsSS
 
-    function assertEqualsStringsWithMessageCCC( &
+    pure function assertEqualsStringsWithMessageCCC( &
             expected, actual, message) result(result__)
         use iso_varying_string, only: var_str
 
@@ -1781,7 +1781,7 @@ contains
                 var_str(message))
     end function assertEqualsStringsWithMessageCCC
 
-    function assertEqualsStringsWithMessageCCS( &
+    pure function assertEqualsStringsWithMessageCCS( &
             expected, actual, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1797,7 +1797,7 @@ contains
                 message)
     end function assertEqualsStringsWithMessageCCS
 
-    function assertEqualsStringsWithMessageCSC( &
+    pure function assertEqualsStringsWithMessageCSC( &
             expected, actual, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1813,7 +1813,7 @@ contains
                 var_str(message))
     end function assertEqualsStringsWithMessageCSC
 
-    function assertEqualsStringsWithMessageCSS( &
+    pure function assertEqualsStringsWithMessageCSS( &
             expected, actual, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1829,7 +1829,7 @@ contains
                 message)
     end function assertEqualsStringsWithMessageCSS
 
-    function assertEqualsStringsWithMessageSCC( &
+    pure function assertEqualsStringsWithMessageSCC( &
             expected, actual, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1845,7 +1845,7 @@ contains
                 var_str(message))
     end function assertEqualsStringsWithMessageSCC
 
-    function assertEqualsStringsWithMessageSCS( &
+    pure function assertEqualsStringsWithMessageSCS( &
             expected, actual, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1861,7 +1861,7 @@ contains
                 message)
     end function assertEqualsStringsWithMessageSCS
 
-    function assertEqualsStringsWithMessageSSC( &
+    pure function assertEqualsStringsWithMessageSSC( &
             expected, actual, message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1877,7 +1877,7 @@ contains
                 var_str(message))
     end function assertEqualsStringsWithMessageSSC
 
-    function assertEqualsStringsWithMessageSSS( &
+    pure function assertEqualsStringsWithMessageSSS( &
             expected, actual, message) result(result__)
         use iso_varying_string, only: VARYING_STRING
 
@@ -1893,7 +1893,7 @@ contains
                 message)
     end function assertEqualsStringsWithMessageSSS
 
-    function assertEqualsStringsWithMessagesCCCC( &
+    pure function assertEqualsStringsWithMessagesCCCC( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: var_str
 
@@ -1910,7 +1910,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsStringsWithMessagesCCCC
 
-    function assertEqualsStringsWithMessagesCCCS( &
+    pure function assertEqualsStringsWithMessagesCCCS( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1927,7 +1927,7 @@ contains
                 failure_message)
     end function assertEqualsStringsWithMessagesCCCS
 
-    function assertEqualsStringsWithMessagesCCSC( &
+    pure function assertEqualsStringsWithMessagesCCSC( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1944,7 +1944,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsStringsWithMessagesCCSC
 
-    function assertEqualsStringsWithMessagesCCSS( &
+    pure function assertEqualsStringsWithMessagesCCSS( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1961,7 +1961,7 @@ contains
                 failure_message)
     end function assertEqualsStringsWithMessagesCCSS
 
-    function assertEqualsStringsWithMessagesCSCC( &
+    pure function assertEqualsStringsWithMessagesCSCC( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1978,7 +1978,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsStringsWithMessagesCSCC
 
-    function assertEqualsStringsWithMessagesCSCS( &
+    pure function assertEqualsStringsWithMessagesCSCS( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -1995,7 +1995,7 @@ contains
                 failure_message)
     end function assertEqualsStringsWithMessagesCSCS
 
-    function assertEqualsStringsWithMessagesCSSC( &
+    pure function assertEqualsStringsWithMessagesCSSC( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -2012,7 +2012,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsStringsWithMessagesCSSC
 
-    function assertEqualsStringsWithMessagesCSSS( &
+    pure function assertEqualsStringsWithMessagesCSSS( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -2029,7 +2029,7 @@ contains
                 failure_message)
     end function assertEqualsStringsWithMessagesCSSS
 
-    function assertEqualsStringsWithMessagesSCCC( &
+    pure function assertEqualsStringsWithMessagesSCCC( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -2046,7 +2046,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsStringsWithMessagesSCCC
 
-    function assertEqualsStringsWithMessagesSCCS( &
+    pure function assertEqualsStringsWithMessagesSCCS( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -2063,7 +2063,7 @@ contains
                 failure_message)
     end function assertEqualsStringsWithMessagesSCCS
 
-    function assertEqualsStringsWithMessagesSCSC( &
+    pure function assertEqualsStringsWithMessagesSCSC( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -2080,7 +2080,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsStringsWithMessagesSCSC
 
-    function assertEqualsStringsWithMessagesSCSS( &
+    pure function assertEqualsStringsWithMessagesSCSS( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -2097,7 +2097,7 @@ contains
                 failure_message)
     end function assertEqualsStringsWithMessagesSCSS
 
-    function assertEqualsStringsWithMessagesSSCC( &
+    pure function assertEqualsStringsWithMessagesSSCC( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -2114,7 +2114,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsStringsWithMessagesSSCC
 
-    function assertEqualsStringsWithMessagesSSCS( &
+    pure function assertEqualsStringsWithMessagesSSCS( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -2131,7 +2131,7 @@ contains
                 failure_message)
     end function assertEqualsStringsWithMessagesSSCS
 
-    function assertEqualsStringsWithMessagesSSSC( &
+    pure function assertEqualsStringsWithMessagesSSSC( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -2148,7 +2148,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsStringsWithMessagesSSSC
 
-    function assertEqualsStringsWithMessagesSSSS( &
+    pure function assertEqualsStringsWithMessagesSSSS( &
             expected, actual, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, operator(==)
 
@@ -2169,7 +2169,7 @@ contains
         end if
     end function assertEqualsStringsWithMessagesSSSS
 
-    function assertEqualsWithinAbsoluteBasic( &
+    pure function assertEqualsWithinAbsoluteBasic( &
             expected, &
             actual, &
             tolerance) &
@@ -2190,7 +2190,7 @@ contains
                 var_str(""))
     end function assertEqualsWithinAbsoluteBasic
 
-    function assertEqualsWithinAbsoluteWithMessageC( &
+    pure function assertEqualsWithinAbsoluteWithMessageC( &
             expected, &
             actual, &
             tolerance, &
@@ -2213,7 +2213,7 @@ contains
                 var_str(message))
     end function assertEqualsWithinAbsoluteWithMessageC
 
-    function assertEqualsWithinAbsoluteWithMessageS( &
+    pure function assertEqualsWithinAbsoluteWithMessageS( &
             expected, &
             actual, &
             tolerance, &
@@ -2236,7 +2236,7 @@ contains
                 message)
     end function assertEqualsWithinAbsoluteWithMessageS
 
-    function assertEqualsWithinAbsoluteWithMessagesCC( &
+    pure function assertEqualsWithinAbsoluteWithMessagesCC( &
             expected, &
             actual, &
             tolerance, &
@@ -2261,7 +2261,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsWithinAbsoluteWithMessagesCC
 
-    function assertEqualsWithinAbsoluteWithMessagesCS( &
+    pure function assertEqualsWithinAbsoluteWithMessagesCS( &
             expected, &
             actual, &
             tolerance, &
@@ -2286,7 +2286,7 @@ contains
                 failure_message)
     end function assertEqualsWithinAbsoluteWithMessagesCS
 
-    function assertEqualsWithinAbsoluteWithMessagesSC( &
+    pure function assertEqualsWithinAbsoluteWithMessagesSC( &
             expected, &
             actual, &
             tolerance, &
@@ -2311,7 +2311,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsWithinAbsoluteWithMessagesSC
 
-    function assertEqualsWithinAbsoluteWithMessagesSS( &
+    pure function assertEqualsWithinAbsoluteWithMessagesSS( &
             expected, &
             actual, &
             tolerance, &
@@ -2345,7 +2345,7 @@ contains
         end if
     end function assertEqualsWithinAbsoluteWithMessagesSS
 
-    function assertEqualsWithinRelativeBasic( &
+    pure function assertEqualsWithinRelativeBasic( &
             expected, &
             actual, &
             tolerance) &
@@ -2366,7 +2366,7 @@ contains
                 var_str(""))
     end function assertEqualsWithinRelativeBasic
 
-    function assertEqualsWithinRelativeWithMessageC( &
+    pure function assertEqualsWithinRelativeWithMessageC( &
             expected, &
             actual, &
             tolerance, &
@@ -2389,7 +2389,7 @@ contains
                 var_str(message))
     end function assertEqualsWithinRelativeWithMessageC
 
-    function assertEqualsWithinRelativeWithMessageS( &
+    pure function assertEqualsWithinRelativeWithMessageS( &
             expected, &
             actual, &
             tolerance, &
@@ -2412,7 +2412,7 @@ contains
                 message)
     end function assertEqualsWithinRelativeWithMessageS
 
-    function assertEqualsWithinRelativeWithMessagesCC( &
+    pure function assertEqualsWithinRelativeWithMessagesCC( &
             expected, &
             actual, &
             tolerance, &
@@ -2437,7 +2437,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsWithinRelativeWithMessagesCC
 
-    function assertEqualsWithinRelativeWithMessagesCS( &
+    pure function assertEqualsWithinRelativeWithMessagesCS( &
             expected, &
             actual, &
             tolerance, &
@@ -2462,7 +2462,7 @@ contains
                 failure_message)
     end function assertEqualsWithinRelativeWithMessagesCS
 
-    function assertEqualsWithinRelativeWithMessagesSC( &
+    pure function assertEqualsWithinRelativeWithMessagesSC( &
             expected, &
             actual, &
             tolerance, &
@@ -2487,7 +2487,7 @@ contains
                 var_str(failure_message))
     end function assertEqualsWithinRelativeWithMessagesSC
 
-    function assertEqualsWithinRelativeWithMessagesSS( &
+    pure function assertEqualsWithinRelativeWithMessagesSS( &
             expected, &
             actual, &
             tolerance, &
@@ -3431,7 +3431,7 @@ contains
         end if
     end function assertFasterThanRelativeSimpleWithMessagesSS
 
-    function assertIncludesCC( &
+    pure function assertIncludesCC( &
                 search_for, &
                 string) &
                 result(result__)
@@ -3448,7 +3448,7 @@ contains
                 var_str(""))
     end function assertIncludesCC
 
-    function assertIncludesCS( &
+    pure function assertIncludesCS( &
                 search_for, &
                 string) &
                 result(result__)
@@ -3465,7 +3465,7 @@ contains
                 var_str(""))
     end function assertIncludesCS
 
-    function assertIncludesSC( &
+    pure function assertIncludesSC( &
                 search_for, &
                 string) &
                 result(result__)
@@ -3482,7 +3482,7 @@ contains
                 var_str(""))
     end function assertIncludesSC
 
-    function assertIncludesSS( &
+    pure function assertIncludesSS( &
                 search_for, &
                 string) &
                 result(result__)
@@ -3499,7 +3499,7 @@ contains
                 var_str(""))
     end function assertIncludesSS
 
-    function assertIncludesWithMessageCCC( &
+    pure function assertIncludesWithMessageCCC( &
                 search_for, &
                 string, &
                 message) &
@@ -3518,7 +3518,7 @@ contains
                 var_str(message))
     end function assertIncludesWithMessageCCC
 
-    function assertIncludesWithMessageCCS( &
+    pure function assertIncludesWithMessageCCS( &
                 search_for, &
                 string, &
                 message) &
@@ -3537,7 +3537,7 @@ contains
                 message)
     end function assertIncludesWithMessageCCS
 
-    function assertIncludesWithMessageCSC( &
+    pure function assertIncludesWithMessageCSC( &
                 search_for, &
                 string, &
                 message) &
@@ -3556,7 +3556,7 @@ contains
                 var_str(message))
     end function assertIncludesWithMessageCSC
 
-    function assertIncludesWithMessageCSS( &
+    pure function assertIncludesWithMessageCSS( &
                 search_for, &
                 string, &
                 message) &
@@ -3575,7 +3575,7 @@ contains
                 message)
     end function assertIncludesWithMessageCSS
 
-    function assertIncludesWithMessageSCC( &
+    pure function assertIncludesWithMessageSCC( &
                 search_for, &
                 string, &
                 message) &
@@ -3594,7 +3594,7 @@ contains
                 var_str(message))
     end function assertIncludesWithMessageSCC
 
-    function assertIncludesWithMessageSCS( &
+    pure function assertIncludesWithMessageSCS( &
                 search_for, &
                 string, &
                 message) &
@@ -3613,7 +3613,7 @@ contains
                 message)
     end function assertIncludesWithMessageSCS
 
-    function assertIncludesWithMessageSSC( &
+    pure function assertIncludesWithMessageSSC( &
                 search_for, &
                 string, &
                 message) &
@@ -3632,7 +3632,7 @@ contains
                 var_str(message))
     end function assertIncludesWithMessageSSC
 
-    function assertIncludesWithMessageSSS( &
+    pure function assertIncludesWithMessageSSS( &
                 search_for, &
                 string, &
                 message) &
@@ -3651,7 +3651,7 @@ contains
                 message)
     end function assertIncludesWithMessageSSS
 
-    function assertIncludesWithMessagesCCCC( &
+    pure function assertIncludesWithMessagesCCCC( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3672,7 +3672,7 @@ contains
                 var_str(failure_message))
     end function assertIncludesWithMessagesCCCC
 
-    function assertIncludesWithMessagesCCCS( &
+    pure function assertIncludesWithMessagesCCCS( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3693,7 +3693,7 @@ contains
                 failure_message)
     end function assertIncludesWithMessagesCCCS
 
-    function assertIncludesWithMessagesCCSC( &
+    pure function assertIncludesWithMessagesCCSC( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3714,7 +3714,7 @@ contains
                 var_str(failure_message))
     end function assertIncludesWithMessagesCCSC
 
-    function assertIncludesWithMessagesCCSS( &
+    pure function assertIncludesWithMessagesCCSS( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3735,7 +3735,7 @@ contains
                 failure_message)
     end function assertIncludesWithMessagesCCSS
 
-    function assertIncludesWithMessagesCSCC( &
+    pure function assertIncludesWithMessagesCSCC( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3756,7 +3756,7 @@ contains
                 var_str(failure_message))
     end function assertIncludesWithMessagesCSCC
 
-    function assertIncludesWithMessagesCSCS( &
+    pure function assertIncludesWithMessagesCSCS( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3777,7 +3777,7 @@ contains
                 failure_message)
     end function assertIncludesWithMessagesCSCS
 
-    function assertIncludesWithMessagesCSSC( &
+    pure function assertIncludesWithMessagesCSSC( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3798,7 +3798,7 @@ contains
                 var_str(failure_message))
     end function assertIncludesWithMessagesCSSC
 
-    function assertIncludesWithMessagesCSSS( &
+    pure function assertIncludesWithMessagesCSSS( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3819,7 +3819,7 @@ contains
                 failure_message)
     end function assertIncludesWithMessagesCSSS
 
-    function assertIncludesWithMessagesSCCC( &
+    pure function assertIncludesWithMessagesSCCC( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3840,7 +3840,7 @@ contains
                 var_str(failure_message))
     end function assertIncludesWithMessagesSCCC
 
-    function assertIncludesWithMessagesSCCS( &
+    pure function assertIncludesWithMessagesSCCS( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3861,7 +3861,7 @@ contains
                 failure_message)
     end function assertIncludesWithMessagesSCCS
 
-    function assertIncludesWithMessagesSCSC( &
+    pure function assertIncludesWithMessagesSCSC( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3882,7 +3882,7 @@ contains
                 var_str(failure_message))
     end function assertIncludesWithMessagesSCSC
 
-    function assertIncludesWithMessagesSCSS( &
+    pure function assertIncludesWithMessagesSCSS( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3903,7 +3903,7 @@ contains
                 failure_message)
     end function assertIncludesWithMessagesSCSS
 
-    function assertIncludesWithMessagesSSCC( &
+    pure function assertIncludesWithMessagesSSCC( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3924,7 +3924,7 @@ contains
                 var_str(failure_message))
     end function assertIncludesWithMessagesSSCC
 
-    function assertIncludesWithMessagesSSCS( &
+    pure function assertIncludesWithMessagesSSCS( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3945,7 +3945,7 @@ contains
                 failure_message)
     end function assertIncludesWithMessagesSSCS
 
-    function assertIncludesWithMessagesSSSC( &
+    pure function assertIncludesWithMessagesSSSC( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3966,7 +3966,7 @@ contains
                 var_str(failure_message))
     end function assertIncludesWithMessagesSSSC
 
-    function assertIncludesWithMessagesSSSS( &
+    pure function assertIncludesWithMessagesSSSS( &
                 search_for, &
                 string, &
                 success_message, &
@@ -3992,7 +3992,7 @@ contains
         end if
     end function assertIncludesWithMessagesSSSS
 
-    function assertNotBasic(condition) result(result__)
+    pure function assertNotBasic(condition) result(result__)
         use iso_varying_string, only: var_str
 
         logical, intent(in) :: condition
@@ -4001,7 +4001,7 @@ contains
         result__ = assertNot(condition, var_str(""), var_str(""))
     end function assertNotBasic
 
-    function assertNotWithMessageC(condition, message) result(result__)
+    pure function assertNotWithMessageC(condition, message) result(result__)
         use iso_varying_string, only: var_str
 
         logical, intent(in) :: condition
@@ -4011,7 +4011,7 @@ contains
         result__ = assertNot(condition, var_str(message), var_str(message))
     end function assertNotWithMessageC
 
-    function assertNotWithMessageS(condition, message) result(result__)
+    pure function assertNotWithMessageS(condition, message) result(result__)
         use iso_varying_string, only: VARYING_STRING
 
         logical, intent(in) :: condition
@@ -4021,7 +4021,7 @@ contains
         result__ = assertNot(condition, message, message)
     end function assertNotWithMessageS
 
-    function assertNotWithMessagesCC( &
+    pure function assertNotWithMessagesCC( &
             condition, success_message, failure_message) result(result__)
         use iso_varying_string, only: var_str
 
@@ -4034,7 +4034,7 @@ contains
                 condition, var_str(success_message), var_str(failure_message))
     end function assertNotWithMessagesCC
 
-    function assertNotWithMessagesCS( &
+    pure function assertNotWithMessagesCS( &
             condition, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4047,7 +4047,7 @@ contains
                 condition, var_str(success_message), failure_message)
     end function assertNotWithMessagesCS
 
-    function assertNotWithMessagesSC( &
+    pure function assertNotWithMessagesSC( &
             condition, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4060,7 +4060,7 @@ contains
                 condition, success_message, var_str(failure_message))
     end function assertNotWithMessagesSC
 
-    function assertNotWithMessagesSS( &
+    pure function assertNotWithMessagesSS( &
             condition, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING
 
@@ -4078,7 +4078,7 @@ contains
         end if
     end function assertNotWithMessagesSS
 
-    function assertThatBasic(condition) result(result__)
+    pure function assertThatBasic(condition) result(result__)
         use iso_varying_string, only: var_str
 
         logical, intent(in) :: condition
@@ -4087,7 +4087,7 @@ contains
         result__ = assertThat(condition, var_str(""), var_str(""))
     end function assertThatBasic
 
-    function assertThatWithMessageC(condition, message) result(result__)
+    pure function assertThatWithMessageC(condition, message) result(result__)
         use iso_varying_string, only: var_str
 
         logical, intent(in) :: condition
@@ -4097,7 +4097,7 @@ contains
         result__ = assertThat(condition, var_str(message), var_str(message))
     end function assertThatWithMessageC
 
-    function assertThatWithMessageS(condition, message) result(result__)
+    pure function assertThatWithMessageS(condition, message) result(result__)
         use iso_varying_string, only: VARYING_STRING
 
         logical, intent(in) :: condition
@@ -4107,7 +4107,7 @@ contains
         result__ = assertThat(condition, message, message)
     end function assertThatWithMessageS
 
-    function assertThatWithMessagesCC( &
+    pure function assertThatWithMessagesCC( &
             condition, success_message, failure_message) result(result__)
         use iso_varying_string, only: var_str
 
@@ -4120,7 +4120,7 @@ contains
                 condition, var_str(success_message), var_str(failure_message))
     end function assertThatWithMessagesCC
 
-    function assertThatWithMessagesCS( &
+    pure function assertThatWithMessagesCS( &
             condition, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4133,7 +4133,7 @@ contains
                 condition, var_str(success_message), failure_message)
     end function assertThatWithMessagesCS
 
-    function assertThatWithMessagesSC( &
+    pure function assertThatWithMessagesSC( &
             condition, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING, var_str
 
@@ -4146,7 +4146,7 @@ contains
                 condition, success_message, var_str(failure_message))
     end function assertThatWithMessagesSC
 
-    function assertThatWithMessagesSS( &
+    pure function assertThatWithMessagesSS( &
             condition, success_message, failure_message) result(result__)
         use iso_varying_string, only: VARYING_STRING
 
@@ -4249,7 +4249,7 @@ contains
                 description, input, tests))
     end function DescribeWithInputS
 
-    function equalsWithinAbsolute(expected, actual, tolerance)
+    pure function equalsWithinAbsolute(expected, actual, tolerance)
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
