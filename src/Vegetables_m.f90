@@ -335,14 +335,14 @@ module Vegetables_m
             integer :: num
         end function testCount
 
-        function testDescription(self) result(description)
+        pure function testDescription(self) result(description)
             use iso_varying_string, only: VARYING_STRING
             import Test_t
             class(Test_t), intent(in) :: self
             type(VARYING_STRING) :: description
         end function testDescription
 
-        function testResultColorizedDescription( &
+        pure function testResultColorizedDescription( &
                 self, colorize) result(description)
             use iso_varying_string, only: VARYING_STRING
             import TestResult_t
@@ -357,7 +357,7 @@ module Vegetables_m
             integer :: num
         end function testResultCount
 
-        function testResultDescription(self) result(description)
+        pure function testResultDescription(self) result(description)
             use iso_varying_string, only: VARYING_STRING
             import TestResult_t
             class(TestResult_t), intent(in) :: self
@@ -4518,7 +4518,7 @@ contains
         IndividualResult%passed_ = passed
     end function IndividualResult
 
-    function individualResultFailureDescription( &
+    pure function individualResultFailureDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: &
                 VARYING_STRING, assignment(=), operator(//)
@@ -4538,7 +4538,7 @@ contains
         end if
     end function individualResultFailureDescription
 
-    function individualResultVerboseDescription( &
+    pure function individualResultVerboseDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING, operator(//)
 
@@ -5410,7 +5410,7 @@ contains
                 // " of " // delimit(expected)
     end function makeWithinSuccessMessageSSS
 
-    function resultFailureDescription(self, colorize) result(description)
+    pure function resultFailureDescription(self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING
         use strff, only: join, NEWLINE
 
@@ -5451,7 +5451,7 @@ contains
         passed = all(self%results%passed_)
     end function resultPassed
 
-    function resultVerboseDescription(self, colorize) result(description)
+    pure function resultVerboseDescription(self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING
         use strff, only: join, NEWLINE
 
@@ -5702,7 +5702,7 @@ contains
         success%results(1) = IndividualResult(message, .true.)
     end function succeedS
 
-    function testCaseDescription(self) result(description)
+    pure function testCaseDescription(self) result(description)
         use iso_varying_string, only: VARYING_STRING
 
         class(TestCase_t), intent(in) :: self
@@ -5754,7 +5754,7 @@ contains
         deallocate(self%result_%results)
     end subroutine testCaseResultDestructor
 
-    function testCaseResultFailureDescription( &
+    pure function testCaseResultFailureDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: &
                 VARYING_STRING, assignment(=), operator(//)
@@ -5816,7 +5816,7 @@ contains
         passed = self%result_%passed()
     end function testCaseResultPassed
 
-    function testCaseResultVerboseDescription( &
+    pure function testCaseResultVerboseDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING, operator(//)
         use strff, only: hangingIndent, NEWLINE
@@ -5949,7 +5949,7 @@ contains
         end if
     end function testCaseWithGeneratorRunWithoutInput
 
-    function testCollectionDescription(self) result(description)
+    pure function testCollectionDescription(self) result(description)
         use iso_varying_string, only: VARYING_STRING, operator(//)
         use strff, only: hangingIndent, join, NEWLINE
 
@@ -6021,7 +6021,7 @@ contains
         allocate(TestCollectionResult%results, source = results)
     end function TestCollectionResult
 
-    function testCollectionResultFailureDescription( &
+    pure function testCollectionResultFailureDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: &
                 VARYING_STRING, assignment(=), operator(//)
@@ -6083,7 +6083,7 @@ contains
         passed = all(self%results%passed())
     end function testCollectionResultPassed
 
-    function testCollectionResultVerboseDescription( &
+    pure function testCollectionResultVerboseDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING, operator(//)
         use strff, only: hangingIndent, join, NEWLINE
@@ -6152,7 +6152,7 @@ contains
                 self%description_, results))
     end function testCollectionWithInputRunWithoutInput
 
-    function testItemDescription(self) result(description)
+    pure function testItemDescription(self) result(description)
         use iso_varying_string, only: VARYING_STRING
 
         class(TestItem_t), intent(in) :: self
@@ -6201,7 +6201,7 @@ contains
         result_ = self%test%run()
     end function testItemRunWithoutInput
 
-    function testResultItemFailureDescription( &
+    pure function testResultItemFailureDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING
 
@@ -6247,7 +6247,7 @@ contains
         passed = self%result_%passed()
     end function testResultItemPassed
 
-    function testResultItemVerboseDescription( &
+    pure function testResultItemVerboseDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING
 

@@ -9,6 +9,7 @@ module assert_empty_test
     public :: test_assert_empty
 contains
     function test_assert_empty() result(tests)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: TestItem_t, describe, it
 
         type(TestItem_t) :: tests

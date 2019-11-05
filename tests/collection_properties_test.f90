@@ -102,6 +102,7 @@ contains
         end select
     contains
         subroutine runCollection
+            use iso_varying_string ! To make compiler happy
             use Vegetables_m, only: TestResultItem_t
 
             integer :: i
@@ -113,6 +114,7 @@ contains
         end subroutine runCollection
 
         subroutine runCases
+            use iso_varying_string ! To make compiler happy
             use Vegetables_m, only: TestResultItem_t
 
             integer :: i

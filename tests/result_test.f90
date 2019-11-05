@@ -5,6 +5,7 @@ module result_test
     public :: test_result
 contains
     function test_result() result(tests)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: TestItem_t, describe, it
 
         type(TestItem_t) :: tests

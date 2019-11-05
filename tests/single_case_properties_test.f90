@@ -70,6 +70,7 @@ contains
         end select
     contains
         subroutine runCase
+            use iso_varying_string ! To make compiler happy
             use Vegetables_m, only: TestResultItem_t
 
             integer :: i
@@ -82,6 +83,7 @@ contains
 
         subroutine runAssertions
             use example_asserts_m, only: exampleMultipleAsserts
+            use iso_varying_string ! To make compiler happy
             use Vegetables_m, only: Result_t
 
             integer :: i

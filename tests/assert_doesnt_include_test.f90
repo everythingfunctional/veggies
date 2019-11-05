@@ -9,6 +9,7 @@ module assert_doesnt_include_test
     public :: test_assert_includes
 contains
     function test_assert_includes() result(tests)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: TestItem_t, Describe, It, ASCII_STRING_GENERATOR
 
         type(TestItem_t) :: tests

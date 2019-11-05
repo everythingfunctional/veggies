@@ -1,4 +1,5 @@
 module filter_test
+    use iso_varying_string ! To make compiler happy
     use Vegetables_m, only: Input_t, FilterItemResult_t
 
     implicit none

@@ -31,6 +31,7 @@ module example_collections_m
 contains
     function exampleTestCase1() result(test_case)
         use example_asserts_m, only: exampleMultipleAsserts
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: TestItem_t, it
 
         type(TestItem_t) :: test_case
@@ -40,6 +41,7 @@ contains
 
     function exampleTestCase2() result(test_case)
         use example_asserts_m, only: exampleMultipleAsserts
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: TestItem_t, it
 
         type(TestItem_t) :: test_case
@@ -57,6 +59,7 @@ contains
     end function exampleFail
 
     function exampleFailingTestCase() result(test_case)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: TestItem_t, it
 
         type(TestItem_t) :: test_case
@@ -65,6 +68,7 @@ contains
     end function exampleFailingTestCase
 
     function exampleFailingCollection() result(test_collection)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: TestItem_t, Describe
 
         type(TestItem_t) :: test_collection
@@ -78,6 +82,7 @@ contains
     end function exampleFailingCollection
 
     function middleCollection() result(test_collection)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: TestItem_t, describe
 
         type(TestItem_t) :: test_collection
@@ -90,6 +95,7 @@ contains
     end function middleCollection
 
     function examplePassingCollection() result(test_collection)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: TestItem_t, Describe
 
         type(TestItem_t) :: test_collection

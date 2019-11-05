@@ -1,4 +1,5 @@
 module Helpers_m
+    use iso_varying_string ! To make compiler happy
     use Vegetables_m, only: Input_t, TestItem_t, TestResultItem_t
 
     implicit none
