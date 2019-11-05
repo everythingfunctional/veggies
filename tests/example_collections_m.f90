@@ -48,6 +48,7 @@ contains
     end function exampleTestCase2
 
     function exampleFail() result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, fail
 
         type(Result_t) :: result_

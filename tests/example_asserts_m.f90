@@ -13,6 +13,7 @@ module example_asserts_m
     public :: exampleMultipleAsserts, exampleMultipleAssertsWithFail
 contains
     function exampleMultipleAsserts() result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, succeed
 
         type(Result_t) :: result_
@@ -21,6 +22,7 @@ contains
     end function exampleMultipleAsserts
 
     function exampleMultipleAssertsWithFail() result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, fail, succeed
 
         type(Result_t) :: result_

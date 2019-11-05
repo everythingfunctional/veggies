@@ -184,6 +184,7 @@ contains
     end function filterCollectionMatchingCase
 
     function checkCaseNotMatching(filtered) result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Input_t, Result_t, assertNot, fail
 
         class(Input_t), intent(in) :: filtered
@@ -199,6 +200,7 @@ contains
 
     function checkCaseIsSame(filtered) result(result_)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
 
         class(Input_t), intent(in) :: filtered
@@ -213,6 +215,7 @@ contains
     end function checkCaseIsSame
 
     function checkCollectionNotMatching(filtered) result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Input_t, Result_t, assertNot, fail
 
         class(Input_t), intent(in) :: filtered
@@ -228,6 +231,7 @@ contains
 
     function checkCollectionIsSame(filtered) result(result_)
         use example_collections_m, only: examplePassingCollection
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Input_t, Result_t, TestItem_t, assertEquals, fail
 
         class(Input_t), intent(in) :: filtered
@@ -245,6 +249,7 @@ contains
     end function checkCollectionIsSame
 
     function checkCollectionSingleCase(filtered) result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Input_t, Result_t, TestItem_t, assertEquals, fail
 
         class(Input_t), intent(in) :: filtered

@@ -27,6 +27,7 @@ contains
     end function test_result
 
     function checkPassed() result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, assertNot, assertThat, fail, succeed
 
         type(Result_t) :: result_
@@ -43,6 +44,7 @@ contains
     end function checkPassed
 
     function checkNumAsserts() result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, assertEquals, succeed
 
         type(Result_t) :: result_
@@ -55,6 +57,7 @@ contains
     end function checkNumAsserts
 
     function checkNumFailingAsserts() result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, assertEquals, fail, succeed
 
         type(Result_t) :: result_
@@ -67,6 +70,7 @@ contains
     end function checkNumFailingAsserts
 
     function checkVerboseIncludes() result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, assertIncludes, fail, succeed
 
         type(Result_t) :: result_
@@ -83,6 +87,7 @@ contains
     end function checkVerboseIncludes
 
     function checkFailureIncludes() result(result_)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: &
                 Result_t, assertDoesntInclude, assertIncludes, fail, succeed
 

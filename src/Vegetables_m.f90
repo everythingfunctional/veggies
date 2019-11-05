@@ -4276,7 +4276,7 @@ contains
         allocate(Example%input, source = input)
     end function Example
 
-    function failC(message) result(failure)
+    pure function failC(message) result(failure)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: message
@@ -4285,7 +4285,7 @@ contains
         failure = fail(var_str(message))
     end function failC
 
-    function failS(message) result(failure)
+    pure function failS(message) result(failure)
         use iso_varying_string, only: VARYING_STRING
 
         type(VARYING_STRING), intent(in) :: message
@@ -4522,7 +4522,7 @@ contains
         item = Describe("Given " // description, input, tests)
     end function GivenWithInputS
 
-    function IndividualResult(message, passed)
+    pure function IndividualResult(message, passed)
         use iso_varying_string, only: VARYING_STRING
 
         type(VARYING_STRING), intent(in) :: message
@@ -5789,7 +5789,7 @@ contains
                 self%description_, results))
     end function simpleTestCollectionRunWithoutInput
 
-    function succeedC(message) result(success)
+    pure function succeedC(message) result(success)
         use iso_varying_string, only: var_str
 
         character(len=*), intent(in) :: message
@@ -5798,7 +5798,7 @@ contains
         success = succeed(var_str(message))
     end function succeedC
 
-    function succeedS(message) result(success)
+    pure function succeedS(message) result(success)
         use iso_varying_string, only: VARYING_STRING
 
         type(VARYING_STRING), intent(in) :: message

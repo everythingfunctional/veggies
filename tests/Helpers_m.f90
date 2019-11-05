@@ -15,6 +15,7 @@ module Helpers_m
     public :: runTest
 contains
     function runTest(example_test) result(example_result)
+        use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: &
                 Input_t, &
                 TransformationFailure_t, &
