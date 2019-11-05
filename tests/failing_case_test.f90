@@ -31,7 +31,7 @@ contains
         test = Given("a failing test case", the_case, collection)
     end function test_failing_case_behaviors
 
-    function checkCaseFails(example_result) result(result_)
+    pure function checkCaseFails(example_result) result(result_)
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
                 Input_t, Result_t, assertNot, fail
@@ -47,7 +47,7 @@ contains
         end select
     end function checkCaseFails
 
-    function checkNumCases(example_result) result(result_)
+    pure function checkNumCases(example_result) result(result_)
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
 
@@ -62,7 +62,7 @@ contains
         end select
     end function checkNumCases
 
-    function checkNumFailingCases(example_result) result(result_)
+    pure function checkNumFailingCases(example_result) result(result_)
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
 
@@ -77,7 +77,7 @@ contains
         end select
     end function checkNumFailingCases
 
-    function checkVerboseForGivenDescription(example_result) result(result_)
+    pure function checkVerboseForGivenDescription(example_result) result(result_)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
@@ -93,7 +93,7 @@ contains
         end select
     end function checkVerboseForGivenDescription
 
-    function checkVerboseForSuccessMessage(example_result) result(result_)
+    pure function checkVerboseForSuccessMessage(example_result) result(result_)
         use example_asserts_m, only: SUCCESS_MESSAGE
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
@@ -109,7 +109,7 @@ contains
         end select
     end function checkVerboseForSuccessMessage
 
-    function checkVerboseForFailureMessage(example_result) result(result_)
+    pure function checkVerboseForFailureMessage(example_result) result(result_)
         use example_asserts_m, only: FAILURE_MESSAGE
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
@@ -125,7 +125,7 @@ contains
         end select
     end function checkVerboseForFailureMessage
 
-    function checkFailureForGivenDescription(example_result) result(result_)
+    pure function checkFailureForGivenDescription(example_result) result(result_)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
@@ -141,7 +141,7 @@ contains
         end select
     end function checkFailureForGivenDescription
 
-    function checkFailureForFailureMessage(example_result) result(result_)
+    pure function checkFailureForFailureMessage(example_result) result(result_)
         use example_asserts_m, only: FAILURE_MESSAGE
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
@@ -157,7 +157,7 @@ contains
         end select
     end function checkFailureForFailureMessage
 
-    function checkFailureNoSuccessMessage(example_result) result(result_)
+    pure function checkFailureNoSuccessMessage(example_result) result(result_)
         use example_asserts_m, only: SUCCESS_MESSAGE
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -174,7 +174,7 @@ contains
         end select
     end function checkFailureNoSuccessMessage
 
-    function checkNumAsserts(example_result) result(result_)
+    pure function checkNumAsserts(example_result) result(result_)
         use example_asserts_m, only: NUM_ASSERTS_IN_FAILING
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
@@ -190,7 +190,7 @@ contains
         end select
     end function checkNumAsserts
 
-    function checkNumFailingAsserts(example_result) result(result_)
+    pure function checkNumFailingAsserts(example_result) result(result_)
         use example_asserts_m, only: NUM_FAILING_ASSERTS_IN_FAILING
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertEquals, fail

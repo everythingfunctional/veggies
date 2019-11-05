@@ -41,7 +41,7 @@ contains
         tests = Given("a failing test collection", the_collection, collection)
     end function test_failing_collection_behaviors
 
-    function checkCollectionFails(example_results) result(result_)
+    pure function checkCollectionFails(example_results) result(result_)
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
                 Input_t, Result_t, assertNot, fail
@@ -57,7 +57,7 @@ contains
         end select
     end function checkCollectionFails
 
-    function checkNumCases(example_results) result(result_)
+    pure function checkNumCases(example_results) result(result_)
         use example_collections_m, only: NUM_CASES_IN_FAILING
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -74,7 +74,7 @@ contains
         end select
     end function checkNumCases
 
-    function checkNumFailingCases(example_results) result(result_)
+    pure function checkNumFailingCases(example_results) result(result_)
         use example_collections_m, only: NUM_FAILING_CASES
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -91,7 +91,7 @@ contains
         end select
     end function checkNumFailingCases
 
-    function checkVerboseTopDescription(example_results) result(result_)
+    pure function checkVerboseTopDescription(example_results) result(result_)
         use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -110,7 +110,7 @@ contains
         end select
     end function checkVerboseTopDescription
 
-    function checkVerboseCaseDescriptions(example_results) result(result_)
+    pure function checkVerboseCaseDescriptions(example_results) result(result_)
         use example_collections_m, only: &
                 EXAMPLE_CASE_DESCRIPTION_1, &
                 EXAMPLE_CASE_DESCRIPTION_2, &
@@ -139,7 +139,7 @@ contains
         end select
     end function checkVerboseCaseDescriptions
 
-    function checkVerboseForFailureMessage(example_results) result(result_)
+    pure function checkVerboseForFailureMessage(example_results) result(result_)
         use example_collections_m, only: FAILURE_MESSAGE
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -158,7 +158,7 @@ contains
         end select
     end function checkVerboseForFailureMessage
 
-    function checkVerboseForSuccessMessage(example_results) result(result_)
+    pure function checkVerboseForSuccessMessage(example_results) result(result_)
         use example_asserts_m, only: SUCCESS_MESSAGE
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -177,7 +177,7 @@ contains
         end select
     end function checkVerboseForSuccessMessage
 
-    function checkFailureForTopDescription(example_results) result(result_)
+    pure function checkFailureForTopDescription(example_results) result(result_)
         use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -196,7 +196,7 @@ contains
         end select
     end function checkFailureForTopDescription
 
-    function checkFailureCaseDescription(example_results) result(result_)
+    pure function checkFailureCaseDescription(example_results) result(result_)
         use example_collections_m, only: EXAMPLE_FAILING_CASE_DESCRIPTION
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -215,7 +215,7 @@ contains
         end select
     end function checkFailureCaseDescription
 
-    function checkFailureNoPassingDescriptions(example_results) result(result_)
+    pure function checkFailureNoPassingDescriptions(example_results) result(result_)
         use example_collections_m, only: &
                 EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
         use Helpers_m, only: TestResultItemInput_t
@@ -239,7 +239,7 @@ contains
         end select
     end function checkFailureNoPassingDescriptions
 
-    function checkFailureForMessage(example_results) result(result_)
+    pure function checkFailureForMessage(example_results) result(result_)
         use example_collections_m, only: FAILURE_MESSAGE
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -258,7 +258,7 @@ contains
         end select
     end function checkFailureForMessage
 
-    function checkFailureNoSuccessMessage(example_results) result(result_)
+    pure function checkFailureNoSuccessMessage(example_results) result(result_)
         use example_asserts_m, only: SUCCESS_MESSAGE
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -277,7 +277,7 @@ contains
         end select
     end function checkFailureNoSuccessMessage
 
-    function checkFailureNoBlankLines(example_results) result(result_)
+    pure function checkFailureNoBlankLines(example_results) result(result_)
         use Helpers_m, only: TestResultItemInput_t
         use strff, only: NEWLINE
         use Vegetables_m, only: &
@@ -296,7 +296,7 @@ contains
         end select
     end function checkFailureNoBlankLines
 
-    function checkNumAsserts(example_results) result(result_)
+    pure function checkNumAsserts(example_results) result(result_)
         use example_collections_m, only: NUM_ASSERTS_IN_FAILING
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -313,7 +313,7 @@ contains
         end select
     end function checkNumAsserts
 
-    function checkNumFailingAsserts(example_results) result(result_)
+    pure function checkNumFailingAsserts(example_results) result(result_)
         use example_collections_m, only: NUM_FAILING_ASSERTS
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &

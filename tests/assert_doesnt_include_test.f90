@@ -21,7 +21,7 @@ contains
         tests = Describe("assertDoesntInclude", individual_tests)
     end function test_assert_includes
 
-    function checkPassForDifferentStrings() result(result_)
+    pure function checkPassForDifferentStrings() result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: Result_t, assertDoesntInclude, assertThat
 
@@ -250,7 +250,7 @@ contains
                         example_result_ssss%verboseDescription(.false.))
     end function checkPassForDifferentStrings
 
-    function checkFailForSameString(the_example) result(result_)
+    pure function checkFailForSameString(the_example) result(result_)
         use iso_varying_string, only: VARYING_STRING, char, var_str
         use Vegetables_m, only: &
                 Input_t, &

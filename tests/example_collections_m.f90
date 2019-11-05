@@ -49,7 +49,7 @@ contains
         test_case = it(EXAMPLE_CASE_DESCRIPTION_2, exampleMultipleAsserts)
     end function exampleTestCase2
 
-    function exampleFail() result(result_)
+    pure function exampleFail() result(result_)
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, fail
 

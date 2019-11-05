@@ -69,7 +69,7 @@ contains
         tests = Given("a test collection", the_collection, collection)
     end function test_filter_collection
 
-    function filterCaseNotMatching(example_case) result(filtered)
+    pure function filterCaseNotMatching(example_case) result(filtered)
         use example_cases_m, only: NOT_IN_DESCRIPTION
         use Helpers_m, only: TestItemInput_t
         use iso_varying_string, only: var_str
@@ -92,7 +92,7 @@ contains
         end select
     end function filterCaseNotMatching
 
-    function filterCaseMatching(example_case) result(filtered)
+    pure function filterCaseMatching(example_case) result(filtered)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
         use Helpers_m, only: TestItemInput_t
         use iso_varying_string, only: var_str
@@ -115,7 +115,7 @@ contains
         end select
     end function filterCaseMatching
 
-    function filterCollectionNotMatching(example_collection) result(filtered)
+    pure function filterCollectionNotMatching(example_collection) result(filtered)
         use example_collections_m, only: NOT_IN_DESCRIPTIONS
         use Helpers_m, only: TestItemInput_t
         use iso_varying_string, only: var_str
@@ -138,7 +138,7 @@ contains
         end select
     end function filterCollectionNotMatching
 
-    function filterCollectionMatchingDescription(example_collection) result(filtered)
+    pure function filterCollectionMatchingDescription(example_collection) result(filtered)
         use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
         use Helpers_m, only: TestItemInput_t
         use iso_varying_string, only: var_str
@@ -161,7 +161,7 @@ contains
         end select
     end function filterCollectionMatchingDescription
 
-    function filterCollectionMatchingCase(example_collection) result(filtered)
+    pure function filterCollectionMatchingCase(example_collection) result(filtered)
         use example_collections_m, only: EXAMPLE_CASE_DESCRIPTION_1
         use Helpers_m, only: TestItemInput_t
         use iso_varying_string, only: var_str
@@ -184,7 +184,7 @@ contains
         end select
     end function filterCollectionMatchingCase
 
-    function checkCaseNotMatching(filtered) result(result_)
+    pure function checkCaseNotMatching(filtered) result(result_)
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Input_t, Result_t, assertNot, fail
 
@@ -199,7 +199,7 @@ contains
         end select
     end function checkCaseNotMatching
 
-    function checkCaseIsSame(filtered) result(result_)
+    pure function checkCaseIsSame(filtered) result(result_)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
@@ -215,7 +215,7 @@ contains
         end select
     end function checkCaseIsSame
 
-    function checkCollectionNotMatching(filtered) result(result_)
+    pure function checkCollectionNotMatching(filtered) result(result_)
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Input_t, Result_t, assertNot, fail
 
@@ -249,7 +249,7 @@ contains
         end select
     end function checkCollectionIsSame
 
-    function checkCollectionSingleCase(filtered) result(result_)
+    pure function checkCollectionSingleCase(filtered) result(result_)
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Input_t, Result_t, TestItem_t, assertEquals, fail
 

@@ -21,7 +21,7 @@ contains
         tests = describe("assertEmpty", individual_tests)
     end function test_assert_empty
 
-    function checkPassForEmptyChars() result(result_)
+    pure function checkPassForEmptyChars() result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: Result_t, assertEmpty, assertThat
 
@@ -111,7 +111,7 @@ contains
                         example_result_sss%verboseDescription(.false.))
     end function checkPassForEmptyChars
 
-    function checkFailsForNonemptyChars() result(result_)
+    pure function checkFailsForNonemptyChars() result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: Result_t, assertEmpty, assertNot
 

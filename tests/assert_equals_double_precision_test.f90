@@ -21,7 +21,7 @@ contains
         tests = describe("assertEquals with double precision values", individual_tests)
     end function test_assert_equals_integers
 
-    function checkPassForSameNumber(the_example) result(result_)
+    pure function checkPassForSameNumber(the_example) result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: &
                 DoublePrecisionInput_t, &
@@ -84,7 +84,7 @@ contains
         end select
     end function checkPassForSameNumber
 
-    function checkFailForDifferentNumbers() result(result_)
+    pure function checkFailForDifferentNumbers() result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: Result_t, assertEquals, assertNot
 

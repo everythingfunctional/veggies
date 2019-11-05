@@ -31,7 +31,7 @@ contains
         tests = Given("a passing test collection", the_collection, collection)
     end function test_passing_collection_behaviors
 
-    function checkCollectionPasses(example_results) result(result_)
+    pure function checkCollectionPasses(example_results) result(result_)
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
                 Input_t, Result_t, assertThat, fail
@@ -47,7 +47,7 @@ contains
         end select
     end function checkCollectionPasses
 
-    function checkNumCases(example_results) result(result_)
+    pure function checkNumCases(example_results) result(result_)
         use example_collections_m, only: NUM_CASES_IN_PASSING
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -64,7 +64,7 @@ contains
         end select
     end function checkNumCases
 
-    function checkNumFailingCases(example_results) result(result_)
+    pure function checkNumFailingCases(example_results) result(result_)
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
                 Input_t, Result_t, assertEquals, fail
@@ -80,7 +80,7 @@ contains
         end select
     end function checkNumFailingCases
 
-    function checkVerboseTopDescription(example_results) result(result_)
+    pure function checkVerboseTopDescription(example_results) result(result_)
         use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -99,7 +99,7 @@ contains
         end select
     end function checkVerboseTopDescription
 
-    function checkVerboseCaseDescriptions(example_results) result(result_)
+    pure function checkVerboseCaseDescriptions(example_results) result(result_)
         use example_collections_m, only: &
                 EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
         use Helpers_m, only: TestResultItemInput_t
@@ -123,7 +123,7 @@ contains
         end select
     end function checkVerboseCaseDescriptions
 
-    function checkVerboseDescriptionAssertion(example_results) result(result_)
+    pure function checkVerboseDescriptionAssertion(example_results) result(result_)
         use example_asserts_m, only: SUCCESS_MESSAGE
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -142,7 +142,7 @@ contains
         end select
     end function checkVerboseDescriptionAssertion
 
-    function checkFailureDescriptionEmpty(example_results) result(result_)
+    pure function checkFailureDescriptionEmpty(example_results) result(result_)
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
                 Input_t, Result_t, assertEmpty, fail
@@ -158,7 +158,7 @@ contains
         end select
     end function checkFailureDescriptionEmpty
 
-    function checkNumAsserts(example_results) result(result_)
+    pure function checkNumAsserts(example_results) result(result_)
         use example_collections_m, only: NUM_ASSERTS_IN_PASSING
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
@@ -175,7 +175,7 @@ contains
         end select
     end function checkNumAsserts
 
-    function checkNumFailingAsserts(example_results) result(result_)
+    pure function checkNumFailingAsserts(example_results) result(result_)
         use Helpers_m, only: TestResultItemInput_t
         use Vegetables_m, only: &
                 Input_t, Result_t, assertEquals, fail

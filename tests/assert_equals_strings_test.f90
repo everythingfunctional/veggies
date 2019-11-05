@@ -21,7 +21,7 @@ contains
         tests = describe("assertEquals with strings", individual_tests)
     end function test_assert_equals_strings
 
-    function checkPassForSameStrings(the_example) result(result_)
+    pure function checkPassForSameStrings(the_example) result(result_)
         use iso_varying_string, only: VARYING_STRING, char, var_str
         use Vegetables_m, only: &
                 Input_t, &
@@ -257,7 +257,7 @@ contains
         end select
     end function checkPassForSameStrings
 
-    function checkFailForDifferentStrings() result(result_)
+    pure function checkFailForDifferentStrings() result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: Result_t, assertEquals, assertNot
 

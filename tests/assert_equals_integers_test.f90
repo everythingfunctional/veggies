@@ -21,7 +21,7 @@ contains
         tests = describe("assertEquals with integers", individual_tests)
     end function test_assert_equals_integers
 
-    function checkPassForSameInteger(the_input) result(result_)
+    pure function checkPassForSameInteger(the_input) result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: &
                 Input_t, &
@@ -84,7 +84,7 @@ contains
         end select
     end function checkPassForSameInteger
 
-    function checkFailForDifferentIntegers() result(result_)
+    pure function checkFailForDifferentIntegers() result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: Result_t, assertEquals, assertNot
 

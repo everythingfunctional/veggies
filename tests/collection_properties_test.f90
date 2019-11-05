@@ -22,7 +22,7 @@ contains
         test = describe("A test collection", the_collection, individual_tests)
     end function test_collection_properties
 
-    function checkNumCases(example_collection) result(result_)
+    pure function checkNumCases(example_collection) result(result_)
         use example_collections_m, only: NUM_CASES_IN_PASSING
         use Helpers_m, only: TestItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
@@ -38,7 +38,7 @@ contains
         end select
     end function checkNumCases
 
-    function checkCollectionTopDescription(example_collection) result(result_)
+    pure function checkCollectionTopDescription(example_collection) result(result_)
         use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
         use Helpers_m, only: TestItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
@@ -55,7 +55,7 @@ contains
         end select
     end function checkCollectionTopDescription
 
-    function checkCollectionDescriptions(example_collection) result(result_)
+    pure function checkCollectionDescriptions(example_collection) result(result_)
         use example_collections_m, only: &
                 EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
         use Helpers_m, only: TestItemInput_t

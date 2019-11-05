@@ -31,7 +31,7 @@ contains
         tests = describe("assertEqualsWithinRelative", individual_tests)
     end function test_assert_equals_within_relative
 
-    function checkPassForSameNumber(the_example) result(result_)
+    pure function checkPassForSameNumber(the_example) result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: &
                 DoublePrecisionInput_t, &
@@ -113,7 +113,7 @@ contains
         end select
     end function checkPassForSameNumber
 
-    function checkFailForDifferentNumbers(the_example) result(result_)
+    pure function checkFailForDifferentNumbers(the_example) result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: &
                 DoublePrecisionInput_t, &
@@ -195,7 +195,7 @@ contains
         end select
     end function checkFailForDifferentNumbers
 
-    function checkPassForCloseNumbers(the_example) result(result_)
+    pure function checkPassForCloseNumbers(the_example) result(result_)
         use iso_varying_string, only: var_str
         use Vegetables_m, only: &
                 DoublePrecisionInput_t, &

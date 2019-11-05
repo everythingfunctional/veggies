@@ -27,7 +27,7 @@ contains
         tests = describe("Results", individual_tests)
     end function test_result
 
-    function checkPassed() result(result_)
+    pure function checkPassed() result(result_)
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, assertNot, assertThat, fail, succeed
 
@@ -44,7 +44,7 @@ contains
                 .and.assertNot(failing_result%passed())
     end function checkPassed
 
-    function checkNumAsserts() result(result_)
+    pure function checkNumAsserts() result(result_)
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, assertEquals, succeed
 
@@ -57,7 +57,7 @@ contains
         result_ = assertEquals(2, multiple_asserts%numAsserts())
     end function checkNumAsserts
 
-    function checkNumFailingAsserts() result(result_)
+    pure function checkNumFailingAsserts() result(result_)
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, assertEquals, fail, succeed
 
@@ -70,7 +70,7 @@ contains
         result_ = assertEquals(1, multiple_asserts%numFailingAsserts())
     end function checkNumFailingAsserts
 
-    function checkVerboseIncludes() result(result_)
+    pure function checkVerboseIncludes() result(result_)
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: Result_t, assertIncludes, fail, succeed
 
@@ -87,7 +87,7 @@ contains
                         "Second", multiple_asserts%verboseDescription(.false.))
     end function checkVerboseIncludes
 
-    function checkFailureIncludes() result(result_)
+    pure function checkFailureIncludes() result(result_)
         use iso_varying_string ! To make compiler happy
         use Vegetables_m, only: &
                 Result_t, assertDoesntInclude, assertIncludes, fail, succeed

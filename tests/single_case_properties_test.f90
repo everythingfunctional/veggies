@@ -21,7 +21,7 @@ contains
         test = describe("A test case", the_case, individual_tests)
     end function test_case_properties
 
-    function checkCaseDescription(example_case) result(result_)
+    pure function checkCaseDescription(example_case) result(result_)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
         use Helpers_m, only: TestItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
@@ -37,7 +37,7 @@ contains
         end select
     end function checkCaseDescription
 
-    function checkNumCases(example_case) result(result_)
+    pure function checkNumCases(example_case) result(result_)
         use Helpers_m, only: TestItemInput_t
         use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
 
