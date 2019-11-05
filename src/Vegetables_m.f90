@@ -4518,7 +4518,7 @@ contains
         IndividualResult%passed_ = passed
     end function IndividualResult
 
-    pure function individualResultFailureDescription( &
+    elemental function individualResultFailureDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: &
                 VARYING_STRING, assignment(=), operator(//)
@@ -4538,7 +4538,7 @@ contains
         end if
     end function individualResultFailureDescription
 
-    pure function individualResultVerboseDescription( &
+    elemental function individualResultVerboseDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING, operator(//)
 
@@ -5418,15 +5418,9 @@ contains
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
 
-        integer :: i
         type(VARYING_STRING) :: individual_descriptions(size(self%results))
 
-        !$omp parallel do
-        do i = 1, size(self%results)
-            individual_descriptions(i) =  &
-                    self%results(i)%failureDescription(colorize)
-        end do
-        !$omp end parallel do
+        individual_descriptions = self%results%failureDescription(colorize)
         description = join(individual_descriptions, NEWLINE)
     end function resultFailureDescription
 
@@ -5459,15 +5453,9 @@ contains
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
 
-        integer :: i
         type(VARYING_STRING) :: individual_descriptions(size(self%results))
 
-        !$omp parallel do
-        do i = 1, size(self%results)
-            individual_descriptions(i) =  &
-                    self%results(i)%verboseDescription(colorize)
-        end do
-        !$omp end parallel do
+        individual_descriptions = self%results%verboseDescription(colorize)
         description = join(individual_descriptions, NEWLINE)
     end function resultVerboseDescription
 
@@ -5957,13 +5945,8 @@ contains
         type(VARYING_STRING) :: description
 
         type(VARYING_STRING) :: descriptions(size(self%tests))
-        integer :: i
 
-        !$omp parallel do
-        do i = 1, size(self%tests)
-            descriptions(i) = self%tests(i)%description()
-        end do
-        !$omp end parallel do
+        descriptions = self%tests%description()
         description = hangingIndent( &
                 self%description_ // NEWLINE // join(descriptions, NEWLINE), &
                 INDENTATION)
@@ -6032,16 +6015,11 @@ contains
         type(VARYING_STRING) :: description
 
         type(VARYING_STRING) :: descriptions(size(self%results))
-        integer :: i
 
         if (self%passed()) then
             description = ""
         else
-            !$omp parallel do
-            do i = 1, size(self%results)
-                descriptions(i) = self%results(i)%failureDescription(colorize)
-            end do
-            !$omp end parallel do
+            descriptions = self%results%failureDescription(colorize)
             description = hangingIndent( &
                     self%description // NEWLINE // join(descriptions, NEWLINE), &
                     INDENTATION)
@@ -6093,13 +6071,8 @@ contains
         type(VARYING_STRING) :: description
 
         type(VARYING_STRING) :: descriptions(size(self%results))
-        integer :: i
 
-        !$omp parallel do
-        do i = 1, size(self%results)
-            descriptions(i) = self%results(i)%verboseDescription(colorize)
-        end do
-        !$omp end parallel do
+        descriptions = self%results%verboseDescription(colorize)
         description = hangingIndent( &
                 self%description // NEWLINE // join(descriptions, NEWLINE), &
                 INDENTATION)
@@ -6152,7 +6125,7 @@ contains
                 self%description_, results))
     end function testCollectionWithInputRunWithoutInput
 
-    pure function testItemDescription(self) result(description)
+    elemental function testItemDescription(self) result(description)
         use iso_varying_string, only: VARYING_STRING
 
         class(TestItem_t), intent(in) :: self
@@ -6201,7 +6174,7 @@ contains
         result_ = self%test%run()
     end function testItemRunWithoutInput
 
-    pure function testResultItemFailureDescription( &
+    elemental function testResultItemFailureDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING
 
@@ -6247,7 +6220,7 @@ contains
         passed = self%result_%passed()
     end function testResultItemPassed
 
-    pure function testResultItemVerboseDescription( &
+    elemental function testResultItemVerboseDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING
 
