@@ -81,7 +81,6 @@ module Vegetables_m
         procedure(runWithInput_), deferred :: runWithInput
         procedure(runWithoutInput_), deferred :: runWithoutInput
         generic :: run => runWithInput, runWithoutInput
-        procedure(testDescription), deferred :: repr
     end type Test_t
 
     type, public :: TestItem_t
@@ -95,7 +94,6 @@ module Vegetables_m
         procedure :: runWithInput => testItemRunWithInput
         procedure :: runWithoutInput => testItemRunWithoutInput
         generic, public :: run => runWithInput, runWithoutInput
-        procedure :: repr => testItemRepr
     end type TestItem_t
 
     type, public, abstract, extends(Test_t) :: TestCase_t
@@ -113,7 +111,6 @@ module Vegetables_m
         private
         procedure :: runWithInput => simpleTestCaseRunWithInput
         procedure :: runWithoutInput => simpleTestCaseRunWithoutInput
-        procedure :: repr => simpleTestCaseRepr
     end type SimpleTestCase_t
 
     type, public, extends(TestCase_t) :: InputTestCase_t
@@ -123,7 +120,6 @@ module Vegetables_m
         private
         procedure :: runWithInput => inputTestCaseRunWithInput
         procedure :: runWithoutInput => inputTestCaseRunWithoutInput
-        procedure :: repr => inputTestCaseRepr
     end type InputTestCase_t
 
     type, public, extends(TestCase_t) :: TestCaseWithExamples_t
@@ -134,7 +130,6 @@ module Vegetables_m
         private
         procedure :: runWithInput => testCaseWithExamplesRunWithInput
         procedure :: runWithoutInput => testCaseWithExamplesRunWithoutInput
-        procedure :: repr => testCaseWithExamplesRepr
     end type TestCaseWithExamples_t
 
     type, public, extends(TestCase_t) :: TestCaseWithGenerator_t
@@ -145,7 +140,6 @@ module Vegetables_m
         private
         procedure :: runWithInput => testCaseWithGeneratorRunWithInput
         procedure :: runWithoutInput => testCaseWithGeneratorRunWithoutInput
-        procedure :: repr => testCaseWithGeneratorRepr
     end type TestCaseWithGenerator_t
 
     type, public, abstract, extends(Test_t) :: TestCollection_t
@@ -163,7 +157,6 @@ module Vegetables_m
         private
         procedure :: runWithInput => simpleTestCollectionRunWithInput
         procedure :: runWithoutInput => simpleTestCollectionRunWithoutInput
-        procedure :: repr => simpleTestCollectionRepr
     end type SimpleTestCollection_t
 
     type, public, extends(TestCollection_t) :: TestCollectionWithInput_t
@@ -173,7 +166,6 @@ module Vegetables_m
         private
         procedure :: runWithInput => testCollectionWithInputRunWithInput
         procedure :: runWithoutInput => testCollectionWithInputRunWithoutInput
-        procedure :: repr => testCollectionWithInputRepr
         final :: testCollectionWithInputDestructor
     end type TestCollectionWithInput_t
 
@@ -184,7 +176,6 @@ module Vegetables_m
         private
         procedure :: runWithInput => transformingTestCollectionRunWithInput
         procedure :: runWithoutInput => transformingTestCollectionRunWithoutInput
-        procedure :: repr => transformingTestCollectionRepr
     end type TransformingTestCollection_t
 
     type :: IndividualResult_t
@@ -195,7 +186,6 @@ module Vegetables_m
         private
         procedure :: failureDescription => individualResultFailureDescription
         procedure :: verboseDescription => individualResultVerboseDescription
-        procedure :: repr => individualResultRepr
     end type IndividualResult_t
 
     type, public :: Result_t
@@ -210,7 +200,6 @@ module Vegetables_m
         procedure, public :: passed => resultPassed
         procedure, public :: failureDescription => resultFailureDescription
         procedure, public :: verboseDescription => resultVerboseDescription
-        procedure :: repr => resultRepr
     end type Result_t
 
     type, abstract :: TestResult_t
@@ -227,7 +216,6 @@ module Vegetables_m
                 failureDescription
         procedure(testResultColorizedDescription), public, deferred :: &
                 verboseDescription
-        procedure(testResultDescription), deferred :: repr
     end type TestResult_t
 
     type, public :: TestResultItem_t
@@ -242,7 +230,6 @@ module Vegetables_m
         procedure, public :: passed => testResultItemPassed
         procedure, public :: failureDescription => testResultItemFailureDescription
         procedure, public :: verboseDescription => testResultItemVerboseDescription
-        procedure :: repr => testResultItemRepr
     end type TestResultItem_t
 
     type, public, extends(TestResult_t) :: TestCaseResult_t
@@ -259,7 +246,6 @@ module Vegetables_m
                 testCaseResultFailureDescription
         procedure, public :: verboseDescription => &
                 testCaseResultVerboseDescription
-        procedure :: repr => testCaseResultRepr
         final :: testCaseResultDestructor
     end type TestCaseResult_t
 
@@ -279,7 +265,6 @@ module Vegetables_m
                 testCollectionResultFailureDescription
         procedure, public :: verboseDescription => &
                 testCollectionResultVerboseDescription
-        procedure :: repr => testCollectionResultRepr
     end type TestCollectionResult_t
 
     type :: FilterResult_t
@@ -4553,20 +4538,6 @@ contains
         end if
     end function individualResultFailureDescription
 
-    function individualResultRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, toString, NEWLINE
-
-        class(IndividualResult_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        string = hangingIndent( &
-                "IndividualResult(" // NEWLINE &
-                    // "message = """ // self%message // """," // NEWLINE &
-                    // "passed = " // toString(self%passed_), &
-                INDENTATION) // NEWLINE // ")"
-    end function individualResultRepr
-
     function individualResultVerboseDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING, operator(//)
@@ -4613,20 +4584,6 @@ contains
         allocate(result_%result_, source = TestCaseResult( &
                 self%description_, fail("No input provided")))
     end function inputTestCaseRunWithoutInput
-
-    function inputTestCaseRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, toString, NEWLINE
-
-        class(InputTestCase_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        string = hangingIndent( &
-                "InputTestCase_t(" // NEWLINE &
-                    // "description = """ // self%description_ // """," // NEWLINE &
-                    // "test @ " // toString(loc(self%test)), &
-                INDENTATION) // NEWLINE // ")"
-    end function inputTestCaseRepr
 
     function ItBasicC(description, test) result(item)
         use iso_varying_string, only: var_str
@@ -5494,30 +5451,6 @@ contains
         passed = all(self%results%passed_)
     end function resultPassed
 
-    function resultRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, indent, join, NEWLINE
-
-        class(Result_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        type(VARYING_STRING) :: strings(size(self%results))
-        integer :: i
-
-        !$omp parallel do
-        do i = 1, size(self%results)
-            strings(i) = self%results(i)%repr()
-        end do
-        !$omp end parallel do
-        string = hangingIndent( &
-                "Result_t(" // NEWLINE &
-                    // "results = [" // NEWLINE &
-                    // indent( &
-                            join(strings, "," // NEWLINE), &
-                            INDENTATION) // NEWLINE // "]", &
-                INDENTATION) // NEWLINE // ")"
-    end function resultRepr
-
     function resultVerboseDescription(self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING
         use strff, only: join, NEWLINE
@@ -5693,20 +5626,6 @@ contains
         SimpleTestCase%test => test
     end function SimpleTestCase
 
-    function simpleTestCaseRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, toString, NEWLINE
-
-        class(SimpleTestCase_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        string = hangingIndent( &
-                "SimpleTestCase_t(" // NEWLINE &
-                    // "description = """ // self%description_ // """," // NEWLINE &
-                    // "test @ " // toString(loc(self%test)), &
-                INDENTATION) // NEWLINE // ")"
-    end function simpleTestCaseRepr
-
     function simpleTestCaseRunWithInput(self, input) result(result_)
         class(SimpleTestCase_t), intent(in) :: self
         class(Input_t), intent(in) :: input
@@ -5736,31 +5655,6 @@ contains
         SimpleTestCollection%description_ = description
         allocate(SimpleTestCollection%tests, source = tests)
     end function SimpleTestCollection
-
-    function simpleTestCollectionRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, indent, join, NEWLINE
-
-        class(SimpleTestCollection_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        type(VARYING_STRING) :: strings(size(self%tests))
-        integer :: i
-
-        !$omp parallel do
-        do i = 1, size(self%tests)
-            strings(i) = self%tests(i)%repr()
-        end do
-        !$omp end parallel do
-        string = hangingIndent( &
-                "SimpleTestCollection_t(" // NEWLINE &
-                    // "description = """ // self%description_ // """," // NEWLINE &
-                    // "tests = [" // NEWLINE &
-                    // indent( &
-                            join(strings, "," // NEWLINE), &
-                            INDENTATION) // NEWLINE // "]", &
-                INDENTATION) // NEWLINE // ")"
-    end function simpleTestCollectionRepr
 
     function simpleTestCollectionRunWithInput(self, input) result(result_)
         class(SimpleTestCollection_t), intent(in) :: self
@@ -5922,20 +5816,6 @@ contains
         passed = self%result_%passed()
     end function testCaseResultPassed
 
-    function testCaseResultRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, NEWLINE
-
-        class(TestCaseResult_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        string = hangingIndent( &
-                "TestCaseResult_t(" // NEWLINE &
-                    // "description = """ // self%description // """," // NEWLINE &
-                    // "result = " // self%result_%repr(), &
-                INDENTATION) // NEWLINE // ")"
-    end function testCaseResultRepr
-
     function testCaseResultVerboseDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING, operator(//)
@@ -5963,21 +5843,6 @@ contains
         allocate(TestCaseWithExamples%examples, source = examples)
         TestCaseWithExamples%test => test
     end function TestCaseWithExamples
-
-    function testCaseWithExamplesRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, toString, NEWLINE
-
-        class(TestCaseWithExamples_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        string = hangingIndent( &
-                "TestCaseWithExamples_t(" // NEWLINE &
-                    // "description = """ // self%description_ // """," // NEWLINE &
-                    // "num_examples = " // toString(size(self%examples)) // "," // NEWLINE &
-                    // "test @ " // toString(loc(self%test)), &
-                INDENTATION) // NEWLINE // ")"
-    end function testCaseWithExamplesRepr
 
     function testCaseWithExamplesRunWithInput(self, input) result(result_)
         class(TestCaseWithExamples_t), intent(in) :: self
@@ -6018,21 +5883,6 @@ contains
         allocate(TestCaseWithGenerator%generator, source = generator)
         TestCaseWithGenerator%test => test
     end function TestCaseWithGenerator
-
-    function testCaseWithGeneratorRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, toString, NEWLINE
-
-        class(TestCaseWithGenerator_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        string = hangingIndent( &
-                "TestCaseWithGenerator_t(" // NEWLINE &
-                    // "description = """ // self%description_ // """," // NEWLINE &
-                    // "generator @ " // toString(loc(self%generator)) // "," // NEWLINE &
-                    // "test @ " // toString(loc(self%test)), &
-                INDENTATION) // NEWLINE // ")"
-    end function testCaseWithGeneratorRepr
 
     function testCaseWithGeneratorRunWithInput(self, input) result(result_)
         class(TestCaseWithGenerator_t), intent(in) :: self
@@ -6233,31 +6083,6 @@ contains
         passed = all(self%results%passed())
     end function testCollectionResultPassed
 
-    function testCollectionResultRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, indent, join, NEWLINE
-
-        class(TestCollectionResult_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        type(VARYING_STRING) :: strings(size(self%results))
-        integer :: i
-
-        !$omp parallel do
-        do i = 1, size(self%results)
-            strings(i) = self%results(i)%repr()
-        end do
-        !$omp end parallel do
-        string = hangingIndent( &
-                "TestCollectionResult_t(" // NEWLINE &
-                    // "description = """ // self%description // """," // NEWLINE &
-                    // "tests = [" // NEWLINE &
-                    // indent( &
-                            join(strings, "," // NEWLINE), &
-                            INDENTATION) // NEWLINE // "]", &
-                INDENTATION) // NEWLINE // ")"
-    end function testCollectionResultRepr
-
     function testCollectionResultVerboseDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING, operator(//)
@@ -6299,32 +6124,6 @@ contains
         deallocate(self%input)
         deallocate(self%tests)
     end subroutine testCollectionWithInputDestructor
-
-    function testCollectionWithInputRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, indent, join, toString, NEWLINE
-
-        class(TestCollectionWithInput_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        type(VARYING_STRING) :: strings(size(self%tests))
-        integer :: i
-
-        !$omp parallel do
-        do i = 1, size(self%tests)
-            strings(i) = self%tests(i)%repr()
-        end do
-        !$omp end parallel do
-        string = hangingIndent( &
-                "TestCollectionWithInput_t(" // NEWLINE &
-                    // "description = """ // self%description_ // """," // NEWLINE &
-                    // "input @ " // toString(loc(self%input)) // "," // NEWLINE &
-                    // "tests = [" // NEWLINE &
-                    // indent( &
-                            join(strings, "," // NEWLINE), &
-                            INDENTATION) // NEWLINE // "]", &
-                INDENTATION) // NEWLINE // ")"
-    end function testCollectionWithInputRepr
 
     function testCollectionWithInputRunWithInput(self, input) result(result_)
         class(TestCollectionWithInput_t), intent(in) :: self
@@ -6387,19 +6186,6 @@ contains
         num_cases = self%test%numCases()
     end function testItemNumCases
 
-    function testItemRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, NEWLINE
-
-        class(TestItem_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        string = hangingIndent( &
-                "TestItem_t(" // NEWLINE &
-                    // "test = " // self%test%repr(), &
-                INDENTATION) // NEWLINE // ")"
-    end function testItemRepr
-
     function testItemRunWithInput(self, input) result(result_)
         class(TestItem_t), intent(in) :: self
         class(Input_t), intent(in) :: input
@@ -6461,19 +6247,6 @@ contains
         passed = self%result_%passed()
     end function testResultItemPassed
 
-    function testResultItemRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, NEWLINE
-
-        class(TestResultItem_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        string = hangingIndent( &
-                "TestResultItem_t(" // NEWLINE &
-                    // "result = " // self%result_%repr(), &
-                INDENTATION) // NEWLINE // ")"
-    end function testResultItemRepr
-
     function testResultItemVerboseDescription( &
             self, colorize) result(description)
         use iso_varying_string, only: VARYING_STRING
@@ -6529,32 +6302,6 @@ contains
         TransformingTestCollection%transformer => transformer
         allocate(TransformingTestCollection%tests, source = tests)
     end function TransformingTestCollection
-
-    function transformingTestCollectionRepr(self) result(string)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, indent, join, toString, NEWLINE
-
-        class(TransformingTestCollection_t), intent(in) :: self
-        type(VARYING_STRING) :: string
-
-        type(VARYING_STRING) :: strings(size(self%tests))
-        integer :: i
-
-        !$omp parallel do
-        do i = 1, size(self%tests)
-            strings(i) = self%tests(i)%repr()
-        end do
-        !$omp end parallel do
-        string = hangingIndent( &
-                "TransformingTestCollection_t(" // NEWLINE &
-                    // "description = """ // self%description_ // """," // NEWLINE &
-                    // "transformer @ " // toString(loc(self%transformer)) // "," // NEWLINE &
-                    // "tests = [" // NEWLINE &
-                    // indent( &
-                            join(strings, "," // NEWLINE), &
-                            INDENTATION) // NEWLINE // "]", &
-                INDENTATION) // NEWLINE // ")"
-    end function transformingTestCollectionRepr
 
     function transformingTestCollectionRunWithInput(self, input) result(result_)
         class(TransformingTestCollection_t), intent(in) :: self
