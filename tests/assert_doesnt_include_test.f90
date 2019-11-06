@@ -1,4 +1,18 @@
 module assert_doesnt_include_test
+    use iso_varying_string, only: VARYING_STRING, char, var_str
+    use Vegetables_m, only: &
+            Input_t, &
+            Result_t, &
+            StringInput_t, &
+            TestItem_t, &
+            assertDoesntInclude, &
+            assertNot, &
+            assertThat, &
+            Describe, &
+            fail, &
+            It, &
+            ASCII_STRING_GENERATOR
+
     implicit none
     private
 
@@ -9,9 +23,6 @@ module assert_doesnt_include_test
     public :: test_assert_includes
 contains
     function test_assert_includes() result(tests)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: TestItem_t, Describe, It, ASCII_STRING_GENERATOR
-
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: individual_tests(2)
@@ -22,9 +33,6 @@ contains
     end function test_assert_includes
 
     pure function checkPassForDifferentStrings() result(result_)
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: Result_t, assertDoesntInclude, assertThat
-
         type(Result_t) :: result_
 
         character(len=*), parameter :: ONE_STRNIG = "One String"
@@ -251,15 +259,6 @@ contains
     end function checkPassForDifferentStrings
 
     pure function checkFailForSameString(the_example) result(result_)
-        use iso_varying_string, only: VARYING_STRING, char, var_str
-        use Vegetables_m, only: &
-                Input_t, &
-                Result_t, &
-                StringInput_t, &
-                assertDoesntInclude, &
-                assertNot, &
-                fail
-
         class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 

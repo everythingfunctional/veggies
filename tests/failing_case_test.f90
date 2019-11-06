@@ -1,14 +1,30 @@
 module failing_case_test
+    use example_asserts_m, only: &
+            FAILURE_MESSAGE, &
+            SUCCESS_MESSAGE, &
+            NUM_ASSERTS_IN_FAILING, &
+            NUM_FAILING_ASSERTS_IN_FAILING
+    use example_cases_m, only: exampleFailingTestCase, EXAMPLE_DESCRIPTION
+    use Helpers_m, only: TestItemInput_t, TestResultItemInput_t, runTest
+    use Vegetables_m, only: &
+            Input_t, &
+            Result_t, &
+            TestItem_t, &
+            assertDoesntInclude, &
+            assertEquals, &
+            assertIncludes, &
+            assertNot, &
+            fail, &
+            Given, &
+            Then__, &
+            When
+
     implicit none
     private
 
     public :: test_failing_case_behaviors
 contains
     function test_failing_case_behaviors() result(test)
-        use example_cases_m, only: exampleFailingTestCase
-        use Helpers_m, only: TestItemInput_t, runTest
-        use Vegetables_m, only: TestItem_t, Given, Then__, When
-
         type(TestItem_t) :: test
 
         type(TestItem_t) :: collection(1)
@@ -32,10 +48,6 @@ contains
     end function test_failing_case_behaviors
 
     pure function checkCaseFails(example_result) result(result_)
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertNot, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 
@@ -48,9 +60,6 @@ contains
     end function checkCaseFails
 
     pure function checkNumCases(example_result) result(result_)
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 
@@ -63,9 +72,6 @@ contains
     end function checkNumCases
 
     pure function checkNumFailingCases(example_result) result(result_)
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 
@@ -78,10 +84,6 @@ contains
     end function checkNumFailingCases
 
     pure function checkVerboseForGivenDescription(example_result) result(result_)
-        use example_cases_m, only: EXAMPLE_DESCRIPTION
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 
@@ -94,10 +96,6 @@ contains
     end function checkVerboseForGivenDescription
 
     pure function checkVerboseForSuccessMessage(example_result) result(result_)
-        use example_asserts_m, only: SUCCESS_MESSAGE
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 
@@ -110,10 +108,6 @@ contains
     end function checkVerboseForSuccessMessage
 
     pure function checkVerboseForFailureMessage(example_result) result(result_)
-        use example_asserts_m, only: FAILURE_MESSAGE
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 
@@ -126,10 +120,6 @@ contains
     end function checkVerboseForFailureMessage
 
     pure function checkFailureForGivenDescription(example_result) result(result_)
-        use example_cases_m, only: EXAMPLE_DESCRIPTION
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 
@@ -142,10 +132,6 @@ contains
     end function checkFailureForGivenDescription
 
     pure function checkFailureForFailureMessage(example_result) result(result_)
-        use example_asserts_m, only: FAILURE_MESSAGE
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 
@@ -158,11 +144,6 @@ contains
     end function checkFailureForFailureMessage
 
     pure function checkFailureNoSuccessMessage(example_result) result(result_)
-        use example_asserts_m, only: SUCCESS_MESSAGE
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertDoesntInclude, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 
@@ -175,10 +156,6 @@ contains
     end function checkFailureNoSuccessMessage
 
     pure function checkNumAsserts(example_result) result(result_)
-        use example_asserts_m, only: NUM_ASSERTS_IN_FAILING
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 
@@ -191,10 +168,6 @@ contains
     end function checkNumAsserts
 
     pure function checkNumFailingAsserts(example_result) result(result_)
-        use example_asserts_m, only: NUM_FAILING_ASSERTS_IN_FAILING
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_result
         type(Result_t) :: result_
 

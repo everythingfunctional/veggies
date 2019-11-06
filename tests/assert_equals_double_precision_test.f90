@@ -1,4 +1,18 @@
 module assert_equals_double_precision_test
+    use iso_varying_string, only: var_str
+    use DoublePrecisionGenerator_m, only: DOUBLE_PRECISION_GENERATOR
+    use Vegetables_m, only: &
+            DoublePrecisionInput_t, &
+            Input_t, &
+            Result_t, &
+            TestItem_t, &
+            assertEquals, &
+            assertNot, &
+            assertThat, &
+            describe, &
+            fail, &
+            it
+
     implicit none
     private
 
@@ -9,9 +23,6 @@ module assert_equals_double_precision_test
     public :: test_assert_equals_integers
 contains
     function test_assert_equals_integers() result(tests)
-        use DoublePrecisionGenerator_m, only: DOUBLE_PRECISION_GENERATOR
-        use Vegetables_m, only: TestItem_t, describe, it
-
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: individual_tests(2)
@@ -22,15 +33,6 @@ contains
     end function test_assert_equals_integers
 
     pure function checkPassForSameNumber(the_example) result(result_)
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: &
-                DoublePrecisionInput_t, &
-                Input_t, &
-                Result_t, &
-                assertEquals, &
-                assertThat, &
-                fail
-
         class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 
@@ -85,9 +87,6 @@ contains
     end function checkPassForSameNumber
 
     pure function checkFailForDifferentNumbers() result(result_)
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: Result_t, assertEquals, assertNot
-
         type(Result_t) :: result_
 
         type(Result_t) :: example_result

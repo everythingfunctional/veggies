@@ -1,6 +1,12 @@
 module Helpers_m
-    use iso_varying_string ! To make compiler happy
-    use Vegetables_m, only: Input_t, TestItem_t, TestResultItem_t
+    use Vegetables_m, only: &
+            Input_t, &
+            TestItem_t, &
+            TestResultItem_t, &
+            TransformationFailure_t, &
+            Transformed_t, &
+            fail, &
+            Transformed
 
     implicit none
     private
@@ -16,14 +22,6 @@ module Helpers_m
     public :: runTest
 contains
     function runTest(example_test) result(example_result)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: &
-                Input_t, &
-                TransformationFailure_t, &
-                Transformed_t, &
-                fail, &
-                Transformed
-
         class(Input_t), intent(in) :: example_test
         type(Transformed_t) :: example_result
 

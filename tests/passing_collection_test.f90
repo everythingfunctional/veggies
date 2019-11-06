@@ -1,14 +1,32 @@
 module passing_collection_test
+    use example_asserts_m, only: SUCCESS_MESSAGE
+    use example_collections_m, only: &
+            examplePassingCollection, &
+            EXAMPLE_CASE_DESCRIPTION_1, &
+            EXAMPLE_CASE_DESCRIPTION_2, &
+            EXAMPLE_COLLECTION_DESCRIPTION, &
+            NUM_ASSERTS_IN_PASSING, &
+            NUM_CASES_IN_PASSING
+    use Helpers_m, only: TestItemInput_t, TestResultItemInput_t, runTest
+    use Vegetables_m, only: &
+            Input_t, &
+            Result_t, &
+            TestItem_t, &
+            assertEmpty, &
+            assertEquals, &
+            assertIncludes, &
+            assertThat, &
+            fail, &
+            Given, &
+            Then__, &
+            When
+
     implicit none
     private
 
     public :: test_passing_collection_behaviors
 contains
     function test_passing_collection_behaviors() result(tests)
-        use example_collections_m, only: examplePassingCollection
-        use Helpers_m, only: TestItemInput_t, runTest
-        use Vegetables_m, only: TestItem_t, Given, Then__, When
-
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: collection(1)
@@ -32,10 +50,6 @@ contains
     end function test_passing_collection_behaviors
 
     pure function checkCollectionPasses(example_results) result(result_)
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertThat, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -48,11 +62,6 @@ contains
     end function checkCollectionPasses
 
     pure function checkNumCases(example_results) result(result_)
-        use example_collections_m, only: NUM_CASES_IN_PASSING
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -65,10 +74,6 @@ contains
     end function checkNumCases
 
     pure function checkNumFailingCases(example_results) result(result_)
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -81,11 +86,6 @@ contains
     end function checkNumFailingCases
 
     pure function checkVerboseTopDescription(example_results) result(result_)
-        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -100,12 +100,6 @@ contains
     end function checkVerboseTopDescription
 
     pure function checkVerboseCaseDescriptions(example_results) result(result_)
-        use example_collections_m, only: &
-                EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -124,11 +118,6 @@ contains
     end function checkVerboseCaseDescriptions
 
     pure function checkVerboseDescriptionAssertion(example_results) result(result_)
-        use example_asserts_m, only: SUCCESS_MESSAGE
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -143,10 +132,6 @@ contains
     end function checkVerboseDescriptionAssertion
 
     pure function checkFailureDescriptionEmpty(example_results) result(result_)
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertEmpty, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -159,11 +144,6 @@ contains
     end function checkFailureDescriptionEmpty
 
     pure function checkNumAsserts(example_results) result(result_)
-        use example_collections_m, only: NUM_ASSERTS_IN_PASSING
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, TestCollectionResult_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -176,10 +156,6 @@ contains
     end function checkNumAsserts
 
     pure function checkNumFailingAsserts(example_results) result(result_)
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 

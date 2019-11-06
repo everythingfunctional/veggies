@@ -1,5 +1,16 @@
 module Vegetables_m
-    use iso_varying_string, only: VARYING_STRING
+    use iso_fortran_env, only: error_unit, output_unit
+    use iso_varying_string, only: &
+            VARYING_STRING, &
+            assignment(=), &
+            operator(//), &
+            operator(==), &
+            extract, &
+            len, &
+            put_line, &
+            var_str
+    use strff, only: &
+            operator(.includes.), hangingIndent, indent, join, toString, NEWLINE
 
     implicit none
     private
@@ -286,8 +297,7 @@ module Vegetables_m
         end subroutine computation_
 
         pure function filter_(self, filter_string) result(filter_result)
-            use iso_varying_string, only: VARYING_STRING
-            import Test_t, FilterResult_t
+            import Test_t, FilterResult_t, VARYING_STRING
             class(Test_t), intent(in) :: self
             type(VARYING_STRING), intent(in) :: filter_string
             type(FilterResult_t) :: filter_result
@@ -336,16 +346,14 @@ module Vegetables_m
         end function testCount
 
         pure function testDescription(self) result(description)
-            use iso_varying_string, only: VARYING_STRING
-            import Test_t
+            import Test_t, VARYING_STRING
             class(Test_t), intent(in) :: self
             type(VARYING_STRING) :: description
         end function testDescription
 
         pure function testResultColorizedDescription( &
                 self, colorize) result(description)
-            use iso_varying_string, only: VARYING_STRING
-            import TestResult_t
+            import TestResult_t, VARYING_STRING
             class(TestResult_t), intent(in) :: self
             logical, intent(in) :: colorize
             type(VARYING_STRING) :: description
@@ -358,8 +366,7 @@ module Vegetables_m
         end function testResultCount
 
         pure function testResultDescription(self) result(description)
-            use iso_varying_string, only: VARYING_STRING
-            import TestResult_t
+            import TestResult_t, VARYING_STRING
             class(TestResult_t), intent(in) :: self
             type(VARYING_STRING) :: description
         end function testResultDescription
@@ -784,8 +791,6 @@ module Vegetables_m
             withUserMessage
 contains
     pure function assertDoesntIncludeBasicCC(search_for, string) result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
@@ -798,8 +803,6 @@ contains
     end function assertDoesntIncludeBasicCC
 
     pure function assertDoesntIncludeBasicCS(search_for, string) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(Result_t) :: result__
@@ -812,8 +815,6 @@ contains
     end function assertDoesntIncludeBasicCS
 
     pure function assertDoesntIncludeBasicSC(search_for, string) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
@@ -826,8 +827,6 @@ contains
     end function assertDoesntIncludeBasicSC
 
     pure function assertDoesntIncludeBasicSS(search_for, string) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(Result_t) :: result__
@@ -841,8 +840,6 @@ contains
 
     pure function assertDoesntIncludeWithMessageCCC( &
             search_for, string, message) result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -857,8 +854,6 @@ contains
 
     pure function assertDoesntIncludeWithMessageCCS( &
             search_for, string, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
@@ -873,8 +868,6 @@ contains
 
     pure function assertDoesntIncludeWithMessageCSC( &
             search_for, string, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -889,8 +882,6 @@ contains
 
     pure function assertDoesntIncludeWithMessageCSS( &
             search_for, string, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
@@ -905,8 +896,6 @@ contains
 
     pure function assertDoesntIncludeWithMessageSCC( &
             search_for, string, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -921,8 +910,6 @@ contains
 
     pure function assertDoesntIncludeWithMessageSCS( &
             search_for, string, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
@@ -937,8 +924,6 @@ contains
 
     pure function assertDoesntIncludeWithMessageSSC( &
             search_for, string, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -953,8 +938,6 @@ contains
 
     pure function assertDoesntIncludeWithMessageSSS( &
             search_for, string, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
@@ -969,8 +952,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesCCCC( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -986,8 +967,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesCCCS( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -1003,8 +982,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesCCSC( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -1020,8 +997,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesCCSS( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -1037,8 +1012,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesCSCC( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -1054,8 +1027,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesCSCS( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -1071,8 +1042,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesCSSC( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -1088,8 +1057,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesCSSS( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -1105,8 +1072,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesSCCC( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -1122,8 +1087,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesSCCS( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -1139,8 +1102,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesSCSC( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -1156,8 +1117,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesSCSS( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -1173,8 +1132,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesSSCC( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -1190,8 +1147,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesSSCS( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -1207,8 +1162,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesSSSC( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -1224,9 +1177,6 @@ contains
 
     pure function assertDoesntIncludeWithMessagesSSSS( &
             search_for, string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: operator(.includes.)
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -1245,8 +1195,6 @@ contains
     end function assertDoesntIncludeWithMessagesSSSS
 
     pure function assertEmptyBasicC(string) result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
 
@@ -1257,8 +1205,6 @@ contains
     end function assertEmptyBasicC
 
     pure function assertEmptyBasicS(string) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: string
         type(Result_t) :: result__
 
@@ -1269,8 +1215,6 @@ contains
     end function assertEmptyBasicS
 
     pure function assertEmptyWithMessageCC(string, message) result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
@@ -1282,8 +1226,6 @@ contains
     end function assertEmptyWithMessageCC
 
     pure function assertEmptyWithMessageCS(string, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
@@ -1295,8 +1237,6 @@ contains
     end function assertEmptyWithMessageCS
 
     pure function assertEmptyWithMessageSC(string, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
@@ -1308,8 +1248,6 @@ contains
     end function assertEmptyWithMessageSC
 
     pure function assertEmptyWithMessageSS(string, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
@@ -1322,8 +1260,6 @@ contains
 
     pure function assertEmptyWithMessagesCCC( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -1337,8 +1273,6 @@ contains
 
     pure function assertEmptyWithMessagesCCS( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
@@ -1352,8 +1286,6 @@ contains
 
     pure function assertEmptyWithMessagesCSC( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -1367,8 +1299,6 @@ contains
 
     pure function assertEmptyWithMessagesCSS( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
@@ -1382,8 +1312,6 @@ contains
 
     pure function assertEmptyWithMessagesSCC( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -1397,8 +1325,6 @@ contains
 
     pure function assertEmptyWithMessagesSCS( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
@@ -1412,8 +1338,6 @@ contains
 
     pure function assertEmptyWithMessagesSSC( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -1427,8 +1351,6 @@ contains
 
     pure function assertEmptyWithMessagesSSS( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, operator(==)
-
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
@@ -1447,8 +1369,6 @@ contains
             expected, &
             actual) &
             result(result__)
-        use iso_varying_string, only: var_str
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(Result_t) :: result__
@@ -1465,8 +1385,6 @@ contains
             actual, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -1481,8 +1399,6 @@ contains
             actual, &
             message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(VARYING_STRING), intent(in) :: message
@@ -1497,8 +1413,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -1518,8 +1432,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -1536,8 +1448,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -1554,8 +1464,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -1571,9 +1479,6 @@ contains
     end function assertEqualsDoublePrecisionWithMessagesSS
 
     pure function assertEqualsIntegerBasic(expected, actual) result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(Result_t) :: result__
@@ -1587,9 +1492,6 @@ contains
 
     pure function assertEqualsIntegerWithMessageC( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -1604,9 +1506,6 @@ contains
 
     pure function assertEqualsIntegerWithMessageS( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(VARYING_STRING), intent(in) :: message
@@ -1621,9 +1520,6 @@ contains
 
     pure function assertEqualsIntegerWithMessagesCC( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -1639,9 +1535,6 @@ contains
 
     pure function assertEqualsIntegerWithMessagesCS( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -1654,9 +1547,6 @@ contains
 
     pure function assertEqualsIntegerWithMessagesSC( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -1669,9 +1559,6 @@ contains
 
     pure function assertEqualsIntegerWithMessagesSS( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -1692,8 +1579,6 @@ contains
 
     pure function assertEqualsStringsCC( &
             expected, actual) result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(Result_t) :: result__
@@ -1707,8 +1592,6 @@ contains
 
     pure function assertEqualsStringsCS( &
             expected, actual) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(Result_t) :: result__
@@ -1722,8 +1605,6 @@ contains
 
     pure function assertEqualsStringsSC( &
             expected, actual) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(Result_t) :: result__
@@ -1737,8 +1618,6 @@ contains
 
     pure function assertEqualsStringsSS( &
             expected, actual) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(Result_t) :: result__
@@ -1752,8 +1631,6 @@ contains
 
     pure function assertEqualsStringsWithMessageCCC( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -1768,8 +1645,6 @@ contains
 
     pure function assertEqualsStringsWithMessageCCS( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: message
@@ -1784,8 +1659,6 @@ contains
 
     pure function assertEqualsStringsWithMessageCSC( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -1800,8 +1673,6 @@ contains
 
     pure function assertEqualsStringsWithMessageCSS( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: message
@@ -1816,8 +1687,6 @@ contains
 
     pure function assertEqualsStringsWithMessageSCC( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -1832,8 +1701,6 @@ contains
 
     pure function assertEqualsStringsWithMessageSCS( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: message
@@ -1848,8 +1715,6 @@ contains
 
     pure function assertEqualsStringsWithMessageSSC( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -1864,8 +1729,6 @@ contains
 
     pure function assertEqualsStringsWithMessageSSS( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: message
@@ -1880,8 +1743,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesCCCC( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -1897,8 +1758,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesCCCS( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -1914,8 +1773,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesCCSC( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -1931,8 +1788,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesCCSS( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -1948,8 +1803,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesCSCC( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -1965,8 +1818,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesCSCS( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -1982,8 +1833,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesCSSC( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -1999,8 +1848,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesCSSS( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -2016,8 +1863,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesSCCC( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -2033,8 +1878,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesSCCS( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -2050,8 +1893,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesSCSC( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -2067,8 +1908,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesSCSS( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -2084,8 +1923,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesSSCC( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -2101,8 +1938,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesSSCS( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -2118,8 +1953,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesSSSC( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -2135,8 +1968,6 @@ contains
 
     pure function assertEqualsStringsWithMessagesSSSS( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, operator(==)
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: success_message
@@ -2159,9 +1990,6 @@ contains
             actual, &
             tolerance) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2181,9 +2009,6 @@ contains
             tolerance, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2204,9 +2029,6 @@ contains
             tolerance, &
             message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2228,9 +2050,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2253,9 +2072,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2278,9 +2094,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2303,9 +2116,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2335,9 +2145,6 @@ contains
             actual, &
             tolerance) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2357,9 +2164,6 @@ contains
             tolerance, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2380,9 +2184,6 @@ contains
             tolerance, &
             message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2404,9 +2205,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2429,9 +2227,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2454,9 +2249,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2479,9 +2271,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: toString
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -2513,9 +2302,6 @@ contains
             after, &
             iterations) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: before
         procedure(computation_) :: computation
@@ -2541,9 +2327,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: before
         procedure(computation_) :: computation
@@ -2570,9 +2353,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: before
         procedure(computation_) :: computation
@@ -2600,9 +2380,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: before
         procedure(computation_) :: computation
@@ -2631,9 +2408,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: before
         procedure(computation_) :: computation
@@ -2662,9 +2436,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: before
         procedure(computation_) :: computation
@@ -2693,9 +2464,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: before
         procedure(computation_) :: computation
@@ -2743,9 +2511,6 @@ contains
             computation, &
             iterations) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -2765,9 +2530,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -2788,9 +2550,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -2812,9 +2571,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -2837,9 +2593,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -2862,9 +2615,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -2887,9 +2637,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         double precision, intent(in) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -2937,9 +2684,6 @@ contains
             after, &
             iterations) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         procedure(computation_) :: reference_before
         procedure(computation_) :: reference
         procedure(computation_) :: reference_after
@@ -2971,9 +2715,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         procedure(computation_) :: reference_before
         procedure(computation_) :: reference
         procedure(computation_) :: reference_after
@@ -3006,9 +2747,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         procedure(computation_) :: reference_before
         procedure(computation_) :: reference
         procedure(computation_) :: reference_after
@@ -3042,9 +2780,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         procedure(computation_) :: reference_before
         procedure(computation_) :: reference
         procedure(computation_) :: reference_after
@@ -3079,9 +2814,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         procedure(computation_) :: reference_before
         procedure(computation_) :: reference
         procedure(computation_) :: reference_after
@@ -3116,9 +2848,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         procedure(computation_) :: reference_before
         procedure(computation_) :: reference
         procedure(computation_) :: reference_after
@@ -3153,9 +2882,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         procedure(computation_) :: reference_before
         procedure(computation_) :: reference
         procedure(computation_) :: reference_after
@@ -3219,9 +2945,6 @@ contains
             computation, &
             iterations) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         procedure(computation_) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -3241,9 +2964,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         procedure(computation_) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -3264,9 +2984,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         procedure(computation_) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -3288,9 +3005,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use strff, only: toString
-
         procedure(computation_) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -3313,9 +3027,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         procedure(computation_) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -3338,9 +3049,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-        use strff, only: toString
-
         procedure(computation_) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -3363,9 +3071,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: toString
-
         procedure(computation_) :: reference
         procedure(computation_) :: computation
         integer, intent(in) :: iterations
@@ -3420,8 +3125,6 @@ contains
                 search_for, &
                 string) &
                 result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
@@ -3437,8 +3140,6 @@ contains
                 search_for, &
                 string) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(Result_t) :: result__
@@ -3454,8 +3155,6 @@ contains
                 search_for, &
                 string) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(Result_t) :: result__
@@ -3471,8 +3170,6 @@ contains
                 search_for, &
                 string) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(Result_t) :: result__
@@ -3489,8 +3186,6 @@ contains
                 string, &
                 message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -3508,8 +3203,6 @@ contains
                 string, &
                 message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
@@ -3527,8 +3220,6 @@ contains
                 string, &
                 message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -3546,8 +3237,6 @@ contains
                 string, &
                 message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
@@ -3565,8 +3254,6 @@ contains
                 string, &
                 message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -3584,8 +3271,6 @@ contains
                 string, &
                 message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
@@ -3603,8 +3288,6 @@ contains
                 string, &
                 message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -3622,8 +3305,6 @@ contains
                 string, &
                 message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: message
@@ -3642,8 +3323,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -3663,8 +3342,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -3684,8 +3361,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -3705,8 +3380,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -3726,8 +3399,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -3747,8 +3418,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -3768,8 +3437,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -3789,8 +3456,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -3810,8 +3475,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -3831,8 +3494,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -3852,8 +3513,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -3873,8 +3532,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -3894,8 +3551,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -3915,8 +3570,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -3936,8 +3589,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -3957,9 +3608,6 @@ contains
                 success_message, &
                 failure_message) &
                 result(result__)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: operator(.includes.)
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING), intent(in) :: success_message
@@ -3978,8 +3626,6 @@ contains
     end function assertIncludesWithMessagesSSSS
 
     pure function assertNotBasic(condition) result(result__)
-        use iso_varying_string, only: var_str
-
         logical, intent(in) :: condition
         type(Result_t) :: result__
 
@@ -3987,8 +3633,6 @@ contains
     end function assertNotBasic
 
     pure function assertNotWithMessageC(condition, message) result(result__)
-        use iso_varying_string, only: var_str
-
         logical, intent(in) :: condition
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
@@ -3997,8 +3641,6 @@ contains
     end function assertNotWithMessageC
 
     pure function assertNotWithMessageS(condition, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING
-
         logical, intent(in) :: condition
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
@@ -4008,8 +3650,6 @@ contains
 
     pure function assertNotWithMessagesCC( &
             condition, success_message, failure_message) result(result__)
-        use iso_varying_string, only: var_str
-
         logical, intent(in) :: condition
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -4021,8 +3661,6 @@ contains
 
     pure function assertNotWithMessagesCS( &
             condition, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         logical, intent(in) :: condition
         character(len=*), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
@@ -4034,8 +3672,6 @@ contains
 
     pure function assertNotWithMessagesSC( &
             condition, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         logical, intent(in) :: condition
         type(VARYING_STRING), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -4047,8 +3683,6 @@ contains
 
     pure function assertNotWithMessagesSS( &
             condition, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING
-
         logical, intent(in) :: condition
         type(VARYING_STRING), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
@@ -4064,8 +3698,6 @@ contains
     end function assertNotWithMessagesSS
 
     pure function assertThatBasic(condition) result(result__)
-        use iso_varying_string, only: var_str
-
         logical, intent(in) :: condition
         type(Result_t) :: result__
 
@@ -4073,8 +3705,6 @@ contains
     end function assertThatBasic
 
     pure function assertThatWithMessageC(condition, message) result(result__)
-        use iso_varying_string, only: var_str
-
         logical, intent(in) :: condition
         character(len=*), intent(in) :: message
         type(Result_t) :: result__
@@ -4083,8 +3713,6 @@ contains
     end function assertThatWithMessageC
 
     pure function assertThatWithMessageS(condition, message) result(result__)
-        use iso_varying_string, only: VARYING_STRING
-
         logical, intent(in) :: condition
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: result__
@@ -4094,8 +3722,6 @@ contains
 
     pure function assertThatWithMessagesCC( &
             condition, success_message, failure_message) result(result__)
-        use iso_varying_string, only: var_str
-
         logical, intent(in) :: condition
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -4107,8 +3733,6 @@ contains
 
     pure function assertThatWithMessagesCS( &
             condition, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         logical, intent(in) :: condition
         character(len=*), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
@@ -4120,8 +3744,6 @@ contains
 
     pure function assertThatWithMessagesSC( &
             condition, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         logical, intent(in) :: condition
         type(VARYING_STRING), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -4133,8 +3755,6 @@ contains
 
     pure function assertThatWithMessagesSS( &
             condition, success_message, failure_message) result(result__)
-        use iso_varying_string, only: VARYING_STRING
-
         logical, intent(in) :: condition
         type(VARYING_STRING), intent(in) :: success_message
         type(VARYING_STRING), intent(in) :: failure_message
@@ -4171,8 +3791,6 @@ contains
     end function combineResults
 
     pure function delimitC(string) result(delimited)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: delimited
 
@@ -4180,8 +3798,6 @@ contains
     end function delimitC
 
     pure function delimitS(string) result(delimited)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: delimited
 
@@ -4189,8 +3805,6 @@ contains
     end function delimitS
 
     function DescribeBasicC(description, tests) result(item)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: item
@@ -4200,8 +3814,6 @@ contains
     end function DescribeBasicC
 
     function DescribeBasicS(description, tests) result(item)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
         type(TestItem_t) :: item
@@ -4211,8 +3823,6 @@ contains
     end function DescribeBasicS
 
     function DescribeWithInputC(description, input, tests) result(item)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: description
         class(Input_t), intent(in) :: input
         type(TestItem_t), intent(in) :: tests(:)
@@ -4223,8 +3833,6 @@ contains
     end function DescribeWithInputC
 
     function DescribeWithInputS(description, input, tests) result(item)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         class(Input_t), intent(in) :: input
         type(TestItem_t), intent(in) :: tests(:)
@@ -4262,8 +3870,6 @@ contains
     end function Example
 
     pure function failC(message) result(failure)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: message
         type(Result_t) :: failure
 
@@ -4271,8 +3877,6 @@ contains
     end function failC
 
     pure function failS(message) result(failure)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: failure
 
@@ -4314,10 +3918,6 @@ contains
     end function Generated
 
     function getOptions() result(options)
-        use iso_fortran_env, only: error_unit, output_unit
-        use iso_varying_string, only: assignment(=), put_line
-        use strff, only: NEWLINE
-
         type(Options_t) :: options
 
         character(len=100) :: argument
@@ -4378,9 +3978,6 @@ contains
         end do
     contains
         pure function usageMessage(program_name_)
-            use iso_varying_string, only: VARYING_STRING, assignment(=)
-            use strff, only: NEWLINE
-
             character(len=*), intent(in) :: program_name_
             type(VARYING_STRING) :: usageMessage
 
@@ -4412,16 +4009,12 @@ contains
     end function getRandomAsciiCharacter
 
     function getRandomAsciiString() result(random_string)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING) :: random_string
 
         random_string = getRandomAsciiStringWithMaxLength(1024)
     end function getRandomAsciiString
 
     function getRandomAsciiStringWithMaxLength(max_length) result(random_string)
-        use iso_varying_string, only: VARYING_STRING, assignment(=)
-
         integer, intent(in) :: max_length
         type(VARYING_STRING) :: random_string
 
@@ -4497,8 +4090,6 @@ contains
     end function GivenWithInputC
 
     function GivenWithInputS(description, input, tests) result(item)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-
         type(VARYING_STRING), intent(in) :: description
         class(Input_t), intent(in) :: input
         type(TestItem_t), intent(in) :: tests(:)
@@ -4508,8 +4099,6 @@ contains
     end function GivenWithInputS
 
     pure function IndividualResult(message, passed)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: message
         logical, intent(in) :: passed
         type(IndividualResult_t) :: IndividualResult
@@ -4520,9 +4109,6 @@ contains
 
     elemental function individualResultFailureDescription( &
             self, colorize) result(description)
-        use iso_varying_string, only: &
-                VARYING_STRING, assignment(=), operator(//)
-
         class(IndividualResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -4540,8 +4126,6 @@ contains
 
     elemental function individualResultVerboseDescription( &
             self, colorize) result(description)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-
         class(IndividualResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -4558,8 +4142,6 @@ contains
     end function individualResultVerboseDescription
 
     function InputTestCase(description, test)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         procedure(inputTest) :: test
         type(InputTestCase_t) :: InputTestCase
@@ -4586,8 +4168,6 @@ contains
     end function inputTestCaseRunWithoutInput
 
     function ItBasicC(description, test) result(item)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: description
         procedure(simpleTest) :: test
         type(TestItem_t) :: item
@@ -4596,8 +4176,6 @@ contains
     end function ItBasicC
 
     function ItBasicS(description, test) result(item)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         procedure(simpleTest) :: test
         type(TestItem_t) :: item
@@ -4606,8 +4184,6 @@ contains
     end function ItBasicS
 
     function ItInputC(description, test) result(item)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: description
         procedure(inputTest) :: test
         type(TestItem_t) :: item
@@ -4616,8 +4192,6 @@ contains
     end function ItInputC
 
     function ItInputS(description, test) result(item)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         procedure(inputTest) :: test
         type(TestItem_t) :: item
@@ -4626,8 +4200,6 @@ contains
     end function ItInputS
 
     function ItWithExamplesC(description, examples, test) result(item)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: description
         type(Example_t), intent(in) :: examples(:)
         procedure(inputTest) :: test
@@ -4638,8 +4210,6 @@ contains
     end function ItWithExamplesC
 
     function ItWithExamplesS(description, examples, test) result(item)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         type(Example_t), intent(in) :: examples(:)
         procedure(inputTest) :: test
@@ -4650,8 +4220,6 @@ contains
     end function ItWithExamplesS
 
     function ItWithGeneratorC(description, generator, test) result(item)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: description
         class(Generator_t), intent(in) :: generator
         procedure(inputTest) :: test
@@ -4662,8 +4230,6 @@ contains
     end function ItWithGeneratorC
 
     function ItWithGeneratorS(description, generator, test) result(item)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         class(Generator_t), intent(in) :: generator
         procedure(inputTest) :: test
@@ -4675,8 +4241,6 @@ contains
 
     pure function makeDoesntIncludeFailureMessageCC( &
             search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -4687,8 +4251,6 @@ contains
 
     pure function makeDoesntIncludeFailureMessageCS( &
             search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -4699,8 +4261,6 @@ contains
 
     pure function makeDoesntIncludeFailureMessageSC( &
             search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -4711,9 +4271,6 @@ contains
 
     pure function makeDoesntIncludeFailureMessageSS( &
             search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: indent, hangingIndent, NEWLINE
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -4732,8 +4289,6 @@ contains
 
     pure function makeDoesntIncludeSuccessMessageCC( &
             search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -4744,8 +4299,6 @@ contains
 
     pure function makeDoesntIncludeSuccessMessageCS( &
             search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -4756,8 +4309,6 @@ contains
 
     pure function makeDoesntIncludeSuccessMessageSC( &
             search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -4768,9 +4319,6 @@ contains
 
     pure function makeDoesntIncludeSuccessMessageSS( &
             search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: indent, hangingIndent, NEWLINE
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -4788,8 +4336,6 @@ contains
     end function makeDoesntIncludeSuccessMessageSS
 
     pure function makeEmptyFailureMessageC(string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
 
@@ -4797,9 +4343,6 @@ contains
     end function makeEmptyFailureMessageC
 
     pure function makeEmptyFailureMessageS(string) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: indent, hangingIndent, NEWLINE
-
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
 
@@ -4813,8 +4356,6 @@ contains
     end function makeEmptyFailureMessageS
 
     pure function makeEqualsFailureMessageCC(expected, actual) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING) :: message
@@ -4823,8 +4364,6 @@ contains
     end function makeEqualsFailureMessageCC
 
     pure function makeEqualsFailureMessageCS(expected, actual) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING) :: message
@@ -4833,8 +4372,6 @@ contains
     end function makeEqualsFailureMessageCS
 
     pure function makeEqualsFailureMessageSC(expected, actual) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING) :: message
@@ -4843,9 +4380,6 @@ contains
     end function makeEqualsFailureMessageSC
 
     pure function makeEqualsFailureMessageSS(expected, actual) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: indent, hangingIndent, NEWLINE
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING) :: message
@@ -4863,8 +4397,6 @@ contains
     end function makeEqualsFailureMessageSS
 
     pure function makeEqualsSuccessMessageC(expected) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING) :: message
 
@@ -4872,9 +4404,6 @@ contains
     end function makeEqualsSuccessMessageC
 
     pure function makeEqualsSuccessMessageS(expected) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: indent, hangingIndent, NEWLINE
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING) :: message
 
@@ -4888,8 +4417,6 @@ contains
 
     pure function makeFasterThanFailureMessageCCC( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: reference
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -4901,8 +4428,6 @@ contains
 
     pure function makeFasterThanFailureMessageCCS( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: reference
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: iterations
@@ -4914,8 +4439,6 @@ contains
 
     pure function makeFasterThanFailureMessageCSC( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: reference
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -4927,8 +4450,6 @@ contains
 
     pure function makeFasterThanFailureMessageCSS( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: reference
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: iterations
@@ -4940,8 +4461,6 @@ contains
 
     pure function makeFasterThanFailureMessageSCC( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: reference
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -4953,8 +4472,6 @@ contains
 
     pure function makeFasterThanFailureMessageSCS( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: reference
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: iterations
@@ -4966,8 +4483,6 @@ contains
 
     pure function makeFasterThanFailureMessageSSC( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: reference
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -4979,8 +4494,6 @@ contains
 
     pure function makeFasterThanFailureMessageSSS( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-
         type(VARYING_STRING), intent(in) :: reference
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: iterations
@@ -4994,8 +4507,6 @@ contains
 
     pure function makeFasterThanSuccessMessageCCC( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: reference
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -5007,8 +4518,6 @@ contains
 
     pure function makeFasterThanSuccessMessageCCS( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: reference
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: iterations
@@ -5020,8 +4529,6 @@ contains
 
     pure function makeFasterThanSuccessMessageCSC( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: reference
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -5033,8 +4540,6 @@ contains
 
     pure function makeFasterThanSuccessMessageCSS( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: reference
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: iterations
@@ -5046,8 +4551,6 @@ contains
 
     pure function makeFasterThanSuccessMessageSCC( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: reference
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -5059,8 +4562,6 @@ contains
 
     pure function makeFasterThanSuccessMessageSCS( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: reference
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: iterations
@@ -5072,8 +4573,6 @@ contains
 
     pure function makeFasterThanSuccessMessageSSC( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: reference
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -5085,8 +4584,6 @@ contains
 
     pure function makeFasterThanSuccessMessageSSS( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-
         type(VARYING_STRING), intent(in) :: reference
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: iterations
@@ -5099,8 +4596,6 @@ contains
     end function makeFasterThanSuccessMessageSSS
 
     pure function makeIncludesFailureMessageCC(search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -5110,8 +4605,6 @@ contains
     end function makeIncludesFailureMessageCC
 
     pure function makeIncludesFailureMessageCS(search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -5120,8 +4613,6 @@ contains
     end function makeIncludesFailureMessageCS
 
     pure function makeIncludesFailureMessageSC(search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -5130,9 +4621,6 @@ contains
     end function makeIncludesFailureMessageSC
 
     pure function makeIncludesFailureMessageSS(search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: indent, hangingIndent, NEWLINE
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -5150,8 +4638,6 @@ contains
     end function makeIncludesFailureMessageSS
 
     pure function makeIncludesSuccessMessageCC(search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -5161,8 +4647,6 @@ contains
     end function makeIncludesSuccessMessageCC
 
     pure function makeIncludesSuccessMessageCS(search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -5171,8 +4655,6 @@ contains
     end function makeIncludesSuccessMessageCS
 
     pure function makeIncludesSuccessMessageSC(search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -5181,9 +4663,6 @@ contains
     end function makeIncludesSuccessMessageSC
 
     pure function makeIncludesSuccessMessageSS(search_for, string) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: indent, hangingIndent, NEWLINE
-
         type(VARYING_STRING), intent(in) :: search_for
         type(VARYING_STRING), intent(in) :: string
         type(VARYING_STRING) :: message
@@ -5202,8 +4681,6 @@ contains
 
     pure function makeWithinFailureMessageCCC( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -5215,8 +4692,6 @@ contains
 
     pure function makeWithinFailureMessageCCS( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: tolerance
@@ -5228,8 +4703,6 @@ contains
 
     pure function makeWithinFailureMessageCSC( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -5241,8 +4714,6 @@ contains
 
     pure function makeWithinFailureMessageCSS( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: tolerance
@@ -5254,8 +4725,6 @@ contains
 
     pure function makeWithinFailureMessageSCC( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -5267,8 +4736,6 @@ contains
 
     pure function makeWithinFailureMessageSCS( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: tolerance
@@ -5280,8 +4747,6 @@ contains
 
     pure function makeWithinFailureMessageSSC( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -5293,8 +4758,6 @@ contains
 
     pure function makeWithinFailureMessageSSS( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: tolerance
@@ -5307,8 +4770,6 @@ contains
 
     pure function makeWithinSuccessMessageCCC( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -5320,8 +4781,6 @@ contains
 
     pure function makeWithinSuccessMessageCCS( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: tolerance
@@ -5333,8 +4792,6 @@ contains
 
     pure function makeWithinSuccessMessageCSC( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -5346,8 +4803,6 @@ contains
 
     pure function makeWithinSuccessMessageCSS( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: tolerance
@@ -5359,8 +4814,6 @@ contains
 
     pure function makeWithinSuccessMessageSCC( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -5372,8 +4825,6 @@ contains
 
     pure function makeWithinSuccessMessageSCS( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: tolerance
@@ -5385,8 +4836,6 @@ contains
 
     pure function makeWithinSuccessMessageSSC( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -5398,8 +4847,6 @@ contains
 
     pure function makeWithinSuccessMessageSSS( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-
         type(VARYING_STRING), intent(in) :: expected
         type(VARYING_STRING), intent(in) :: actual
         type(VARYING_STRING), intent(in) :: tolerance
@@ -5411,9 +4858,6 @@ contains
     end function makeWithinSuccessMessageSSS
 
     pure function resultFailureDescription(self, colorize) result(description)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: join, NEWLINE
-
         class(Result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -5446,9 +4890,6 @@ contains
     end function resultPassed
 
     pure function resultVerboseDescription(self, colorize) result(description)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: join, NEWLINE
-
         class(Result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -5460,10 +4901,6 @@ contains
     end function resultVerboseDescription
 
     subroutine runTests(tests)
-        use iso_fortran_env, only: error_unit, output_unit
-        use iso_varying_string, only: operator(//), put_line
-        use strff, only: toString
-
         type(TestItem_t), intent(in) :: tests
 
         double precision :: end_time
@@ -5553,8 +4990,6 @@ contains
     end subroutine runTests
 
     pure function shrinkAsciiString(input) result(shrunk)
-        use iso_varying_string, only: assignment(=), extract, len
-
         class(Input_t), intent(in) :: input
         type(ShrinkResult_t) :: shrunk
 
@@ -5615,8 +5050,6 @@ contains
     end function SimplestValue
 
     function SimpleTestCase(description, test)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         procedure(simpleTest) :: test
         type(SimpleTestCase_t) :: SimpleTestCase
@@ -5645,8 +5078,6 @@ contains
     end function simpleTestCaseRunWithoutInput
 
     function SimpleTestCollection(description, tests)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         type(TestItem_t), intent(in) :: tests(:)
         type(SimpleTestCollection_t) :: SimpleTestCollection
@@ -5683,8 +5114,6 @@ contains
     end function simpleTestCollectionRunWithoutInput
 
     pure function succeedC(message) result(success)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: message
         type(Result_t) :: success
 
@@ -5692,8 +5121,6 @@ contains
     end function succeedC
 
     pure function succeedS(message) result(success)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: message
         type(Result_t) :: success
 
@@ -5702,8 +5129,6 @@ contains
     end function succeedS
 
     pure function testCaseDescription(self) result(description)
-        use iso_varying_string, only: VARYING_STRING
-
         class(TestCase_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
@@ -5711,9 +5136,6 @@ contains
     end function testCaseDescription
 
     pure function testCaseFilter(self, filter_string) result(filter_result)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: operator(.includes.)
-
         class(TestCase_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         type(FilterResult_t) :: filter_result
@@ -5736,9 +5158,7 @@ contains
         num_cases = 1
     end function testCaseNumCases
 
-    function TestCaseResult(description, result_)
-        use iso_varying_string, only: VARYING_STRING
-
+    pure function TestCaseResult(description, result_)
         type(VARYING_STRING), intent(in) :: description
         type(Result_t), intent(in) :: result_
         type(TestCaseResult_t) :: TestCaseResult
@@ -5747,7 +5167,7 @@ contains
         TestCaseResult%result_ = result_
     end function TestCaseResult
 
-    subroutine testCaseResultDestructor(self)
+    pure subroutine testCaseResultDestructor(self)
         type(TestCaseResult_t), intent(inout) :: self
 
         deallocate(self%result_%results)
@@ -5755,10 +5175,6 @@ contains
 
     pure function testCaseResultFailureDescription( &
             self, colorize) result(description)
-        use iso_varying_string, only: &
-                VARYING_STRING, assignment(=), operator(//)
-        use strff, only: hangingIndent, NEWLINE
-
         class(TestCaseResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -5817,9 +5233,6 @@ contains
 
     pure function testCaseResultVerboseDescription( &
             self, colorize) result(description)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, NEWLINE
-
         class(TestCaseResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -5831,8 +5244,6 @@ contains
     end function testCaseResultVerboseDescription
 
     function TestCaseWithExamples(description, examples, test)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         type(Example_t), intent(in) :: examples(:)
         procedure(inputTest) :: test
@@ -5871,8 +5282,6 @@ contains
     end function testCaseWithExamplesRunWithoutInput
 
     function TestCaseWithGenerator(description, generator, test)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         class(Generator_t), intent(in) :: generator
         procedure(inputTest) :: test
@@ -5895,9 +5304,6 @@ contains
     end function testCaseWithGeneratorRunWithInput
 
     function testCaseWithGeneratorRunWithoutInput(self) result(result_)
-        use iso_varying_string, only: operator(//)
-        use strff, only: toString
-
         class(TestCaseWithGenerator_t), intent(in) :: self
         type(TestResultItem_t) :: result_
 
@@ -5949,9 +5355,6 @@ contains
     end function testCaseWithGeneratorRunWithoutInput
 
     pure function testCollectionDescription(self) result(description)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, join, NEWLINE
-
         class(TestCollection_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
@@ -5964,9 +5367,6 @@ contains
     end function testCollectionDescription
 
     pure function testCollectionFilter(self, filter_string) result(filter_result)
-        use iso_varying_string, only: VARYING_STRING
-        use strff, only: operator(.includes.)
-
         class(TestCollection_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         type(FilterResult_t) :: filter_result
@@ -5999,9 +5399,7 @@ contains
         num_cases = sum(self%tests%numCases())
     end function testCollectionNumCases
 
-    function TestCollectionResult(description, results)
-        use iso_varying_string, only: VARYING_STRING
-
+    pure function TestCollectionResult(description, results)
         type(VARYING_STRING), intent(in) :: description
         type(TestResultItem_t), intent(in) :: results(:)
         type(TestCollectionResult_t) :: TestCollectionResult
@@ -6012,10 +5410,6 @@ contains
 
     pure function testCollectionResultFailureDescription( &
             self, colorize) result(description)
-        use iso_varying_string, only: &
-                VARYING_STRING, assignment(=), operator(//)
-        use strff, only: hangingIndent, join, NEWLINE
-
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -6069,9 +5463,6 @@ contains
 
     pure function testCollectionResultVerboseDescription( &
             self, colorize) result(description)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-        use strff, only: hangingIndent, join, NEWLINE
-
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -6085,8 +5476,6 @@ contains
     end function testCollectionResultVerboseDescription
 
     function TestCollectionWithInput(description, input, tests)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         class(Input_t), intent(in) :: input
         type(TestItem_t), intent(in) :: tests(:)
@@ -6097,7 +5486,7 @@ contains
         allocate(TestCollectionWithInput%tests, source = tests)
     end function TestCollectionWithInput
 
-    subroutine testCollectionWithInputDestructor(self)
+    pure subroutine testCollectionWithInputDestructor(self)
         type(TestCollectionWithInput_t), intent(inout) :: self
 
         deallocate(self%input)
@@ -6132,8 +5521,6 @@ contains
     end function testCollectionWithInputRunWithoutInput
 
     elemental function testItemDescription(self) result(description)
-        use iso_varying_string, only: VARYING_STRING
-
         class(TestItem_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
@@ -6141,8 +5528,6 @@ contains
     end function testItemDescription
 
     elemental function testItemFilter(self, filter_string) result(filter_result)
-        use iso_varying_string, only: VARYING_STRING
-
         class(TestItem_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         type(FilterItemResult_t) :: filter_result
@@ -6182,8 +5567,6 @@ contains
 
     elemental function testResultItemFailureDescription( &
             self, colorize) result(description)
-        use iso_varying_string, only: VARYING_STRING
-
         class(TestResultItem_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -6228,8 +5611,6 @@ contains
 
     elemental function testResultItemVerboseDescription( &
             self, colorize) result(description)
-        use iso_varying_string, only: VARYING_STRING
-
         class(TestResultItem_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
@@ -6253,8 +5634,6 @@ contains
     end function ThenInputC
 
     function ThenInputS(description, test) result(item)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-
         type(VARYING_STRING), intent(in) :: description
         procedure(inputTest) :: test
         type(TestItem_t) :: item
@@ -6270,8 +5649,6 @@ contains
     end function Transformed
 
     function TransformingTestCollection(description, transformer, tests)
-        use iso_varying_string, only: VARYING_STRING
-
         type(VARYING_STRING), intent(in) :: description
         procedure(transformer_) :: transformer
         type(TestItem_t), intent(in) :: tests(:)
@@ -6316,8 +5693,6 @@ contains
     end function transformingTestCollectionRunWithoutInput
 
     function whenWithTransformerC(description, transformer, tests) result(item)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: description
         procedure(transformer_) :: transformer
         type(TestItem_t), intent(in) :: tests(:)
@@ -6328,8 +5703,6 @@ contains
     end function whenWithTransformerC
 
     function whenWithTransformerS(description, transformer, tests) result(item)
-        use iso_varying_string, only: VARYING_STRING, operator(//)
-
         type(VARYING_STRING), intent(in) :: description
         procedure(transformer_) :: transformer
         type(TestItem_t), intent(in) :: tests(:)
@@ -6340,8 +5713,6 @@ contains
     end function whenWithTransformerS
 
     pure function withUserMessageCC(message, user_message) result(whole_message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: message
         character(len=*), intent(in) :: user_message
         type(VARYING_STRING) :: whole_message
@@ -6351,8 +5722,6 @@ contains
     end function withUserMessageCC
 
     pure function withUserMessageCS(message, user_message) result(whole_message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         character(len=*), intent(in) :: message
         type(VARYING_STRING), intent(in) :: user_message
         type(VARYING_STRING) :: whole_message
@@ -6361,8 +5730,6 @@ contains
     end function withUserMessageCS
 
     pure function withUserMessageSC(message, user_message) result(whole_message)
-        use iso_varying_string, only: VARYING_STRING, var_str
-
         type(VARYING_STRING), intent(in) :: message
         character(len=*), intent(in) :: user_message
         type(VARYING_STRING) :: whole_message
@@ -6372,10 +5739,6 @@ contains
     end function withUserMessageSC
 
     pure function withUserMessageSS(message, user_message) result(whole_message)
-        use iso_varying_string, only: &
-                VARYING_STRING, operator(//), operator(==)
-        use strff, only: indent, hangingIndent, NEWLINE
-
         type(VARYING_STRING), intent(in) :: message
         type(VARYING_STRING), intent(in) :: user_message
         type(VARYING_STRING) :: whole_message

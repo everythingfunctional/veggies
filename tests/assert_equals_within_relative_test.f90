@@ -1,4 +1,18 @@
 module assert_equals_within_relative_test
+    use DoublePrecisionGenerator_m, only: DOUBLE_PRECISION_GENERATOR
+    use iso_varying_string, only: var_str
+    use Vegetables_m, only: &
+            DoublePrecisionInput_t, &
+            Input_t, &
+            Result_t, &
+            TestItem_t, &
+            assertEqualsWithinRelative, &
+            assertNot, &
+            assertThat, &
+            describe, &
+            fail, &
+            it
+
     implicit none
     private
 
@@ -9,9 +23,6 @@ module assert_equals_within_relative_test
     public :: test_assert_equals_within_relative
 contains
     function test_assert_equals_within_relative() result(tests)
-        use DoublePrecisionGenerator_m, only: DOUBLE_PRECISION_GENERATOR
-        use Vegetables_m, only: TestItem_t, describe, it
-
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: individual_tests(3)
@@ -32,15 +43,6 @@ contains
     end function test_assert_equals_within_relative
 
     pure function checkPassForSameNumber(the_example) result(result_)
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: &
-                DoublePrecisionInput_t, &
-                Input_t, &
-                Result_t, &
-                assertEqualsWithinRelative, &
-                assertThat, &
-                fail
-
         class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 
@@ -114,15 +116,6 @@ contains
     end function checkPassForSameNumber
 
     pure function checkFailForDifferentNumbers(the_example) result(result_)
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: &
-                DoublePrecisionInput_t, &
-                Input_t, &
-                Result_t, &
-                assertEqualsWithinRelative, &
-                assertNot, &
-                fail
-
         class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 
@@ -196,15 +189,6 @@ contains
     end function checkFailForDifferentNumbers
 
     pure function checkPassForCloseNumbers(the_example) result(result_)
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: &
-                DoublePrecisionInput_t, &
-                Input_t, &
-                Result_t, &
-                assertEqualsWithinRelative, &
-                assertThat, &
-                fail
-
         class(Input_t), intent(in) :: the_example
         type(Result_t) :: result_
 

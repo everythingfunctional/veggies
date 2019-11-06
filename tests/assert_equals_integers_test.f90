@@ -1,4 +1,18 @@
 module assert_equals_integers_test
+    use iso_varying_string, only: var_str
+    use Vegetables_m, only: &
+            Input_t, &
+            IntegerInput_t, &
+            Result_t, &
+            TestItem_t, &
+            assertEquals, &
+            assertNot, &
+            assertThat, &
+            describe, &
+            fail, &
+            it, &
+            INTEGER_GENERATOR
+
     implicit none
     private
 
@@ -9,9 +23,6 @@ module assert_equals_integers_test
     public :: test_assert_equals_integers
 contains
     function test_assert_equals_integers() result(tests)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: TestItem_t, describe, it, INTEGER_GENERATOR
-
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: individual_tests(2)
@@ -22,15 +33,6 @@ contains
     end function test_assert_equals_integers
 
     pure function checkPassForSameInteger(the_input) result(result_)
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: &
-                Input_t, &
-                IntegerInput_t, &
-                Result_t, &
-                assertEquals, &
-                assertThat, &
-                fail
-
         class(Input_t), intent(in) :: the_input
         type(Result_t) :: result_
 
@@ -85,9 +87,6 @@ contains
     end function checkPassForSameInteger
 
     pure function checkFailForDifferentIntegers() result(result_)
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: Result_t, assertEquals, assertNot
-
         type(Result_t) :: result_
 
         type(Result_t) :: example_result

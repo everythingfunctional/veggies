@@ -1,14 +1,31 @@
 module collection_properties_test
+    use example_collections_m, only: &
+            examplePassingCollection, &
+            exampleTestCase1, &
+            exampleTestCase2, &
+            EXAMPLE_CASE_DESCRIPTION_1, &
+            EXAMPLE_CASE_DESCRIPTION_2, &
+            EXAMPLE_COLLECTION_DESCRIPTION, &
+            NUM_CASES_IN_PASSING
+    use Helpers_m, only: TestItemInput_t
+    use Vegetables_m, only: &
+            Input_t, &
+            Result_t, &
+            TestItem_t, &
+            TestResultItem_t, &
+            assertEquals, &
+            assertFasterThan, &
+            assertIncludes, &
+            describe, &
+            fail, &
+            it_
+
     implicit none
     private
 
     public :: test_collection_properties
 contains
     function test_collection_properties() result(test)
-        use example_collections_m, only: examplePassingCollection
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: TestItem_t, describe, it_
-
         type(TestItem_t) :: test
 
         type(TestItemInput_t) :: the_collection
@@ -23,10 +40,6 @@ contains
     end function test_collection_properties
 
     pure function checkNumCases(example_collection) result(result_)
-        use example_collections_m, only: NUM_CASES_IN_PASSING
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_collection
         type(Result_t) :: result_
 
@@ -39,10 +52,6 @@ contains
     end function checkNumCases
 
     pure function checkCollectionTopDescription(example_collection) result(result_)
-        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_collection
         type(Result_t) :: result_
 
@@ -56,11 +65,6 @@ contains
     end function checkCollectionTopDescription
 
     pure function checkCollectionDescriptions(example_collection) result(result_)
-        use example_collections_m, only: &
-                EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_collection
         type(Result_t) :: result_
 
@@ -77,11 +81,6 @@ contains
     end function checkCollectionDescriptions
 
     function checkSpeed(example_collection) result(result_)
-        use example_collections_m, only: exampleTestCase1, exampleTestCase2
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, TestItem_t, assertFasterThan, fail
-
         class(Input_t), intent(in) :: example_collection
         type(Result_t) :: result_
 
@@ -102,9 +101,6 @@ contains
         end select
     contains
         subroutine runCollection
-            use iso_varying_string ! To make compiler happy
-            use Vegetables_m, only: TestResultItem_t
-
             integer :: i
             type(TestResultItem_t) :: internal_result
 
@@ -114,9 +110,6 @@ contains
         end subroutine runCollection
 
         subroutine runCases
-            use iso_varying_string ! To make compiler happy
-            use Vegetables_m, only: TestResultItem_t
-
             integer :: i
             type(TestResultItem_t) :: the_results(3)
 

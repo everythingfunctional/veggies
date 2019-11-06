@@ -1,4 +1,8 @@
 module example_cases_m
+    use example_asserts_m, only: &
+            exampleMultipleAsserts, exampleMultipleAssertsWithFail
+    use Vegetables_m, only: TestItem_t, It
+
     implicit none
     private
 
@@ -8,20 +12,12 @@ module example_cases_m
     public :: exampleFailingTestCase, examplePassingTestCase
 contains
     function examplePassingTestCase() result(test_case)
-        use iso_varying_string ! To make compiler happy
-        use example_asserts_m, only: exampleMultipleAsserts
-        use Vegetables_m, only: TestItem_t, It
-
         type(TestItem_t) :: test_case
 
         test_case = It(EXAMPLE_DESCRIPTION, exampleMultipleAsserts)
     end function examplePassingTestCase
 
     function exampleFailingTestCase() result(test_case)
-        use iso_varying_string ! To make compiler happy
-        use example_asserts_m, only: exampleMultipleAssertsWithFail
-        use Vegetables_m, only: TestItem_t, It
-
         type(TestItem_t) :: test_case
 
         test_case = It(EXAMPLE_DESCRIPTION, exampleMultipleAssertsWithFail)

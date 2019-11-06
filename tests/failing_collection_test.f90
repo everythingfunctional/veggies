@@ -1,14 +1,37 @@
 module failing_collection_test
+    use example_asserts_m, only: SUCCESS_MESSAGE
+    use example_collections_m, only: &
+            exampleFailingCollection, &
+            EXAMPLE_CASE_DESCRIPTION_1, &
+            EXAMPLE_CASE_DESCRIPTION_2, &
+            EXAMPLE_COLLECTION_DESCRIPTION, &
+            EXAMPLE_FAILING_CASE_DESCRIPTION, &
+            FAILURE_MESSAGE, &
+            NUM_ASSERTS_IN_FAILING, &
+            NUM_CASES_IN_FAILING, &
+            NUM_FAILING_ASSERTS, &
+            NUM_FAILING_CASES
+    use Helpers_m, only: TestItemInput_t, TestResultItemInput_t, runTest
+    use strff, only: NEWLINE
+    use Vegetables_m, only: &
+            Input_t, &
+            Result_T, &
+            TestItem_t, &
+            assertDoesntInclude, &
+            assertEquals, &
+            assertIncludes, &
+            assertNot, &
+            fail, &
+            Given, &
+            Then__, &
+            When
+
     implicit none
     private
 
     public :: test_failing_collection_behaviors
 contains
     function test_failing_collection_behaviors() result(tests)
-        use example_collections_m, only: exampleFailingCollection
-        use Helpers_m, only: TestItemInput_t, runTest
-        use Vegetables_m, only: TestItem_t, Given, Then__, When
-
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: collection(1)
@@ -42,10 +65,6 @@ contains
     end function test_failing_collection_behaviors
 
     pure function checkCollectionFails(example_results) result(result_)
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertNot, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -58,11 +77,6 @@ contains
     end function checkCollectionFails
 
     pure function checkNumCases(example_results) result(result_)
-        use example_collections_m, only: NUM_CASES_IN_FAILING
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -75,11 +89,6 @@ contains
     end function checkNumCases
 
     pure function checkNumFailingCases(example_results) result(result_)
-        use example_collections_m, only: NUM_FAILING_CASES
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -92,11 +101,6 @@ contains
     end function checkNumFailingCases
 
     pure function checkVerboseTopDescription(example_results) result(result_)
-        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -111,14 +115,6 @@ contains
     end function checkVerboseTopDescription
 
     pure function checkVerboseCaseDescriptions(example_results) result(result_)
-        use example_collections_m, only: &
-                EXAMPLE_CASE_DESCRIPTION_1, &
-                EXAMPLE_CASE_DESCRIPTION_2, &
-                EXAMPLE_FAILING_CASE_DESCRIPTION
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -140,11 +136,6 @@ contains
     end function checkVerboseCaseDescriptions
 
     pure function checkVerboseForFailureMessage(example_results) result(result_)
-        use example_collections_m, only: FAILURE_MESSAGE
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -159,11 +150,6 @@ contains
     end function checkVerboseForFailureMessage
 
     pure function checkVerboseForSuccessMessage(example_results) result(result_)
-        use example_asserts_m, only: SUCCESS_MESSAGE
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -178,11 +164,6 @@ contains
     end function checkVerboseForSuccessMessage
 
     pure function checkFailureForTopDescription(example_results) result(result_)
-        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -197,11 +178,6 @@ contains
     end function checkFailureForTopDescription
 
     pure function checkFailureCaseDescription(example_results) result(result_)
-        use example_collections_m, only: EXAMPLE_FAILING_CASE_DESCRIPTION
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -216,12 +192,6 @@ contains
     end function checkFailureCaseDescription
 
     pure function checkFailureNoPassingDescriptions(example_results) result(result_)
-        use example_collections_m, only: &
-                EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertDoesntInclude, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -240,11 +210,6 @@ contains
     end function checkFailureNoPassingDescriptions
 
     pure function checkFailureForMessage(example_results) result(result_)
-        use example_collections_m, only: FAILURE_MESSAGE
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -259,11 +224,6 @@ contains
     end function checkFailureForMessage
 
     pure function checkFailureNoSuccessMessage(example_results) result(result_)
-        use example_asserts_m, only: SUCCESS_MESSAGE
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertDoesntInclude, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -278,11 +238,6 @@ contains
     end function checkFailureNoSuccessMessage
 
     pure function checkFailureNoBlankLines(example_results) result(result_)
-        use Helpers_m, only: TestResultItemInput_t
-        use strff, only: NEWLINE
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertDoesntInclude, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -297,11 +252,6 @@ contains
     end function checkFailureNoBlankLines
 
     pure function checkNumAsserts(example_results) result(result_)
-        use example_collections_m, only: NUM_ASSERTS_IN_FAILING
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 
@@ -314,11 +264,6 @@ contains
     end function checkNumAsserts
 
     pure function checkNumFailingAsserts(example_results) result(result_)
-        use example_collections_m, only: NUM_FAILING_ASSERTS
-        use Helpers_m, only: TestResultItemInput_t
-        use Vegetables_m, only: &
-                Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_results
         type(Result_t) :: result_
 

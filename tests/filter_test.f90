@@ -1,6 +1,27 @@
 module filter_test
-    use iso_varying_string ! To make compiler happy
-    use Vegetables_m, only: Input_t, FilterItemResult_t
+    use example_cases_m, only: &
+            examplePassingTestCase, EXAMPLE_DESCRIPTION, NOT_IN_DESCRIPTION
+    use example_collections_m, only: &
+            examplePassingCollection, &
+            EXAMPLE_CASE_DESCRIPTION_1, &
+            EXAMPLE_COLLECTION_DESCRIPTION, &
+            NOT_IN_DESCRIPTIONS
+    use Helpers_m, only: TestItemInput_t
+    use iso_varying_string, only: var_str
+    use Vegetables_m, only: &
+            Input_t, &
+            FilterItemResult_t, &
+            Result_t, &
+            TestItem_t, &
+            TransformationFailure_t, &
+            Transformed_t, &
+            assertEquals, &
+            assertNot, &
+            fail, &
+            Given, &
+            Then__, &
+            Transformed, &
+            When
 
     implicit none
     private
@@ -12,10 +33,6 @@ module filter_test
     public :: test_filter_case, test_filter_collection
 contains
     function test_filter_case() result(tests)
-        use example_cases_m, only: examplePassingTestCase
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: TestItem_t, Given, Then__, When
-
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: collection(2)
@@ -38,10 +55,6 @@ contains
     end function test_filter_case
 
     function test_filter_collection() result(tests)
-        use example_collections_m, only: examplePassingCollection
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: TestItem_t, Given, Then__, When
-
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: collection(3)
@@ -70,12 +83,6 @@ contains
     end function test_filter_collection
 
     pure function filterCaseNotMatching(example_case) result(filtered)
-        use example_cases_m, only: NOT_IN_DESCRIPTION
-        use Helpers_m, only: TestItemInput_t
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: &
-                Input_t, TransformationFailure_t, Transformed_t, fail, Transformed
-
         class(Input_t), intent(in) :: example_case
         type(Transformed_t) :: filtered
 
@@ -93,12 +100,6 @@ contains
     end function filterCaseNotMatching
 
     pure function filterCaseMatching(example_case) result(filtered)
-        use example_cases_m, only: EXAMPLE_DESCRIPTION
-        use Helpers_m, only: TestItemInput_t
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: &
-                Input_t, TransformationFailure_t, Transformed_t, fail, Transformed
-
         class(Input_t), intent(in) :: example_case
         type(Transformed_t) :: filtered
 
@@ -116,12 +117,6 @@ contains
     end function filterCaseMatching
 
     pure function filterCollectionNotMatching(example_collection) result(filtered)
-        use example_collections_m, only: NOT_IN_DESCRIPTIONS
-        use Helpers_m, only: TestItemInput_t
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: &
-                Input_t, TransformationFailure_t, Transformed_t, fail, Transformed
-
         class(Input_t), intent(in) :: example_collection
         type(Transformed_t) :: filtered
 
@@ -139,12 +134,6 @@ contains
     end function filterCollectionNotMatching
 
     pure function filterCollectionMatchingDescription(example_collection) result(filtered)
-        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
-        use Helpers_m, only: TestItemInput_t
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: &
-                Input_t, TransformationFailure_t, Transformed_t, fail, Transformed
-
         class(Input_t), intent(in) :: example_collection
         type(Transformed_t) :: filtered
 
@@ -162,12 +151,6 @@ contains
     end function filterCollectionMatchingDescription
 
     pure function filterCollectionMatchingCase(example_collection) result(filtered)
-        use example_collections_m, only: EXAMPLE_CASE_DESCRIPTION_1
-        use Helpers_m, only: TestItemInput_t
-        use iso_varying_string, only: var_str
-        use Vegetables_m, only: &
-                Input_t, TransformationFailure_t, Transformed_t, fail, Transformed
-
         class(Input_t), intent(in) :: example_collection
         type(Transformed_t) :: filtered
 
@@ -185,9 +168,6 @@ contains
     end function filterCollectionMatchingCase
 
     pure function checkCaseNotMatching(filtered) result(result_)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Input_t, Result_t, assertNot, fail
-
         class(Input_t), intent(in) :: filtered
         type(Result_t) :: result_
 
@@ -200,10 +180,6 @@ contains
     end function checkCaseNotMatching
 
     pure function checkCaseIsSame(filtered) result(result_)
-        use example_cases_m, only: EXAMPLE_DESCRIPTION
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: filtered
         type(Result_t) :: result_
 
@@ -216,9 +192,6 @@ contains
     end function checkCaseIsSame
 
     pure function checkCollectionNotMatching(filtered) result(result_)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Input_t, Result_t, assertNot, fail
-
         class(Input_t), intent(in) :: filtered
         type(Result_t) :: result_
 
@@ -231,10 +204,6 @@ contains
     end function checkCollectionNotMatching
 
     function checkCollectionIsSame(filtered) result(result_)
-        use example_collections_m, only: examplePassingCollection
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Input_t, Result_t, TestItem_t, assertEquals, fail
-
         class(Input_t), intent(in) :: filtered
         type(Result_t) :: result_
 
@@ -250,9 +219,6 @@ contains
     end function checkCollectionIsSame
 
     pure function checkCollectionSingleCase(filtered) result(result_)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Input_t, Result_t, TestItem_t, assertEquals, fail
-
         class(Input_t), intent(in) :: filtered
         type(Result_t) :: result_
 

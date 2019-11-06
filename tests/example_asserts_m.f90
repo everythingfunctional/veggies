@@ -1,4 +1,6 @@
 module example_asserts_m
+    use Vegetables_m, only: Result_t, fail, succeed
+
     implicit none
     private
 
@@ -13,18 +15,12 @@ module example_asserts_m
     public :: exampleMultipleAsserts, exampleMultipleAssertsWithFail
 contains
     pure function exampleMultipleAsserts() result(result_)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Result_t, succeed
-
         type(Result_t) :: result_
 
         result_ = succeed(SUCCESS_MESSAGE).and.succeed(SUCCESS_MESSAGE)
     end function exampleMultipleAsserts
 
     pure function exampleMultipleAssertsWithFail() result(result_)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Result_t, fail, succeed
-
         type(Result_t) :: result_
 
         result_ = succeed(SUCCESS_MESSAGE).and.fail(FAILURE_MESSAGE)

@@ -1,13 +1,23 @@
 module result_test
+    use Vegetables_m, only: &
+            Result_t, &
+            TestItem_t, &
+            assertDoesntInclude, &
+            assertEquals, &
+            assertIncludes, &
+            assertNot, &
+            assertThat, &
+            describe, &
+            fail, &
+            it, &
+            succeed
+
     implicit none
     private
 
     public :: test_result
 contains
     function test_result() result(tests)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: TestItem_t, describe, it
-
         type(TestItem_t) :: tests
 
         type(TestItem_t) :: individual_tests(5)
@@ -28,9 +38,6 @@ contains
     end function test_result
 
     pure function checkPassed() result(result_)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Result_t, assertNot, assertThat, fail, succeed
-
         type(Result_t) :: result_
 
         type(Result_t) :: failing_result
@@ -45,9 +52,6 @@ contains
     end function checkPassed
 
     pure function checkNumAsserts() result(result_)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Result_t, assertEquals, succeed
-
         type(Result_t) :: result_
 
         type(Result_t) :: multiple_asserts
@@ -58,9 +62,6 @@ contains
     end function checkNumAsserts
 
     pure function checkNumFailingAsserts() result(result_)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Result_t, assertEquals, fail, succeed
-
         type(Result_t) :: result_
 
         type(Result_t) :: multiple_asserts
@@ -71,9 +72,6 @@ contains
     end function checkNumFailingAsserts
 
     pure function checkVerboseIncludes() result(result_)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: Result_t, assertIncludes, fail, succeed
-
         type(Result_t) :: result_
 
         type(Result_t) :: multiple_asserts
@@ -88,10 +86,6 @@ contains
     end function checkVerboseIncludes
 
     pure function checkFailureIncludes() result(result_)
-        use iso_varying_string ! To make compiler happy
-        use Vegetables_m, only: &
-                Result_t, assertDoesntInclude, assertIncludes, fail, succeed
-
         type(Result_t) :: result_
 
         type(Result_t) :: multiple_asserts

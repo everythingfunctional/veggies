@@ -1,14 +1,25 @@
 module single_case_properties_test
+    use example_asserts_m, only: exampleMultipleAsserts
+    use example_cases_m, only: examplePassingTestCase, EXAMPLE_DESCRIPTION
+    use Helpers_m, only: TestItemInput_t
+    use Vegetables_m, only: &
+            Input_t, &
+            Result_t, &
+            TestItem_t, &
+            TestResultItem_t, &
+            assertEquals, &
+            assertFasterThan, &
+            assertIncludes, &
+            describe, &
+            fail, &
+            it_
+
     implicit none
     private
 
     public :: test_case_properties
 contains
     function test_case_properties() result(test)
-        use example_cases_m, only: examplePassingTestCase
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: TestItem_t, describe, it_
-
         type(TestItem_t) :: test
 
         type(TestItem_t) :: individual_tests(3)
@@ -22,10 +33,6 @@ contains
     end function test_case_properties
 
     pure function checkCaseDescription(example_case) result(result_)
-        use example_cases_m, only: EXAMPLE_DESCRIPTION
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertIncludes, fail
-
         class(Input_t), intent(in) :: example_case
         type(Result_t) :: result_
 
@@ -38,9 +45,6 @@ contains
     end function checkCaseDescription
 
     pure function checkNumCases(example_case) result(result_)
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, assertEquals, fail
-
         class(Input_t), intent(in) :: example_case
         type(Result_t) :: result_
 
@@ -53,9 +57,6 @@ contains
     end function checkNumCases
 
     function checkSpeed(example_case) result(result_)
-        use Helpers_m, only: TestItemInput_t
-        use Vegetables_m, only: Input_t, Result_t, TestItem_t, assertFasterThan, fail
-
         class(Input_t), intent(in) :: example_case
         type(Result_t) :: result_
 
@@ -70,9 +71,6 @@ contains
         end select
     contains
         subroutine runCase
-            use iso_varying_string ! To make compiler happy
-            use Vegetables_m, only: TestResultItem_t
-
             integer :: i
             type(TestResultItem_t) :: internal_result
 
@@ -82,10 +80,6 @@ contains
         end subroutine runCase
 
         subroutine runAssertions
-            use example_asserts_m, only: exampleMultipleAsserts
-            use iso_varying_string ! To make compiler happy
-            use Vegetables_m, only: Result_t
-
             integer :: i
             type(Result_t) :: result__
 
