@@ -6,4 +6,4 @@ variables:
 test:
   script:
     - ./Shakefile.hs
-    - valgrind --leak-check=full --error-exitcode=1 test_build/vegetable_driver
+    - valgrind --leak-check=full --error-exitcode=1 tests_build/vegetable_driver
