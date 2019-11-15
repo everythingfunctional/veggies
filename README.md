@@ -8,7 +8,7 @@ For a healthier code base, eat your vegetables.
 ## Environment
 
 In order to run this you will need:
-* A reasonably recent version of gcc and gfortran
+* A reasonably recent version of gfortran
 * The Haskell Stack tool
 
 Running the tests is then as simple as
@@ -16,6 +16,8 @@ Running the tests is then as simple as
 ```
 git clone https://gitlab.com/everythingfunctional/vegetables.git
 cd vegetables
+git submodule init
+git submodule update
 ./Shakefile.hs
 ```
 
@@ -23,27 +25,26 @@ Using Vegetables
 ----------------
 
 Using Vegetables is (almost) as easy as writing a specification. A great first
-example or demo project can be found [here](https://gitlab.com/everythingfunctional/freshfizzbuzz),
-but the tests for Vegetables are a pretty good example as well.
+example are the tests for Vegetables themselves.
 
 First, you'll need to write a function that defines a part of your test suite,
-either spec or BDD style use the provided functions `describe` and `it` or
-`Given`, `When` and `Then`. If you're using the provided build system, then
+either spec or BDD style use the provided functions `Describe` and `it` or
+`Given`, `When` and `Then_`. If you're using the provided build system, then
 this function should be in a module name `something`**`_test`**, in a file with the
 same name. The function should be named **`test_`**`something`, and must take
 no arguments, and return a value of type `TestItem_t`, which the above functions do.
 
 The `Given`, `When` and `describe` functions take a description string, and a
 list of `TestItem_t`s. They can also accept a value, to be passed to each of
-the tests they contain. This value will be passed as a `class(*)`. This is a
+the tests they contain. This value will be passed as a `class(Input_t)`. This is a
 limitation of Fortran's type system, but is easily enough overcome with a
 `select type` construct. Additionally, the `When` function can accept a function
-from `class(*)` to `Transformed_t` (which is just a wrapper for a `class(*)` value)
-which will be called before passing the input value down the tests.
+from `class(Input_t)` to `Transformed_t` (which is just a wrapper for a `class(Input_t)` value)
+which will be called before passing the input value down to the tests.
 
-The `it` and `Then` functions accept a string description, and a function that
-takes no arguments and returns a `Result_t`. Additionally, the functions `it_`
-and `Then_` can be used to provide a function that accepts a `class(*)` value
+The `It` and `Then_` functions accept a string description, and a function that
+takes no arguments and returns a `Result_t`. Additionally, the functions `It_`
+and `Then__` can be used to provide a function that accepts a `class(Input)` value
 as input.
 
 A variety of `assert` functions are provided to generate the `Result_t` values,
