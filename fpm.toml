@@ -1,0 +1,5 @@
+name = "vegetables"
+
+[dependencies]
+iso_varying_string = { git = "https://gitlab.com/everythingfunctional/iso_varying_string.git", branch = "MigrateToFpm" }
+strff = { git = "https://gitlab.com/everythingfunctional/strff.git", branch = "MigrateToFpm" }
