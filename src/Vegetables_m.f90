@@ -4004,7 +4004,7 @@ contains
         '  !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
         integer :: which_character
 
-        which_character = getRandomIntegerWithRange(0, len(ASCII_CHARACTERS))
+        which_character = getRandomIntegerWithRange(1, len(ASCII_CHARACTERS))
         random_character = ASCII_CHARACTERS(which_character:which_character)
     end function getRandomAsciiCharacter
 
@@ -5373,6 +5373,8 @@ contains
 
         class(TestCollection_t), allocatable :: new_collection
         type(FilterItemResult_t) :: filter_results(size(self%tests))
+        logical :: matches(size(self%tests))
+        type(TestItem_t) :: maybe_tests(size(self%tests))
 
         if (self%description_.includes.filter_string) then
             filter_result%matched = .true.
@@ -5380,10 +5382,12 @@ contains
         else
             filter_results = self%tests%filter(filter_string)
             if (any(filter_results%matched)) then
+                matches = filter_results%matched
+                maybe_tests = filter_results%test
                 allocate(new_collection, source = self)
                 deallocate(new_collection%tests)
                 allocate(new_collection%tests, source = &
-                        pack(filter_results%test, mask=filter_results%matched))
+                        pack(maybe_tests, mask=matches))
                 filter_result%matched = .true.
                 allocate(filter_result%test, source = new_collection)
             else
