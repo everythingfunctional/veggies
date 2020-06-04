@@ -1,7 +1,2 @@
-.stack-work/*
-_shake/*
 build/*
-tests_build/*
 tools_build/*
-vegetable-juicer.cabal
-stack.yaml.lock
