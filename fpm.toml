@@ -1,5 +1,10 @@
 name = "vegetables"
+version = "5.0.0"
+license = "MIT"
+author = "Brad Richardson"
+maintainer = "everythingfunctional@protonmail.com"
+copyright = "2020 Brad Richardson"
 
 [dependencies]
-iso_varying_string = { git = "https://gitlab.com/everythingfunctional/iso_varying_string.git", branch = "MigrateToFpm" }
-strff = { git = "https://gitlab.com/everythingfunctional/strff.git", branch = "MigrateToFpm" }
+iso_varying_string = { git = "https://gitlab.com/everythingfunctional/iso_varying_string.git", tag = "v1.0.0" }
+strff = { git = "https://gitlab.com/everythingfunctional/strff.git", tag = "v1.0.0" }
