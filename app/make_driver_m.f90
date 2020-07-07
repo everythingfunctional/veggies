@@ -8,6 +8,7 @@ module make_driver_m
             get, &
             index, &
             put, &
+            put_line, &
             replace, &
             var_str
     use parff, only: &
@@ -33,7 +34,13 @@ module make_driver_m
             sequence, &
             thenDrop, &
             withLabel
-    use strff, only: operator(.includes.), join, toString, NEWLINE
+    use strff, only: &
+            operator(.includes.), &
+            operator(.startsWith.), &
+            join, &
+            readFileLines, &
+            toString, &
+            NEWLINE
 
     implicit none
     private
@@ -42,10 +49,6 @@ module make_driver_m
         type(VARYING_STRING) :: module_name
         type(VARYING_STRING), allocatable :: function_names(:)
     end type TestInfo_t
-
-    interface operator(.startsWith.)
-        module procedure startsWith
-    end interface operator(.startsWith.)
 
     public :: makeDriver
 contains
@@ -118,7 +121,8 @@ contains
         type(ParseResult_t), allocatable :: maybe_function_names(:)
         integer :: num_function_names
 
-        call readFileLines(filename, lines)
+        allocate(lines(0))
+        lines = readFileLines(filename)
         allocate(maybe_function_names(size(lines)))
         maybe_function_names = parseLine(lines)
         num_function_names = count(maybe_function_names%ok)
@@ -135,33 +139,6 @@ contains
         end do
     end subroutine
 
-    subroutine readFileLines(filename, lines)
-        type(VARYING_STRING), intent(in) :: filename
-        type(VARYING_STRING), allocatable, intent(out) :: lines(:)
-
-        integer :: file_unit
-        integer :: i
-        integer :: num_lines
-        integer :: stat
-        type(VARYING_STRING) :: tmp
-
-        open(newunit = file_unit, file = char(filename), action = "READ", status = "OLD")
-        num_lines = 0
-        do
-            call get(file_unit, tmp, NEWLINE, iostat = stat)
-            if (stat /= 0) exit
-            num_lines = num_lines + 1
-        end do
-        close(file_unit)
-
-        allocate(lines(num_lines))
-        open(newunit = file_unit, file = char(filename), action = "READ", status = "OLD")
-        do i = 1, num_lines
-            call get(file_unit, lines(i), NEWLINE)
-        end do
-        close(file_unit)
-    end subroutine readFileLines
-
     elemental function parseLine(line) result(maybe_name)
         type(VARYING_STRING), intent(in) :: line
         type(ParseResult_t) :: maybe_name
@@ -175,7 +152,9 @@ contains
 
         the_result = thenDrop( &
                 dropThen( &
-                        dropThen(parseAtLeastOneWhiteSpace, parseFunction, the_state), &
+                        dropThen( &
+                                dropThen(parseAtLeastOneWhiteSpace, parseFunction, the_state), &
+                                parseAtLeastOneWhiteSpace), &
                         parseValidIdentifier), &
                 parseSpaceOrOpenParen)
         if (the_result%ok) then
@@ -441,7 +420,7 @@ contains
         do i = 1, size(test_infos)
             do j = 1, size(test_infos(i)%function_names)
                 test_array(next_entry) = &
-                        "        individual_tests(" // toString(next_entry) // ") = " &
+                        "        individual_tests(" // toString(next_entry-2) // ") = " &
                         // rename_(test_infos(i)%module_name, test_infos(i)%function_names(j)) &
                         // "()"
                 next_entry = next_entry + 1

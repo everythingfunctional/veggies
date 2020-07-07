@@ -1,4 +1,4 @@
-program make_driver
+program make_vegetable_driver
     use iso_varying_string, only: VARYING_STRING, assignment(=)
     use make_driver_m, only: makeDriver
 
@@ -27,4 +27,4 @@ program make_driver
     end if
 
     call makeDriver(driver_file, test_files)
-end program make_driver
+end program make_vegetable_driver
