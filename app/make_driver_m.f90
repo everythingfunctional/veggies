@@ -283,7 +283,7 @@ contains
             character(len=1), intent(in) :: char_
             logical :: matches
 
-            character(len=*), parameter :: LETTER = "abcdefghijklmnopqrstuvwxyz"
+            character(len=*), parameter :: LETTER = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
             matches = LETTER.includes.char_
         end function theMatcher
