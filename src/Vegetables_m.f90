@@ -722,6 +722,8 @@ module Vegetables_m
     end interface Then__
 
     interface When
+        module procedure whenBasicC
+        module procedure whenBasicS
         module procedure whenWithTransformerC
         module procedure whenWithTransformerS
     end interface When
@@ -5735,6 +5737,22 @@ contains
         allocate(result_%result_, source = TestCaseResult( &
                 self%description_, fail("No input provided")))
     end function transformingTestCollectionRunWithoutInput
+
+    function whenBasicC(description, tests) result(item)
+        character(len=*), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        item = Describe("When " // description, tests)
+    end function whenBasicC
+
+    function whenBasicS(description, tests) result(item)
+        type(VARYING_STRING), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        item = Describe("When " // description, tests)
+    end function whenBasicS
 
     function whenWithTransformerC(description, transformer, tests) result(item)
         character(len=*), intent(in) :: description
