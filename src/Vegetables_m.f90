@@ -711,6 +711,11 @@ module Vegetables_m
         module procedure succeedS
     end interface succeed
 
+    interface Then_
+        module procedure ThenBasicC
+        module procedure ThenBasicS
+    end interface Then_
+
     interface Then__
         module procedure ThenInputC
         module procedure ThenInputS
@@ -787,6 +792,7 @@ module Vegetables_m
             SimplestValue, &
             succeed, &
             testThat, &
+            Then_, &
             Then__, &
             Transformed, &
             When, &
@@ -5646,6 +5652,22 @@ contains
 
         item = Describe("Test that", tests)
     end function testThat
+
+    function ThenBasicC(description, test) result(item)
+        character(len=*), intent(in) :: description
+        procedure(simpleTest) :: test
+        type(TestItem_t) :: item
+
+        item = It("Then " // description, test)
+    end function ThenBasicC
+
+    function ThenBasicS(description, test) result(item)
+        type(VARYING_STRING), intent(in) :: description
+        procedure(simpleTest) :: test
+        type(TestItem_t) :: item
+
+        item = It("Then " // description, test)
+    end function ThenBasicS
 
     function ThenInputC(description, test) result(item)
         character(len=*), intent(in) :: description
