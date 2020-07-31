@@ -597,6 +597,8 @@ module Vegetables_m
     end interface fail
 
     interface Given
+        module procedure GivenBasicC
+        module procedure GivenBasicS
         module procedure GivenWithInputC
         module procedure GivenWithInputS
     end interface Given
@@ -709,12 +711,19 @@ module Vegetables_m
         module procedure succeedS
     end interface succeed
 
+    interface Then_
+        module procedure ThenBasicC
+        module procedure ThenBasicS
+    end interface Then_
+
     interface Then__
         module procedure ThenInputC
         module procedure ThenInputS
     end interface Then__
 
     interface When
+        module procedure whenBasicC
+        module procedure whenBasicS
         module procedure whenWithTransformerC
         module procedure whenWithTransformerS
     end interface When
@@ -785,6 +794,7 @@ module Vegetables_m
             SimplestValue, &
             succeed, &
             testThat, &
+            Then_, &
             Then__, &
             Transformed, &
             When, &
@@ -4080,6 +4090,22 @@ contains
         end if
     end function getRandomLogical
 
+    function GivenBasicC(description, tests) result(item)
+        character(len=*), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        item = Describe("Given " // description, tests)
+    end function GivenBasicC
+
+    function GivenBasicS(description, tests) result(item)
+        type(VARYING_STRING), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        item = Describe("Given " // description, tests)
+    end function GivenBasicS
+
     function GivenWithInputC(description, input, tests) result(item)
         character(len=*), intent(in) :: description
         class(Input_t), intent(in) :: input
@@ -5629,6 +5655,22 @@ contains
         item = Describe("Test that", tests)
     end function testThat
 
+    function ThenBasicC(description, test) result(item)
+        character(len=*), intent(in) :: description
+        procedure(simpleTest) :: test
+        type(TestItem_t) :: item
+
+        item = It("Then " // description, test)
+    end function ThenBasicC
+
+    function ThenBasicS(description, test) result(item)
+        type(VARYING_STRING), intent(in) :: description
+        procedure(simpleTest) :: test
+        type(TestItem_t) :: item
+
+        item = It("Then " // description, test)
+    end function ThenBasicS
+
     function ThenInputC(description, test) result(item)
         character(len=*), intent(in) :: description
         procedure(inputTest) :: test
@@ -5695,6 +5737,22 @@ contains
         allocate(result_%result_, source = TestCaseResult( &
                 self%description_, fail("No input provided")))
     end function transformingTestCollectionRunWithoutInput
+
+    function whenBasicC(description, tests) result(item)
+        character(len=*), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        item = Describe("When " // description, tests)
+    end function whenBasicC
+
+    function whenBasicS(description, tests) result(item)
+        type(VARYING_STRING), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        item = Describe("When " // description, tests)
+    end function whenBasicS
 
     function whenWithTransformerC(description, transformer, tests) result(item)
         character(len=*), intent(in) :: description
