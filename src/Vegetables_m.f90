@@ -597,6 +597,8 @@ module Vegetables_m
     end interface fail
 
     interface Given
+        module procedure GivenBasicC
+        module procedure GivenBasicS
         module procedure GivenWithInputC
         module procedure GivenWithInputS
     end interface Given
@@ -4079,6 +4081,22 @@ contains
             random_logical = .FALSE.
         end if
     end function getRandomLogical
+
+    function GivenBasicC(description, tests) result(item)
+        character(len=*), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        item = Describe("Given " // description, tests)
+    end function GivenBasicC
+
+    function GivenBasicS(description, tests) result(item)
+        type(VARYING_STRING), intent(in) :: description
+        type(TestItem_t), intent(in) :: tests(:)
+        type(TestItem_t) :: item
+
+        item = Describe("Given " // description, tests)
+    end function GivenBasicS
 
     function GivenWithInputC(description, input, tests) result(item)
         character(len=*), intent(in) :: description
