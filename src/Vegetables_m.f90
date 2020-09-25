@@ -3952,7 +3952,7 @@ contains
                 options%colorize = .false.
             case ("-h", "--help")
                 call put_line(output_unit, usageMessage(program_name))
-                call exit(0)
+                stop
             case ("-f", "--filter")
                 options%filter_tests = .true.
                 i = i + 1
@@ -3967,11 +3967,11 @@ contains
                             error_unit, &
                             'Unable to read "' // trim(argument) // '" as an integer' // NEWLINE)
                     call put_line(error_unit, usageMessage(program_name))
-                    call exit(1)
+                    error stop
                 end if
                 if (NUM_GENERATOR_TESTS <= 0) then
                     call put_line(error_unit, "Number of random values must be >0")
-                    call exit(1)
+                    error stop
                 end if
             case ("-q", "--quiet")
                 options%quiet = .true.
@@ -3982,7 +3982,7 @@ contains
                         error_unit, &
                         "Unknown argument: '" // trim(argument) // "'" // NEWLINE)
                 call put_line(error_unit, usageMessage(program_name))
-                call exit(1)
+                error stop
             end select
             i = i + 1
         end do
@@ -4944,7 +4944,7 @@ contains
                 tests_to_run = filtered_tests%test
             else
                 call put_line(error_unit, "No matching tests found")
-                call exit(1)
+                error stop
             end if
         else
             tests_to_run = tests
@@ -5011,7 +5011,7 @@ contains
                     toString(results%numFailingAsserts()) // " of " &
                         // toString(results%numAsserts()) // " assertions failed")
             call put_line(error_unit, "")
-            call exit(1)
+            error stop
         end if
     end subroutine runTests
 
