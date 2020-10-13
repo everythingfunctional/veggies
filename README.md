@@ -37,7 +37,7 @@ example are the tests for Vegetables themselves.
 ### Writing a Test Function
 
 The simplest test function is one that takes no arguments and produces a
-`Result_t` value as its output. The function some execute some portion of your
+`Result_t` value as its output. The function should execute some portion of your
 code, and make some assertion(s) about the result(s). Multiple assertsions can
 be combined by using the `.and.` operator. Also, the `succeed` and `fail` functions
 are provided if for some reason the provided assertions aren't quite sufficient.
@@ -103,8 +103,8 @@ list below:
 * `assertEquals` accepts two values of integer, double precision, character, or VARYING_STRING, and ensures they are equal (Note that assertEquals with double precision values simply uses the assertEqualsWithinAbsolute with a tolerance of machine epsilon)
 * `assertEqualsWithinAbsolute` and `assertEqualsWithinRelative` accept two values of double precision and a third value of double precision to use as the tolerance, and ensures the values are within that tolerance.
 * `assertEmpty` ensures that the given string is of zero length
-* `assertIncludes` and `assertDoesntInclude` ensure that the second string includes (or doesnt include) the first string
-* `assertFasterThan` Has several variations. It accepts a subroutine with no arguments, and runs it the specified number of times to measure how long it takes to run. It then compares that to either a given number in seconds, or from running another provided subroutine and measuring it as well. Optionally, additional subroutines can be provided to be executed before and after the other subroutine(s) to function as setup and teardown, to avoid including that code in the measurement.
+* `assertIncludes` and `assertDoesntInclude` ensure that the second string includes (or doesn't include) the first string
+* `assertFasterThan` Has several variations. It accepts a subroutine with no arguments, and runs it the specified number of times to measure how long it takes to run. It then compares that to either a given number in seconds, or from running another provided subroutine and measuring it as well. Optionally, additional subroutines can be provided to be executed before and after the other subroutine(s) to function as setup and tear-down, to avoid including that code in the measurement.
 
 #### Writing Your Own Assertions
 
@@ -206,15 +206,15 @@ writing and maintaining the driver program wouldn't be _too_ bad.
 By providing a type extended from `class(Generator_t)`, you can test fundamental
 properties of your code that should hold for all values. A couple of types are
 provided for simple types, but generally you'll want to provide your own. To do
-so you'll need to overide the `generate` function. This function takes your
+so you'll need to override the `generate` function. This function takes your
 generator type as an input, and must produce a value of `type(Generated_t)`. This
 is just a wrapper around a `class(Input_t)`. Several `getRandom*` functions are
 provided to generate most primitive types with various ranges and/or lengths.
 
-Additionally, you must overide the `shrink` function. This must take a
+Additionally, you must override the `shrink` function. This must take a
 `class(Input_t)` value as input, and provide a `type(ShrinkResult_t)` as output.
 This is just a wrapper around a `class(Input_t)`, with a flag for whether it is
-the simplest possible value. The relavent code for one of the provided generators
+the simplest possible value. The relevant code for one of the provided generators
 is shown below.
 
 ```Fortran
