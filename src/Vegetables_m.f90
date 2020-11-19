@@ -1,7 +1,7 @@
 module Vegetables_m
     use iso_fortran_env, only: error_unit, output_unit
     use iso_varying_string, only: &
-            VARYING_STRING, &
+            varying_string, &
             assignment(=), &
             operator(//), &
             operator(==), &
@@ -177,7 +177,6 @@ module Vegetables_m
         private
         procedure :: runWithInput => testCollectionWithInputRunWithInput
         procedure :: runWithoutInput => testCollectionWithInputRunWithoutInput
-        final :: testCollectionWithInputDestructor
     end type TestCollectionWithInput_t
 
     type, public, extends(TestCollection_t) :: TransformingTestCollection_t
@@ -257,7 +256,6 @@ module Vegetables_m
                 testCaseResultFailureDescription
         procedure, public :: verboseDescription => &
                 testCaseResultVerboseDescription
-        final :: testCaseResultDestructor
     end type TestCaseResult_t
 
     type, public, extends(TestResult_t) :: TestCollectionResult_t
@@ -5193,12 +5191,6 @@ contains
         TestCaseResult%result_ = result_
     end function TestCaseResult
 
-    pure subroutine testCaseResultDestructor(self)
-        type(TestCaseResult_t), intent(inout) :: self
-
-        deallocate(self%result_%results)
-    end subroutine testCaseResultDestructor
-
     pure function testCaseResultFailureDescription( &
             self, colorize) result(description)
         class(TestCaseResult_t), intent(in) :: self
@@ -5515,13 +5507,6 @@ contains
         allocate(TestCollectionWithInput%input, source = input)
         allocate(TestCollectionWithInput%tests, source = tests)
     end function TestCollectionWithInput
-
-    pure subroutine testCollectionWithInputDestructor(self)
-        type(TestCollectionWithInput_t), intent(inout) :: self
-
-        deallocate(self%input)
-        deallocate(self%tests)
-    end subroutine testCollectionWithInputDestructor
 
     function testCollectionWithInputRunWithInput(self, input) result(result_)
         class(TestCollectionWithInput_t), intent(in) :: self
