@@ -5110,7 +5110,7 @@ contains
         allocate(SimpleTestCollection%tests, source = tests)
     end function SimpleTestCollection
 
-    function simpleTestCollectionRunWithInput(self, input) result(result_)
+    recursive function simpleTestCollectionRunWithInput(self, input) result(result_)
         class(SimpleTestCollection_t), intent(in) :: self
         class(Input_t), intent(in) :: input
         type(TestResultItem_t) :: result_
@@ -5121,7 +5121,7 @@ contains
         result_ = self%run()
     end function simpleTestCollectionRunWithInput
 
-    function simpleTestCollectionRunWithoutInput(self) result(result_)
+    recursive function simpleTestCollectionRunWithoutInput(self) result(result_)
         class(SimpleTestCollection_t), intent(in) :: self
         type(TestResultItem_t) :: result_
 
@@ -5290,11 +5290,9 @@ contains
         integer :: i
         type(Result_t) :: results
 
-        !$omp parallel do
         do i = 1, size(self%examples)
             results = results.and.self%test(self%examples(i)%input)
         end do
-        !$omp end parallel do
         allocate(result_%result_, source = TestCaseResult( &
                 self%description_, results))
     end function testCaseWithExamplesRunWithoutInput
@@ -5372,25 +5370,27 @@ contains
         end if
     end function testCaseWithGeneratorRunWithoutInput
 
-    pure function testCollectionDescription(self) result(description)
+    pure recursive function testCollectionDescription(self) result(description)
         class(TestCollection_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
-        type(VARYING_STRING) :: descriptions(size(self%tests))
+        integer :: i
 
-        descriptions = self%tests%description()
         description = hangingIndent( &
-                self%description_ // NEWLINE // join(descriptions, NEWLINE), &
+                self%description_ // NEWLINE // join( &
+                        [(self%tests(i)%description(), i = 1, size(self%tests))], &
+                        NEWLINE), &
                 INDENTATION)
     end function testCollectionDescription
 
-    pure function testCollectionFilter(self, filter_string) result(filter_result)
+    pure recursive function testCollectionFilter(self, filter_string) result(filter_result)
         class(TestCollection_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         type(FilterResult_t) :: filter_result
 
         class(TestCollection_t), allocatable :: new_collection
         type(FilterItemResult_t) :: filter_results(size(self%tests))
+        integer :: i
         logical :: matches(size(self%tests))
         type(TestItem_t) :: maybe_tests(size(self%tests))
 
@@ -5398,7 +5398,7 @@ contains
             filter_result%matched = .true.
             allocate(filter_result%test, source = self)
         else
-            filter_results = self%tests%filter(filter_string)
+            filter_results = [(self%tests(i)%filter(filter_string), i = 1, size(self%tests))]
             if (any(filter_results%matched)) then
                 matches = filter_results%matched
                 maybe_tests = filter_results%test
@@ -5414,11 +5414,13 @@ contains
         end if
     end function testCollectionFilter
 
-    pure function testCollectionNumCases(self) result(num_cases)
+    pure recursive function testCollectionNumCases(self) result(num_cases)
         class(TestCollection_t), intent(in) :: self
         integer :: num_cases
 
-        num_cases = sum(self%tests%numCases())
+        integer :: i
+
+        num_cases = sum([(self%tests(i)%numCases(), i = 1, size(self%tests))])
     end function testCollectionNumCases
 
     pure function TestCollectionResult(description, results)
@@ -5430,70 +5432,82 @@ contains
         allocate(TestCollectionResult%results, source = results)
     end function TestCollectionResult
 
-    pure function testCollectionResultFailureDescription( &
+    pure recursive function testCollectionResultFailureDescription( &
             self, colorize) result(description)
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
 
-        type(VARYING_STRING) :: descriptions(size(self%results))
+        integer :: i
 
         if (self%passed()) then
             description = ""
         else
-            descriptions = self%results%failureDescription(colorize)
             description = hangingIndent( &
-                    self%description // NEWLINE // join(descriptions, NEWLINE), &
+                    self%description // NEWLINE // join( &
+                            [(self%results(i)%failureDescription(colorize), i = 1, size(self%results))], &
+                            NEWLINE), &
                     INDENTATION)
         end if
     end function testCollectionResultFailureDescription
 
-    pure function testCollectionResultNumAsserts(self) result(num_asserts)
+    pure recursive function testCollectionResultNumAsserts(self) result(num_asserts)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_asserts
 
-        num_asserts = sum(self%results%numAsserts())
+        integer :: i
+
+        num_asserts = sum([(self%results(i)%numAsserts(), i = 1, size(self%results))])
     end function testCollectionResultNumAsserts
 
-    pure function testCollectionResultNumCases(self) result(num_cases)
+    pure recursive function testCollectionResultNumCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_cases
 
-        num_cases = sum(self%results%numCases())
+        integer :: i
+
+        num_cases = sum([(self%results(i)%numCases(), i = 1, size(self%results))])
     end function testCollectionResultNumCases
 
-    pure function testCollectionResultNumFailingAsserts(self) result(num_asserts)
+    pure recursive function testCollectionResultNumFailingAsserts(self) result(num_asserts)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_asserts
 
-        num_asserts = sum(self%results%numFailingAsserts())
+        integer :: i
+
+        num_asserts = sum([(self%results(i)%numFailingAsserts(), i = 1, size(self%results))])
     end function testCollectionResultNumFailingAsserts
 
-    pure function testCollectionResultNumFailingCases(self) result(num_cases)
+    pure recursive function testCollectionResultNumFailingCases(self) result(num_cases)
         class(TestCollectionResult_t), intent(in) :: self
         integer :: num_cases
 
-        num_cases = sum(self%results%numFailingCases())
+        integer :: i
+
+        num_cases = sum([(self%results(i)%numFailingCases(), i = 1, size(self%results))])
     end function testCollectionResultNumFailingCases
 
-    pure function testCollectionResultPassed(self) result(passed)
+    pure recursive function testCollectionResultPassed(self) result(passed)
         class(TestCollectionResult_t), intent(in) :: self
         logical :: passed
 
-        passed = all(self%results%passed())
+        integer :: i
+
+        passed = all([(self%results(i)%passed(), i = 1, size(self%results))])
     end function testCollectionResultPassed
 
-    pure function testCollectionResultVerboseDescription( &
+    pure recursive function testCollectionResultVerboseDescription( &
             self, colorize) result(description)
         class(TestCollectionResult_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(VARYING_STRING) :: description
 
-        type(VARYING_STRING) :: descriptions(size(self%results))
+        integer :: i
 
-        descriptions = self%results%verboseDescription(colorize)
         description = hangingIndent( &
-                self%description // NEWLINE // join(descriptions, NEWLINE), &
+                self%description // NEWLINE // join( &
+                        [(self%results(i)%verboseDescription(colorize), i = 1, size(self%results))], &
+                        NEWLINE), &
                 INDENTATION)
     end function testCollectionResultVerboseDescription
 
@@ -5508,7 +5522,7 @@ contains
         allocate(TestCollectionWithInput%tests, source = tests)
     end function TestCollectionWithInput
 
-    function testCollectionWithInputRunWithInput(self, input) result(result_)
+    recursive function testCollectionWithInputRunWithInput(self, input) result(result_)
         class(TestCollectionWithInput_t), intent(in) :: self
         class(Input_t), intent(in) :: input
         type(TestResultItem_t) :: result_
@@ -5519,30 +5533,28 @@ contains
         result_ = self%run()
     end function testCollectionWithInputRunWithInput
 
-    function testCollectionWithInputRunWithoutInput(self) result(result_)
+    recursive function testCollectionWithInputRunWithoutInput(self) result(result_)
         class(TestCollectionWithInput_t), intent(in) :: self
         type(TestResultItem_t) :: result_
 
         integer :: i
         type(TestResultItem_t) :: results(size(self%tests))
 
-        !$omp parallel do
         do i = 1, size(self%tests)
             results(i) = self%tests(i)%run(self%input)
         end do
-        !$omp end parallel do
         allocate(result_%result_, source = TestCollectionResult( &
                 self%description_, results))
     end function testCollectionWithInputRunWithoutInput
 
-    elemental function testItemDescription(self) result(description)
+    pure recursive function testItemDescription(self) result(description)
         class(TestItem_t), intent(in) :: self
         type(VARYING_STRING) :: description
 
         description = self%test%description()
     end function testItemDescription
 
-    elemental function testItemFilter(self, filter_string) result(filter_result)
+    pure recursive function testItemFilter(self, filter_string) result(filter_result)
         class(TestItem_t), intent(in) :: self
         type(VARYING_STRING), intent(in) :: filter_string
         type(FilterItemResult_t) :: filter_result
@@ -5558,14 +5570,14 @@ contains
         end if
     end function testItemFilter
 
-    elemental function testItemNumCases(self) result(num_cases)
+    pure recursive function testItemNumCases(self) result(num_cases)
         class(TestItem_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%test%numCases()
     end function testItemNumCases
 
-    function testItemRunWithInput(self, input) result(result_)
+    recursive function testItemRunWithInput(self, input) result(result_)
         class(TestItem_t), intent(in) :: self
         class(Input_t), intent(in) :: input
         type(TestResultItem_t) :: result_
@@ -5573,14 +5585,14 @@ contains
         result_ = self%test%run(input)
     end function testItemRunWithInput
 
-    function testItemRunWithoutInput(self) result(result_)
+    recursive function testItemRunWithoutInput(self) result(result_)
         class(TestItem_t), intent(in) :: self
         type(TestResultItem_t) :: result_
 
         result_ = self%test%run()
     end function testItemRunWithoutInput
 
-    elemental function testResultItemFailureDescription( &
+    pure recursive function testResultItemFailureDescription( &
             self, colorize) result(description)
         class(TestResultItem_t), intent(in) :: self
         logical, intent(in) :: colorize
@@ -5589,42 +5601,42 @@ contains
         description = self%result_%failureDescription(colorize)
     end function testResultItemFailureDescription
 
-    elemental function testResultItemNumAsserts(self) result(num_asserts)
+    pure recursive function testResultItemNumAsserts(self) result(num_asserts)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%result_%numAsserts()
     end function testResultItemNumAsserts
 
-    elemental function testResultItemNumCases(self) result(num_cases)
+    pure recursive function testResultItemNumCases(self) result(num_cases)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%result_%numCases()
     end function testResultItemNumCases
 
-    elemental function testResultItemNumFailingAsserts(self) result(num_asserts)
+    pure recursive function testResultItemNumFailingAsserts(self) result(num_asserts)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_asserts
 
         num_asserts = self%result_%numFailingAsserts()
     end function testResultItemNumFailingAsserts
 
-    elemental function testResultItemNumFailingCases(self) result(num_cases)
+    pure recursive function testResultItemNumFailingCases(self) result(num_cases)
         class(TestResultItem_t), intent(in) :: self
         integer :: num_cases
 
         num_cases = self%result_%numFailingCases()
     end function testResultItemNumFailingCases
 
-    elemental function testResultItemPassed(self) result(passed)
+    pure recursive function testResultItemPassed(self) result(passed)
         class(TestResultItem_t), intent(in) :: self
         logical :: passed
 
         passed = self%result_%passed()
     end function testResultItemPassed
 
-    elemental function testResultItemVerboseDescription( &
+    pure recursive function testResultItemVerboseDescription( &
             self, colorize) result(description)
         class(TestResultItem_t), intent(in) :: self
         logical, intent(in) :: colorize
@@ -5690,7 +5702,7 @@ contains
         allocate(TransformingTestCollection%tests, source = tests)
     end function TransformingTestCollection
 
-    function transformingTestCollectionRunWithInput(self, input) result(result_)
+    recursive function transformingTestCollectionRunWithInput(self, input) result(result_)
         class(TransformingTestCollection_t), intent(in) :: self
         class(Input_t), intent(in) :: input
         type(TestResultItem_t) :: result_
@@ -5705,11 +5717,9 @@ contains
             allocate(result_%result_, source = testCaseResult( &
                     self%description_, transformed_input%result_))
         class default
-            !$omp parallel do
             do i = 1, size(self%tests)
                 results(i) = self%tests(i)%run(transformed_input)
             end do
-            !$omp end parallel do
             allocate(result_%result_, source = TestCollectionResult( &
                     self%description_, results))
         end select
