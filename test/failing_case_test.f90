@@ -1,182 +1,208 @@
 module failing_case_test
-    use example_asserts_m, only: &
-            FAILURE_MESSAGE, &
-            SUCCESS_MESSAGE, &
-            NUM_ASSERTS_IN_FAILING, &
-            NUM_FAILING_ASSERTS_IN_FAILING
-    use example_cases_m, only: exampleFailingTestCase, EXAMPLE_DESCRIPTION
-    use Helpers_m, only: TestItemInput_t, TestResultItemInput_t, runTest
-    use Vegetables_m, only: &
-            Input_t, &
-            Result_t, &
-            TestItem_t, &
-            assertDoesntInclude, &
-            assertEquals, &
-            assertIncludes, &
-            assertNot, &
-            fail, &
-            Given, &
-            Then__, &
-            When
-
     implicit none
     private
 
     public :: test_failing_case_behaviors
 contains
     function test_failing_case_behaviors() result(test)
-        type(TestItem_t) :: test
+        use example_cases_m, only: example_failing_test_case
+        use helpers_m, only: test_item_input_t, run_test
+        use vegetables, only: test_item_t, given, then__, when
 
-        type(TestItem_t) :: collection(1)
-        type(TestItemInput_t) :: the_case
-        type(TestItem_t) :: individual_tests(11)
+        type(test_item_t) :: test
 
-        the_case%input = exampleFailingTestCase()
-        individual_tests(1) = Then__("it knows it failed", checkCaseFails)
-        individual_tests(2) = Then__("it has 1 test case", checkNumCases)
-        individual_tests(3) = Then__("it has 1 failing case", checkNumFailingCases)
-        individual_tests(4) = Then__("it's verbose description includes the given description", checkVerboseForGivenDescription)
-        individual_tests(5) = Then__("it's verbose description includes the success message", checkVerboseForSuccessMessage)
-        individual_tests(6) = Then__("it's verbose description includes the failure message", checkVerboseForFailureMessage)
-        individual_tests(7) = Then__("it's failure description includes the given description", checkFailureForGivenDescription)
-        individual_tests(8) = Then__("it's failure description includes the failure message", checkFailureForFailureMessage)
-        individual_tests(9) = Then__("it's failure description doesn't include the success message", checkFailureNoSuccessMessage)
-        individual_tests(10) = Then__("it knows how many asserts there were", checkNumAsserts)
-        individual_tests(11) = Then__("it knows how many asserts failed", checkNumFailingAsserts)
-        collection(1) = When("it is run", runTest, individual_tests)
-        test = Given("a failing test case", the_case, collection)
-    end function test_failing_case_behaviors
+        type(test_item_t) :: collection(1)
+        type(test_item_input_t) :: the_case
+        type(test_item_t) :: individual_tests(11)
 
-    pure function checkCaseFails(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+        the_case%input = example_failing_test_Case()
+        individual_tests(1) = then__("it knows it failed", check_case_fails)
+        individual_tests(2) = then__("it has 1 test case", check_num_cases)
+        individual_tests(3) = then__("it has 1 failing case", check_num_failing_cases)
+        individual_tests(4) = then__("it's verbose description includes the given description", check_verbose_for_given_description)
+        individual_tests(5) = then__("it's verbose description includes the success message", check_verbose_for_success_message)
+        individual_tests(6) = then__("it's verbose description includes the failure message", check_verbose_for_failure_message)
+        individual_tests(7) = then__("it's failure description includes the given description", check_failure_for_given_description)
+        individual_tests(8) = then__("it's failure description includes the failure message", check_failure_for_failure_message)
+        individual_tests(9) = then__( &
+                "it's failure description doesn't include the success message", check_failure_no_success_message)
+        individual_tests(10) = then__("it knows how many asserts there were", check_num_asserts)
+        individual_tests(11) = then__("it knows how many asserts failed", check_num_failing_asserts)
+        collection(1) = when("it is run", run_test, individual_tests)
+        test = given("a failing test case", the_case, collection)
+    end function
 
-        select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertNot(example_result%input%passed())
-        class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
-        end select
-    end function checkCaseFails
+    pure function check_case_fails(example_result) result(result_)
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_not, fail
 
-    pure function checkNumCases(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
 
         select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertEquals(1, example_result%input%numCases())
+        type is (test_result_item_input_t)
+            result_ = assert_not(example_result%input%passed())
         class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
+            result_ = fail("Expected to get a test_result_item_input_t")
         end select
-    end function checkNumCases
+    end function
 
-    pure function checkNumFailingCases(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+    pure function check_num_cases(example_result) result(result_)
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_equals, fail
+
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
 
         select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertEquals(1, example_result%input%numFailingCases())
+        type is (test_result_item_input_t)
+            result_ = assert_equals(1, example_result%input%num_cases())
         class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
+            result_ = fail("Expected to get a test_result_item_input_t")
         end select
-    end function checkNumFailingCases
+    end function
 
-    pure function checkVerboseForGivenDescription(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+    pure function check_num_failing_cases(example_result) result(result_)
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_equals, fail
+
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
 
         select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertIncludes(EXAMPLE_DESCRIPTION, example_result%input%verboseDescription(.false.))
+        type is (test_result_item_input_t)
+            result_ = assert_equals(1, example_result%input%num_failing_cases())
         class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
+            result_ = fail("Expected to get a test_result_item_input_t")
         end select
-    end function checkVerboseForGivenDescription
+    end function
 
-    pure function checkVerboseForSuccessMessage(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+    pure function check_verbose_for_given_description(example_result) result(result_)
+        use example_cases_m, only: EXAMPLE_DESCRIPTION
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_includes, fail
+
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
 
         select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertIncludes(SUCCESS_MESSAGE, example_result%input%verboseDescription(.false.))
+        type is (test_result_item_input_t)
+            result_ = assert_includes(EXAMPLE_DESCRIPTION, example_result%input%verbose_description(.false.))
         class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
+            result_ = fail("Expected to get a test_result_item_input_t")
         end select
-    end function checkVerboseForSuccessMessage
+    end function
 
-    pure function checkVerboseForFailureMessage(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+    pure function check_verbose_for_success_message(example_result) result(result_)
+        use example_asserts_m, only: SUCCESS_MESSAGE
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_includes, fail
+
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
 
         select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertIncludes(FAILURE_MESSAGE, example_result%input%verboseDescription(.false.))
+        type is (test_result_item_input_t)
+            result_ = assert_includes(SUCCESS_MESSAGE, example_result%input%verbose_description(.false.))
         class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
+            result_ = fail("Expected to get a test_result_item_input_t")
         end select
-    end function checkVerboseForFailureMessage
+    end function
 
-    pure function checkFailureForGivenDescription(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+    pure function check_verbose_for_failure_message(example_result) result(result_)
+        use example_asserts_m, only: FAILURE_MESSAGE
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_includes, fail
+
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
 
         select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertIncludes(EXAMPLE_DESCRIPTION, example_result%input%failureDescription(.false.))
+        type is (test_result_item_input_t)
+            result_ = assert_includes(FAILURE_MESSAGE, example_result%input%verbose_description(.false.))
         class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
+            result_ = fail("Expected to get a test_result_item_input_t")
         end select
-    end function checkFailureForGivenDescription
+    end function
 
-    pure function checkFailureForFailureMessage(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+    pure function check_failure_for_given_description(example_result) result(result_)
+        use example_cases_m, only: EXAMPLE_DESCRIPTION
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_includes, fail
+
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
 
         select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertIncludes(FAILURE_MESSAGE, example_result%input%failureDescription(.false.))
+        type is (test_result_item_input_t)
+            result_ = assert_includes(EXAMPLE_DESCRIPTION, example_result%input%failure_description(.false.))
         class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
+            result_ = fail("Expected to get a test_result_item_input_t")
         end select
-    end function checkFailureForFailureMessage
+    end function
 
-    pure function checkFailureNoSuccessMessage(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+    pure function check_failure_for_failure_message(example_result) result(result_)
+        use example_asserts_m, only: FAILURE_MESSAGE
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_includes, fail
+
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
 
         select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertDoesntInclude(SUCCESS_MESSAGE, example_result%input%failureDescription(.false.))
+        type is (test_result_item_input_t)
+            result_ = assert_includes(FAILURE_MESSAGE, example_result%input%failure_description(.false.))
         class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
+            result_ = fail("Expected to get a test_result_item_input_t")
         end select
-    end function checkFailureNoSuccessMessage
+    end function
 
-    pure function checkNumAsserts(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+    pure function check_failure_no_success_message(example_result) result(result_)
+        use example_asserts_m, only: SUCCESS_MESSAGE
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_doesnt_include, fail
+
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
 
         select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertEquals(NUM_ASSERTS_IN_FAILING, example_result%input%numAsserts())
+        type is (test_result_item_input_t)
+            result_ = assert_doesnt_include(SUCCESS_MESSAGE, example_result%input%failure_description(.false.))
         class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
+            result_ = fail("Expected to get a test_result_item_input_t")
         end select
-    end function checkNumAsserts
+    end function
 
-    pure function checkNumFailingAsserts(example_result) result(result_)
-        class(Input_t), intent(in) :: example_result
-        type(Result_t) :: result_
+    pure function check_num_asserts(example_result) result(result_)
+        use example_asserts_m, only: NUM_ASSERTS_IN_FAILING
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_equals, fail
+
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
 
         select type (example_result)
-        type is (TestResultItemInput_t)
-            result_ = assertEquals( &
-                    NUM_FAILING_ASSERTS_IN_FAILING, example_result%input%numFailingAsserts())
+        type is (test_result_item_input_t)
+            result_ = assert_equals(NUM_ASSERTS_IN_FAILING, example_result%input%num_asserts())
         class default
-            result_ = fail("Expected to get a TestResultItemInput_t")
+            result_ = fail("Expected to get a test_result_item_input_t")
         end select
-    end function checkNumFailingAsserts
-end module failing_case_test
+    end function
+
+    pure function check_num_failing_asserts(example_result) result(result_)
+        use example_asserts_m, only: NUM_FAILING_ASSERTS_IN_FAILING
+        use helpers_m, only: test_result_item_input_t
+        use vegetables, only: input_t, result_t, assert_equals, fail
+
+        class(input_t), intent(in) :: example_result
+        type(result_t) :: result_
+
+        select type (example_result)
+        type is (test_result_item_input_t)
+            result_ = assert_equals( &
+                    NUM_FAILING_ASSERTS_IN_FAILING, example_result%input%num_failing_asserts())
+        class default
+            result_ = fail("Expected to get a test_result_item_input_t")
+        end select
+    end function
+end module

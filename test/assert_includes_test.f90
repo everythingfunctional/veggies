@@ -1,483 +1,482 @@
 module assert_includes_test
-    use iso_varying_string, only: VARYING_STRING, char, var_str
-    use Vegetables_m, only: &
-            Input_t, &
-            Result_t, &
-            StringInput_t, &
-            TestItem_t, &
-            assertIncludes, &
-            assertNot, &
-            assertThat, &
-            describe, &
-            fail, &
-            it, &
-            ASCII_STRING_GENERATOR
-
     implicit none
     private
+    public :: test_assert_includes
 
     character(len=*), parameter :: BOTH_MESSAGE = "Both Message"
     character(len=*), parameter :: SUCCESS_MESSAGE = "Success Message"
     character(len=*), parameter :: FAILURE_MESSAGE = "Failure Message"
-
-    public :: test_assert_includes
 contains
     function test_assert_includes() result(tests)
-        type(TestItem_t) :: tests
+        use vegetables, only: test_item_t, describe, it, ASCII_STRING_GENERATOR
 
-        type(TestItem_t) :: individual_tests(2)
+        type(test_item_t) :: tests
 
-        individual_tests(1) = it("passes with the same strings", ASCII_STRING_GENERATOR, checkPassForSameStrings)
-        individual_tests(2) = it("fails when the string isn't included", checkFailForDifferentStrings)
-        tests = describe("assertIncludes", individual_tests)
-    end function test_assert_includes
+        type(test_item_t) :: individual_tests(2)
 
-    pure function checkPassForSameStrings(the_example) result(result_)
-        class(Input_t), intent(in) :: the_example
-        type(Result_t) :: result_
+        individual_tests(1) = it("passes with the same strings", ASCII_STRING_GENERATOR, check_pass_for_same_strings)
+        individual_tests(2) = it("fails when the string isn't included", check_fail_for_different_strings)
+        tests = describe("assert_includes", individual_tests)
+    end function
 
-        type(VARYING_STRING) :: example
-        type(Result_t) :: example_result_cc
-        type(Result_t) :: example_result_cs
-        type(Result_t) :: example_result_sc
-        type(Result_t) :: example_result_ss
-        type(Result_t) :: example_result_ccc
-        type(Result_t) :: example_result_ccs
-        type(Result_t) :: example_result_csc
-        type(Result_t) :: example_result_css
-        type(Result_t) :: example_result_scc
-        type(Result_t) :: example_result_scs
-        type(Result_t) :: example_result_ssc
-        type(Result_t) :: example_result_sss
-        type(Result_t) :: example_result_cccc
-        type(Result_t) :: example_result_cccs
-        type(Result_t) :: example_result_ccsc
-        type(Result_t) :: example_result_ccss
-        type(Result_t) :: example_result_cscc
-        type(Result_t) :: example_result_cscs
-        type(Result_t) :: example_result_cssc
-        type(Result_t) :: example_result_csss
-        type(Result_t) :: example_result_sccc
-        type(Result_t) :: example_result_sccs
-        type(Result_t) :: example_result_scsc
-        type(Result_t) :: example_result_scss
-        type(Result_t) :: example_result_sscc
-        type(Result_t) :: example_result_sscs
-        type(Result_t) :: example_result_sssc
-        type(Result_t) :: example_result_ssss
+    pure function check_pass_for_same_strings(the_example) result(result_)
+        use iso_varying_string, only: varying_string, var_str, char
+        use vegetables, only: &
+                input_t, &
+                result_t, &
+                string_input_t, &
+                assert_includes, &
+                assert_that, &
+                fail
+
+        class(input_t), intent(in) :: the_example
+        type(result_t) :: result_
+
+        type(varying_string) :: example
+        type(result_t) :: example_result_cc
+        type(result_t) :: example_result_cs
+        type(result_t) :: example_result_sc
+        type(result_t) :: example_result_ss
+        type(result_t) :: example_result_ccc
+        type(result_t) :: example_result_ccs
+        type(result_t) :: example_result_csc
+        type(result_t) :: example_result_css
+        type(result_t) :: example_result_scc
+        type(result_t) :: example_result_scs
+        type(result_t) :: example_result_ssc
+        type(result_t) :: example_result_sss
+        type(result_t) :: example_result_cccc
+        type(result_t) :: example_result_cccs
+        type(result_t) :: example_result_ccsc
+        type(result_t) :: example_result_ccss
+        type(result_t) :: example_result_cscc
+        type(result_t) :: example_result_cscs
+        type(result_t) :: example_result_cssc
+        type(result_t) :: example_result_csss
+        type(result_t) :: example_result_sccc
+        type(result_t) :: example_result_sccs
+        type(result_t) :: example_result_scsc
+        type(result_t) :: example_result_scss
+        type(result_t) :: example_result_sscc
+        type(result_t) :: example_result_sscs
+        type(result_t) :: example_result_sssc
+        type(result_t) :: example_result_ssss
 
         select type (the_example)
-        type is (StringInput_t)
+        type is (string_input_t)
             example = the_example%value_
-            example_result_cc = assertIncludes(char(example), char(example))
-            example_result_cs = assertIncludes(char(example), example)
-            example_result_sc = assertIncludes(example, char(example))
-            example_result_ss = assertIncludes(example, example)
-            example_result_ccc = assertIncludes( &
+            example_result_cc = assert_includes(char(example), char(example))
+            example_result_cs = assert_includes(char(example), example)
+            example_result_sc = assert_includes(example, char(example))
+            example_result_ss = assert_includes(example, example)
+            example_result_ccc = assert_includes( &
                     char(example), char(example), BOTH_MESSAGE)
-            example_result_ccs = assertIncludes( &
+            example_result_ccs = assert_includes( &
                     char(example), char(example), var_str(BOTH_MESSAGE))
-            example_result_csc = assertIncludes( &
+            example_result_csc = assert_includes( &
                     char(example), example, BOTH_MESSAGE)
-            example_result_css = assertIncludes( &
+            example_result_css = assert_includes( &
                     char(example), example, var_str(BOTH_MESSAGE))
-            example_result_scc = assertIncludes( &
+            example_result_scc = assert_includes( &
                     example, char(example), BOTH_MESSAGE)
-            example_result_scs = assertIncludes( &
+            example_result_scs = assert_includes( &
                     example, char(example), var_str(BOTH_MESSAGE))
-            example_result_ssc = assertIncludes( &
+            example_result_ssc = assert_includes( &
                     example, example, BOTH_MESSAGE)
-            example_result_sss = assertIncludes( &
+            example_result_sss = assert_includes( &
                     example, example, var_str(BOTH_MESSAGE))
-            example_result_cccc = assertIncludes( &
+            example_result_cccc = assert_includes( &
                     char(example), &
                     char(example), &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
-            example_result_cccs = assertIncludes( &
+            example_result_cccs = assert_includes( &
                     char(example), &
                     char(example), &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
-            example_result_ccsc = assertIncludes( &
+            example_result_ccsc = assert_includes( &
                     char(example), &
                     char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
-            example_result_ccss = assertIncludes( &
+            example_result_ccss = assert_includes( &
                     char(example), &
                     char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
-            example_result_cscc = assertIncludes( &
+            example_result_cscc = assert_includes( &
                     char(example), &
                     example, &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
-            example_result_cscs = assertIncludes( &
+            example_result_cscs = assert_includes( &
                     char(example), &
                     example, &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
-            example_result_cssc = assertIncludes( &
+            example_result_cssc = assert_includes( &
                     char(example), &
                     example, &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
-            example_result_csss = assertIncludes( &
+            example_result_csss = assert_includes( &
                     char(example), &
                     example, &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
-            example_result_sccc = assertIncludes( &
+            example_result_sccc = assert_includes( &
                     example, &
                     char(example), &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
-            example_result_sccs = assertIncludes( &
+            example_result_sccs = assert_includes( &
                     example, &
                     char(example), &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
-            example_result_scsc = assertIncludes( &
+            example_result_scsc = assert_includes( &
                     example, &
                     char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
-            example_result_scss = assertIncludes( &
+            example_result_scss = assert_includes( &
                     example, &
                     char(example), &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
-            example_result_sscc = assertIncludes( &
+            example_result_sscc = assert_includes( &
                     example, &
                     example, &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
-            example_result_sscs = assertIncludes( &
+            example_result_sscs = assert_includes( &
                     example, &
                     example, &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
-            example_result_sssc = assertIncludes( &
+            example_result_sssc = assert_includes( &
                     example, &
                     example, &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
-            example_result_ssss = assertIncludes( &
+            example_result_ssss = assert_includes( &
                     example, &
                     example, &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))
             result_ = &
-                    assertThat( &
+                    assert_that( &
                             example_result_cc%passed(), &
-                            example_result_cc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_cc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_cs%passed(), &
-                            example_result_cs%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_cs%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_sc%passed(), &
-                            example_result_sc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_sc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_ss%passed(), &
-                            example_result_ss%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_ss%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_ccc%passed(), &
-                            example_result_ccc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_ccc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_ccs%passed(), &
-                            example_result_ccs%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_ccs%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_csc%passed(), &
-                            example_result_csc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_csc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_css%passed(), &
-                            example_result_css%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_css%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_scc%passed(), &
-                            example_result_scc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_scc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_scs%passed(), &
-                            example_result_scs%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_scs%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_ssc%passed(), &
-                            example_result_ssc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_ssc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_sss%passed(), &
-                            example_result_sss%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_sss%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_cccc%passed(), &
-                            example_result_cccc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_cccc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_cccs%passed(), &
-                            example_result_cccs%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_cccs%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_ccsc%passed(), &
-                            example_result_ccsc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_ccsc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_ccss%passed(), &
-                            example_result_ccss%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_ccss%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_cscc%passed(), &
-                            example_result_cscc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_cscc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_cscs%passed(), &
-                            example_result_cscs%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_cscs%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_cssc%passed(), &
-                            example_result_cssc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_cssc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_csss%passed(), &
-                            example_result_csss%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_csss%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_sccc%passed(), &
-                            example_result_sccc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_sccc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_sccs%passed(), &
-                            example_result_sccs%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_sccs%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_scsc%passed(), &
-                            example_result_scsc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_scsc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_scss%passed(), &
-                            example_result_scss%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_scss%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_sscc%passed(), &
-                            example_result_sscc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_sscc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_sscs%passed(), &
-                            example_result_sscs%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_sscs%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_sssc%passed(), &
-                            example_result_sssc%verboseDescription(.false.)) &
-                    .and.assertThat( &
+                            example_result_sssc%verbose_description(.false.)) &
+                    .and.assert_that( &
                             example_result_ssss%passed(), &
-                            example_result_ssss%verboseDescription(.false.))
+                            example_result_ssss%verbose_description(.false.))
         class default
             result_ = fail("Expected a character string")
         end select
-    end function checkPassForSameStrings
+    end function
 
-    pure function checkFailForDifferentStrings() result(result_)
-        type(Result_t) :: result_
+    pure function check_fail_for_different_strings() result(result_)
+        use iso_varying_string, only: var_str
+        use vegetables, only: result_t, assert_includes, assert_not
+
+        type(result_t) :: result_
 
         character(len=*), parameter :: ONE_STRNIG = "One String"
         character(len=*), parameter :: OTHER_STRING = "Other String"
-        type(Result_t) :: example_result_cc
-        type(Result_t) :: example_result_cs
-        type(Result_t) :: example_result_sc
-        type(Result_t) :: example_result_ss
-        type(Result_t) :: example_result_ccc
-        type(Result_t) :: example_result_ccs
-        type(Result_t) :: example_result_csc
-        type(Result_t) :: example_result_css
-        type(Result_t) :: example_result_scc
-        type(Result_t) :: example_result_scs
-        type(Result_t) :: example_result_ssc
-        type(Result_t) :: example_result_sss
-        type(Result_t) :: example_result_cccc
-        type(Result_t) :: example_result_cccs
-        type(Result_t) :: example_result_ccsc
-        type(Result_t) :: example_result_ccss
-        type(Result_t) :: example_result_cscc
-        type(Result_t) :: example_result_cscs
-        type(Result_t) :: example_result_cssc
-        type(Result_t) :: example_result_csss
-        type(Result_t) :: example_result_sccc
-        type(Result_t) :: example_result_sccs
-        type(Result_t) :: example_result_scsc
-        type(Result_t) :: example_result_scss
-        type(Result_t) :: example_result_sscc
-        type(Result_t) :: example_result_sscs
-        type(Result_t) :: example_result_sssc
-        type(Result_t) :: example_result_ssss
+        type(result_t) :: example_result_cc
+        type(result_t) :: example_result_cs
+        type(result_t) :: example_result_sc
+        type(result_t) :: example_result_ss
+        type(result_t) :: example_result_ccc
+        type(result_t) :: example_result_ccs
+        type(result_t) :: example_result_csc
+        type(result_t) :: example_result_css
+        type(result_t) :: example_result_scc
+        type(result_t) :: example_result_scs
+        type(result_t) :: example_result_ssc
+        type(result_t) :: example_result_sss
+        type(result_t) :: example_result_cccc
+        type(result_t) :: example_result_cccs
+        type(result_t) :: example_result_ccsc
+        type(result_t) :: example_result_ccss
+        type(result_t) :: example_result_cscc
+        type(result_t) :: example_result_cscs
+        type(result_t) :: example_result_cssc
+        type(result_t) :: example_result_csss
+        type(result_t) :: example_result_sccc
+        type(result_t) :: example_result_sccs
+        type(result_t) :: example_result_scsc
+        type(result_t) :: example_result_scss
+        type(result_t) :: example_result_sscc
+        type(result_t) :: example_result_sscs
+        type(result_t) :: example_result_sssc
+        type(result_t) :: example_result_ssss
 
-        example_result_cc = assertIncludes(ONE_STRNIG, OTHER_STRING)
-        example_result_cs = assertIncludes(ONE_STRNIG, var_str(OTHER_STRING))
-        example_result_sc = assertIncludes(var_str(ONE_STRNIG), OTHER_STRING)
-        example_result_ss = assertIncludes(var_str(ONE_STRNIG), var_str(OTHER_STRING))
-        example_result_ccc = assertIncludes( &
+        example_result_cc = assert_includes(ONE_STRNIG, OTHER_STRING)
+        example_result_cs = assert_includes(ONE_STRNIG, var_str(OTHER_STRING))
+        example_result_sc = assert_includes(var_str(ONE_STRNIG), OTHER_STRING)
+        example_result_ss = assert_includes(var_str(ONE_STRNIG), var_str(OTHER_STRING))
+        example_result_ccc = assert_includes( &
                 ONE_STRNIG, OTHER_STRING, BOTH_MESSAGE)
-        example_result_ccs = assertIncludes( &
+        example_result_ccs = assert_includes( &
                 ONE_STRNIG, OTHER_STRING, var_str(BOTH_MESSAGE))
-        example_result_csc = assertIncludes( &
+        example_result_csc = assert_includes( &
                 ONE_STRNIG, var_str(OTHER_STRING), BOTH_MESSAGE)
-        example_result_css = assertIncludes( &
+        example_result_css = assert_includes( &
                 ONE_STRNIG, var_str(OTHER_STRING), var_str(BOTH_MESSAGE))
-        example_result_scc = assertIncludes( &
+        example_result_scc = assert_includes( &
                 var_str(ONE_STRNIG), OTHER_STRING, BOTH_MESSAGE)
-        example_result_scs = assertIncludes( &
+        example_result_scs = assert_includes( &
                 var_str(ONE_STRNIG), OTHER_STRING, var_str(BOTH_MESSAGE))
-        example_result_ssc = assertIncludes( &
+        example_result_ssc = assert_includes( &
                 var_str(ONE_STRNIG), var_str(OTHER_STRING), BOTH_MESSAGE)
-        example_result_sss = assertIncludes( &
+        example_result_sss = assert_includes( &
                 var_str(ONE_STRNIG), var_str(OTHER_STRING), var_str(BOTH_MESSAGE))
-        example_result_cccc = assertIncludes( &
+        example_result_cccc = assert_includes( &
                 ONE_STRNIG, &
                 OTHER_STRING, &
                 SUCCESS_MESSAGE, &
                 FAILURE_MESSAGE)
-        example_result_cccs = assertIncludes( &
+        example_result_cccs = assert_includes( &
                 ONE_STRNIG, &
                 OTHER_STRING, &
                 SUCCESS_MESSAGE, &
                 var_str(FAILURE_MESSAGE))
-        example_result_ccsc = assertIncludes( &
+        example_result_ccsc = assert_includes( &
                 ONE_STRNIG, &
                 OTHER_STRING, &
                 var_str(SUCCESS_MESSAGE), &
                 FAILURE_MESSAGE)
-        example_result_ccss = assertIncludes( &
+        example_result_ccss = assert_includes( &
                 ONE_STRNIG, &
                 OTHER_STRING, &
                 var_str(SUCCESS_MESSAGE), &
                 var_str(FAILURE_MESSAGE))
-        example_result_cscc = assertIncludes( &
+        example_result_cscc = assert_includes( &
                 ONE_STRNIG, &
                 var_str(OTHER_STRING), &
                 SUCCESS_MESSAGE, &
                 FAILURE_MESSAGE)
-        example_result_cscs = assertIncludes( &
+        example_result_cscs = assert_includes( &
                 ONE_STRNIG, &
                 var_str(OTHER_STRING), &
                 SUCCESS_MESSAGE, &
                 var_str(FAILURE_MESSAGE))
-        example_result_cssc = assertIncludes( &
+        example_result_cssc = assert_includes( &
                 ONE_STRNIG, &
                 var_str(OTHER_STRING), &
                 var_str(SUCCESS_MESSAGE), &
                 FAILURE_MESSAGE)
-        example_result_csss = assertIncludes( &
+        example_result_csss = assert_includes( &
                 ONE_STRNIG, &
                 var_str(OTHER_STRING), &
                 var_str(SUCCESS_MESSAGE), &
                 var_str(FAILURE_MESSAGE))
-        example_result_sccc = assertIncludes( &
+        example_result_sccc = assert_includes( &
                 var_str(ONE_STRNIG), &
                 OTHER_STRING, &
                 SUCCESS_MESSAGE, &
                 FAILURE_MESSAGE)
-        example_result_sccs = assertIncludes( &
+        example_result_sccs = assert_includes( &
                 var_str(ONE_STRNIG), &
                 OTHER_STRING, &
                 SUCCESS_MESSAGE, &
                 var_str(FAILURE_MESSAGE))
-        example_result_scsc = assertIncludes( &
+        example_result_scsc = assert_includes( &
                 var_str(ONE_STRNIG), &
                 OTHER_STRING, &
                 var_str(SUCCESS_MESSAGE), &
                 FAILURE_MESSAGE)
-        example_result_scss = assertIncludes( &
+        example_result_scss = assert_includes( &
                 var_str(ONE_STRNIG), &
                 OTHER_STRING, &
                 var_str(SUCCESS_MESSAGE), &
                 var_str(FAILURE_MESSAGE))
-        example_result_sscc = assertIncludes( &
+        example_result_sscc = assert_includes( &
                 var_str(ONE_STRNIG), &
                 var_str(OTHER_STRING), &
                 SUCCESS_MESSAGE, &
                 FAILURE_MESSAGE)
-        example_result_sscs = assertIncludes( &
+        example_result_sscs = assert_includes( &
                 var_str(ONE_STRNIG), &
                 var_str(OTHER_STRING), &
                 SUCCESS_MESSAGE, &
                 var_str(FAILURE_MESSAGE))
-        example_result_sssc = assertIncludes( &
+        example_result_sssc = assert_includes( &
                 var_str(ONE_STRNIG), &
                 var_str(OTHER_STRING), &
                 var_str(SUCCESS_MESSAGE), &
                 FAILURE_MESSAGE)
-        example_result_ssss = assertIncludes( &
+        example_result_ssss = assert_includes( &
                 var_str(ONE_STRNIG), &
                 var_str(OTHER_STRING), &
                 var_str(SUCCESS_MESSAGE), &
                 var_str(FAILURE_MESSAGE))
 
         result_ = &
-                assertNot( &
+                assert_not( &
                         example_result_cc%passed(), &
-                        example_result_cc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_cc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_cs%passed(), &
-                        example_result_cs%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_cs%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_sc%passed(), &
-                        example_result_sc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_sc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_ss%passed(), &
-                        example_result_ss%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_ss%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_ccc%passed(), &
-                        example_result_ccc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_ccc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_ccs%passed(), &
-                        example_result_ccs%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_ccs%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_csc%passed(), &
-                        example_result_csc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_csc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_css%passed(), &
-                        example_result_css%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_css%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_scc%passed(), &
-                        example_result_scc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_scc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_scs%passed(), &
-                        example_result_scs%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_scs%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_ssc%passed(), &
-                        example_result_ssc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_ssc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_sss%passed(), &
-                        example_result_sss%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_sss%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_cccc%passed(), &
-                        example_result_cccc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_cccc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_cccs%passed(), &
-                        example_result_cccs%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_cccs%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_ccsc%passed(), &
-                        example_result_ccsc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_ccsc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_ccss%passed(), &
-                        example_result_ccss%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_ccss%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_cscc%passed(), &
-                        example_result_cscc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_cscc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_cscs%passed(), &
-                        example_result_cscs%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_cscs%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_cssc%passed(), &
-                        example_result_cssc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_cssc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_csss%passed(), &
-                        example_result_csss%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_csss%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_sccc%passed(), &
-                        example_result_sccc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_sccc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_sccs%passed(), &
-                        example_result_sccs%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_sccs%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_scsc%passed(), &
-                        example_result_scsc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_scsc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_scss%passed(), &
-                        example_result_scss%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_scss%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_sscc%passed(), &
-                        example_result_sscc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_sscc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_sscs%passed(), &
-                        example_result_sscs%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_sscs%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_sssc%passed(), &
-                        example_result_sssc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_sssc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_ssss%passed(), &
-                        example_result_ssss%verboseDescription(.false.))
-    end function checkFailForDifferentStrings
-end module assert_includes_test
+                        example_result_ssss%verbose_description(.false.))
+    end function
+end module

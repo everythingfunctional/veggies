@@ -1,28 +1,37 @@
 module example_asserts_m
-    use Vegetables_m, only: Result_t, fail, succeed
-
     implicit none
     private
+    public :: &
+            example_multiple_asserts, &
+            example_multiple_asserts_with_fail, &
+            FAILURE_MESSAGE, &
+            NUM_ASSERTS_IN_FAILING, &
+            NUM_ASSERTS_IN_PASSING, &
+            NUM_FAILING_ASSERTS_IN_FAILING, &
+            NUM_PASSING_ASSERTS_IN_FAILING, &
+            SUCCESS_MESSAGE
 
-    character(len=*), parameter, public :: FAILURE_MESSAGE = "Failure Message"
-    integer, parameter, public :: NUM_FAILING_ASSERTS_IN_FAILING = 1
-    integer, parameter, public :: NUM_PASSING_ASSERTS_IN_FAILING = 1
-    integer, parameter, public :: NUM_ASSERTS_IN_FAILING = &
+    character(len=*), parameter :: FAILURE_MESSAGE = "Failure Message"
+    integer, parameter :: NUM_FAILING_ASSERTS_IN_FAILING = 1
+    integer, parameter :: NUM_PASSING_ASSERTS_IN_FAILING = 1
+    integer, parameter :: NUM_ASSERTS_IN_FAILING = &
             NUM_FAILING_ASSERTS_IN_FAILING + NUM_PASSING_ASSERTS_IN_FAILING
-    integer, parameter, public :: NUM_ASSERTS_IN_PASSING = 2
-    character(len=*), parameter, public :: SUCCESS_MESSAGE = "Success Message"
-
-    public :: exampleMultipleAsserts, exampleMultipleAssertsWithFail
+    integer, parameter :: NUM_ASSERTS_IN_PASSING = 2
+    character(len=*), parameter :: SUCCESS_MESSAGE = "Success Message"
 contains
-    pure function exampleMultipleAsserts() result(result_)
-        type(Result_t) :: result_
+    pure function example_multiple_asserts() result(result_)
+        use vegetables, only: result_t, succeed
+
+        type(result_t) :: result_
 
         result_ = succeed(SUCCESS_MESSAGE).and.succeed(SUCCESS_MESSAGE)
-    end function exampleMultipleAsserts
+    end function
 
-    pure function exampleMultipleAssertsWithFail() result(result_)
-        type(Result_t) :: result_
+    pure function example_multiple_asserts_with_fail() result(result_)
+        use vegetables, only: result_t, fail, succeed
+
+        type(result_t) :: result_
 
         result_ = succeed(SUCCESS_MESSAGE).and.fail(FAILURE_MESSAGE)
-    end function exampleMultipleAssertsWithFail
-end module example_asserts_m
+    end function
+end module

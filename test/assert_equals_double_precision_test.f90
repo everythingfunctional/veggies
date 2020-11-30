@@ -1,135 +1,135 @@
 module assert_equals_double_precision_test
-    use iso_varying_string, only: var_str
-    use DoublePrecisionGenerator_m, only: DOUBLE_PRECISION_GENERATOR
-    use Vegetables_m, only: &
-            DoublePrecisionInput_t, &
-            Input_t, &
-            Result_t, &
-            TestItem_t, &
-            assertEquals, &
-            assertNot, &
-            assertThat, &
-            describe, &
-            fail, &
-            it
-
     implicit none
     private
+    public :: test_assert_equals_integers
 
     character(len=*), parameter :: BOTH_MESSAGE = "Both Message"
     character(len=*), parameter :: SUCCESS_MESSAGE = "Success Message"
     character(len=*), parameter :: FAILURE_MESSAGE = "Failure Message"
-
-    public :: test_assert_equals_integers
 contains
     function test_assert_equals_integers() result(tests)
-        type(TestItem_t) :: tests
+        use double_precision_generator_m, only: DOUBLE_PRECISION_GENERATOR
+        use vegetables, only: test_item_t, describe, it
 
-        type(TestItem_t) :: individual_tests(2)
+        type(test_item_t) :: tests
 
-        individual_tests(1) = it("passes with the same number", DOUBLE_PRECISION_GENERATOR, checkPassForSameNumber)
-        individual_tests(2) = it("fails with different numbers", checkFailForDifferentNumbers)
-        tests = describe("assertEquals with double precision values", individual_tests)
-    end function test_assert_equals_integers
+        type(test_item_t) :: individual_tests(2)
 
-    pure function checkPassForSameNumber(the_example) result(result_)
-        class(Input_t), intent(in) :: the_example
-        type(Result_t) :: result_
+        individual_tests(1) = it("passes with the same number", DOUBLE_PRECISION_GENERATOR, check_pass_for_same_number)
+        individual_tests(2) = it("fails with different numbers", check_fail_for_different_numbers)
+        tests = describe("assert_equals with double precision values", individual_tests)
+    end function
+
+    pure function check_pass_for_same_number(the_example) result(result_)
+        use iso_varying_string, only: var_str
+        use vegetables, only: &
+                double_precision_input_t, &
+                input_t, &
+                result_t, &
+                assert_equals, &
+                assert_that, &
+                fail
+
+        class(input_t), intent(in) :: the_example
+        type(result_t) :: result_
 
         double precision :: example
-        type(Result_t) :: example_result
-        type(Result_t) :: example_result_c
-        type(Result_t) :: example_result_s
-        type(Result_t) :: example_result_cc
-        type(Result_t) :: example_result_cs
-        type(Result_t) :: example_result_sc
-        type(Result_t) :: example_result_ss
+        type(result_t) :: example_result
+        type(result_t) :: example_result_c
+        type(result_t) :: example_result_s
+        type(result_t) :: example_result_cc
+        type(result_t) :: example_result_cs
+        type(result_t) :: example_result_sc
+        type(result_t) :: example_result_ss
 
         select type (the_example)
-        type is (DoublePrecisionInput_t)
+        type is (double_precision_input_t)
                 example = the_example%value_
-                example_result = assertEquals(example, example)
-                example_result_c = assertEquals(example, example, BOTH_MESSAGE)
-                example_result_s = assertEquals(example, example, var_str(BOTH_MESSAGE))
-                example_result_cc = assertEquals( &
+                example_result = assert_equals(example, example)
+                example_result_c = assert_equals(example, example, BOTH_MESSAGE)
+                example_result_s = assert_equals(example, example, var_str(BOTH_MESSAGE))
+                example_result_cc = assert_equals( &
                         example, example, SUCCESS_MESSAGE, FAILURE_MESSAGE)
-                example_result_cs = assertEquals( &
+                example_result_cs = assert_equals( &
                         example, example, SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
-                example_result_sc = assertEquals( &
+                example_result_sc = assert_equals( &
                         example, example, var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
-                example_result_ss = assertEquals( &
+                example_result_ss = assert_equals( &
                         example, example, var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
                 result_ = &
-                        assertThat( &
+                        assert_that( &
                                 example_result%passed(), &
-                                example_result%verboseDescription(.false.)) &
-                        .and.assertThat( &
+                                example_result%verbose_description(.false.)) &
+                        .and.assert_that( &
                                 example_result_c%passed(), &
-                                example_result_c%verboseDescription(.false.)) &
-                        .and.assertThat( &
+                                example_result_c%verbose_description(.false.)) &
+                        .and.assert_that( &
                                 example_result_s%passed(), &
-                                example_result_s%verboseDescription(.false.)) &
-                        .and.assertThat( &
+                                example_result_s%verbose_description(.false.)) &
+                        .and.assert_that( &
                                 example_result_cc%passed(), &
-                                example_result_cc%verboseDescription(.false.)) &
-                        .and.assertThat( &
+                                example_result_cc%verbose_description(.false.)) &
+                        .and.assert_that( &
                                 example_result_cs%passed(), &
-                                example_result_cs%verboseDescription(.false.)) &
-                        .and.assertThat( &
+                                example_result_cs%verbose_description(.false.)) &
+                        .and.assert_that( &
                                 example_result_sc%passed(), &
-                                example_result_sc%verboseDescription(.false.)) &
-                        .and.assertThat( &
+                                example_result_sc%verbose_description(.false.)) &
+                        .and.assert_that( &
                                 example_result_ss%passed(), &
-                                example_result_ss%verboseDescription(.false.))
+                                example_result_ss%verbose_description(.false.))
         class default
             result_ = fail("Expected to get a double precision value")
         end select
-    end function checkPassForSameNumber
+    end function
 
-    pure function checkFailForDifferentNumbers() result(result_)
-        type(Result_t) :: result_
+    pure function check_fail_for_different_numbers() result(result_)
+        use iso_varying_string, only: var_str
+        use vegetables, only: result_t, assert_equals, assert_not
 
-        type(Result_t) :: example_result
-        type(Result_t) :: example_result_c
-        type(Result_t) :: example_result_s
-        type(Result_t) :: example_result_cc
-        type(Result_t) :: example_result_cs
-        type(Result_t) :: example_result_sc
-        type(Result_t) :: example_result_ss
+        type(result_t) :: result_
 
-        example_result = assertEquals(1.0d0, 2.0d0)
-        example_result_c = assertEquals(1.0d0, 2.0d0, BOTH_MESSAGE)
-        example_result_s = assertEquals(1.0d0, 2.0d0, var_str(BOTH_MESSAGE))
-        example_result_cc = assertEquals( &
+        type(result_t) :: example_result
+        type(result_t) :: example_result_c
+        type(result_t) :: example_result_s
+        type(result_t) :: example_result_cc
+        type(result_t) :: example_result_cs
+        type(result_t) :: example_result_sc
+        type(result_t) :: example_result_ss
+
+        example_result = assert_equals(1.0d0, 2.0d0)
+        example_result_c = assert_equals(1.0d0, 2.0d0, BOTH_MESSAGE)
+        example_result_s = assert_equals(1.0d0, 2.0d0, var_str(BOTH_MESSAGE))
+        example_result_cc = assert_equals( &
                 1.0d0, 2.0d0, SUCCESS_MESSAGE, FAILURE_MESSAGE)
-        example_result_cs = assertEquals( &
+        example_result_cs = assert_equals( &
                 1.0d0, 2.0d0, SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
-        example_result_sc = assertEquals( &
+        example_result_sc = assert_equals( &
                 1.0d0, 2.0d0, var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
-        example_result_ss = assertEquals( &
+        example_result_ss = assert_equals( &
                 1.0d0, 2.0d0, var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
 
         result_ = &
-                assertNot( &
+                assert_not( &
                         example_result%passed(), &
-                        example_result%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_c%passed(), &
-                        example_result_c%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_c%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_s%passed(), &
-                        example_result_s%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_s%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_cc%passed(), &
-                        example_result_cc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_cc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_cs%passed(), &
-                        example_result_cs%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_cs%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_sc%passed(), &
-                        example_result_sc%verboseDescription(.false.)) &
-                .and.assertNot( &
+                        example_result_sc%verbose_description(.false.)) &
+                .and.assert_not( &
                         example_result_ss%passed(), &
-                        example_result_ss%verboseDescription(.false.))
-    end function checkFailForDifferentNumbers
-end module assert_equals_double_precision_test
+                        example_result_ss%verbose_description(.false.))
+    end function
+end module

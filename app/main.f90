@@ -1,21 +1,21 @@
 program make_vegetable_driver
-    use iso_varying_string, only: VARYING_STRING, assignment(=)
-    use make_driver_m, only: makeDriver
+    use iso_varying_string, only: varying_string, assignment(=)
+    use make_driver_m, only: make_driver
 
     implicit none
 
     character(len=1000) :: argument
-    type(VARYING_STRING) :: driver_file
+    type(varying_string) :: driver_file
     integer :: i
     integer :: num_arguments
     character(len=100) :: program_name
-    type(VARYING_STRING), allocatable :: test_files(:)
+    type(varying_string), allocatable :: test_files(:)
 
     num_arguments = command_argument_count()
     if (num_arguments < 2) then
         call get_command_argument(0, program_name)
         print *, "Usage: " // trim(program_name) // " driver_name test_file [more [test [files [...]]]]"
-        call exit(1)
+        error stop
     else
         allocate(test_files(num_arguments - 1))
         call get_command_argument(1, argument)
@@ -26,5 +26,5 @@ program make_vegetable_driver
         end do
     end if
 
-    call makeDriver(driver_file, test_files)
-end program make_vegetable_driver
+    call make_driver(driver_file, test_files)
+end program
