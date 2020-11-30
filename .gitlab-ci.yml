@@ -5,5 +5,16 @@ variables:
 
 test:
   script:
-    - fpm test
-    - fpm test --runner "valgrind --leak-check=full --error-exitcode=1"
+    - fpm test \
+      --flag '-Wall' \
+      --flag '-Wextra' \
+      --flag '-Wimplicit-interface' \
+      --flag '-Werror' \
+      --flag '-fPIC' \
+      --flag '-g3' \
+      --flag '-fbounds-check' \
+      --flag '-fcheck-array-temporaries' \
+      --flag '-fbacktrace' \
+      --flag '-std=f2018' \
+      --flag '-fcheck=all' #\ TODO: run with valgrind once gfortran memory leaks have been fixed
+      #--runner "valgrind --leak-check=full --error-exitcode=1"

@@ -1,123 +1,127 @@
 module collection_properties_test
-    use example_collections_m, only: &
-            examplePassingCollection, &
-            exampleTestCase1, &
-            exampleTestCase2, &
-            EXAMPLE_CASE_DESCRIPTION_1, &
-            EXAMPLE_CASE_DESCRIPTION_2, &
-            EXAMPLE_COLLECTION_DESCRIPTION, &
-            NUM_CASES_IN_PASSING
-    use Helpers_m, only: TestItemInput_t
-    use Vegetables_m, only: &
-            Input_t, &
-            Result_t, &
-            TestItem_t, &
-            TestResultItem_t, &
-            assertEquals, &
-            assertFasterThan, &
-            assertIncludes, &
-            describe, &
-            fail, &
-            it_
-
     implicit none
     private
-
     public :: test_collection_properties
 contains
     function test_collection_properties() result(test)
-        type(TestItem_t) :: test
+        use example_collections_m, only: example_passing_collection
+        use helpers_m, only: test_item_input_t
+        use vegetables, only: test_item_t, describe, it_
 
-        type(TestItemInput_t) :: the_collection
-        type(TestItem_t) :: individual_tests(4)
+        type(test_item_t) :: test
 
-        the_collection%input = examplePassingCollection()
+        type(test_item_input_t) :: the_collection
+        type(test_item_t) :: individual_tests(4)
+
+        the_collection%input = example_passing_collection()
         individual_tests(1) = it_("can tell how many tests it has", checkNumCases)
         individual_tests(2) = it_("includes the given description", checkCollectionTopDescription)
         individual_tests(3) = it_("includes the individual test descriptions", checkCollectionDescriptions)
         individual_tests(4) = it_("Takes less than three times as long as the individual cases", checkSpeed)
         test = describe("A test collection", the_collection, individual_tests)
-    end function test_collection_properties
+    end function
 
     pure function checkNumCases(example_collection) result(result_)
-        class(Input_t), intent(in) :: example_collection
-        type(Result_t) :: result_
+        use example_collections_m, only: NUM_CASES_IN_PASSING
+        use helpers_m, only: test_item_input_t
+        use vegetables, only: input_t, result_t, assert_equals, fail
+
+        class(input_t), intent(in) :: example_collection
+        type(result_t) :: result_
 
         select type (example_collection)
-        class is (TestItemInput_t)
-            result_ = assertEquals(NUM_CASES_IN_PASSING, example_collection%input%numCases())
+        class is (test_item_input_t)
+            result_ = assert_equals(NUM_CASES_IN_PASSING, example_collection%input%num_cases())
         class default
-            result_ = fail("Expected to get a TestCollection_t")
+            result_ = fail("Expected to get a test_collection_t")
         end select
-    end function checkNumCases
+    end function
 
     pure function checkCollectionTopDescription(example_collection) result(result_)
-        class(Input_t), intent(in) :: example_collection
-        type(Result_t) :: result_
+        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
+        use helpers_m, only: test_item_input_t
+        use vegetables, only: input_t, result_t, assert_includes, fail
+
+        class(input_t), intent(in) :: example_collection
+        type(result_t) :: result_
 
         select type (example_collection)
-        class is (TestItemInput_t)
-            result_ = assertIncludes( &
+        class is (test_item_input_t)
+            result_ = assert_includes( &
                     EXAMPLE_COLLECTION_DESCRIPTION, example_collection%input%description())
         class default
-            result_ = fail("Expected to get a TestCollection_t")
+            result_ = fail("Expected to get a test_collection_t")
         end select
-    end function checkCollectionTopDescription
+    end function
 
     pure function checkCollectionDescriptions(example_collection) result(result_)
-        class(Input_t), intent(in) :: example_collection
-        type(Result_t) :: result_
+        use example_collections_m, only: &
+                EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
+        use helpers_m, only: test_item_input_t
+        use vegetables, only: input_t, result_t, assert_includes, fail
+
+        class(input_t), intent(in) :: example_collection
+        type(result_t) :: result_
 
         select type (example_collection)
-        class is (TestItemInput_t)
+        class is (test_item_input_t)
             result_ = &
-                    assertIncludes( &
+                    assert_includes( &
                             EXAMPLE_CASE_DESCRIPTION_1, example_collection%input%description()) &
-                    .and.assertIncludes( &
+                    .and.assert_includes( &
                             EXAMPLE_CASE_DESCRIPTION_2, example_collection%input%description())
         class default
-            result_ = fail("Expected to get a TestCollection_t")
+            result_ = fail("Expected to get a test_collection_t")
         end select
-    end function checkCollectionDescriptions
+    end function
 
     function checkSpeed(example_collection) result(result_)
-        class(Input_t), intent(in) :: example_collection
-        type(Result_t) :: result_
+        use example_collections_m, only: example_test_case_1, example_test_case_2
+        use helpers_m, only: test_item_input_t
+        use vegetables, only: &
+                input_t, result_t, test_item_t, assert_faster_than, fail
 
-        type(TestItem_t) :: internal_collection
+        class(input_t), intent(in) :: example_collection
+        type(result_t) :: result_
 
-        type(TestItem_t) :: the_cases(3)
+        type(test_item_t) :: internal_collection
 
-        the_cases(1) = exampleTestCase1()
-        the_cases(2) = exampleTestCase2()
-        the_cases(3) = exampleTestCase2()
+        type(test_item_t) :: the_cases(3)
+
+        the_cases(1) = example_test_case_1()
+        the_cases(2) = example_test_case_2()
+        the_cases(3) = example_test_case_2()
 
         select type (example_collection)
-        type is (TestItemInput_t)
+        type is (test_item_input_t)
             internal_collection = example_collection%input
-            result_ = assertFasterThan(runCases, runCollection, 100)
+            result_ = assert_faster_than(runCases, runCollection, 100)
         class default
-            result_ = fail("Expected to get a TestCollection_t")
+            result_ = fail("Expected to get a test_collection_t")
         end select
     contains
         subroutine runCollection
+            use vegetables, only: test_result_item_t
+
             integer :: i
-            type(TestResultItem_t) :: internal_result
+            type(test_result_item_t) :: internal_result
 
             do i = 1, 100
                 internal_result = internal_collection%run()
             end do
-        end subroutine runCollection
+        end subroutine
 
         subroutine runCases
+            use vegetables, only: test_result_item_t
+
             integer :: i
-            type(TestResultItem_t) :: the_results(3)
+            type(test_result_item_t) :: the_results(3)
 
             do i = 1, 300
                 the_results(1) = the_cases(1)%run()
                 the_results(2) = the_cases(2)%run()
                 the_results(3) = the_cases(3)%run()
             end do
-        end subroutine runCases
-    end function checkSpeed
-end module collection_properties_test
+        end subroutine
+    end function
+end module

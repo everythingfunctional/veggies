@@ -1,89 +1,114 @@
 module example_collections_m
-    use example_asserts_m, only: &
-            exampleMultipleAsserts, &
-            NUM_PASSING_FROM_EXAMPLE => NUM_ASSERTS_IN_PASSING
-    use Vegetables_m, only: Result_t, TestItem_t, Describe, fail, It
+    use example_asserts_m, only: NUM_PASSING_FROM_EXAMPLE => NUM_ASSERTS_IN_PASSING
 
     implicit none
     private
-
-    character(len=*), parameter, public :: EXAMPLE_CASE_DESCRIPTION_1 = &
-            "Example Case Description 1"
-    character(len=*), parameter, public :: EXAMPLE_CASE_DESCRIPTION_2 = &
-            "Example Case Description 2"
-    character(len=*), parameter, public :: EXAMPLE_COLLECTION_DESCRIPTION = &
-            "Example Collection Description"
-    character(len=*), parameter, public :: EXAMPLE_FAILING_CASE_DESCRIPTION = &
-            "Example Failing Case Description"
-    character(len=*), parameter, public :: FAILURE_MESSAGE = "Failure Message"
-    character(len=*), parameter, public :: MIDDLE_COLLECTION_DESCRIPTION = &
-            "Middle Collection Description"
-    character(len=*), parameter, public :: NOT_IN_DESCRIPTIONS = "NOT IN DESCRIPTION"
-    integer, parameter, public :: NUM_ASSERTS_IN_PASSING = NUM_PASSING_FROM_EXAMPLE * 3
-    integer, parameter, public :: NUM_ASSERTS_IN_FAILING = NUM_PASSING_FROM_EXAMPLE * 2 + 1
-    integer, parameter, public :: NUM_CASES_IN_PASSING = 3
-    integer, parameter, public :: NUM_CASES_IN_FAILING = 3
-    integer, parameter, public :: NUM_FAILING_ASSERTS = 1
-    integer, parameter, public :: NUM_FAILING_CASES = 1
-
     public :: &
-            exampleFailingCollection, &
-            examplePassingCollection, &
-            exampleTestCase1, &
-            exampleTestCase2
+            example_failing_collection, &
+            example_passing_collection, &
+            example_test_case_1, &
+            example_test_case_2, &
+            EXAMPLE_CASE_DESCRIPTION_1, &
+            EXAMPLE_CASE_DESCRIPTION_2, &
+            EXAMPLE_COLLECTION_DESCRIPTION, &
+            EXAMPLE_FAILING_CASE_DESCRIPTION, &
+            FAILURE_MESSAGE, &
+            MIDDLE_COLLECTION_DESCRIPTION, &
+            NOT_IN_DESCRIPTIONS, &
+            NUM_ASSERTS_IN_FAILING, &
+            NUM_ASSERTS_IN_PASSING, &
+            NUM_CASES_IN_FAILING, &
+            NUM_CASES_IN_PASSING, &
+            NUM_FAILING_ASSERTS, &
+            NUM_FAILING_CASES
+
+    character(len=*), parameter :: EXAMPLE_CASE_DESCRIPTION_1 = &
+            "Example Case Description 1"
+    character(len=*), parameter :: EXAMPLE_CASE_DESCRIPTION_2 = &
+            "Example Case Description 2"
+    character(len=*), parameter :: EXAMPLE_COLLECTION_DESCRIPTION = &
+            "Example Collection Description"
+    character(len=*), parameter :: EXAMPLE_FAILING_CASE_DESCRIPTION = &
+            "Example Failing Case Description"
+    character(len=*), parameter :: FAILURE_MESSAGE = "Failure Message"
+    character(len=*), parameter :: MIDDLE_COLLECTION_DESCRIPTION = &
+            "Middle Collection Description"
+    character(len=*), parameter :: NOT_IN_DESCRIPTIONS = "NOT IN DESCRIPTION"
+    integer, parameter :: NUM_ASSERTS_IN_FAILING = NUM_PASSING_FROM_EXAMPLE * 2 + 1
+    integer, parameter :: NUM_ASSERTS_IN_PASSING = NUM_PASSING_FROM_EXAMPLE * 3
+    integer, parameter :: NUM_CASES_IN_FAILING = 3
+    integer, parameter :: NUM_CASES_IN_PASSING = 3
+    integer, parameter :: NUM_FAILING_ASSERTS = 1
+    integer, parameter :: NUM_FAILING_CASES = 1
 contains
-    function exampleTestCase1() result(test_case)
-        type(TestItem_t) :: test_case
+    function example_test_case_1() result(test_case)
+        use example_asserts_m, only: example_multiple_asserts
+        use vegetables, only: test_item_t, it
 
-        test_case = it(EXAMPLE_CASE_DESCRIPTION_1, exampleMultipleAsserts)
-    end function exampleTestCase1
+        type(test_item_t) :: test_case
 
-    function exampleTestCase2() result(test_case)
-        type(TestItem_t) :: test_case
+        test_case = it(EXAMPLE_CASE_DESCRIPTION_1, example_multiple_asserts)
+    end function
 
-        test_case = it(EXAMPLE_CASE_DESCRIPTION_2, exampleMultipleAsserts)
-    end function exampleTestCase2
+    function example_test_case_2() result(test_case)
+        use example_asserts_m, only: example_multiple_asserts
+        use vegetables, only: test_item_t, it
 
-    pure function exampleFail() result(result_)
-        type(Result_t) :: result_
+        type(test_item_t) :: test_case
+
+        test_case = it(EXAMPLE_CASE_DESCRIPTION_2, example_multiple_asserts)
+    end function
+
+    pure function example_fail() result(result_)
+        use vegetables, only: result_t, fail
+
+        type(result_t) :: result_
 
         result_ = fail(FAILURE_MESSAGE)
-    end function exampleFail
+    end function
 
-    function exampleFailingTestCase() result(test_case)
-        type(TestItem_t) :: test_case
+    function example_failing_test_case() result(test_case)
+        use vegetables, only: test_item_t, it
 
-        test_case = it(EXAMPLE_FAILING_CASE_DESCRIPTION, exampleFail)
-    end function exampleFailingTestCase
+        type(test_item_t) :: test_case
 
-    function exampleFailingCollection() result(test_collection)
-        type(TestItem_t) :: test_collection
+        test_case = it(EXAMPLE_FAILING_CASE_DESCRIPTION, example_fail)
+    end function
 
-        type(TestItem_t) :: cases(3)
+    function example_failing_collection() result(test_collection)
+        use vegetables, only: test_item_t, describe
 
-        cases(1) = exampleTestCase1()
-        cases(2) = exampleTestCase2()
-        cases(3) = exampleFailingTestCase()
-        test_collection = Describe(EXAMPLE_COLLECTION_DESCRIPTION, cases)
-    end function exampleFailingCollection
+        type(test_item_t) :: test_collection
 
-    function middleCollection() result(test_collection)
-        type(TestItem_t) :: test_collection
+        type(test_item_t) :: cases(3)
 
-        type(TestItem_t) :: cases(2)
+        cases(1) = example_test_case_1()
+        cases(2) = example_test_case_2()
+        cases(3) = example_failing_test_case()
+        test_collection = describe(EXAMPLE_COLLECTION_DESCRIPTION, cases)
+    end function
 
-        cases(1) = exampleTestCase1()
-        cases(2) = exampleTestCase2()
-        test_collection = Describe(MIDDLE_COLLECTION_DESCRIPTION, cases)
-    end function middleCollection
+    function middle_collection() result(test_collection)
+        use vegetables, only: test_item_t, describe
 
-    function examplePassingCollection() result(test_collection)
-        type(TestItem_t) :: test_collection
+        type(test_item_t) :: test_collection
 
-        type(TestItem_t) :: items(2)
+        type(test_item_t) :: cases(2)
 
-        items(1) = middleCollection()
-        items(2) = exampleTestCase2()
-        test_collection = Describe(EXAMPLE_COLLECTION_DESCRIPTION, items)
-    end function examplePassingCollection
-end module example_collections_m
+        cases(1) = example_test_case_1()
+        cases(2) = example_test_case_2()
+        test_collection = describe(MIDDLE_COLLECTION_DESCRIPTION, cases)
+    end function
+
+    function example_passing_collection() result(test_collection)
+        use vegetables, only: test_item_t, describe
+
+        type(test_item_t) :: test_collection
+
+        type(test_item_t) :: items(2)
+
+        items(1) = middle_collection()
+        items(2) = example_test_case_2()
+        test_collection = describe(EXAMPLE_COLLECTION_DESCRIPTION, items)
+    end function
+end module

@@ -1,17 +1,17 @@
 name = "vegetables"
-version = "5.1.1"
+version = "6.0.0"
 license = "MIT"
 author = "Brad Richardson"
 maintainer = "everythingfunctional@protonmail.com"
 copyright = "2020 Brad Richardson"
 
 [dependencies]
-  iso_varying_string = { git = "https://gitlab.com/everythingfunctional/iso_varying_string.git", tag = "v1.0.2" }
-  strff = { git = "https://gitlab.com/everythingfunctional/strff.git", tag = "v1.1.0" }
+  iso_varying_string = { git = "https://gitlab.com/everythingfunctional/iso_varying_string.git", tag = "v2.0.0" }
+  strff = { git = "https://gitlab.com/everythingfunctional/strff.git", tag = "v2.0.0" }
 
 [[executable]]
   name = "make_vegetable_driver"
   source-dir = "app"
   main = "main.f90"
   [executable.dependencies]
-    parff = { git = "https://gitlab.com/everythingfunctional/parff.git", tag = "v1.1.0" }
+    parff = { git = "https://gitlab.com/everythingfunctional/parff.git", tag = "v2.0.0" }

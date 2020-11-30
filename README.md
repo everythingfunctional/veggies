@@ -37,8 +37,8 @@ example are the tests for Vegetables themselves.
 ### Writing a Test Function
 
 The simplest test function is one that takes no arguments and produces a
-`Result_t` value as its output. The function should execute some portion of your
-code, and make some assertion(s) about the result(s). Multiple assertsions can
+`result_t` value as its output. The function should execute some portion of your
+code, and make some assertion(s) about the result(s). Multiple assertions can
 be combined by using the `.and.` operator. Also, the `succeed` and `fail` functions
 are provided if for some reason the provided assertions aren't quite sufficient.
 
@@ -46,35 +46,35 @@ The simplest example of a test function would be something like the following:
 
 ```Fortran
 function simplest()
-    use Vegetables_m, only: Result_t, succeed
+    use vegetables, only: result_t, succeed
 
-    type(Result_t) :: simplest
+    type(result_t) :: simplest
 
     simplest = succeed("Successfully")
 end function
 ```
 
-Additionally, a test function can take a `class(Input_t)` value as an input.
-Some simple types are provided that extend from `Input_t`, such as
-`DoublePrecisionInput_t`, `IntegerInput_t` and `StringInput_t`. If you need other
-inputs to your test, you can create a new type extended from `Input_t` to provide
+Additionally, a test function can take a `class(input_t)` value as an input.
+Some simple types are provided that extend from `input_t`, such as
+`double_precision_input_t`, `integer_input_t` and `string_input_t`. If you need other
+inputs to your test, you can create a new type extended from `input_t` to provide
 whatever you need. A `select case` construct is then needed to make sure the right
 type gets passed in at run time. An example of a test that takes an input is shown
 below. The actual inputs passed to the test are determined by how it is included
 into the test suite. Assembling the test suite is described below.
 
 ```Fortran
-function inputTest(input) result(result_)
-    use Vegetables_m, only: Input_t, IntegerInput_t, Result_t, assertEquals, fail
+function input_test(input) result(result_)
+    use vegetables, only: input_t, integer_input_t, result_t, assert_equals, fail
 
-    class(Input_t), intent(in) :: input
-    type(Result_t) :: result_
+    class(input_t), intent(in) :: input
+    type(result_t) :: result_
 
     select type (input)
-    type is (IntegerInput_t)
-        result_ = assertEquals(1, input%value_)
+    type is (integer_input_t)
+        result_ = assert_equals(1, input%value_)
     class default
-        result_ = fail("Didn't get an IntegerInput_t")
+        result_ = fail("Didn't get an integer_input_t")
     end select
 end function
 ```
@@ -83,8 +83,8 @@ end function
 
 An assertion is simply something to make sure that your code is behaving as
 expected. There are multiple assert functions provided to check a variety of
-types of values. They all return a value of type `Result_t` that can be returned
-by your test function. Additionally, `Result_t` values can be combined using
+types of values. They all return a value of type `result_t` that can be returned
+by your test function. Additionally, `result_t` values can be combined using
 the `.and.` operator to allow you to make multiple assertions within your
 test and return the results of all of them. Additionally, the `succeed` and `fail`
 functions are provided for situations where the provided assertions aren't quite
@@ -95,16 +95,16 @@ optional that represent an additional *user* message to be included. If both
 arguments are included then the first is used in the case the assertion succeeds,
 and the second is used in the case the assertion fails. If only one is provided,
 then it is used whether the assertion passes or fails. Any argument of type
-`character` can also accept a value of type `VARYING_STRING` from the
+`character` can also accept a value of type `varying_string` from the
 `iso_varying_string` module. The provided assertions are
-list below:
+listed below:
 
-* `assertThat` and `assertNot` accept a logical value and make sure it is either `.true.` or `.false.` respectively
-* `assertEquals` accepts two values of integer, double precision, character, or VARYING_STRING, and ensures they are equal (Note that assertEquals with double precision values simply uses the assertEqualsWithinAbsolute with a tolerance of machine epsilon)
-* `assertEqualsWithinAbsolute` and `assertEqualsWithinRelative` accept two values of double precision and a third value of double precision to use as the tolerance, and ensures the values are within that tolerance.
-* `assertEmpty` ensures that the given string is of zero length
-* `assertIncludes` and `assertDoesntInclude` ensure that the second string includes (or doesn't include) the first string
-* `assertFasterThan` Has several variations. It accepts a subroutine with no arguments, and runs it the specified number of times to measure how long it takes to run. It then compares that to either a given number in seconds, or from running another provided subroutine and measuring it as well. Optionally, additional subroutines can be provided to be executed before and after the other subroutine(s) to function as setup and tear-down, to avoid including that code in the measurement.
+* `assert_that` and `assert_not` accept a logical value and make sure it is either `.true.` or `.false.` respectively
+* `assert_equals` accepts two values of integer, double precision, character, or `varying_string`, and ensures they are equal (Note that `assert_equals` with double precision values simply uses the `assert_equals_within_absolute` function with a tolerance of machine epsilon)
+* `assert_qquals_within_absolute` and `assert_equals_within_relative` accept two values of double precision and a third value of double precision to use as the tolerance, and ensures the values are within that tolerance.
+* `assert_empty` ensures that the given string is of zero length
+* `assert_includes` and `assert_doesnt_include` ensure that the second string includes (or doesn't include) the first string
+* `assert_faster_than` has several variations. It accepts a subroutine with no arguments, and runs it the specified number of times to measure how long it takes to run. It then compares that to either a given number in seconds, or from running another provided subroutine and measuring it as well. Optionally, additional subroutines can be provided to be executed before and after the other subroutine(s) to function as setup and tear-down, to avoid including that code in the measurement.
 
 #### Writing Your Own Assertions
 
@@ -114,13 +114,13 @@ The basic pattern used is:
 ```Fortran
 if (some_condition) then
     result_ = succeed( &
-            withUserMessage( &
-                    makeSomeSuccessMessage(args), &
+            with_user_message( &
+                    make_some_success_message(args), &
                     success_message))
 else
     result_ = fail( &
-            withUserMessage( &
-                    makeSomeFailureMessage(args), &
+            with_user_message( &
+                    make_some_failure_message(args), &
                     failure_message))
 end if
 ```
@@ -138,123 +138,122 @@ test suite. I've got a little tool in this repository that can be used
 to do it, but you can also do it manually.
 
 First, you'll need to write a function that defines a part of your test suite,
-either spec or BDD style, using the provided functions `Describe` and `It` or
-`Given`, `When` and `Then_`. If you're using the provided build system, then
+either spec or BDD style, using the provided functions `describe` and `it`/`it_` or
+`given`, `when` and `then_`/`then__`. If you're using the provided tool, then
 this function should be in a module named `something`**`_test`**, in a file with the
 same name. The function should be named **`test_`**`something`, and must take
-no arguments, and return a value of type `TestItem_t`, which the above functions do.
+no arguments, and return a value of type `test_item_t`, which the above functions do.
 
-The `Given`, `When` and `Describe` functions take a description string, and an
-array of `TestItem_t`s. The `It` and `Then_` functions accept a string description,
-and a function that takes no arguments and returns a `Result_t`.
-The `It_` and `Then__` functions accept a function that takes one argument of
-`class(Input_t)`. These are the
+The `given`, `when` and `describe` functions take a description string, and an
+array of `test_item_t`s. The `it` and `then_` functions accept a string description,
+and a function that takes no arguments and returns a `result_t`.
+The `it_` and `then__` functions accept a function that takes one argument of
+`class(input_t)`. These are the
 descriptions that are given in the output of Vegetables for each test.
 
-The `Given`, `When` and `Describe` functions can also accept a `class(Input_t)`
-value, to be passed to each of the tests they contain. Additionally, the `When`
-function can accept a function from `class(Input_t)` to `type(Transformed_t)` (which
-is just a wrapper for a `class(Input_t)` value) which will be called and then pass
+The `given`, `when` and `describe` functions can also accept a `class(input_t)`
+value, to be passed to each of the tests they contain. Additionally, the `when`
+function can accept a function from `class(input_t)` to `type(transformed_t)` (which
+is just a wrapper for a `class(input_t)` value) which will be called and then pass
 its result down to the tests.
 
-The `It` and `Then_` functions can also take an array of `Example_t`s (which is
-just a wrapper for a `class(Input_t)`) which will each be passed to the test
-function.  They can instead accept a value of `class(Generator_t)`, which will
+The `it` and `then_` functions can also take an array of `example_t`s (which is
+just a wrapper for a `class(input_t)`) which will each be passed to the test
+function.  They can instead accept a value of `class(generator_t)`, which will
 be used to generate random values to be passed to the test. More information is
-provided for `class(Generator_t)` below.
+provided for `class(generator_t)` below.
 
 An example of a specification function would be as follows:
 
 ```Fortran
 function test_assert_empty() result(tests)
-    type(TestItem_t) :: tests
+    type(test_item_t) :: tests
 
-    type(TestItem_t) :: individual_tests(2)
+    type(test_item_t) :: individual_tests(2)
 
     individual_tests(1) = it( &
             "passes with an empty string", &
-            checkPassForEmptyChars)
+            check_pass_for_empty_chars)
     individual_tests(2) = it( &
             "fails with a non empty string", &
-            checkFailsForNonemptyChars)
-    tests = describe("assertEmpty", individual_tests)
-end function test_assert_empty
+            check_fails_for_nonempty_chars)
+    tests = describe("assert_empty", individual_tests)
+end function
 ```
 
 The basic gist of this is that we are describing the requirements for the
-`assertEmpty` function. The two requirements are that:
+`assert_empty` function. The two requirements are that:
 
 1. It passes with an empty string
 2. It fails with a non-empty string
 
-If you are using the provided build system, multiple **`test_`**`something` functions
+If you are using the provided tool, multiple **`test_`**`something` functions
 can be provided within a module, and multiple `something`**`_test`** modules can be
-provided in separate files. The build system will generate a driver program
+provided in separate files. The tool will generate a driver program
 that calls each **`test_`**`something` function it finds in order to build up the
-test suite. It will then run all of the tests and report the results. The section
-of the build system which generates this program can be used as a standalone
-program that accepts as command line arguments the name of the generator program
-and the list of files containing the tests, but it makes the same assumptions.
+test suite. It will then run all of the tests and report the results. The tool
+accepts as command line arguments the name of the generator program
+and the list of files containing the tests.
 
-The generated driver program uses the function `testThat` to combine all of the
+The generated driver program uses the function `test_that` to combine all of the
 tests provided by the **`test_`**`something` functions into a single collection,
-and then calls the subroutine `runTests` with that collection. So, even manually
+and then calls the subroutine `run_tests` with that collection. So, even manually
 writing and maintaining the driver program wouldn't be _too_ bad.
 
 ### Generating Random Inputs
 
-By providing a type extended from `class(Generator_t)`, you can test fundamental
+By providing a type extended from `class(generator_t)`, you can test fundamental
 properties of your code that should hold for all values. A couple of types are
 provided for simple types, but generally you'll want to provide your own. To do
 so you'll need to override the `generate` function. This function takes your
-generator type as an input, and must produce a value of `type(Generated_t)`. This
-is just a wrapper around a `class(Input_t)`. Several `getRandom*` functions are
+generator type as an input, and must produce a value of `type(generated_t)`. This
+is just a wrapper around a `class(input_t)`. Several `get_random*` functions are
 provided to generate most primitive types with various ranges and/or lengths.
 
 Additionally, you must override the `shrink` function. This must take a
-`class(Input_t)` value as input, and provide a `type(ShrinkResult_t)` as output.
-This is just a wrapper around a `class(Input_t)`, with a flag for whether it is
+`class(input_t)` value as input, and provide a `type(shrink_result_t)` as output.
+This is just a wrapper around a `class(input_t)`, with a flag for whether it is
 the simplest possible value. The relevant code for one of the provided generators
 is shown below.
 
 ```Fortran
-type, public, extends(Generator_t) :: IntegerGenerator_t
+type, extends(generator_t) :: integer_generator_t
 contains
     private
-    procedure, public :: generate => generateInteger
-    procedure, nopass, public :: shrink => shrinkInteger
-end type IntegerGenerator_t
+    procedure, public :: generate => generate_integer
+    procedure, nopass, public :: shrink => shrink_integer
+end type
 
-function generateInteger(self) result(generated_value)
-    class(IntegerGenerator_t), intent(in) :: self
-    type(Generated_t) :: generated_value
+function generate_integer(self) result(generated_value)
+    class(integer_generator_t), intent(in) :: self
+    type(generated_t) :: generated_value
 
-    type(IntegerInput_t) :: the_input
+    type(integer_input_t) :: the_input
 
     associate(a => self)
     end associate
 
-    the_input%value_ = getRandomInteger()
-    generated_value = Generated(the_input)
-end function generateInteger
+    the_input%value_ = get_random_integer()
+    generated_value = generated(the_input)
+end function
 
-pure function shrinkInteger(input) result(shrunk)
-    class(Input_t), intent(in) :: input
-    type(ShrinkResult_t) :: shrunk
+pure function shrink_integer(input) result(shrunk)
+    class(input_t), intent(in) :: input
+    type(shrink_result_t) :: shrunk
 
-    type(IntegerInput_t) :: new_input
+    type(integer_input_t) :: new_input
 
     select type (input)
-    type is (IntegerInput_t)
+    type is (integer_input_t)
         if (input%value_ == 0) then
             new_input%value_ = 0
-            shrunk = SimplestValue(new_input)
+            shrunk = simplest_value(new_input)
         else
             new_input%value_ = input%value_ / 2
-            shrunk = ShrunkValue(new_input)
+            shrunk = shrunk_value(new_input)
         end if
     end select
-end function shrinkInteger
+end function
 ```
 
 When given a generator, the `generate` function will be called to generate up to
@@ -267,11 +266,11 @@ is then reported.
 ### The Command Line
 
 The driver program accepts a handful of command line arguments for controlling
-how the tests are run. This is done inside the `runTests` subroutine, so
+how the tests are run. This is done inside the `run_tests` subroutine, so
 even manually or otherwise generated driver programs can use this functionality.
 
 ```
-Usage: tests_build/vegetable_driver [-h] [-q] [-v] [-f string] [-n num] [-c]
+Usage: driver_name [-h] [-q] [-v] [-f string] [-n num] [-c]
   options:
     -h, --help                    Output this message and exit
     -q, --quiet                   Don't print the test descriptions before

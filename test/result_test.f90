@@ -1,101 +1,100 @@
 module result_test
-    use Vegetables_m, only: &
-            Result_t, &
-            TestItem_t, &
-            assertDoesntInclude, &
-            assertEquals, &
-            assertIncludes, &
-            assertNot, &
-            assertThat, &
-            describe, &
-            fail, &
-            it, &
-            succeed
-
     implicit none
     private
 
     public :: test_result
 contains
     function test_result() result(tests)
-        type(TestItem_t) :: tests
+        use vegetables, only: test_item_t, describe, it
 
-        type(TestItem_t) :: individual_tests(5)
+        type(test_item_t) :: tests
 
-        individual_tests(1) = it("Can tell whether they passed", checkPassed)
+        type(test_item_t) :: individual_tests(5)
+
+        individual_tests(1) = it("Can tell whether they passed", check_passed)
         individual_tests(2) = it( &
-                "Can tell how many assertions there were", checkNumAsserts)
+                "Can tell how many assertions there were", check_num_asserts)
         individual_tests(3) = it(&
                 "Can tell how many failing assertions there were", &
-                checkNumFailingAsserts)
+                check_num_failing_asserts)
         individual_tests(4) = it( &
                 "Verbose description includes all the messages", &
-                checkVerboseIncludes)
+                check_verbose_includes)
         individual_tests(5) = it( &
                 "Failure description only includes the failing messages", &
-                checkFailureIncludes)
+                check_failure_includes)
         tests = describe("Results", individual_tests)
-    end function test_result
+    end function
 
-    pure function checkPassed() result(result_)
-        type(Result_t) :: result_
+    pure function check_passed() result(result_)
+        use vegetables, only: result_t, assert_that, assert_not, fail, succeed
 
-        type(Result_t) :: failing_result
-        type(Result_t) :: passing_result
+        type(result_t) :: result_
+
+        type(result_t) :: failing_result
+        type(result_t) :: passing_result
 
         passing_result = succeed("Message")
         failing_result = fail("Message")
 
         result_ = &
-                assertThat(passing_result%passed()) &
-                .and.assertNot(failing_result%passed())
-    end function checkPassed
+                assert_that(passing_result%passed()) &
+                .and.assert_not(failing_result%passed())
+    end function
 
-    pure function checkNumAsserts() result(result_)
-        type(Result_t) :: result_
+    pure function check_num_asserts() result(result_)
+        use vegetables, only: result_t, assert_equals, succeed
 
-        type(Result_t) :: multiple_asserts
+        type(result_t) :: result_
+
+        type(result_t) :: multiple_asserts
 
         multiple_asserts = succeed("First").and.succeed("Second")
 
-        result_ = assertEquals(2, multiple_asserts%numAsserts())
-    end function checkNumAsserts
+        result_ = assert_equals(2, multiple_asserts%num_asserts())
+    end function
 
-    pure function checkNumFailingAsserts() result(result_)
-        type(Result_t) :: result_
+    pure function check_num_failing_asserts() result(result_)
+        use vegetables, only: result_t, assert_equals, fail, succeed
 
-        type(Result_t) :: multiple_asserts
+        type(result_t) :: result_
 
-        multiple_asserts = succeed("First").and.fail("Second")
-
-        result_ = assertEquals(1, multiple_asserts%numFailingAsserts())
-    end function checkNumFailingAsserts
-
-    pure function checkVerboseIncludes() result(result_)
-        type(Result_t) :: result_
-
-        type(Result_t) :: multiple_asserts
+        type(result_t) :: multiple_asserts
 
         multiple_asserts = succeed("First").and.fail("Second")
 
-        result_ = &
-                assertIncludes( &
-                        "First", multiple_asserts%verboseDescription(.false.))&
-                .and.assertIncludes( &
-                        "Second", multiple_asserts%verboseDescription(.false.))
-    end function checkVerboseIncludes
+        result_ = assert_equals(1, multiple_asserts%num_failing_asserts())
+    end function
 
-    pure function checkFailureIncludes() result(result_)
-        type(Result_t) :: result_
+    pure function check_verbose_includes() result(result_)
+        use vegetables, only: result_t, assert_includes, fail, succeed
 
-        type(Result_t) :: multiple_asserts
+        type(result_t) :: result_
+
+        type(result_t) :: multiple_asserts
 
         multiple_asserts = succeed("First").and.fail("Second")
 
         result_ = &
-                assertDoesntInclude( &
-                        "First", multiple_asserts%failureDescription(.false.))&
-                .and.assertIncludes( &
-                        "Second", multiple_asserts%failureDescription(.false.))
-    end function checkFailureIncludes
-end module result_test
+                assert_includes( &
+                        "First", multiple_asserts%verbose_description(.false.))&
+                .and.assert_includes( &
+                        "Second", multiple_asserts%verbose_description(.false.))
+    end function
+
+    pure function check_failure_includes() result(result_)
+        use vegetables, only: &
+                result_t, assert_doesnt_include, assert_includes, fail, succeed
+        type(result_t) :: result_
+
+        type(result_t) :: multiple_asserts
+
+        multiple_asserts = succeed("First").and.fail("Second")
+
+        result_ = &
+                assert_doesnt_include( &
+                        "First", multiple_asserts%failure_description(.false.))&
+                .and.assert_includes( &
+                        "Second", multiple_asserts%failure_description(.false.))
+    end function
+end module

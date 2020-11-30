@@ -1,25 +1,30 @@
 module example_cases_m
-    use example_asserts_m, only: &
-            exampleMultipleAsserts, exampleMultipleAssertsWithFail
-    use Vegetables_m, only: TestItem_t, It
-
     implicit none
     private
+    public :: &
+            example_failing_test_case, &
+            example_passing_test_case, &
+            EXAMPLE_DESCRIPTION, &
+            NOT_IN_DESCRIPTION
 
-    character(len=*), parameter, public :: EXAMPLE_DESCRIPTION = "Example Description"
-    character(len=*), parameter, public :: NOT_IN_DESCRIPTION = "NOT"
-
-    public :: exampleFailingTestCase, examplePassingTestCase
+    character(len=*), parameter :: EXAMPLE_DESCRIPTION = "Example Description"
+    character(len=*), parameter :: NOT_IN_DESCRIPTION = "NOT"
 contains
-    function examplePassingTestCase() result(test_case)
-        type(TestItem_t) :: test_case
+    function example_passing_test_case() result(test_case)
+        use example_asserts_m, only: example_multiple_asserts
+        use vegetables, only: test_item_t, it
 
-        test_case = It(EXAMPLE_DESCRIPTION, exampleMultipleAsserts)
-    end function examplePassingTestCase
+        type(test_item_t) :: test_case
 
-    function exampleFailingTestCase() result(test_case)
-        type(TestItem_t) :: test_case
+        test_case = it(EXAMPLE_DESCRIPTION, example_multiple_asserts)
+    end function
 
-        test_case = It(EXAMPLE_DESCRIPTION, exampleMultipleAssertsWithFail)
-    end function exampleFailingTestCase
-end module example_cases_m
+    function example_failing_test_case() result(test_case)
+        use example_asserts_m, only: example_multiple_asserts_with_fail
+        use vegetables, only: test_item_t, it
+
+        type(test_item_t) :: test_case
+
+        test_case = it(EXAMPLE_DESCRIPTION, example_multiple_asserts_with_fail)
+    end function
+end module

@@ -1,232 +1,279 @@
 module filter_test
-    use example_cases_m, only: &
-            examplePassingTestCase, EXAMPLE_DESCRIPTION, NOT_IN_DESCRIPTION
-    use example_collections_m, only: &
-            examplePassingCollection, &
-            EXAMPLE_CASE_DESCRIPTION_1, &
-            EXAMPLE_COLLECTION_DESCRIPTION, &
-            NOT_IN_DESCRIPTIONS
-    use Helpers_m, only: TestItemInput_t
-    use iso_varying_string, only: var_str
-    use Vegetables_m, only: &
-            Input_t, &
-            FilterItemResult_t, &
-            Result_t, &
-            TestItem_t, &
-            TransformationFailure_t, &
-            Transformed_t, &
-            assertEquals, &
-            assertNot, &
-            fail, &
-            Given, &
-            Then__, &
-            Transformed, &
-            When
+    use vegetables, only: input_t, filter_item_result_t
 
     implicit none
     private
-
-    type, extends(Input_t) :: FilterItemResultInput_t
-        type(FilterItemResult_t) :: input
-    end type FilterItemResultInput_t
-
     public :: test_filter_case, test_filter_collection
+
+    type, extends(input_t) :: filter_item_result_input_t
+        type(filter_item_result_t) :: input
+    end type
 contains
     function test_filter_case() result(tests)
-        type(TestItem_t) :: tests
+        use example_cases_m, only: example_passing_test_case
+        use helpers_m, only: test_item_input_t
+        use vegetables, only: test_item_t, given, then__, when
 
-        type(TestItem_t) :: collection(2)
-        type(TestItemInput_t) :: the_case
-        type(TestItem_t) :: first(1)
-        type(TestItem_t) :: second(1)
+        type(test_item_t) :: tests
 
-        the_case%input = examplePassingTestCase()
-        first(1) = Then__("it doesn't match", checkCaseNotMatching)
-        second(1) = Then__("it returns itself", checkCaseIsSame)
-        collection(1) = When( &
+        type(test_item_t) :: collection(2)
+        type(test_item_input_t) :: the_case
+        type(test_item_t) :: first(1)
+        type(test_item_t) :: second(1)
+
+        the_case%input = example_passing_test_case()
+        first(1) = then__("it doesn't match", check_case_not_matching)
+        second(1) = then__("it returns itself", check_case_is_same)
+        collection(1) = when( &
                 "it is filtered with a string it doesn't contain", &
-                filterCaseNotMatching, &
+                filter_case_not_matching, &
                 first)
-        collection(2) = When( &
+        collection(2) = when( &
                 "it is filtered with a matching string", &
-                filterCaseMatching, &
+                filter_case_matching, &
                 second)
-        tests = Given("a test case", the_case, collection)
-    end function test_filter_case
+        tests = given("a test case", the_case, collection)
+    end function
 
     function test_filter_collection() result(tests)
-        type(TestItem_t) :: tests
+        use example_collections_m, only: example_passing_collection
+        use helpers_m, only: test_item_input_t
+        use vegetables, only: test_item_t, given, then__, when
 
-        type(TestItem_t) :: collection(3)
-        type(TestItemInput_t) :: the_collection
-        type(TestItem_t) :: first(1)
-        type(TestItem_t) :: second(1)
-        type(TestItem_t) :: third(1)
+        type(test_item_t) :: tests
 
-        the_collection%input = examplePassingCollection()
-        first(1) = Then__("it doesn't match", checkCollectionNotMatching)
-        second(1) = Then__("it returns itself", checkCollectionIsSame)
-        third(1) = Then__("it returns a collection with only that case", checkCollectionSingleCase)
-        collection(1) = When( &
+        type(test_item_t) :: collection(3)
+        type(test_item_input_t) :: the_collection
+        type(test_item_t) :: first(1)
+        type(test_item_t) :: second(1)
+        type(test_item_t) :: third(1)
+
+        the_collection%input = example_passing_collection()
+        first(1) = then__("it doesn't match", check_collection_not_matching)
+        second(1) = then__("it returns itself", check_collection_is_same)
+        third(1) = then__("it returns a collection with only that case", check_collection_single_case)
+        collection(1) = when( &
                 "it is filtered with a string it doesn't contain", &
-                filterCollectionNotMatching, &
+                filter_collection_not_matching, &
                 first)
-        collection(2) = When( &
+        collection(2) = when( &
                 "it is filtered with a string matching its description", &
-                filterCollectionMatchingDescription, &
+                filter_collection_matching_description, &
                 second)
-        collection(3) = When( &
+        collection(3) = when( &
                 "it is filtered with a string matching only 1 of its cases", &
-                filterCollectionMatchingCase, &
+                filter_collection_matching_case, &
                 third)
-        tests = Given("a test collection", the_collection, collection)
-    end function test_filter_collection
+        tests = given("a test collection", the_collection, collection)
+    end function
 
-    pure function filterCaseNotMatching(example_case) result(filtered)
-        class(Input_t), intent(in) :: example_case
-        type(Transformed_t) :: filtered
+    pure function filter_case_not_matching(example_case) result(filtered)
+        use example_cases_m, only: NOT_IN_DESCRIPTION
+        use helpers_m, only: test_item_input_t
+        use iso_varying_string, only: var_str
+        use vegetables, only: &
+                input_t, &
+                transformation_failure_t, &
+                transformed_t, &
+                transformed, &
+                fail
 
-        type(TransformationFailure_t) :: failure
-        type(FilterItemResultInput_t) :: the_result
+        class(input_t), intent(in) :: example_case
+        type(transformed_t) :: filtered
+
+        type(transformation_failure_t) :: failure
+        type(filter_item_result_input_t) :: the_result
 
         select type (example_case)
-        type is (TestItemInput_t)
+        type is (test_item_input_t)
             the_result%input = example_case%input%filter(var_str(NOT_IN_DESCRIPTION))
-            filtered = Transformed(the_result)
+            filtered = transformed(the_result)
         class default
-        failure%result_ = fail("Expected to get a TestItemInput_t")
-        filtered = Transformed(failure)
+            failure%result_ = fail("Expected to get a test_item_input_t")
+            filtered = transformed(failure)
         end select
-    end function filterCaseNotMatching
+    end function
 
-    pure function filterCaseMatching(example_case) result(filtered)
-        class(Input_t), intent(in) :: example_case
-        type(Transformed_t) :: filtered
+    pure function filter_case_matching(example_case) result(filtered)
+        use example_cases_m, only: EXAMPLE_DESCRIPTION
+        use helpers_m, only: test_item_input_t
+        use iso_varying_string, only: var_str
+        use vegetables, only: &
+                input_t, &
+                transformation_failure_t, &
+                transformed_t, &
+                transformed, &
+                fail
 
-        type(TransformationFailure_t) :: failure
-        type(FilterItemResultInput_t) :: the_result
+        class(input_t), intent(in) :: example_case
+        type(transformed_t) :: filtered
+
+        type(transformation_failure_t) :: failure
+        type(filter_item_result_input_t) :: the_result
 
         select type (example_case)
-        type is (TestItemInput_t)
+        type is (test_item_input_t)
             the_result%input = example_case%input%filter(var_str(EXAMPLE_DESCRIPTION))
-            filtered = Transformed(the_result)
+            filtered = transformed(the_result)
         class default
-        failure%result_ = fail("Expected to get a TestItemInput_t")
-        filtered = Transformed(failure)
+            failure%result_ = fail("Expected to get a test_item_input_t")
+            filtered = transformed(failure)
         end select
-    end function filterCaseMatching
+    end function
 
-    pure function filterCollectionNotMatching(example_collection) result(filtered)
-        class(Input_t), intent(in) :: example_collection
-        type(Transformed_t) :: filtered
+    pure function filter_collection_not_matching(example_collection) result(filtered)
+        use example_collections_m, only: NOT_IN_DESCRIPTIONS
+        use helpers_m, only: test_item_input_t
+        use iso_varying_string, only: var_str
+        use vegetables, only: &
+                input_t, &
+                transformation_failure_t, &
+                transformed_t, &
+                transformed, &
+                fail
 
-        type(TransformationFailure_t) :: failure
-        type(FilterItemResultInput_t) :: the_result
+        class(input_t), intent(in) :: example_collection
+        type(transformed_t) :: filtered
+
+        type(transformation_failure_t) :: failure
+        type(filter_item_result_input_t) :: the_result
 
         select type (example_collection)
-        type is (TestItemInput_t)
+        type is (test_item_input_t)
             the_result%input = example_collection%input%filter(var_str(NOT_IN_DESCRIPTIONS))
-            filtered = Transformed(the_result)
+            filtered = transformed(the_result)
         class default
-        failure%result_ = fail("Expected to get a TestItemInput_t")
-        filtered = Transformed(failure)
+        failure%result_ = fail("Expected to get a test_item_input_t")
+        filtered = transformed(failure)
         end select
-    end function filterCollectionNotMatching
+    end function
 
-    pure function filterCollectionMatchingDescription(example_collection) result(filtered)
-        class(Input_t), intent(in) :: example_collection
-        type(Transformed_t) :: filtered
+    pure function filter_collection_matching_description(example_collection) result(filtered)
+        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
+        use helpers_m, only: test_item_input_t
+        use iso_varying_string, only: var_str
+        use vegetables, only: &
+                input_t, &
+                transformation_failure_t, &
+                transformed_t, &
+                transformed, &
+                fail
 
-        type(TransformationFailure_t) :: failure
-        type(FilterItemResultInput_t) :: the_result
+        class(input_t), intent(in) :: example_collection
+        type(transformed_t) :: filtered
+
+        type(transformation_failure_t) :: failure
+        type(filter_item_result_input_t) :: the_result
 
         select type (example_collection)
-        type is (TestItemInput_t)
+        type is (test_item_input_t)
             the_result%input = example_collection%input%filter(var_str(EXAMPLE_COLLECTION_DESCRIPTION))
-            filtered = Transformed(the_result)
+            filtered = transformed(the_result)
         class default
-        failure%result_ = fail("Expected to get a TestItemInput_t")
-        filtered = Transformed(failure)
+        failure%result_ = fail("Expected to get a test_item_input_t")
+        filtered = transformed(failure)
         end select
-    end function filterCollectionMatchingDescription
+    end function
 
-    pure function filterCollectionMatchingCase(example_collection) result(filtered)
-        class(Input_t), intent(in) :: example_collection
-        type(Transformed_t) :: filtered
+    pure function filter_collection_matching_case(example_collection) result(filtered)
+        use example_collections_m, only: EXAMPLE_CASE_DESCRIPTION_1
+        use helpers_m, only: test_item_input_t
+        use iso_varying_string, only: var_str
+        use vegetables, only: &
+                input_t, &
+                transformation_failure_t, &
+                transformed_t, &
+                transformed, &
+                fail
 
-        type(TransformationFailure_t) :: failure
-        type(FilterItemResultInput_t) :: the_result
+        class(input_t), intent(in) :: example_collection
+        type(transformed_t) :: filtered
+
+        type(transformation_failure_t) :: failure
+        type(filter_item_result_input_t) :: the_result
 
         select type (example_collection)
-        type is (TestItemInput_t)
+        type is (test_item_input_t)
             the_result%input = example_collection%input%filter(var_str(EXAMPLE_CASE_DESCRIPTION_1))
-            filtered = Transformed(the_result)
+            filtered = transformed(the_result)
         class default
-        failure%result_ = fail("Expected to get a TestItemInput_t")
-        filtered = Transformed(failure)
+        failure%result_ = fail("Expected to get a test_item_input_t")
+        filtered = transformed(failure)
         end select
-    end function filterCollectionMatchingCase
+    end function
 
-    pure function checkCaseNotMatching(filtered) result(result_)
-        class(Input_t), intent(in) :: filtered
-        type(Result_t) :: result_
+    pure function check_case_not_matching(filtered) result(result_)
+        use vegetables, only: input_t, result_t, assert_not, fail
+
+        class(input_t), intent(in) :: filtered
+        type(result_t) :: result_
 
         select type (filtered)
-        type is (FilterItemResultInput_t)
-            result_ = assertNot(filtered%input%matched)
+        type is (filter_item_result_input_t)
+            result_ = assert_not(filtered%input%matched)
         class default
-            result_ = fail("Expected to get FilterItemResultInput_t")
+            result_ = fail("Expected to get filter_item_result_input_t")
         end select
-    end function checkCaseNotMatching
+    end function
 
-    pure function checkCaseIsSame(filtered) result(result_)
-        class(Input_t), intent(in) :: filtered
-        type(Result_t) :: result_
+    pure function check_case_is_same(filtered) result(result_)
+        use example_cases_m, only: EXAMPLE_DESCRIPTION
+        use vegetables, only: input_t, result_t, assert_equals, fail
+
+        class(input_t), intent(in) :: filtered
+        type(result_t) :: result_
 
         select type (filtered)
-        type is (FilterItemResultInput_t)
-            result_ = assertEquals(EXAMPLE_DESCRIPTION, filtered%input%test%description())
+        type is (filter_item_result_input_t)
+            result_ = assert_equals(EXAMPLE_DESCRIPTION, filtered%input%test%description())
         class default
-            result_ = fail("Expected to get FilterItemResultInput_t")
+            result_ = fail("Expected to get filter_item_result_input_t")
         end select
-    end function checkCaseIsSame
+    end function
 
-    pure function checkCollectionNotMatching(filtered) result(result_)
-        class(Input_t), intent(in) :: filtered
-        type(Result_t) :: result_
+    pure function check_collection_not_matching(filtered) result(result_)
+        use vegetables, only: input_t, result_t, assert_not, fail
+
+        class(input_t), intent(in) :: filtered
+        type(result_t) :: result_
 
         select type (filtered)
-        type is (FilterItemResultInput_t)
-            result_ = assertNot(filtered%input%matched)
+        type is (filter_item_result_input_t)
+            result_ = assert_not(filtered%input%matched)
         class default
-            result_ = fail("Expected to get FilterItemResultInput_t")
+            result_ = fail("Expected to get filter_item_result_input_t")
         end select
-    end function checkCollectionNotMatching
+    end function
 
-    function checkCollectionIsSame(filtered) result(result_)
-        class(Input_t), intent(in) :: filtered
-        type(Result_t) :: result_
+    function check_collection_is_same(filtered) result(result_)
+        use example_collections_m, only: example_passing_collection
+        use vegetables, only: input_t, result_t, test_item_t, assert_equals, fail
 
-        type(TestItem_t) :: example_collection
+        class(input_t), intent(in) :: filtered
+        type(result_t) :: result_
+
+        type(test_item_t) :: example_collection
 
         select type (filtered)
-        type is (FilterItemResultInput_t)
-            example_collection = examplePassingCollection()
-            result_ = assertEquals(example_collection%description(), filtered%input%test%description())
+        type is (filter_item_result_input_t)
+            example_collection = example_passing_collection()
+            result_ = assert_equals(example_collection%description(), filtered%input%test%description())
         class default
-            result_ = fail("Expected to get FilterItemResultInput_t")
+            result_ = fail("Expected to get filter_item_result_input_t")
         end select
-    end function checkCollectionIsSame
+    end function
 
-    pure function checkCollectionSingleCase(filtered) result(result_)
-        class(Input_t), intent(in) :: filtered
-        type(Result_t) :: result_
+    pure function check_collection_single_case(filtered) result(result_)
+        use vegetables, only: input_t, result_t, assert_equals, fail
+
+        class(input_t), intent(in) :: filtered
+        type(result_t) :: result_
 
         select type (filtered)
-        type is (FilterItemResultInput_t)
-            result_ = assertEquals(1, filtered%input%test%numCases())
+        type is (filter_item_result_input_t)
+            result_ = assert_equals(1, filtered%input%test%num_cases())
         class default
-            result_ = fail("Expected to get FilterItemResultInput_t")
+            result_ = fail("Expected to get filter_item_result_input_t")
         end select
-    end function checkCollectionSingleCase
-end module filter_test
+    end function
+end module
