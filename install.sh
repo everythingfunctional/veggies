@@ -22,7 +22,7 @@ fi
 if [[ -x "${install_path}/make_vegetable_driver" ]]; then
   echo "Overwriting previous make_vegetable_driver installation."
 fi
-cp build/gfortran_release/app/make_vegetable_driver "$install_path"
+fpm run --release --target make_vegetable_driver --runner cp -- "$install_path"
 
 if [[ -x "${install_path}/make_vegetable_driver" ]]; then
   echo "Installation successful."
