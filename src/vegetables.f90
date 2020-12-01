@@ -5465,11 +5465,11 @@ contains
         type(options_t) :: options
         type(test_result_item_t) :: results
         double precision :: start_time
+        logical, allocatable :: suite_failed[:]
         type(test_item_t) :: tests_to_run
-        logical, allocatable :: image_failed[:]
 
-        allocate(image_failed[*])
-        image_failed = .false.
+        allocate(suite_failed[*])
+        suite_failed = .false.
 
         options = get_options()
 
@@ -5550,12 +5550,13 @@ contains
                         to_string(results%num_failing_asserts()) // " of " &
                             // to_string(results%num_asserts()) // " assertions failed")
                 call put_line(error_unit, "")
-                image_failed = .true.
+                suite_failed = .true.
             end if
         end critical
+        sync all ! make sure all images have had a chance to record failure before checking for any
         if (this_image() == 1) then
             do i = 1, num_images()
-                if (image_failed[this_image()]) error stop
+                if (suite_failed[i]) error stop
             end do
         end if
     end subroutine
