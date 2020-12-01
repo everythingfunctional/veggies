@@ -5,6 +5,6 @@
 
 set -e
 
-FPM_FLAGS="--flag -Wall --flag -Wextra --flag -Wimplicit-interface --flag -Werror --flag -fPIC --flag -g3 --flag -fbounds-check --flag -fcheck-array-temporaries --flag -fbacktrace --flag -std=f2018 --flag -fcheck=all"
+FPM_FLAGS="--flag -Wall --flag -Wextra --flag -Wimplicit-interface --flag -Werror --flag -fPIC --flag -g3 --flag -fbounds-check --flag -fcheck-array-temporaries --flag -fbacktrace --flag -std=f2018 --flag -fcheck=all --flag -fcoarray=single"
 
 fpm test ${FPM_FLAGS}
