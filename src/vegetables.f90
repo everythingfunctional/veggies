@@ -2,6 +2,10 @@ module vegetables
     use iso_varying_string, only: varying_string
     use vegetables_command_line_m, only: &
             options_t, get_options, NUM_GENERATOR_TESTS
+    use vegetables_double_precision_input_m, only: double_precision_input_t
+    use vegetables_input_m, only: input_t
+    use vegetables_integer_input_m, only: integer_input_t
+    use vegetables_string_input_m, only: string_input_t
 
     implicit none
     private
@@ -77,21 +81,6 @@ module vegetables
             transformed, &
             when, &
             with_user_message
-
-    type, abstract :: input_t
-    end type
-
-    type, extends(input_t) :: double_precision_input_t
-        double precision :: value_
-    end type
-
-    type, extends(input_t) :: integer_input_t
-        integer :: value_
-    end type
-
-    type, extends(input_t) :: string_input_t
-        type(varying_string) :: value_
-    end type
 
     type :: transformed_t
         private
