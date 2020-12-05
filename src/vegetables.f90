@@ -1,5 +1,7 @@
 module vegetables
     use iso_varying_string, only: varying_string
+    use vegetables_command_line_m, only: &
+            options_t, get_options, NUM_GENERATOR_TESTS
 
     implicit none
     private
@@ -75,15 +77,6 @@ module vegetables
             transformed, &
             when, &
             with_user_message
-
-    type :: options_t
-        private
-        logical :: colorize
-        logical :: quiet
-        logical :: verbose
-        logical :: filter_tests
-        type(varying_string) :: filter_string
-    end type
 
     type, abstract :: input_t
     end type
@@ -800,7 +793,6 @@ module vegetables
     integer, parameter :: MAX_INT = HUGE(1)
     character(len=*), parameter, public :: NOT_FAILURE_MESSAGE = "Expected to not be true"
     character(len=*), parameter, public :: NOT_SUCCESS_MESSAGE = "Was not true"
-    integer :: NUM_GENERATOR_TESTS = 100
     character(len=*), parameter, public :: THAT_FAILURE_MESSAGE = "Expected to be true"
     character(len=*), parameter, public :: THAT_SUCCESS_MESSAGE = "Was true"
 contains
@@ -4292,92 +4284,6 @@ contains
         allocate(generated%input, source = value_)
     end function
 
-    function get_options() result(options)
-        use iso_fortran_env, only: error_unit, output_unit
-        use iso_varying_string, only: assignment(=), put_line
-        use strff, only: NEWLINE
-
-        type(options_t) :: options
-
-        character(len=100) :: argument
-        character(len=100) :: program_name
-        integer :: i
-        integer :: iostat
-        integer :: num_arguments
-
-        options%colorize = .true.
-        options%quiet = .false.
-        options%verbose = .false.
-        options%filter_tests = .false.
-        options%filter_string = ""
-
-        call get_command_argument(0, program_name)
-        num_arguments = command_argument_count()
-        i = 1
-        do while (i <= num_arguments)
-            call get_command_argument(i, argument)
-            select case (trim(argument))
-            case ("-c", "--color-off")
-                options%colorize = .false.
-            case ("-h", "--help")
-                call put_line(output_unit, usageMessage(program_name))
-                stop
-            case ("-f", "--filter")
-                options%filter_tests = .true.
-                i = i + 1
-                call get_command_argument(i, argument)
-                options%filter_string = trim(argument)
-            case ("-n", "--numrand")
-                i = i + 1
-                call get_command_argument(i, argument)
-                read(argument, *, iostat=iostat) NUM_GENERATOR_TESTS
-                if (iostat /= 0) then
-                    call put_line( &
-                            error_unit, &
-                            'Unable to read "' // trim(argument) // '" as an integer' // NEWLINE)
-                    call put_line(error_unit, usageMessage(program_name))
-                    error stop
-                end if
-                if (NUM_GENERATOR_TESTS <= 0) then
-                    call put_line(error_unit, "Number of random values must be >0")
-                    error stop
-                end if
-            case ("-q", "--quiet")
-                options%quiet = .true.
-            case ("-v", "--verbose")
-                options%verbose = .true.
-            case default
-                call put_line( &
-                        error_unit, &
-                        "Unknown argument: '" // trim(argument) // "'" // NEWLINE)
-                call put_line(error_unit, usageMessage(program_name))
-                error stop
-            end select
-            i = i + 1
-        end do
-    contains
-        pure function usageMessage(program_name_)
-            use iso_varying_string, only: varying_string
-
-            character(len=*), intent(in) :: program_name_
-            type(varying_string) :: usageMessage
-
-            usageMessage = &
-                    "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-f string] [-n num] [-c]" // NEWLINE &
-                    // "  options:" // NEWLINE &
-                    // "    -h, --help                    Output this message and exit" // NEWLINE &
-                    // "    -q, --quiet                   Don't print the test descriptions before" // NEWLINE &
-                    // "                                  running the tests" // NEWLINE &
-                    // "    -v, --verbose                 Print all of the assertion messages, not" // NEWLINE &
-                    // "                                  just the failing ones" // NEWLINE &
-                    // "    -f string, --filter string    Only run cases or collections whose" // NEWLINE &
-                    // "                                  description contains the given string" // NEWLINE &
-                    // "    -n num, --numrand num         Number of random values to use for each" // NEWLINE &
-                    // "                                  test with generated values (default = 100)" // NEWLINE &
-                    // "    -c, --color-off               Don't colorize the output"
-        end function
-    end function
-
     function get_random_ascii_character() result(random_character)
         character(len=1) :: random_character
 
@@ -5473,8 +5379,8 @@ contains
 
         options = get_options()
 
-        if (options%filter_tests) then
-            filtered_tests = tests%filter(options%filter_string)
+        if (options%filter_tests()) then
+            filtered_tests = tests%filter(options%filter_string())
             if (filtered_tests%matched) then
                 tests_to_run = filtered_tests%test
             else
@@ -5488,7 +5394,7 @@ contains
             call put_line(output_unit, "Running Tests")
             call put_line(output_unit, "")
 
-            if (.not.options%quiet) then
+            if (.not.options%quiet()) then
                 call put_line(output_unit, tests_to_run%description())
                 call put_line(output_unit, "")
             end if
@@ -5513,10 +5419,10 @@ contains
                         output_unit, &
                         "Took " // to_string(end_time - start_time, 6) // " seconds")
                 call put_line(output_unit, "")
-                if (options%verbose) then
+                if (options%verbose()) then
                     call put_line( &
                             output_unit, &
-                            results%verbose_description(options%colorize))
+                            results%verbose_description(options%colorize()))
                     call put_line(output_unit, "")
                 end if
                 call put_line( &
@@ -5531,14 +5437,14 @@ contains
                         error_unit, &
                         "Took " // to_string(end_time - start_time, 6) // " seconds")
                 call put_line(error_unit, "")
-                if (options%verbose) then
+                if (options%verbose()) then
                     call put_line( &
                             error_unit, &
-                            results%verbose_description(options%colorize))
+                            results%verbose_description(options%colorize()))
                 else
                     call put_line( &
                             error_unit, &
-                            results%failure_description(options%colorize))
+                            results%failure_description(options%colorize()))
                 end if
                 call put_line(error_unit, "")
                 call put_line( &
