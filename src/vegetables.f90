@@ -1,12 +1,24 @@
 module vegetables
     use iso_varying_string, only: varying_string
+    use vegetables_ascii_string_generator_m, only: ASCII_STRING_GENERATOR
     use vegetables_command_line_m, only: &
             options_t, get_options, NUM_GENERATOR_TESTS
     use vegetables_double_precision_input_m, only: double_precision_input_t
     use vegetables_example_m, only: example_t, example
     use vegetables_generated_m, only: generated_t, generated
+    use vegetables_generator_m, only: generator_t
     use vegetables_input_m, only: input_t
+    use vegetables_integer_generator_m, only: INTEGER_GENERATOR
     use vegetables_integer_input_m, only: integer_input_t
+    use vegetables_random_m, only: &
+            get_random_ascii_character, &
+            get_random_ascii_string, &
+            get_random_ascii_string_with_max_length, &
+            get_random_double_precision_with_magnitude, &
+            get_random_double_precision_with_range, &
+            get_random_integer, &
+            get_random_integer_with_range, &
+            get_random_logical
     use vegetables_shrink_result_m, only: &
             shrink_result_t, shrunk_value, simplest_value
     use vegetables_string_input_m, only: string_input_t
@@ -15,14 +27,12 @@ module vegetables
     implicit none
     private
     public :: &
-            ascii_string_generator_t, &
             double_precision_input_t, &
             example_t, &
             generated_t, &
             generator_t, &
             input_t, &
             input_test_case_t, &
-            integer_generator_t, &
             integer_input_t, &
             result_t, &
             shrink_result_t, &
@@ -85,28 +95,9 @@ module vegetables
             then__, &
             transformed, &
             when, &
-            with_user_message
-
-    type, abstract :: generator_t
-    contains
-        private
-        procedure(generate_i), public, deferred :: generate
-        procedure(shrink_i), nopass, public, deferred :: shrink
-    end type
-
-    type, extends(generator_t) :: ascii_string_generator_t
-    contains
-        private
-        procedure, public :: generate => generate_ascii_string
-        procedure, nopass, public :: shrink => shrink_ascii_string
-    end type
-
-    type, extends(generator_t) :: integer_generator_t
-    contains
-        private
-        procedure, public :: generate => generate_integer
-        procedure, nopass, public :: shrink => shrink_integer
-    end type
+            with_user_message, &
+            ASCII_STRING_GENERATOR, &
+            INTEGER_GENERATOR
 
     type, abstract :: test_t
         private
@@ -328,12 +319,6 @@ module vegetables
             type(filter_result_t) :: filter_result
         end function
 
-        function generate_i(self) result(generated_value)
-            import :: generated_t, generator_t
-            class(generator_t), intent(in) :: self
-            type(generated_t) :: generated_value
-        end function
-
         function input_test_i(input) result(result_)
             import input_t, result_t
             class(input_t), intent(in) :: input
@@ -351,12 +336,6 @@ module vegetables
             import test_t, test_result_item_t
             class(test_t), intent(in) :: self
             type(test_result_item_t) :: result_
-        end function
-
-        function shrink_i(input) result(shrunk)
-            import input_t, shrink_result_t
-            class(input_t), intent(in) :: input
-            type(shrink_result_t) :: shrunk
         end function
 
         function simple_test_i() result(result_)
@@ -754,16 +733,10 @@ module vegetables
         module procedure with_user_message_ss
     end interface
 
-    type(ascii_string_generator_t), parameter, public :: &
-            ASCII_STRING_GENERATOR = ascii_string_generator_t()
-    type(integer_generator_t), parameter, public :: &
-            INTEGER_GENERATOR = integer_generator_t()
-
     character(len=*), parameter, public :: EMPTY_SUCCESS_MESSAGE = "String was empty"
     integer, parameter :: INDENTATION = 4
     double precision, parameter :: MACHINE_EPSILON = epsilon(0.0d0)
     double precision, parameter :: MACHINE_TINY = tiny(0.0d0)
-    integer, parameter :: MAX_INT = HUGE(1)
     character(len=*), parameter, public :: NOT_FAILURE_MESSAGE = "Expected to not be true"
     character(len=*), parameter, public :: NOT_SUCCESS_MESSAGE = "Was not true"
     character(len=*), parameter, public :: THAT_FAILURE_MESSAGE = "Expected to be true"
@@ -4217,117 +4190,6 @@ contains
         failure%results(1) = individual_result(message, .false.)
     end function
 
-    function generate_ascii_string(self) result(generated_value)
-        class(ascii_string_generator_t), intent(in) :: self
-        type(generated_t) :: generated_value
-
-        type(string_input_t) :: the_input
-
-        associate(a => self)
-        end associate
-
-        the_input%value_ = get_random_ascii_string()
-        generated_value = generated(the_input)
-    end function
-
-    function generate_integer(self) result(generated_value)
-        class(integer_generator_t), intent(in) :: self
-        type(generated_t) :: generated_value
-
-        type(integer_input_t) :: the_input
-
-        associate(a => self)
-        end associate
-
-        the_input%value_ = get_random_integer()
-        generated_value = generated(the_input)
-    end function
-
-    function get_random_ascii_character() result(random_character)
-        character(len=1) :: random_character
-
-        character(len=*), parameter :: ASCII_CHARACTERS = &
-        '  !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
-        integer :: which_character
-
-        which_character = get_random_integer_with_range(1, len(ASCII_CHARACTERS))
-        random_character = ASCII_CHARACTERS(which_character:which_character)
-    end function
-
-    function get_random_ascii_string() result(random_string)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string) :: random_string
-
-        random_string = get_random_ascii_string_with_max_length(1024)
-    end function
-
-    function get_random_ascii_string_with_max_length(max_length) result(random_string)
-        use iso_varying_string, only: varying_string, assignment(=)
-
-        integer, intent(in) :: max_length
-        type(varying_string) :: random_string
-
-        character(len=max_length) :: characters
-        integer :: i
-        integer :: num_characters
-
-        num_characters = get_random_integer_with_range(0, max_length)
-        do i = 1, num_characters
-            characters(i:i) = get_random_ascii_character()
-        end do
-        random_string = characters(1:num_characters)
-    end function
-
-    function get_random_double_precision_with_magnitude(magnitude) result(random_double)
-        double precision, intent(in) :: magnitude
-        double precision :: random_double
-
-        call random_number(random_double)
-        random_double = random_double * magnitude
-        if (get_random_logical()) random_double = -random_double
-    end function
-
-    function get_random_double_precision_with_range(start, end_) result(random_double)
-        double precision, intent(in) :: start
-        double precision, intent(in) :: end_
-        double precision :: random_double
-
-        call random_number(random_double)
-        random_double = start + (end_ - start) * random_double
-    end function
-
-    function get_random_integer() result(random_integer)
-        integer :: random_integer
-
-        double precision :: random_real
-
-        call random_number(random_real)
-        random_integer = floor(random_real*MAX_INT)
-        if (get_random_logical()) random_integer = -random_integer
-    end function
-
-    function get_random_integer_with_range(start, end_) result(random_integer)
-        integer, intent(in) :: start
-        integer, intent(in) :: end_
-        integer :: random_integer
-
-        double precision :: random_real
-
-        call random_number(random_real)
-        random_integer = start + floor((end_ + 1 - start) * random_real)
-    end function
-
-    function get_random_logical() result(random_logical)
-        logical :: random_logical
-
-        if (get_random_integer_with_range(0, 1) == 0) then
-            random_logical = .TRUE.
-        else
-            random_logical = .FALSE.
-        end if
-    end function
-
     function given_basic_c(description, tests) result(item)
         character(len=*), intent(in) :: description
         type(test_item_t), intent(in) :: tests(:)
@@ -5425,45 +5287,6 @@ contains
             end do
         end if
     end subroutine
-
-    pure function shrink_ascii_string(input) result(shrunk)
-        use iso_varying_string, only: assignment(=), extract, len
-
-        class(input_t), intent(in) :: input
-        type(shrink_result_t) :: shrunk
-
-        type(string_input_t) :: new_input
-
-        select type (input)
-        type is (string_input_t)
-            if (len(input%value_) <= 1) then
-                new_input%value_ = ""
-                shrunk = simplest_value(new_input)
-            else
-                new_input%value_ = extract( &
-                        input%value_, 1, len(input%value_) - 1)
-                shrunk = shrunk_value(new_input)
-            end if
-        end select
-    end function
-
-    pure function shrink_integer(input) result(shrunk)
-        class(input_t), intent(in) :: input
-        type(shrink_result_t) :: shrunk
-
-        type(integer_input_t) :: new_input
-
-        select type (input)
-        type is (integer_input_t)
-            if (input%value_ == 0) then
-                new_input%value_ = 0
-                shrunk = simplest_value(new_input)
-            else
-                new_input%value_ = input%value_ / 2
-                shrunk = shrunk_value(new_input)
-            end if
-        end select
-    end function
 
     function simple_test_case(description, test)
         use iso_varying_string, only: varying_string
