@@ -7,6 +7,8 @@ module vegetables
     use vegetables_example_m, only: example_t, example
     use vegetables_generated_m, only: generated_t, generated
     use vegetables_generator_m, only: generator_t
+    use vegetables_individual_result_m, only: &
+            individual_result_t, individual_result
     use vegetables_input_m, only: input_t
     use vegetables_integer_generator_m, only: INTEGER_GENERATOR
     use vegetables_integer_input_m, only: integer_input_t
@@ -19,6 +21,7 @@ module vegetables
             get_random_integer, &
             get_random_integer_with_range, &
             get_random_logical
+    use vegetables_result_m, only: result_t
     use vegetables_shrink_result_m, only: &
             shrink_result_t, shrunk_value, simplest_value
     use vegetables_string_input_m, only: string_input_t
@@ -204,30 +207,6 @@ module vegetables
         private
         procedure :: run_with_input => transforming_test_collection_run_with_input
         procedure :: run_without_input => transforming_test_collection_run_without_input
-    end type
-
-    type :: individual_result_t
-        private
-        type(varying_string) :: message
-        logical :: passed_
-    contains
-        private
-        procedure :: failure_description => individual_result_failure_description
-        procedure :: verbose_description => individual_result_verbose_description
-    end type
-
-    type :: result_t
-        private
-        type(individual_result_t), allocatable :: results(:)
-    contains
-        private
-        procedure :: combine_results
-        generic, public :: operator(.and.) => combine_results
-        procedure, public :: num_asserts => result_num_asserts
-        procedure, public :: num_failing_asserts => result_num_failing_asserts
-        procedure, public :: passed => result_passed
-        procedure, public :: failure_description => result_failure_description
-        procedure, public :: verbose_description => result_verbose_description
     end type
 
     type, abstract :: test_result_t
@@ -4066,27 +4045,6 @@ contains
         end if
     end function
 
-    pure function combine_results(lhs, rhs) result(combined)
-        class(result_t), intent(in) :: lhs
-        type(result_t), intent(in) :: rhs
-        type(result_t) :: combined
-
-        integer :: num_lhs
-        integer :: num_rhs
-
-        if (allocated(lhs%results) .and. allocated(rhs%results)) then
-            num_lhs = size(lhs%results)
-            num_rhs = size(rhs%results)
-            allocate(combined%results(num_lhs + num_rhs))
-            combined%results(1:num_lhs) = lhs%results(:)
-            combined%results(num_lhs+1:) = rhs%results(:)
-        else if (allocated(lhs%results)) then
-            combined = lhs
-        else if (allocated(rhs%results)) then
-            combined = rhs
-        end if
-    end function
-
     pure function delimit_c(string) result(delimited)
         use iso_varying_string, only: varying_string, var_str
 
@@ -4226,55 +4184,6 @@ contains
         type(test_item_t) :: item
 
         item = describe("Given " // description, input, tests)
-    end function
-
-    pure function individual_result(message, passed)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: message
-        logical, intent(in) :: passed
-        type(individual_result_t) :: individual_result
-
-        individual_result%message = message
-        individual_result%passed_ = passed
-    end function
-
-    elemental function individual_result_failure_description( &
-            self, colorize) result(description)
-        use iso_varying_string, only: varying_string, assignment(=), operator(//)
-
-        class(individual_result_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(varying_string) :: description
-
-        if (self%passed_) then
-            description = ""
-        else
-            if (colorize) then
-                description = char(27) // "[31m" // self%message // char(27) // "[0m"
-            else
-                description = self%message
-            end if
-        end if
-    end function
-
-    elemental function individual_result_verbose_description( &
-            self, colorize) result(description)
-        use iso_varying_string, only: varying_string, operator(//)
-
-        class(individual_result_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(varying_string) :: description
-
-        if (colorize) then
-            if (self%passed_) then
-                description = char(27) // "[32m" // self%message // char(27) // "[0m"
-            else
-                description = char(27) // "[31m" // self%message // char(27) // "[0m"
-            end if
-        else
-            description = self%message
-        end if
     end function
 
     function input_test_case(description, test)
@@ -5128,55 +5037,6 @@ contains
         message = &
                 delimit(actual) // " was within " // delimit("±" // tolerance) &
                 // " of " // delimit(expected)
-    end function
-
-    pure function result_failure_description(self, colorize) result(description)
-        use iso_varying_string, only: varying_string
-        use strff, only: join, NEWLINE
-
-        class(result_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(varying_string) :: description
-
-        type(varying_string) :: individual_descriptions(size(self%results))
-
-        individual_descriptions = self%results%failure_description(colorize)
-        description = join(individual_descriptions, NEWLINE)
-    end function
-
-    pure function result_num_asserts(self) result(num_asserts)
-        class(result_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = size(self%results)
-    end function
-
-    pure function result_num_failing_asserts(self) result(num_asserts)
-        class(result_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = count(.not.self%results%passed_)
-    end function
-
-    pure function result_passed(self) result(passed)
-        class(result_t), intent(in) :: self
-        logical :: passed
-
-        passed = all(self%results%passed_)
-    end function
-
-    pure function result_verbose_description(self, colorize) result(description)
-        use iso_varying_string, only: varying_string
-        use strff, only: join, NEWLINE
-
-        class(result_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(varying_string) :: description
-
-        type(varying_string) :: individual_descriptions(size(self%results))
-
-        individual_descriptions = self%results%verbose_description(colorize)
-        description = join(individual_descriptions, NEWLINE)
     end function
 
     subroutine run_tests(tests)
