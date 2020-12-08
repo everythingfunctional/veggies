@@ -3,9 +3,14 @@ module vegetables
     use vegetables_command_line_m, only: &
             options_t, get_options, NUM_GENERATOR_TESTS
     use vegetables_double_precision_input_m, only: double_precision_input_t
+    use vegetables_example_m, only: example_t, example
+    use vegetables_generated_m, only: generated_t, generated
     use vegetables_input_m, only: input_t
     use vegetables_integer_input_m, only: integer_input_t
+    use vegetables_shrink_result_m, only: &
+            shrink_result_t, shrunk_value, simplest_value
     use vegetables_string_input_m, only: string_input_t
+    use vegetables_transformed_m, only: transformed_t, transformed
 
     implicit none
     private
@@ -81,27 +86,6 @@ module vegetables
             transformed, &
             when, &
             with_user_message
-
-    type :: transformed_t
-        private
-        class(input_t), allocatable :: input
-    end type
-
-    type :: example_t
-        private
-        class(input_t), allocatable :: input
-    end type
-
-    type :: generated_t
-        private
-        class(input_t), allocatable :: input
-    end type
-
-    type :: shrink_result_t
-        private
-        class(input_t), allocatable :: input
-        logical :: simplest
-    end type
 
     type, abstract :: generator_t
     contains
@@ -4214,13 +4198,6 @@ contains
                 .or. (abs(expected - actual) / abs(expected) <= tolerance)
     end function
 
-    pure function example(input)
-        class(input_t), intent(in) :: input
-        type(example_t) :: example
-
-        allocate(example%input, source = input)
-    end function
-
     pure function fail_c(message) result(failure)
         use iso_varying_string, only: var_str
 
@@ -4264,13 +4241,6 @@ contains
 
         the_input%value_ = get_random_integer()
         generated_value = generated(the_input)
-    end function
-
-    pure function generated(value_)
-        class(input_t), intent(in) :: value_
-        type(generated_t) :: generated
-
-        allocate(generated%input, source = value_)
     end function
 
     function get_random_ascii_character() result(random_character)
@@ -5495,29 +5465,6 @@ contains
         end select
     end function
 
-    pure function shrink_result(value_, simplest)
-        class(input_t), intent(in) :: value_
-        logical, intent(in) :: simplest
-        type(shrink_result_t) :: shrink_result
-
-        allocate(shrink_result%input, source = value_)
-        shrink_result%simplest = simplest
-    end function
-
-    pure function shrunk_value(value_)
-        class(input_t), intent(in) :: value_
-        type(shrink_result_t) :: shrunk_value
-
-        shrunk_value = shrink_result(value_, .false.)
-    end function
-
-    pure function simplest_value(value_)
-        class(input_t), intent(in) :: value_
-        type(shrink_result_t) :: simplest_value
-
-        simplest_value = shrink_result(value_, .true.)
-    end function
-
     function simple_test_case(description, test)
         use iso_varying_string, only: varying_string
 
@@ -6181,13 +6128,6 @@ contains
         type(test_item_t) :: item
 
         item = it_("Then " // description, test)
-    end function
-
-    pure function transformed(input)
-        class(input_t), intent(in) :: input
-        type(transformed_t) :: transformed
-
-        allocate(transformed%input, source = input)
     end function
 
     function transforming_test_collection(description, transformer, tests)
