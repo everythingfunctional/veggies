@@ -3,6 +3,7 @@ module vegetables
     use vegetables_ascii_string_generator_m, only: ASCII_STRING_GENERATOR
     use vegetables_command_line_m, only: &
             options_t, get_options, NUM_GENERATOR_TESTS
+    use vegetables_constants_m, only: INDENTATION
     use vegetables_double_precision_input_m, only: double_precision_input_t
     use vegetables_example_m, only: example_t, example
     use vegetables_generated_m, only: generated_t, generated
@@ -25,6 +26,12 @@ module vegetables
     use vegetables_shrink_result_m, only: &
             shrink_result_t, shrunk_value, simplest_value
     use vegetables_string_input_m, only: string_input_t
+    use vegetables_test_case_result_m, only: &
+            test_case_result_t, test_case_result
+    use vegetables_test_collection_result_m, only: &
+            test_collection_result_t, test_collection_result
+    use vegetables_test_result_m, only: test_result_t
+    use vegetables_test_result_item_m, only: test_result_item_t
     use vegetables_transformed_m, only: transformed_t, transformed
 
     implicit none
@@ -209,70 +216,6 @@ module vegetables
         procedure :: run_without_input => transforming_test_collection_run_without_input
     end type
 
-    type, abstract :: test_result_t
-        private
-        type(varying_string) :: description
-    contains
-        private
-        procedure(test_result_count_i), public, deferred :: num_asserts
-        procedure(test_result_count_i), public, deferred :: num_cases
-        procedure(test_result_count_i), public, deferred :: num_failing_asserts
-        procedure(test_result_count_i), public, deferred :: num_failing_cases
-        procedure(test_result_passed_i), public, deferred :: passed
-        procedure(test_result_colorized_description_i), public, deferred :: &
-                failure_description
-        procedure(test_result_colorized_description_i), public, deferred :: &
-                verbose_description
-    end type
-
-    type :: test_result_item_t
-        private
-        class(test_result_t), allocatable :: result_
-    contains
-        private
-        procedure, public :: num_asserts => test_result_item_num_asserts
-        procedure, public :: num_cases => test_result_item_num_cases
-        procedure, public :: num_failing_asserts => test_result_item_num_failing_asserts
-        procedure, public :: num_failing_cases => test_result_item_num_failing_cases
-        procedure, public :: passed => test_result_item_passed
-        procedure, public :: failure_description => test_result_item_failure_description
-        procedure, public :: verbose_description => test_result_item_verbose_description
-    end type
-
-    type, extends(test_result_t) :: test_case_result_t
-        private
-        type(result_t) :: result_
-    contains
-        private
-        procedure, public :: num_asserts => test_case_result_num_asserts
-        procedure, public :: num_cases => test_case_result_num_cases
-        procedure, public :: num_failing_asserts => test_case_result_num_failing_asserts
-        procedure, public :: num_failing_cases => test_case_result_num_failing_cases
-        procedure, public :: passed => test_case_result_passed
-        procedure, public :: failure_description => &
-                test_case_result_failure_description
-        procedure, public :: verbose_description => &
-                test_case_result_verbose_description
-    end type
-
-    type, extends(test_result_t) :: test_collection_result_t
-        private
-        type(test_result_item_t), allocatable :: results(:)
-    contains
-        private
-        procedure, public :: num_asserts => test_collection_result_num_asserts
-        procedure, public :: num_cases => test_collection_result_num_cases
-        procedure, public :: num_failing_asserts => &
-                test_collection_result_num_failing_asserts
-        procedure, public :: num_failing_cases => &
-                test_collection_result_num_failing_cases
-        procedure, public :: passed => test_collection_result_passed
-        procedure, public :: failure_description => &
-                test_collection_result_failure_description
-        procedure, public :: verbose_description => &
-                test_collection_result_verbose_description
-    end type
-
     type :: filter_result_t
         class(test_t), allocatable :: test
         logical :: matched
@@ -332,26 +275,6 @@ module vegetables
             import test_t, varying_string
             class(test_t), intent(in) :: self
             type(varying_string) :: description
-        end function
-
-        pure function test_result_colorized_description_i( &
-                self, colorize) result(description)
-            import test_result_t, varying_string
-            class(test_result_t), intent(in) :: self
-            logical, intent(in) :: colorize
-            type(varying_string) :: description
-        end function
-
-        pure function test_result_count_i(self) result(num)
-            import test_result_t
-            class(test_result_t), intent(in) :: self
-            integer :: num
-        end function
-
-        pure function test_result_passed_i(self) result(passed)
-            import test_result_t
-            class(test_result_t), intent(in) :: self
-            logical :: passed
         end function
 
         function transformer_i(input) result(output)
@@ -713,7 +636,6 @@ module vegetables
     end interface
 
     character(len=*), parameter, public :: EMPTY_SUCCESS_MESSAGE = "String was empty"
-    integer, parameter :: INDENTATION = 4
     double precision, parameter :: MACHINE_EPSILON = epsilon(0.0d0)
     double precision, parameter :: MACHINE_TINY = tiny(0.0d0)
     character(len=*), parameter, public :: NOT_FAILURE_MESSAGE = "Expected to not be true"
@@ -5268,93 +5190,6 @@ contains
         num_cases = 1
     end function
 
-    pure function test_case_result(description, result_)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: description
-        type(result_t), intent(in) :: result_
-        type(test_case_result_t) :: test_case_result
-
-        test_case_result%description = description
-        test_case_result%result_ = result_
-    end function
-
-    pure function test_case_result_failure_description( &
-            self, colorize) result(description)
-        use iso_varying_string, only: varying_string, assignment(=), operator(//)
-        use strff, only: hanging_indent, NEWLINE
-
-        class(test_case_result_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(varying_string) :: description
-
-        if (self%passed()) then
-            description = ""
-        else
-            description = hanging_indent( &
-                    self%description // NEWLINE &
-                        // self%result_%failure_description(colorize), &
-                    INDENTATION)
-        end if
-    end function
-
-    pure function test_case_result_num_asserts(self) result(num_asserts)
-        class(test_case_result_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = self%result_%num_asserts()
-    end function
-
-    pure function test_case_result_num_cases(self) result(num_cases)
-        class(test_case_result_t), intent(in) :: self
-        integer :: num_cases
-
-        associate(a => self)
-        end associate
-
-        num_cases = 1
-    end function
-
-    pure function test_case_result_num_failing_asserts(self) result(num_asserts)
-        class(test_case_result_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = self%result_%num_failing_asserts()
-    end function
-
-    pure function test_case_result_num_failing_cases(self) result(num_cases)
-        class(test_case_result_t), intent(in) :: self
-        integer :: num_cases
-
-        if (self%passed()) then
-            num_cases = 0
-        else
-            num_cases = 1
-        end if
-    end function
-
-    pure function test_case_result_passed(self) result(passed)
-        class(test_case_result_t), intent(in) :: self
-        logical :: passed
-
-        passed = self%result_%passed()
-    end function
-
-    pure function test_case_result_verbose_description( &
-            self, colorize) result(description)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, NEWLINE
-
-        class(test_case_result_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(varying_string) :: description
-
-        description = hanging_indent( &
-                self%description // NEWLINE &
-                    // self%result_%verbose_description(colorize), &
-                INDENTATION)
-    end function
-
     function test_case_with_examples(description, examples, test)
         use iso_varying_string, only: varying_string
 
@@ -5530,102 +5365,6 @@ contains
         num_cases = sum([(self%tests(i)%num_cases(), i = 1, size(self%tests))])
     end function
 
-    pure function test_collection_result(description, results)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: description
-        type(test_result_item_t), intent(in) :: results(:)
-        type(test_collection_result_t) :: test_collection_result
-
-        test_collection_result%description = description
-        allocate(test_collection_result%results, source = results)
-    end function
-
-    pure recursive function test_collection_result_failure_description( &
-            self, colorize) result(description)
-        use iso_varying_string, only: varying_string, assignment(=), operator(//)
-        use strff, only: hanging_indent, join, NEWLINE
-
-        class(test_collection_result_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(varying_string) :: description
-
-        integer :: i
-
-        if (self%passed()) then
-            description = ""
-        else
-            description = hanging_indent( &
-                    self%description // NEWLINE // join( &
-                            [(self%results(i)%failure_description(colorize), i = 1, size(self%results))], &
-                            NEWLINE), &
-                    INDENTATION)
-        end if
-    end function
-
-    pure recursive function test_collection_result_num_asserts(self) result(num_asserts)
-        class(test_collection_result_t), intent(in) :: self
-        integer :: num_asserts
-
-        integer :: i
-
-        num_asserts = sum([(self%results(i)%num_asserts(), i = 1, size(self%results))])
-    end function
-
-    pure recursive function test_collection_result_num_cases(self) result(num_cases)
-        class(test_collection_result_t), intent(in) :: self
-        integer :: num_cases
-
-        integer :: i
-
-        num_cases = sum([(self%results(i)%num_cases(), i = 1, size(self%results))])
-    end function
-
-    pure recursive function test_collection_result_num_failing_asserts(self) result(num_asserts)
-        class(test_collection_result_t), intent(in) :: self
-        integer :: num_asserts
-
-        integer :: i
-
-        num_asserts = sum([(self%results(i)%num_failing_asserts(), i = 1, size(self%results))])
-    end function
-
-    pure recursive function test_collection_result_num_failing_cases(self) result(num_cases)
-        class(test_collection_result_t), intent(in) :: self
-        integer :: num_cases
-
-        integer :: i
-
-        num_cases = sum([(self%results(i)%num_failing_cases(), i = 1, size(self%results))])
-    end function
-
-    pure recursive function test_collection_result_passed(self) result(passed)
-        class(test_collection_result_t), intent(in) :: self
-        logical :: passed
-
-        integer :: i
-
-        passed = all([(self%results(i)%passed(), i = 1, size(self%results))])
-    end function
-
-    pure recursive function test_collection_result_verbose_description( &
-            self, colorize) result(description)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, join, NEWLINE
-
-        class(test_collection_result_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(varying_string) :: description
-
-        integer :: i
-
-        description = hanging_indent( &
-                self%description // NEWLINE // join( &
-                        [(self%results(i)%verbose_description(colorize), i = 1, size(self%results))], &
-                        NEWLINE), &
-                INDENTATION)
-    end function
-
     function test_collection_with_input(description, input, tests)
         use iso_varying_string, only: varying_string
 
@@ -5711,63 +5450,6 @@ contains
         type(test_result_item_t) :: result_
 
         result_ = self%test%run()
-    end function
-
-    pure recursive function test_result_item_failure_description( &
-            self, colorize) result(description)
-        use iso_varying_string, only: varying_string
-
-        class(test_result_item_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(varying_string) :: description
-
-        description = self%result_%failure_description(colorize)
-    end function
-
-    pure recursive function test_result_item_num_asserts(self) result(num_asserts)
-        class(test_result_item_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = self%result_%num_asserts()
-    end function
-
-    pure recursive function test_result_item_num_cases(self) result(num_cases)
-        class(test_result_item_t), intent(in) :: self
-        integer :: num_cases
-
-        num_cases = self%result_%num_cases()
-    end function
-
-    pure recursive function test_result_item_num_failing_asserts(self) result(num_asserts)
-        class(test_result_item_t), intent(in) :: self
-        integer :: num_asserts
-
-        num_asserts = self%result_%num_failing_asserts()
-    end function
-
-    pure recursive function test_result_item_num_failing_cases(self) result(num_cases)
-        class(test_result_item_t), intent(in) :: self
-        integer :: num_cases
-
-        num_cases = self%result_%num_failing_cases()
-    end function
-
-    pure recursive function test_result_item_passed(self) result(passed)
-        class(test_result_item_t), intent(in) :: self
-        logical :: passed
-
-        passed = self%result_%passed()
-    end function
-
-    pure recursive function test_result_item_verbose_description( &
-            self, colorize) result(description)
-        use iso_varying_string, only: varying_string
-
-        class(test_result_item_t), intent(in) :: self
-        logical, intent(in) :: colorize
-        type(varying_string) :: description
-
-        description = self%result_%verbose_description(colorize)
     end function
 
     function test_that(tests) result(item)
