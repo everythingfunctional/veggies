@@ -3,7 +3,7 @@ module vegetables
     use vegetables_ascii_string_generator_m, only: ASCII_STRING_GENERATOR
     use vegetables_command_line_m, only: &
             options_t, get_options, NUM_GENERATOR_TESTS
-    use vegetables_common_m, only: INDENTATION
+    use vegetables_constants_m, only: INDENTATION
     use vegetables_double_precision_input_m, only: double_precision_input_t
     use vegetables_example_m, only: example_t, example
     use vegetables_generated_m, only: generated_t, generated
@@ -11,6 +11,7 @@ module vegetables
     use vegetables_individual_result_m, only: &
             individual_result_t, individual_result
     use vegetables_input_m, only: input_t
+    use vegetables_input_test_case_m, only: input_test_case_t, input_test_case
     use vegetables_integer_generator_m, only: INTEGER_GENERATOR
     use vegetables_integer_input_m, only: integer_input_t
     use vegetables_random_m, only: &
@@ -22,23 +23,41 @@ module vegetables
             get_random_integer, &
             get_random_integer_with_range, &
             get_random_logical
-    use vegetables_result_m, only: result_t
+    use vegetables_result_m, only: result_t, fail, succeed
     use vegetables_shrink_result_m, only: &
             shrink_result_t, shrunk_value, simplest_value
+    use vegetables_simple_test_case_m, only: &
+            simple_test_case_t, simple_test_case
+    use vegetables_simple_test_collection_m, only: &
+            simple_test_collection_t, simple_test_collection
     use vegetables_string_input_m, only: string_input_t
+    use vegetables_test_m, only: filter_result_t, test_t
     use vegetables_test_case_result_m, only: &
             test_case_result_t, test_case_result
+    use vegetables_test_case_with_examples_m, only: &
+            test_case_with_examples_t, test_case_with_examples
+    use vegetables_test_case_with_generator_m, only: &
+            test_case_with_generator_t, test_case_with_generator
     use vegetables_test_collection_result_m, only: &
             test_collection_result_t, test_collection_result
+    use vegetables_test_collection_with_input_m, only: &
+            test_collection_with_input_t, test_collection_with_input
+    use vegetables_test_item_m, only: filter_item_result_t, test_item_t
+    use vegetables_test_interfaces_m, only: &
+            computation_i, input_test_i, simple_test_i, transformer_i
     use vegetables_test_result_m, only: test_result_t
     use vegetables_test_result_item_m, only: test_result_item_t
+    use vegetables_transformation_failure_m, only: transformation_failure_t
     use vegetables_transformed_m, only: transformed_t, transformed
+    use vegetables_transforming_test_collection_m, only: &
+            transforming_test_collection_t, transforming_test_collection
 
     implicit none
     private
     public :: &
             double_precision_input_t, &
             example_t, &
+            filter_item_result_t, &
             generated_t, &
             generator_t, &
             input_t, &
@@ -49,15 +68,14 @@ module vegetables
             simple_test_case_t, &
             simple_test_collection_t, &
             string_input_t, &
-            test_case_t, &
             test_case_result_t, &
             test_case_with_examples_t, &
             test_case_with_generator_t, &
-            test_collection_t, &
             test_collection_result_t, &
             test_collection_with_input_t, &
             test_item_t, &
             test_result_item_t, &
+            transformation_failure_t, &
             transformed_t, &
             transforming_test_collection_t, &
             assert_doesnt_include, &
@@ -108,181 +126,6 @@ module vegetables
             with_user_message, &
             ASCII_STRING_GENERATOR, &
             INTEGER_GENERATOR
-
-    type, abstract :: test_t
-        private
-        type(varying_string) :: description_
-    contains
-        private
-        procedure(test_description_i), public, deferred :: description
-        procedure(filter_i), public, deferred :: filter
-        procedure(test_count_i), public, deferred :: num_cases
-        procedure(run_with_input_i), deferred :: run_with_input
-        procedure(run_without_input_i), deferred :: run_without_input
-        generic :: run => run_with_input, run_without_input
-    end type
-
-    type :: test_item_t
-        private
-        class(test_t), allocatable :: test
-    contains
-        private
-        procedure, public :: description => test_item_description
-        procedure, public :: filter => test_item_filter
-        procedure, public :: num_cases => test_item_num_cases
-        procedure :: run_with_input => test_item_run_with_input
-        procedure :: run_without_input => test_item_run_without_input
-        generic, public :: run => run_with_input, run_without_input
-    end type
-
-    type, abstract, extends(test_t) :: test_case_t
-    contains
-        private
-        procedure, public :: description => test_case_description
-        procedure, public :: filter => test_case_filter
-        procedure, public :: num_cases => test_case_num_cases
-    end type
-
-    type, extends(test_case_t) :: simple_test_case_t
-        private
-        procedure(simple_test_i), nopass, pointer :: test
-    contains
-        private
-        procedure :: run_with_input => simple_test_case_run_with_input
-        procedure :: run_without_input => simple_test_case_run_without_input
-    end type
-
-    type, extends(test_case_t) :: input_test_case_t
-        private
-        procedure(input_test_i), nopass, pointer :: test
-    contains
-        private
-        procedure :: run_with_input => input_test_case_run_with_input
-        procedure :: run_without_input => input_test_case_run_without_input
-    end type
-
-    type, extends(test_case_t) :: test_case_with_examples_t
-        private
-        type(example_t), allocatable :: examples(:)
-        procedure(input_test_i), nopass, pointer :: test
-    contains
-        private
-        procedure :: run_with_input => test_case_with_examples_run_with_input
-        procedure :: run_without_input => test_case_with_examples_run_without_input
-    end type
-
-    type, extends(test_case_t) :: test_case_with_generator_t
-        private
-        class(generator_t), allocatable :: generator
-        procedure(input_test_i), nopass, pointer :: test
-    contains
-        private
-        procedure :: run_with_input => test_case_with_generator_run_with_input
-        procedure :: run_without_input => test_case_with_generator_run_without_input
-    end type
-
-    type, abstract, extends(test_t) :: test_collection_t
-        private
-        type(test_item_t), allocatable :: tests(:)
-    contains
-        private
-        procedure, public :: description => test_collection_description
-        procedure, public :: filter => test_collection_filter
-        procedure, public :: num_cases => test_collection_num_cases
-    end type
-
-    type, extends(test_collection_t) :: simple_test_collection_t
-    contains
-        private
-        procedure :: run_with_input => simple_test_collection_run_with_input
-        procedure :: run_without_input => simple_test_collection_run_without_input
-    end type
-
-    type, extends(test_collection_t) :: test_collection_with_input_t
-        private
-        class(input_t), allocatable :: input
-    contains
-        private
-        procedure :: run_with_input => test_collection_with_input_run_with_input
-        procedure :: run_without_input => test_collection_with_input_run_without_input
-    end type
-
-    type, extends(test_collection_t) :: transforming_test_collection_t
-        private
-        procedure(transformer_i), nopass, pointer :: transformer
-    contains
-        private
-        procedure :: run_with_input => transforming_test_collection_run_with_input
-        procedure :: run_without_input => transforming_test_collection_run_without_input
-    end type
-
-    type :: filter_result_t
-        class(test_t), allocatable :: test
-        logical :: matched
-    end type
-
-    type, public :: filter_item_result_t
-        type(test_item_t) :: test
-        logical :: matched
-    end type
-
-    type, public, extends(input_t) :: transformation_failure_t
-        type(result_t) :: result_
-    end type
-
-    abstract interface
-        subroutine computation_i
-        end subroutine
-
-        pure function filter_i(self, filter_string) result(filter_result)
-            import test_t, filter_result_t, varying_string
-            class(test_t), intent(in) :: self
-            type(varying_string), intent(in) :: filter_string
-            type(filter_result_t) :: filter_result
-        end function
-
-        function input_test_i(input) result(result_)
-            import input_t, result_t
-            class(input_t), intent(in) :: input
-            type(result_t) :: result_
-        end function
-
-        function run_with_input_i(self, input) result(result_)
-            import input_t, test_t, test_result_item_t
-            class(test_t), intent(in) :: self
-            class(input_t), intent(in) :: input
-            type(test_result_item_t) :: result_
-        end function
-
-        function run_without_input_i(self) result(result_)
-            import test_t, test_result_item_t
-            class(test_t), intent(in) :: self
-            type(test_result_item_t) :: result_
-        end function
-
-        function simple_test_i() result(result_)
-            import result_t
-            type(result_t) :: result_
-        end function
-
-        pure function test_count_i(self) result(num)
-            import test_t
-            class(test_t), intent(in) :: self
-            integer :: num
-        end function
-
-        pure function test_description_i(self) result(description)
-            import test_t, varying_string
-            class(test_t), intent(in) :: self
-            type(varying_string) :: description
-        end function
-
-        function transformer_i(input) result(output)
-            import input_t, transformed_t
-            class(input_t), intent(in) :: input
-            type(transformed_t) :: output
-        end function
-    end interface
 
     interface assert_doesnt_include
         module procedure assert_doesnt_include_basic_cc
@@ -491,11 +334,6 @@ module vegetables
         module procedure describe_with_input_s
     end interface
 
-    interface fail
-        module procedure fail_c
-        module procedure fail_s
-    end interface
-
     interface given
         module procedure given_basic_c
         module procedure given_basic_s
@@ -604,11 +442,6 @@ module vegetables
         module procedure make_within_success_message_scs
         module procedure make_within_success_message_ssc
         module procedure make_within_success_message_sss
-    end interface
-
-    interface succeed
-        module procedure succeed_c
-        module procedure succeed_s
     end interface
 
     interface then_
@@ -4051,25 +3884,6 @@ contains
                 .or. (abs(expected - actual) / abs(expected) <= tolerance)
     end function
 
-    pure function fail_c(message) result(failure)
-        use iso_varying_string, only: var_str
-
-        character(len=*), intent(in) :: message
-        type(result_t) :: failure
-
-        failure = fail(var_str(message))
-    end function
-
-    pure function fail_s(message) result(failure)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: message
-        type(result_t) :: failure
-
-        allocate(failure%results(1))
-        failure%results(1) = individual_result(message, .false.)
-    end function
-
     function given_basic_c(description, tests) result(item)
         character(len=*), intent(in) :: description
         type(test_item_t), intent(in) :: tests(:)
@@ -4106,34 +3920,6 @@ contains
         type(test_item_t) :: item
 
         item = describe("Given " // description, input, tests)
-    end function
-
-    function input_test_case(description, test)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: description
-        procedure(input_test_i) :: test
-        type(input_test_case_t) :: input_test_case
-
-        input_test_case%description_ = description
-        input_test_case%test => test
-    end function
-
-    function input_test_case_run_with_input(self, input) result(result_)
-        class(input_test_case_t), intent(in) :: self
-        class(input_t), intent(in) :: input
-        type(test_result_item_t) :: result_
-
-        allocate(result_%result_, source = test_case_result( &
-                self%description_, self%test(input)))
-    end function
-
-    function input_test_case_run_without_input(self) result(result_)
-        class(input_test_case_t), intent(in) :: self
-        type(test_result_item_t) :: result_
-
-        allocate(result_%result_, source = test_case_result( &
-                self%description_, fail("No input provided")))
     end function
 
     function it_basic_c(description, test) result(item)
@@ -5070,388 +4856,6 @@ contains
         end if
     end subroutine
 
-    function simple_test_case(description, test)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: description
-        procedure(simple_test_i) :: test
-        type(simple_test_case_t) :: simple_test_case
-
-        simple_test_case%description_ = description
-        simple_test_case%test => test
-    end function
-
-    function simple_test_case_run_with_input(self, input) result(result_)
-        class(simple_test_case_t), intent(in) :: self
-        class(input_t), intent(in) :: input
-        type(test_result_item_t) :: result_
-
-        associate(a => input)
-        end associate
-
-        result_ = self%run()
-    end function
-
-    function simple_test_case_run_without_input(self) result(result_)
-        class(simple_test_case_t), intent(in) :: self
-        type(test_result_item_t) :: result_
-
-        allocate(result_%result_, source = test_case_result( &
-                self%description_, self%test()))
-    end function
-
-    function simple_test_collection(description, tests)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: description
-        type(test_item_t), intent(in) :: tests(:)
-        type(simple_test_collection_t) :: simple_test_collection
-
-        simple_test_collection%description_ = description
-        allocate(simple_test_collection%tests, source = tests)
-    end function
-
-    recursive function simple_test_collection_run_with_input(self, input) result(result_)
-        class(simple_test_collection_t), intent(in) :: self
-        class(input_t), intent(in) :: input
-        type(test_result_item_t) :: result_
-
-        associate(a => input)
-        end associate
-
-        result_ = self%run()
-    end function
-
-    recursive function simple_test_collection_run_without_input(self) result(result_)
-        class(simple_test_collection_t), intent(in) :: self
-        type(test_result_item_t) :: result_
-
-        integer :: i
-        type(test_result_item_t) :: results(size(self%tests))
-
-        do i = 1, size(self%tests)
-            results(i) = self%tests(i)%run()
-        end do
-        allocate(result_%result_, source = test_collection_result( &
-                self%description_, results))
-    end function
-
-    pure function succeed_c(message) result(success)
-        use iso_varying_string, only: var_str
-
-        character(len=*), intent(in) :: message
-        type(result_t) :: success
-
-        success = succeed(var_str(message))
-    end function
-
-    pure function succeed_s(message) result(success)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: message
-        type(result_t) :: success
-
-        allocate(success%results(1))
-        success%results(1) = individual_result(message, .true.)
-    end function
-
-    pure function test_case_description(self) result(description)
-        use iso_varying_string, only: varying_string
-
-        class(test_case_t), intent(in) :: self
-        type(varying_string) :: description
-
-        description = self%description_
-    end function
-
-    pure function test_case_filter(self, filter_string) result(filter_result)
-        use iso_varying_string, only: varying_string
-        use strff, only: operator(.includes.)
-
-        class(test_case_t), intent(in) :: self
-        type(varying_string), intent(in) :: filter_string
-        type(filter_result_t) :: filter_result
-
-        if (self%description_.includes.filter_string) then
-            filter_result%matched = .true.
-            allocate(filter_result%test, source = self)
-        else
-            filter_result%matched = .false.
-        end if
-    end function
-
-    pure function test_case_num_cases(self) result(num_cases)
-        class(test_case_t), intent(in) :: self
-        integer :: num_cases
-
-        associate(a => self)
-        end associate
-
-        num_cases = 1
-    end function
-
-    function test_case_with_examples(description, examples, test)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: description
-        type(example_t), intent(in) :: examples(:)
-        procedure(input_test_i) :: test
-        type(test_case_with_examples_t) :: test_case_with_examples
-
-        test_case_with_examples%description_ = description
-        allocate(test_case_with_examples%examples, source = examples)
-        test_case_with_examples%test => test
-    end function
-
-    function test_case_with_examples_run_with_input(self, input) result(result_)
-        class(test_case_with_examples_t), intent(in) :: self
-        class(input_t), intent(in) :: input
-        type(test_result_item_t) :: result_
-
-        associate(a => input)
-        end associate
-
-        result_ = self%run()
-    end function
-
-    function test_case_with_examples_run_without_input(self) result(result_)
-        class(test_case_with_examples_t), intent(in) :: self
-        type(test_result_item_t) :: result_
-
-        integer :: i
-        type(result_t) :: results
-
-        do i = 1, size(self%examples)
-            results = results.and.self%test(self%examples(i)%input)
-        end do
-        allocate(result_%result_, source = test_case_result( &
-                self%description_, results))
-    end function
-
-    function test_case_with_generator(description, generator, test)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: description
-        class(generator_t), intent(in) :: generator
-        procedure(input_test_i) :: test
-        type(test_case_with_generator_t) :: test_case_with_generator
-
-        test_case_with_generator%description_ = description
-        allocate(test_case_with_generator%generator, source = generator)
-        test_case_with_generator%test => test
-    end function
-
-    function test_case_with_generator_run_with_input(self, input) result(result_)
-        class(test_case_with_generator_t), intent(in) :: self
-        class(input_t), intent(in) :: input
-        type(test_result_item_t) :: result_
-
-        associate(a => input)
-        end associate
-
-        result_ = self%run()
-    end function
-
-    function test_case_with_generator_run_without_input(self) result(result_)
-        use iso_varying_string, only: operator(//)
-        use strff, only: to_string
-
-        class(test_case_with_generator_t), intent(in) :: self
-        type(test_result_item_t) :: result_
-
-        type(generated_t) :: generated_value
-        integer :: i
-        type(result_t) :: new_result
-        type(result_t) :: previous_result
-        type(shrink_result_t) :: simpler_value
-
-        do i = 1, NUM_GENERATOR_TESTS
-            generated_value = self%generator%generate()
-            previous_result = self%test(generated_value%input)
-            if (.not.previous_result%passed()) exit
-        end do
-        if (i > NUM_GENERATOR_TESTS) then
-            allocate(result_%result_, source = test_case_result( &
-                    self%description_, &
-                    succeed("Passed after " // to_string(NUM_GENERATOR_TESTS) // " examples")))
-        else
-            do
-                simpler_value = self%generator%shrink(generated_value%input)
-                if (simpler_value%simplest) then
-                    new_result = self%test(simpler_value%input)
-                    if (new_result%passed()) then
-                        allocate(result_%result_, source = test_case_result( &
-                                self%description_, &
-                                fail('Found simplest example causing failure').and.previous_result))
-                        return
-                    else
-                        allocate(result_%result_, source = test_case_result( &
-                                self%description_, &
-                                fail('Fails with the simplest possible example').and.new_result))
-                        return
-                    end if
-                else
-                    new_result = self%test(simpler_value%input)
-                    if (new_result%passed()) then
-                        allocate(result_%result_, source = test_case_result( &
-                                self%description_, &
-                                fail('Found simplest example causing failure').and.previous_result))
-                        return
-                    else
-                        previous_result = new_result
-                        generated_value = generated(simpler_value%input)
-                    end if
-                end if
-            end do
-        end if
-    end function
-
-    pure recursive function test_collection_description(self) result(description)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, join, NEWLINE
-
-        class(test_collection_t), intent(in) :: self
-        type(varying_string) :: description
-
-        integer :: i
-
-        description = hanging_indent( &
-                self%description_ // NEWLINE // join( &
-                        [(self%tests(i)%description(), i = 1, size(self%tests))], &
-                        NEWLINE), &
-                INDENTATION)
-    end function
-
-    pure recursive function test_collection_filter(self, filter_string) result(filter_result)
-        use iso_varying_string, only: varying_string
-        use strff, only: operator(.includes.)
-
-        class(test_collection_t), intent(in) :: self
-        type(varying_string), intent(in) :: filter_string
-        type(filter_result_t) :: filter_result
-
-        class(test_collection_t), allocatable :: new_collection
-        type(filter_item_result_t) :: filter_results(size(self%tests))
-        integer :: i
-        logical :: matches(size(self%tests))
-        type(test_item_t) :: maybe_tests(size(self%tests))
-
-        if (self%description_.includes.filter_string) then
-            filter_result%matched = .true.
-            allocate(filter_result%test, source = self)
-        else
-            filter_results = [(self%tests(i)%filter(filter_string), i = 1, size(self%tests))]
-            if (any(filter_results%matched)) then
-                matches = filter_results%matched
-                maybe_tests = filter_results%test
-                allocate(new_collection, source = self)
-                deallocate(new_collection%tests)
-                allocate(new_collection%tests, source = &
-                        pack(maybe_tests, mask=matches))
-                filter_result%matched = .true.
-                allocate(filter_result%test, source = new_collection)
-            else
-                filter_result%matched = .false.
-            end if
-        end if
-    end function
-
-    pure recursive function test_collection_num_cases(self) result(num_cases)
-        class(test_collection_t), intent(in) :: self
-        integer :: num_cases
-
-        integer :: i
-
-        num_cases = sum([(self%tests(i)%num_cases(), i = 1, size(self%tests))])
-    end function
-
-    function test_collection_with_input(description, input, tests)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: description
-        class(input_t), intent(in) :: input
-        type(test_item_t), intent(in) :: tests(:)
-        type(test_collection_with_input_t) :: test_collection_with_input
-
-        test_collection_with_input%description_ = description
-        allocate(test_collection_with_input%input, source = input)
-        allocate(test_collection_with_input%tests, source = tests)
-    end function
-
-    recursive function test_collection_with_input_run_with_input(self, input) result(result_)
-        class(test_collection_with_input_t), intent(in) :: self
-        class(input_t), intent(in) :: input
-        type(test_result_item_t) :: result_
-
-        associate(a => input)
-        end associate
-
-        result_ = self%run()
-    end function
-
-    recursive function test_collection_with_input_run_without_input(self) result(result_)
-        class(test_collection_with_input_t), intent(in) :: self
-        type(test_result_item_t) :: result_
-
-        integer :: i
-        type(test_result_item_t) :: results(size(self%tests))
-
-        do i = 1, size(self%tests)
-            results(i) = self%tests(i)%run(self%input)
-        end do
-        allocate(result_%result_, source = test_collection_result( &
-                self%description_, results))
-    end function
-
-    pure recursive function test_item_description(self) result(description)
-        use iso_varying_string, only: varying_string
-
-        class(test_item_t), intent(in) :: self
-        type(varying_string) :: description
-
-        description = self%test%description()
-    end function
-
-    pure recursive function test_item_filter(self, filter_string) result(filter_result)
-        use iso_varying_string, only: varying_string
-
-        class(test_item_t), intent(in) :: self
-        type(varying_string), intent(in) :: filter_string
-        type(filter_item_result_t) :: filter_result
-
-        type(filter_result_t) :: test_filter_result
-
-        test_filter_result = self%test%filter(filter_string)
-        if (test_filter_result%matched) then
-            filter_result%matched = .true.
-            allocate(filter_result%test%test, source = test_filter_result%test)
-        else
-            filter_result%matched = .false.
-        end if
-    end function
-
-    pure recursive function test_item_num_cases(self) result(num_cases)
-        class(test_item_t), intent(in) :: self
-        integer :: num_cases
-
-        num_cases = self%test%num_cases()
-    end function
-
-    recursive function test_item_run_with_input(self, input) result(result_)
-        class(test_item_t), intent(in) :: self
-        class(input_t), intent(in) :: input
-        type(test_result_item_t) :: result_
-
-        result_ = self%test%run(input)
-    end function
-
-    recursive function test_item_run_without_input(self) result(result_)
-        class(test_item_t), intent(in) :: self
-        type(test_result_item_t) :: result_
-
-        result_ = self%test%run()
-    end function
-
     function test_that(tests) result(item)
         type(test_item_t) :: tests(:)
         type(test_item_t) :: item
@@ -5493,50 +4897,6 @@ contains
         type(test_item_t) :: item
 
         item = it_("Then " // description, test)
-    end function
-
-    function transforming_test_collection(description, transformer, tests)
-        use iso_varying_string, only: varying_string
-
-        type(varying_string), intent(in) :: description
-        procedure(transformer_i) :: transformer
-        type(test_item_t), intent(in) :: tests(:)
-        type(transforming_test_collection_t) :: transforming_test_collection
-
-        transforming_test_collection%description_ = description
-        transforming_test_collection%transformer => transformer
-        allocate(transforming_test_collection%tests, source = tests)
-    end function
-
-    recursive function transforming_test_collection_run_with_input(self, input) result(result_)
-        class(transforming_test_collection_t), intent(in) :: self
-        class(input_t), intent(in) :: input
-        type(test_result_item_t) :: result_
-
-        integer :: i
-        type(test_result_item_t) :: results(size(self%tests))
-        type(transformed_t) :: transformed_
-
-        transformed_ = self%transformer(input)
-        select type (transformed_input => transformed_%input)
-        type is (transformation_failure_t)
-            allocate(result_%result_, source = test_case_result( &
-                    self%description_, transformed_input%result_))
-        class default
-            do i = 1, size(self%tests)
-                results(i) = self%tests(i)%run(transformed_input)
-            end do
-            allocate(result_%result_, source = test_collection_result( &
-                    self%description_, results))
-        end select
-    end function
-
-    function transforming_test_collection_run_without_input(self) result(result_)
-        class(transforming_test_collection_t), intent(in) :: self
-        type(test_result_item_t) :: result_
-
-        allocate(result_%result_, source = test_case_result( &
-                self%description_, fail("No input provided")))
     end function
 
     function when_basic_c(description, tests) result(item)

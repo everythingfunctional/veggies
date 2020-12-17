@@ -37,7 +37,7 @@ contains
             self, colorize) result(description)
         use iso_varying_string, only: varying_string, assignment(=), operator(//)
         use strff, only: hanging_indent, join, NEWLINE
-        use vegetables_common_m, only: INDENTATION
+        use vegetables_constants_m, only: INDENTATION
 
         class(test_collection_result_t), intent(in) :: self
         logical, intent(in) :: colorize
@@ -105,7 +105,7 @@ contains
             self, colorize) result(description)
         use iso_varying_string, only: varying_string, operator(//)
         use strff, only: hanging_indent, join, NEWLINE
-        use vegetables_common_m, only: INDENTATION
+        use vegetables_constants_m, only: INDENTATION
 
         class(test_collection_result_t), intent(in) :: self
         logical, intent(in) :: colorize

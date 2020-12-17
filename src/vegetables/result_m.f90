@@ -3,7 +3,7 @@ module vegetables_result_m
 
     implicit none
     private
-    public :: result_t
+    public :: result_t, fail, succeed
 
     type :: result_t
         type(individual_result_t), allocatable :: results(:)
@@ -17,7 +17,57 @@ module vegetables_result_m
         procedure, public :: failure_description
         procedure, public :: verbose_description
     end type
+
+    interface fail
+        module procedure fail_c
+        module procedure fail_s
+    end interface
+
+    interface succeed
+        module procedure succeed_c
+        module procedure succeed_s
+    end interface
 contains
+    pure function fail_c(message) result(failure)
+        use iso_varying_string, only: var_str
+
+        character(len=*), intent(in) :: message
+        type(result_t) :: failure
+
+        failure = fail(var_str(message))
+    end function
+
+    pure function fail_s(message) result(failure)
+        use iso_varying_string, only: varying_string
+        use vegetables_individual_result_m, only: individual_result
+
+        type(varying_string), intent(in) :: message
+        type(result_t) :: failure
+
+        allocate(failure%results(1))
+        failure%results(1) = individual_result(message, .false.)
+    end function
+
+    pure function succeed_c(message) result(success)
+        use iso_varying_string, only: var_str
+
+        character(len=*), intent(in) :: message
+        type(result_t) :: success
+
+        success = succeed(var_str(message))
+    end function
+
+    pure function succeed_s(message) result(success)
+        use iso_varying_string, only: varying_string
+        use vegetables_individual_result_m, only: individual_result
+
+        type(varying_string), intent(in) :: message
+        type(result_t) :: success
+
+        allocate(success%results(1))
+        success%results(1) = individual_result(message, .true.)
+    end function
+
     pure function combine_results(lhs, rhs) result(combined)
         class(result_t), intent(in) :: lhs
         type(result_t), intent(in) :: rhs

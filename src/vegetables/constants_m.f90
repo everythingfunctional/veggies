@@ -1,4 +1,4 @@
-module vegetables_common_m
+module vegetables_constants_m
     implicit none
     private
     public :: INDENTATION
