@@ -31,7 +31,7 @@ contains
         description = self%test%description()
     end function
 
-    pure recursive function filter(self, filter_string) result(filter_result)
+    recursive function filter(self, filter_string) result(filter_result)
         use iso_varying_string, only: varying_string
         use vegetables_test_m, only: filter_result_t
 

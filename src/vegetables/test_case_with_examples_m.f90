@@ -18,8 +18,8 @@ module vegetables_test_case_with_examples_m
         procedure, public :: description
         procedure, public :: filter
         procedure, public :: num_cases
-        procedure :: run_with_input
-        procedure :: run_without_input
+        procedure, public :: run_with_input
+        procedure, public :: run_without_input
     end type
 contains
     function test_case_with_examples(description, examples, test)
@@ -44,7 +44,7 @@ contains
         description = self%description_
     end function
 
-    pure function filter(self, filter_string) result(filter_result)
+    function filter(self, filter_string) result(filter_result)
         use iso_varying_string, only: varying_string
         use strff, only: operator(.includes.)
         use vegetables_test_m, only: filter_result_t

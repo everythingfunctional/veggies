@@ -67,7 +67,7 @@ contains
         tests = given("a test collection", the_collection, collection)
     end function
 
-    pure function filter_case_not_matching(example_case) result(filtered)
+    function filter_case_not_matching(example_case) result(filtered)
         use example_cases_m, only: NOT_IN_DESCRIPTION
         use helpers_m, only: test_item_input_t
         use iso_varying_string, only: var_str
@@ -94,7 +94,7 @@ contains
         end select
     end function
 
-    pure function filter_case_matching(example_case) result(filtered)
+    function filter_case_matching(example_case) result(filtered)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
         use helpers_m, only: test_item_input_t
         use iso_varying_string, only: var_str
@@ -121,7 +121,7 @@ contains
         end select
     end function
 
-    pure function filter_collection_not_matching(example_collection) result(filtered)
+    function filter_collection_not_matching(example_collection) result(filtered)
         use example_collections_m, only: NOT_IN_DESCRIPTIONS
         use helpers_m, only: test_item_input_t
         use iso_varying_string, only: var_str
@@ -148,7 +148,7 @@ contains
         end select
     end function
 
-    pure function filter_collection_matching_description(example_collection) result(filtered)
+    function filter_collection_matching_description(example_collection) result(filtered)
         use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
         use helpers_m, only: test_item_input_t
         use iso_varying_string, only: var_str
@@ -175,7 +175,7 @@ contains
         end select
     end function
 
-    pure function filter_collection_matching_case(example_collection) result(filtered)
+    function filter_collection_matching_case(example_collection) result(filtered)
         use example_collections_m, only: EXAMPLE_CASE_DESCRIPTION_1
         use helpers_m, only: test_item_input_t
         use iso_varying_string, only: var_str

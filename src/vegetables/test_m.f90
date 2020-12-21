@@ -9,8 +9,8 @@ module vegetables_test_m
         procedure(test_description_i), public, deferred :: description
         procedure(filter_i), public, deferred :: filter
         procedure(test_count_i), public, deferred :: num_cases
-        procedure(run_with_input_i), deferred :: run_with_input
-        procedure(run_without_input_i), deferred :: run_without_input
+        procedure(run_with_input_i), public, deferred :: run_with_input
+        procedure(run_without_input_i), public, deferred :: run_without_input
         generic, public :: run => run_with_input, run_without_input
     end type
 
@@ -20,7 +20,7 @@ module vegetables_test_m
     end type
 
     abstract interface
-        pure function filter_i(self, filter_string) result(filter_result)
+        function filter_i(self, filter_string) result(filter_result)
             use iso_varying_string, only: varying_string
             import test_t, filter_result_t
 
