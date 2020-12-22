@@ -1,7 +1,7 @@
 module vegetables_test_m
     implicit none
     private
-    public :: filter_result_t, test_t
+    public :: filter_result_t, test_t, filter_failed, filter_matched
 
     type, abstract :: test_t
     contains
@@ -15,8 +15,13 @@ module vegetables_test_m
     end type
 
     type :: filter_result_t
-        class(test_t), allocatable :: test
-        logical :: matched
+        private
+        class(test_t), allocatable :: test_
+        logical :: matched_
+    contains
+        private
+        procedure, public :: matched
+        procedure, public :: test
     end type
 
     abstract interface
@@ -69,4 +74,32 @@ module vegetables_test_m
             type(varying_string) :: description
         end function
     end interface
+contains
+    function filter_failed()
+        type(filter_result_t) :: filter_failed
+
+        filter_failed%matched_ = .false.
+    end function
+
+    function filter_matched(test)
+        class(test_t), intent(in) :: test
+        type(filter_result_t) :: filter_matched
+
+        allocate(filter_matched%test_, source = test)
+        filter_matched%matched_ = .true.
+    end function
+
+    pure function matched(self)
+        class(filter_result_t), intent(in) :: self
+        logical :: matched
+
+        matched = self%matched_
+    end function
+
+    function test(self)
+        class(filter_result_t), intent(in) :: self
+        class(test_t), allocatable :: test
+
+        allocate(test, source = self%test_)
+    end function
 end module

@@ -39,12 +39,12 @@ contains
         type(varying_string), intent(in) :: filter_string
         type(filter_item_result_t) :: filter_result
 
-        type(filter_result_t) :: test_filter_result
+        type(filter_result_t) :: result_
 
-        test_filter_result = self%test%filter(filter_string)
-        if (test_filter_result%matched) then
+        result_ = self%test%filter(filter_string)
+        if (result_%matched()) then
             filter_result%matched = .true.
-            allocate(filter_result%test%test, source = test_filter_result%test)
+            allocate(filter_result%test%test, source = result_%test())
         else
             filter_result%matched = .false.
         end if

@@ -47,17 +47,17 @@ contains
     function filter(self, filter_string) result(filter_result)
         use iso_varying_string, only: varying_string
         use strff, only: operator(.includes.)
-        use vegetables_test_m, only: filter_result_t
+        use vegetables_test_m, only: &
+                filter_result_t, filter_failed, filter_matched
 
         class(test_case_with_examples_t), intent(in) :: self
         type(varying_string), intent(in) :: filter_string
         type(filter_result_t) :: filter_result
 
         if (self%description_.includes.filter_string) then
-            filter_result%matched = .true.
-            allocate(filter_result%test, source = self)
+            filter_result = filter_matched(self)
         else
-            filter_result%matched = .false.
+            filter_result = filter_failed()
         end if
     end function
 

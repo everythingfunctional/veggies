@@ -57,7 +57,8 @@ contains
     recursive function filter(self, filter_string) result(filter_result)
         use iso_varying_string, only: varying_string
         use strff, only: operator(.includes.)
-        use vegetables_test_m, only: filter_result_t
+        use vegetables_test_m, only: &
+                filter_result_t, filter_failed, filter_matched
         use vegetables_test_item_m, only: filter_item_result_t, test_item_t
 
         class(test_collection_with_input_t), intent(in) :: self
@@ -71,8 +72,7 @@ contains
         type(test_item_t) :: maybe_tests(size(self%tests))
 
         if (self%description_.includes.filter_string) then
-            filter_result%matched = .true.
-            allocate(filter_result%test, source = self)
+            filter_result = filter_matched(self)
         else
             filter_results = [(self%tests(i)%filter(filter_string), i = 1, size(self%tests))]
             if (any(filter_results%matched)) then
@@ -82,10 +82,9 @@ contains
                 deallocate(new_collection%tests)
                 allocate(new_collection%tests, source = &
                         pack(maybe_tests, mask=matches))
-                filter_result%matched = .true.
-                allocate(filter_result%test, source = new_collection)
+                filter_result = filter_matched(new_collection)
             else
-                filter_result%matched = .false.
+                filter_result = filter_failed()
             end if
         end if
     end function
