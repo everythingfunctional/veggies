@@ -6,6 +6,7 @@ module vegetables_result_m
     public :: result_t, fail, succeed
 
     type :: result_t
+        private
         type(individual_result_t), allocatable :: results(:)
     contains
         private
@@ -97,10 +98,7 @@ contains
         logical, intent(in) :: colorize
         type(varying_string) :: description
 
-        type(varying_string) :: individual_descriptions(size(self%results))
-
-        individual_descriptions = self%results%failure_description(colorize)
-        description = join(individual_descriptions, NEWLINE)
+        description = join(self%results%failure_description(colorize), NEWLINE)
     end function
 
     pure function num_asserts(self)
@@ -132,9 +130,6 @@ contains
         logical, intent(in) :: colorize
         type(varying_string) :: description
 
-        type(varying_string) :: individual_descriptions(size(self%results))
-
-        individual_descriptions = self%results%verbose_description(colorize)
-        description = join(individual_descriptions, NEWLINE)
+        description = join(self%results%verbose_description(colorize), NEWLINE)
     end function
 end module
