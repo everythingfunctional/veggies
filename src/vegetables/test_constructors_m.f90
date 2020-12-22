@@ -78,7 +78,7 @@ contains
         use iso_varying_string, only: var_str
         use vegetables_input_m, only: input_t
         use vegetables_test_collection_with_input_m, only: &
-                test_collection_with_input
+                test_collection_with_input_t
         use vegetables_test_item_m, only: test_item_t
 
         character(len=*), intent(in) :: description
@@ -86,7 +86,7 @@ contains
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        item = test_item_t(test_collection_with_input( &
+        item = test_item_t(test_collection_with_input_t( &
                 var_str(description), input, tests))
     end function
 
@@ -94,7 +94,7 @@ contains
         use iso_varying_string, only: varying_string
         use vegetables_input_m, only: input_t
         use vegetables_test_collection_with_input_m, only: &
-                test_collection_with_input
+                test_collection_with_input_t
         use vegetables_test_item_m, only: test_item_t
 
         type(varying_string), intent(in) :: description
@@ -102,7 +102,7 @@ contains
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        item = test_item_t(test_collection_with_input( &
+        item = test_item_t(test_collection_with_input_t( &
                 description, input, tests))
     end function
 

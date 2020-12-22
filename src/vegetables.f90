@@ -64,8 +64,6 @@ module vegetables
             test_case_with_generator_t, test_case_with_generator
     use vegetables_test_collection_result_m, only: &
             test_collection_result_t, test_collection_result
-    use vegetables_test_collection_with_input_m, only: &
-            test_collection_with_input_t, test_collection_with_input
     use vegetables_test_constructors_m, only: &
             describe, given, it, it_, test_that, then_, then__, when
     use vegetables_test_item_m, only: filter_item_result_t, test_item_t

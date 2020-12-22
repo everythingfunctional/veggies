@@ -6,7 +6,7 @@ module vegetables_test_collection_with_input_m
 
     implicit none
     private
-    public :: test_collection_with_input_t, test_collection_with_input
+    public :: test_collection_with_input_t
 
     type, extends(test_t) :: test_collection_with_input_t
         private
@@ -21,8 +21,12 @@ module vegetables_test_collection_with_input_m
         procedure, public :: run_with_input
         procedure, public :: run_without_input
     end type
+
+    interface test_collection_with_input_t
+        module procedure constructor
+    end interface
 contains
-    function test_collection_with_input(description, input, tests)
+    function constructor(description, input, tests) result(test_collection_with_input)
         use iso_varying_string, only: varying_string
         use vegetables_input_m, only: input_t
         use vegetables_test_item_m, only: test_item_t
@@ -65,24 +69,18 @@ contains
         type(varying_string), intent(in) :: filter_string
         type(filter_result_t) :: filter_result
 
-        type(test_collection_with_input_t) :: new_collection
         type(filter_item_result_t) :: filter_results(size(self%tests))
         integer :: i
-        logical :: matches(size(self%tests))
-        type(test_item_t) :: maybe_tests(size(self%tests))
 
         if (self%description_.includes.filter_string) then
             filter_result = filter_matched(self)
         else
             filter_results = [(self%tests(i)%filter(filter_string), i = 1, size(self%tests))]
             if (any(filter_results%matched())) then
-                matches = filter_results%matched()
-                maybe_tests = filter_results%test()
-                new_collection = self
-                deallocate(new_collection%tests)
-                allocate(new_collection%tests, source = &
-                        pack(maybe_tests, mask=matches))
-                filter_result = filter_matched(new_collection)
+                filter_result = filter_matched(test_collection_with_input_t(&
+                        self%description_, &
+                        self%input, &
+                        pack(filter_results%test(), mask=filter_results%matched())))
             else
                 filter_result = filter_failed()
             end if
