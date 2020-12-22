@@ -75,9 +75,9 @@ contains
             filter_result = filter_matched(self)
         else
             filter_results = [(self%tests(i)%filter(filter_string), i = 1, size(self%tests))]
-            if (any(filter_results%matched)) then
-                matches = filter_results%matched
-                maybe_tests = filter_results%test
+            if (any(filter_results%matched())) then
+                matches = filter_results%matched()
+                maybe_tests = filter_results%test()
                 new_collection = self
                 deallocate(new_collection%tests)
                 allocate(new_collection%tests, source = &

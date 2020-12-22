@@ -19,8 +19,13 @@ module vegetables_test_item_m
     end type
 
     type :: filter_item_result_t
-        type(test_item_t) :: test
-        logical :: matched
+        private
+        type(test_item_t) :: test_
+        logical :: matched_
+    contains
+        private
+        procedure, public :: matched
+        procedure, public :: test
     end type
 
     interface test_item_t
@@ -55,10 +60,9 @@ contains
 
         result_ = self%test%filter(filter_string)
         if (result_%matched()) then
-            filter_result%matched = .true.
-            allocate(filter_result%test%test, source = result_%test())
+            filter_result = filter_matched(result_%test())
         else
-            filter_result%matched = .false.
+            filter_result = filter_failed()
         end if
     end function
 
@@ -87,5 +91,35 @@ contains
         type(test_result_item_t) :: result_
 
         result_ = self%test%run()
+    end function
+
+    function filter_failed()
+        type(filter_item_result_t) :: filter_failed
+
+        filter_failed%matched_ = .false.
+    end function
+
+    function filter_matched(test)
+        use vegetables_test_m, only: test_t
+
+        class(test_t), intent(in) :: test
+        type(filter_item_result_t) :: filter_matched
+
+        filter_matched%test_ = test_item_t(test)
+        filter_matched%matched_ = .true.
+    end function
+
+    elemental function matched(self)
+        class(filter_item_result_t), intent(in) :: self
+        logical :: matched
+
+        matched = self%matched_
+    end function
+
+    impure elemental function test(self)
+        class(filter_item_result_t), intent(in) :: self
+        type(test_item_t) :: test
+
+        test = self%test_
     end function
 end module

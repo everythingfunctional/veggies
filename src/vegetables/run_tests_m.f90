@@ -29,8 +29,8 @@ contains
 
         if (options%filter_tests()) then
             filtered_tests = tests%filter(options%filter_string())
-            if (filtered_tests%matched) then
-                tests_to_run = filtered_tests%test
+            if (filtered_tests%matched()) then
+                tests_to_run = filtered_tests%test()
             else
                 error stop "No matching tests found"
             end if
