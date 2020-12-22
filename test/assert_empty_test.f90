@@ -1,4 +1,14 @@
 module assert_empty_test
+    use iso_varying_string, only: var_str
+    use vegetables, only: &
+            result_t, &
+            test_item_t, &
+            assert_empty, &
+            assert_not, &
+            assert_that, &
+            describe, &
+            it
+
     implicit none
     private
     public :: test_assert_empty
@@ -8,8 +18,6 @@ module assert_empty_test
     character(len=*), parameter :: FAILURE_MESSAGE = "Failure Message"
 contains
     function test_assert_empty() result(tests)
-        use vegetables, only: test_item_t, describe, it
-
         type(test_item_t) :: tests
 
         type(test_item_t) :: individual_tests(2)
@@ -20,9 +28,6 @@ contains
     end function
 
     pure function check_pass_for_empty_chars() result(result_)
-        use iso_varying_string, only: var_str
-        use vegetables, only: result_t, assert_empty, assert_that
-
         type(result_t) :: result_
 
         character(len=*), parameter :: EMPTY = ""
@@ -110,9 +115,6 @@ contains
     end function
 
     pure function check_fails_for_nonempty_chars() result(result_)
-        use iso_varying_string, only: var_str
-        use vegetables, only: result_t, assert_empty, assert_not
-
         type(result_t) :: result_
 
         character(len=*), parameter :: NOT_EMPTY = "Not Empty"
