@@ -6,6 +6,7 @@ module vegetables_test_item_m
     public :: filter_item_result_t, test_item_t
 
     type :: test_item_t
+        private
         class(test_t), allocatable :: test
     contains
         private
@@ -21,7 +22,18 @@ module vegetables_test_item_m
         type(test_item_t) :: test
         logical :: matched
     end type
+
+    interface test_item_t
+        module procedure constructor
+    end interface
 contains
+    function constructor(test) result(test_item)
+        class(test_t), intent(in) :: test
+        type(test_item_t) :: test_item
+
+        allocate(test_item%test, source = test)
+    end function
+
     pure recursive function description(self)
         use iso_varying_string, only: varying_string
 

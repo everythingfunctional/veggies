@@ -57,7 +57,7 @@ contains
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        allocate(item%test, source = simple_test_collection( &
+        item = test_item_t(simple_test_collection( &
                 var_str(description), tests))
     end function
 
@@ -70,7 +70,7 @@ contains
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        allocate(item%test, source = simple_test_collection( &
+        item = test_item_t(simple_test_collection( &
                 description, tests))
     end function
 
@@ -86,7 +86,7 @@ contains
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        allocate(item%test, source = test_collection_with_input( &
+        item = test_item_t(test_collection_with_input( &
                 var_str(description), input, tests))
     end function
 
@@ -102,7 +102,7 @@ contains
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        allocate(item%test, source = test_collection_with_input( &
+        item = test_item_t(test_collection_with_input( &
                 description, input, tests))
     end function
 
@@ -162,7 +162,7 @@ contains
         procedure(simple_test_i) :: test
         type(test_item_t) :: item
 
-        allocate(item%test, source = simple_test_case(var_str(description), test))
+        item = test_item_t(simple_test_case(var_str(description), test))
     end function
 
     function it_basic_s(description, test) result(item)
@@ -175,7 +175,7 @@ contains
         procedure(simple_test_i) :: test
         type(test_item_t) :: item
 
-        allocate(item%test, source = simple_test_case(description, test))
+        item = test_item_t(simple_test_case(description, test))
     end function
 
     function it_input_c(description, test) result(item)
@@ -188,7 +188,7 @@ contains
         procedure(input_test_i) :: test
         type(test_item_t) :: item
 
-        allocate(item%test, source = input_test_case(var_str(description), test))
+        item = test_item_t(input_test_case(var_str(description), test))
     end function
 
     function it_input_s(description, test) result(item)
@@ -201,7 +201,7 @@ contains
         procedure(input_test_i) :: test
         type(test_item_t) :: item
 
-        allocate(item%test, source = input_test_case(description, test))
+        item = test_item_t(input_test_case(description, test))
     end function
 
     function it_with_examples_c(description, examples, test) result(item)
@@ -216,7 +216,7 @@ contains
         procedure(input_test_i) :: test
         type(test_item_t) :: item
 
-        allocate(item%test, source = test_case_with_examples( &
+        item = test_item_t(test_case_with_examples( &
                 var_str(description), examples, test))
     end function
 
@@ -232,7 +232,7 @@ contains
         procedure(input_test_i) :: test
         type(test_item_t) :: item
 
-        allocate(item%test, source = test_case_with_examples( &
+        item = test_item_t(test_case_with_examples( &
                 description, examples, test))
     end function
 
@@ -248,7 +248,7 @@ contains
         procedure(input_test_i) :: test
         type(test_item_t) :: item
 
-        allocate(item%test, source = test_case_with_generator( &
+        item = test_item_t(test_case_with_generator( &
                 var_str(description), generator, test))
     end function
 
@@ -264,7 +264,7 @@ contains
         procedure(input_test_i) :: test
         type(test_item_t) :: item
 
-        allocate(item%test, source = test_case_with_generator( &
+        item = test_item_t(test_case_with_generator( &
                 description, generator, test))
     end function
 
@@ -356,7 +356,7 @@ contains
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        allocate(item%test, source = transforming_test_collection( &
+        item = test_item_t(transforming_test_collection( &
                 var_str("When " // description), transformer, tests))
     end function
 
@@ -372,7 +372,7 @@ contains
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        allocate(item%test, source = transforming_test_collection( &
+        item = test_item_t(transforming_test_collection( &
                 "When " // description, transformer, tests))
     end function
 end module
