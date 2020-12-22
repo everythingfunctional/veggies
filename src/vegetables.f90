@@ -10,9 +10,6 @@ module vegetables
             assert_not, &
             assert_that
     use vegetables_ascii_string_generator_m, only: ASCII_STRING_GENERATOR
-    use vegetables_command_line_m, only: &
-            options_t, get_options, NUM_GENERATOR_TESTS
-    use vegetables_constants_m, only: INDENTATION
     use vegetables_double_precision_input_m, only: double_precision_input_t
     use vegetables_example_m, only: example_t, example
     use vegetables_generated_m, only: generated_t, generated
