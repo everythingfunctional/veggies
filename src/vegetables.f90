@@ -14,8 +14,6 @@ module vegetables
     use vegetables_example_m, only: example_t, example
     use vegetables_generated_m, only: generated_t, generated
     use vegetables_generator_m, only: generator_t
-    use vegetables_individual_result_m, only: &
-            individual_result_t, individual_result
     use vegetables_input_m, only: input_t
     use vegetables_input_test_case_m, only: input_test_case_t, input_test_case
     use vegetables_integer_generator_m, only: INTEGER_GENERATOR

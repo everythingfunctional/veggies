@@ -3,18 +3,24 @@ module vegetables_individual_result_m
 
     implicit none
     private
-    public :: individual_result_t, individual_result
+    public :: individual_result_t
 
     type :: individual_result_t
+        private
         type(varying_string) :: message
         logical :: passed_
     contains
         private
+        procedure, public :: passed
         procedure, public :: failure_description
         procedure, public :: verbose_description
     end type
+
+    interface individual_result_t
+        module procedure constructor
+    end interface
 contains
-    pure function individual_result(message, passed)
+    pure function constructor(message, passed) result(individual_result)
         use iso_varying_string, only: varying_string
 
         type(varying_string), intent(in) :: message
@@ -41,6 +47,13 @@ contains
                 description = self%message
             end if
         end if
+    end function
+
+    elemental function passed(self)
+        class(individual_result_t), intent(in) :: self
+        logical :: passed
+
+        passed = self%passed_
     end function
 
     elemental function verbose_description(self, colorize) result(description)

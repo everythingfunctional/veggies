@@ -39,13 +39,13 @@ contains
 
     pure function fail_s(message) result(failure)
         use iso_varying_string, only: varying_string
-        use vegetables_individual_result_m, only: individual_result
+        use vegetables_individual_result_m, only: individual_result_t
 
         type(varying_string), intent(in) :: message
         type(result_t) :: failure
 
         allocate(failure%results(1))
-        failure%results(1) = individual_result(message, .false.)
+        failure%results(1) = individual_result_t(message, .false.)
     end function
 
     pure function succeed_c(message) result(success)
@@ -59,13 +59,13 @@ contains
 
     pure function succeed_s(message) result(success)
         use iso_varying_string, only: varying_string
-        use vegetables_individual_result_m, only: individual_result
+        use vegetables_individual_result_m, only: individual_result_t
 
         type(varying_string), intent(in) :: message
         type(result_t) :: success
 
         allocate(success%results(1))
-        success%results(1) = individual_result(message, .true.)
+        success%results(1) = individual_result_t(message, .true.)
     end function
 
     pure function combine_results(lhs, rhs) result(combined)
@@ -114,14 +114,14 @@ contains
         class(result_t), intent(in) :: self
         integer :: num_asserts
 
-        num_asserts = count(.not.self%results%passed_)
+        num_asserts = count(.not.self%results%passed())
     end function
 
     pure function passed(self)
         class(result_t), intent(in) :: self
         logical :: passed
 
-        passed = all(self%results%passed_)
+        passed = all(self%results%passed())
     end function
 
     pure function verbose_description(self, colorize) result(description)
