@@ -180,7 +180,7 @@ contains
 
     function it_input_c(description, test) result(item)
         use iso_varying_string, only: var_str
-        use vegetables_input_test_case_m, only: input_test_case
+        use vegetables_input_test_case_m, only: input_test_case_t
         use vegetables_test_interfaces_m, only: input_test_i
         use vegetables_test_item_m, only: test_item_t
 
@@ -188,12 +188,12 @@ contains
         procedure(input_test_i) :: test
         type(test_item_t) :: item
 
-        item = test_item_t(input_test_case(var_str(description), test))
+        item = test_item_t(input_test_case_t(var_str(description), test))
     end function
 
     function it_input_s(description, test) result(item)
         use iso_varying_string, only: varying_string
-        use vegetables_input_test_case_m, only: input_test_case
+        use vegetables_input_test_case_m, only: input_test_case_t
         use vegetables_test_interfaces_m, only: input_test_i
         use vegetables_test_item_m, only: test_item_t
 
@@ -201,7 +201,7 @@ contains
         procedure(input_test_i) :: test
         type(test_item_t) :: item
 
-        item = test_item_t(input_test_case(description, test))
+        item = test_item_t(input_test_case_t(description, test))
     end function
 
     function it_with_examples_c(description, examples, test) result(item)

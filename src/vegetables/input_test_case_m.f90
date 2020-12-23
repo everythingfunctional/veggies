@@ -5,7 +5,7 @@ module vegetables_input_test_case_m
 
     implicit none
     private
-    public :: input_test_case_t, input_test_case
+    public :: input_test_case_t
 
     type, extends(test_t) :: input_test_case_t
         private
@@ -19,8 +19,12 @@ module vegetables_input_test_case_m
         procedure, public :: run_with_input
         procedure, public :: run_without_input
     end type
+
+    interface input_test_case_t
+        module procedure constructor
+    end interface
 contains
-    function input_test_case(description, test)
+    function constructor(description, test) result(input_test_case)
         use iso_varying_string, only: varying_string
 
         type(varying_string), intent(in) :: description
