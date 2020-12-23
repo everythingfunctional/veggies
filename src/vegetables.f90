@@ -49,8 +49,6 @@ module vegetables
     use vegetables_run_tests_m, only: run_tests
     use vegetables_shrink_result_m, only: &
             shrink_result_t, shrunk_value, simplest_value
-    use vegetables_simple_test_case_m, only: &
-            simple_test_case_t, simple_test_case
     use vegetables_simple_test_collection_m, only: &
             simple_test_collection_t, simple_test_collection
     use vegetables_string_input_m, only: string_input_t
