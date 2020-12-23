@@ -5,7 +5,7 @@ module vegetables_simple_test_collection_m
 
     implicit none
     private
-    public :: simple_test_collection_t, simple_test_collection
+    public :: simple_test_collection_t
 
     type, extends(test_t) :: simple_test_collection_t
         private
@@ -19,8 +19,12 @@ module vegetables_simple_test_collection_m
         procedure, public :: run_with_input
         procedure, public :: run_without_input
     end type
+
+    interface simple_test_collection_t
+        module procedure constructor
+    end interface
 contains
-    function simple_test_collection(description, tests)
+    function constructor(description, tests) result(simple_test_collection)
         use iso_varying_string, only: varying_string
         use vegetables_test_item_m, only: test_item_t
 

@@ -50,27 +50,27 @@ module vegetables_test_constructors_m
 contains
     function describe_basic_c(description, tests) result(item)
         use iso_varying_string, only: var_str
-        use vegetables_simple_test_collection_m, only: simple_test_collection
+        use vegetables_simple_test_collection_m, only: simple_test_collection_t
         use vegetables_test_item_m, only: test_item_t
 
         character(len=*), intent(in) :: description
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        item = test_item_t(simple_test_collection( &
+        item = test_item_t(simple_test_collection_t( &
                 var_str(description), tests))
     end function
 
     function describe_basic_s(description, tests) result(item)
         use iso_varying_string, only: varying_string
-        use vegetables_simple_test_collection_m, only: simple_test_collection
+        use vegetables_simple_test_collection_m, only: simple_test_collection_t
         use vegetables_test_item_m, only: test_item_t
 
         type(varying_string), intent(in) :: description
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        item = test_item_t(simple_test_collection( &
+        item = test_item_t(simple_test_collection_t( &
                 description, tests))
     end function
 
