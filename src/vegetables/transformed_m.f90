@@ -3,16 +3,31 @@ module vegetables_transformed_m
 
     implicit none
     private
-    public :: transformed_t, transformed
+    public :: transformed_t
 
     type :: transformed_t
-        class(input_t), allocatable :: input
+        private
+        class(input_t), allocatable :: input_
+    contains
+        private
+        procedure, public :: input
     end type
+
+    interface transformed_t
+        module procedure constructor
+    end interface
 contains
-    pure function transformed(input)
+    function constructor(input) result(transformed)
         class(input_t), intent(in) :: input
         type(transformed_t) :: transformed
 
-        allocate(transformed%input, source = input)
+        allocate(transformed%input_, source = input)
+    end function
+
+    function input(self)
+        class(transformed_t), intent(in) :: self
+        class(input_t), allocatable :: input
+
+        allocate(input, source = self%input_)
     end function
 end module

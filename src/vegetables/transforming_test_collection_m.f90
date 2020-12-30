@@ -119,7 +119,7 @@ contains
         type(transformed_t) :: transformed_
 
         transformed_ = self%transformer(input)
-        select type (transformed_input => transformed_%input)
+        select type (transformed_input => transformed_%input())
         type is (transformation_failure_t)
             result_ = test_result_item_t(test_case_result_t( &
                     self%description_, transformed_input%result_))

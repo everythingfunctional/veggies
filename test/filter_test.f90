@@ -75,7 +75,6 @@ contains
                 input_t, &
                 transformation_failure_t, &
                 transformed_t, &
-                transformed, &
                 fail
 
         class(input_t), intent(in) :: example_case
@@ -87,10 +86,10 @@ contains
         select type (example_case)
         type is (test_item_input_t)
             the_result%input = example_case%input%filter(var_str(NOT_IN_DESCRIPTION))
-            filtered = transformed(the_result)
+            filtered = transformed_t(the_result)
         class default
             failure%result_ = fail("Expected to get a test_item_input_t")
-            filtered = transformed(failure)
+            filtered = transformed_t(failure)
         end select
     end function
 
@@ -102,7 +101,6 @@ contains
                 input_t, &
                 transformation_failure_t, &
                 transformed_t, &
-                transformed, &
                 fail
 
         class(input_t), intent(in) :: example_case
@@ -114,10 +112,10 @@ contains
         select type (example_case)
         type is (test_item_input_t)
             the_result%input = example_case%input%filter(var_str(EXAMPLE_DESCRIPTION))
-            filtered = transformed(the_result)
+            filtered = transformed_t(the_result)
         class default
             failure%result_ = fail("Expected to get a test_item_input_t")
-            filtered = transformed(failure)
+            filtered = transformed_t(failure)
         end select
     end function
 
@@ -129,7 +127,6 @@ contains
                 input_t, &
                 transformation_failure_t, &
                 transformed_t, &
-                transformed, &
                 fail
 
         class(input_t), intent(in) :: example_collection
@@ -141,10 +138,10 @@ contains
         select type (example_collection)
         type is (test_item_input_t)
             the_result%input = example_collection%input%filter(var_str(NOT_IN_DESCRIPTIONS))
-            filtered = transformed(the_result)
+            filtered = transformed_t(the_result)
         class default
         failure%result_ = fail("Expected to get a test_item_input_t")
-        filtered = transformed(failure)
+        filtered = transformed_t(failure)
         end select
     end function
 
@@ -156,7 +153,6 @@ contains
                 input_t, &
                 transformation_failure_t, &
                 transformed_t, &
-                transformed, &
                 fail
 
         class(input_t), intent(in) :: example_collection
@@ -168,10 +164,10 @@ contains
         select type (example_collection)
         type is (test_item_input_t)
             the_result%input = example_collection%input%filter(var_str(EXAMPLE_COLLECTION_DESCRIPTION))
-            filtered = transformed(the_result)
+            filtered = transformed_t(the_result)
         class default
         failure%result_ = fail("Expected to get a test_item_input_t")
-        filtered = transformed(failure)
+        filtered = transformed_t(failure)
         end select
     end function
 
@@ -183,7 +179,6 @@ contains
                 input_t, &
                 transformation_failure_t, &
                 transformed_t, &
-                transformed, &
                 fail
 
         class(input_t), intent(in) :: example_collection
@@ -195,10 +190,10 @@ contains
         select type (example_collection)
         type is (test_item_input_t)
             the_result%input = example_collection%input%filter(var_str(EXAMPLE_CASE_DESCRIPTION_1))
-            filtered = transformed(the_result)
+            filtered = transformed_t(the_result)
         class default
         failure%result_ = fail("Expected to get a test_item_input_t")
-        filtered = transformed(failure)
+        filtered = transformed_t(failure)
         end select
     end function
 
