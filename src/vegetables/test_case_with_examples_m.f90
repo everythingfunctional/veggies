@@ -91,7 +91,7 @@ contains
 
     function run_without_input(self) result(result_)
         use vegetables_result_m, only: result_t
-        use vegetables_test_case_result_m, only: test_case_result
+        use vegetables_test_case_result_m, only: test_case_result_t
         use vegetables_test_result_item_m, only: test_result_item_t
 
         class(test_case_with_examples_t), intent(in) :: self
@@ -103,7 +103,7 @@ contains
         do i = 1, size(self%examples)
             results = results.and.self%test(self%examples(i)%input)
         end do
-        allocate(result_%result_, source = test_case_result( &
+        allocate(result_%result_, source = test_case_result_t( &
                 self%description_, results))
     end function
 end module

@@ -52,7 +52,7 @@ module vegetables
     use vegetables_string_input_m, only: string_input_t
     use vegetables_test_m, only: filter_result_t, test_t
     use vegetables_test_case_result_m, only: &
-            test_case_result_t, test_case_result
+            test_case_result_t
     use vegetables_test_collection_result_m, only: &
             test_collection_result_t, test_collection_result
     use vegetables_test_constructors_m, only: &

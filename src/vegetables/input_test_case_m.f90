@@ -73,26 +73,26 @@ contains
 
     function run_with_input(self, input) result(result_)
         use vegetables_input_m, only: input_t
-        use vegetables_test_case_result_m, only: test_case_result
+        use vegetables_test_case_result_m, only: test_case_result_t
         use vegetables_test_result_item_m, only: test_result_item_t
 
         class(input_test_case_t), intent(in) :: self
         class(input_t), intent(in) :: input
         type(test_result_item_t) :: result_
 
-        allocate(result_%result_, source = test_case_result( &
+        allocate(result_%result_, source = test_case_result_t( &
                 self%description_, self%test(input)))
     end function
 
     function run_without_input(self) result(result_)
         use vegetables_result_m, only: fail
-        use vegetables_test_case_result_m, only: test_case_result
+        use vegetables_test_case_result_m, only: test_case_result_t
         use vegetables_test_result_item_m, only: test_result_item_t
 
         class(input_test_case_t), intent(in) :: self
         type(test_result_item_t) :: result_
 
-        allocate(result_%result_, source = test_case_result( &
+        allocate(result_%result_, source = test_case_result_t( &
                 self%description_, fail("No input provided")))
     end function
 end module

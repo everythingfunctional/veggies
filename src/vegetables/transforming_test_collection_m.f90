@@ -104,7 +104,7 @@ contains
 
     recursive function run_with_input(self, input) result(result_)
         use vegetables_input_m, only: input_t
-        use vegetables_test_case_result_m, only: test_case_result
+        use vegetables_test_case_result_m, only: test_case_result_t
         use vegetables_test_collection_result_m, only: test_collection_result
         use vegetables_test_result_item_m, only: test_result_item_t
         use vegetables_transformation_failure_m, only: transformation_failure_t
@@ -121,7 +121,7 @@ contains
         transformed_ = self%transformer(input)
         select type (transformed_input => transformed_%input)
         type is (transformation_failure_t)
-            allocate(result_%result_, source = test_case_result( &
+            allocate(result_%result_, source = test_case_result_t( &
                     self%description_, transformed_input%result_))
         class default
             do i = 1, size(self%tests)
@@ -134,13 +134,13 @@ contains
 
     function run_without_input(self) result(result_)
         use vegetables_result_m, only: fail
-        use vegetables_test_case_result_m, only: test_case_result
+        use vegetables_test_case_result_m, only: test_case_result_t
         use vegetables_test_result_item_m, only: test_result_item_t
 
         class(transforming_test_collection_t), intent(in) :: self
         type(test_result_item_t) :: result_
 
-        allocate(result_%result_, source = test_case_result( &
+        allocate(result_%result_, source = test_case_result_t( &
                 self%description_, fail("No input provided")))
     end function
 end module

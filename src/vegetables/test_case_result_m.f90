@@ -5,7 +5,7 @@ module vegetables_test_case_result_m
 
     implicit none
     private
-    public :: test_case_result_t, test_case_result
+    public :: test_case_result_t
 
     type, extends(test_result_t) :: test_case_result_t
         private
@@ -21,8 +21,12 @@ module vegetables_test_case_result_m
         procedure, public :: failure_description
         procedure, public :: verbose_description
     end type
+
+    interface test_case_result_t
+        module procedure constructor
+    end interface
 contains
-    pure function test_case_result(description, result_)
+    pure function constructor(description, result_) result(test_case_result)
         use iso_varying_string, only: varying_string
 
         type(varying_string), intent(in) :: description
@@ -64,7 +68,7 @@ contains
         class(test_case_result_t), intent(in) :: self
         integer :: num_cases
 
-        associate(a => self)
+        associate(unused => self)
         end associate
 
         num_cases = 1
