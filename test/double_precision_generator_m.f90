@@ -19,7 +19,6 @@ contains
         use vegetables, only: &
                 double_precision_input_t, &
                 generated_t, &
-                generated, &
                 get_random_double_precision_with_magnitude
 
         class(double_precision_generator_t), intent(in) :: self
@@ -31,7 +30,7 @@ contains
         end associate
 
         the_input%value_ = get_random_double_precision_with_magnitude(1.0d12)
-        random_double = generated(the_input)
+        random_double = generated_t(the_input)
     end function
 
     pure function shrink(input) result(shrunk)

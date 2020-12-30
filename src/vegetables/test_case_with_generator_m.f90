@@ -95,7 +95,7 @@ contains
         use iso_varying_string, only: operator(//)
         use strff, only: to_string
         use vegetables_command_line_m, only: NUM_GENERATOR_TESTS
-        use vegetables_generated_m, only: generated_t, generated
+        use vegetables_generated_m, only: generated_t
         use vegetables_result_m, only: result_t, fail, succeed
         use vegetables_shrink_result_m, only: shrink_result_t
         use vegetables_test_case_result_m, only: test_case_result_t
@@ -112,7 +112,7 @@ contains
 
         do i = 1, NUM_GENERATOR_TESTS
             generated_value = self%generator%generate()
-            previous_result = self%test(generated_value%input)
+            previous_result = self%test(generated_value%input())
             if (.not.previous_result%passed()) exit
         end do
         if (i > NUM_GENERATOR_TESTS) then
@@ -121,7 +121,7 @@ contains
                     succeed("Passed after " // to_string(NUM_GENERATOR_TESTS) // " examples")))
         else
             do
-                simpler_value = self%generator%shrink(generated_value%input)
+                simpler_value = self%generator%shrink(generated_value%input())
                 if (simpler_value%simplest) then
                     new_result = self%test(simpler_value%input)
                     if (new_result%passed()) then
@@ -144,7 +144,7 @@ contains
                         return
                     else
                         previous_result = new_result
-                        generated_value = generated(simpler_value%input)
+                        generated_value = generated_t(simpler_value%input)
                     end if
                 end if
             end do

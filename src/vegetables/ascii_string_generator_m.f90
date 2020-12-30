@@ -16,7 +16,7 @@ module vegetables_ascii_string_generator_m
             ASCII_STRING_GENERATOR = ascii_string_generator_t()
 contains
     function generate(self) result(generated_value)
-        use vegetables_generated_m, only: generated_t, generated
+        use vegetables_generated_m, only: generated_t
         use vegetables_random_m, only: get_random_ascii_string
         use vegetables_string_input_m, only: string_input_t
 
@@ -29,7 +29,7 @@ contains
         end associate
 
         the_input%value_ = get_random_ascii_string()
-        generated_value = generated(the_input)
+        generated_value = generated_t(the_input)
     end function
 
     pure function shrink(input) result(shrunk)

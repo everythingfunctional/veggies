@@ -16,7 +16,7 @@ module vegetables_integer_generator_m
             INTEGER_GENERATOR = integer_generator_t()
 contains
     function generate(self) result(generated_value)
-        use vegetables_generated_m, only: generated_t, generated
+        use vegetables_generated_m, only: generated_t
         use vegetables_integer_input_m, only: integer_input_t
         use vegetables_random_m, only: get_random_integer
 
@@ -29,7 +29,7 @@ contains
         end associate
 
         the_input%value_ = get_random_integer()
-        generated_value = generated(the_input)
+        generated_value = generated_t(the_input)
     end function
 
     pure function shrink(input) result(shrunk)

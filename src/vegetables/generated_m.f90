@@ -3,16 +3,31 @@ module vegetables_generated_m
 
     implicit none
     private
-    public :: generated_t, generated
+    public :: generated_t
 
     type :: generated_t
-        class(input_t), allocatable :: input
+        private
+        class(input_t), allocatable :: input_
+    contains
+        private
+        procedure, public :: input
     end type
+
+    interface generated_t
+        module procedure constructor
+    end interface
 contains
-    pure function generated(value_)
+    function constructor(value_) result(generated)
         class(input_t), intent(in) :: value_
         type(generated_t) :: generated
 
-        allocate(generated%input, source = value_)
+        allocate(generated%input_, source = value_)
+    end function
+
+    function input(self)
+        class(generated_t), intent(in) :: self
+        class(input_t), allocatable :: input
+
+        allocate(input, source = self%input_)
     end function
 end module
