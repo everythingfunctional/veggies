@@ -239,7 +239,7 @@ contains
     function it_with_generator_c(description, generator, test) result(item)
         use iso_varying_string, only: var_str
         use vegetables_generator_m, only: generator_t
-        use vegetables_test_case_with_generator_m, only: test_case_with_generator
+        use vegetables_test_case_with_generator_m, only: test_case_with_generator_t
         use vegetables_test_interfaces_m, only: input_test_i
         use vegetables_test_item_m, only: test_item_t
 
@@ -248,14 +248,14 @@ contains
         procedure(input_test_i) :: test
         type(test_item_t) :: item
 
-        item = test_item_t(test_case_with_generator( &
+        item = test_item_t(test_case_with_generator_t( &
                 var_str(description), generator, test))
     end function
 
     function it_with_generator_s(description, generator, test) result(item)
         use iso_varying_string, only: varying_string
         use vegetables_generator_m, only: generator_t
-        use vegetables_test_case_with_generator_m, only: test_case_with_generator
+        use vegetables_test_case_with_generator_m, only: test_case_with_generator_t
         use vegetables_test_interfaces_m, only: input_test_i
         use vegetables_test_item_m, only: test_item_t
 
@@ -264,7 +264,7 @@ contains
         procedure(input_test_i) :: test
         type(test_item_t) :: item
 
-        item = test_item_t(test_case_with_generator( &
+        item = test_item_t(test_case_with_generator_t( &
                 description, generator, test))
     end function
 

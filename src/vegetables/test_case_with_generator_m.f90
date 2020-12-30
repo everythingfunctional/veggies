@@ -6,7 +6,7 @@ module vegetables_test_case_with_generator_m
 
     implicit none
     private
-    public :: test_case_with_generator_t, test_case_with_generator
+    public :: test_case_with_generator_t
 
     type, extends(test_t) :: test_case_with_generator_t
         private
@@ -21,8 +21,12 @@ module vegetables_test_case_with_generator_m
         procedure, public :: run_with_input
         procedure, public :: run_without_input
     end type
+
+    interface test_case_with_generator_t
+        module procedure constructor
+    end interface
 contains
-    function test_case_with_generator(description, generator, test)
+    function constructor(description, generator, test) result(test_case_with_generator)
         use iso_varying_string, only: varying_string
         use vegetables_generator_m, only: generator_t
         use vegetables_test_interfaces_m, only: input_test_i

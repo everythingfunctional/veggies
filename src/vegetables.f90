@@ -53,8 +53,6 @@ module vegetables
     use vegetables_test_m, only: filter_result_t, test_t
     use vegetables_test_case_result_m, only: &
             test_case_result_t, test_case_result
-    use vegetables_test_case_with_generator_m, only: &
-            test_case_with_generator_t, test_case_with_generator
     use vegetables_test_collection_result_m, only: &
             test_collection_result_t, test_collection_result
     use vegetables_test_constructors_m, only: &
