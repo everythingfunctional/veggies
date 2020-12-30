@@ -111,7 +111,7 @@ contains
     end function
 
     recursive function run_without_input(self) result(result_)
-        use vegetables_test_collection_result_m, only: test_collection_result
+        use vegetables_test_collection_result_m, only: test_collection_result_t
         use vegetables_test_result_item_m, only: test_result_item_t
 
         class(test_collection_with_input_t), intent(in) :: self
@@ -123,7 +123,7 @@ contains
         do i = 1, size(self%tests)
             results(i) = self%tests(i)%run(self%input)
         end do
-        allocate(result_%result_, source = test_collection_result( &
+        allocate(result_%result_, source = test_collection_result_t( &
                 self%description_, results))
     end function
 end module

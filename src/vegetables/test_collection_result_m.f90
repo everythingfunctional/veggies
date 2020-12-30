@@ -5,7 +5,7 @@ module vegetables_test_collection_result_m
 
     implicit none
     private
-    public :: test_collection_result_t, test_collection_result
+    public :: test_collection_result_t
 
     type, extends(test_result_t) :: test_collection_result_t
         private
@@ -21,8 +21,12 @@ module vegetables_test_collection_result_m
         procedure, public :: failure_description
         procedure, public :: verbose_description
     end type
+
+    interface test_collection_result_t
+        module procedure constructor
+    end interface
 contains
-    pure function test_collection_result(description, results)
+    pure function constructor(description, results) result(test_collection_result)
         use iso_varying_string, only: varying_string
 
         type(varying_string), intent(in) :: description

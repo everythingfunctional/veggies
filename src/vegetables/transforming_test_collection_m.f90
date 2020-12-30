@@ -105,7 +105,7 @@ contains
     recursive function run_with_input(self, input) result(result_)
         use vegetables_input_m, only: input_t
         use vegetables_test_case_result_m, only: test_case_result_t
-        use vegetables_test_collection_result_m, only: test_collection_result
+        use vegetables_test_collection_result_m, only: test_collection_result_t
         use vegetables_test_result_item_m, only: test_result_item_t
         use vegetables_transformation_failure_m, only: transformation_failure_t
         use vegetables_transformed_m, only: transformed_t
@@ -127,7 +127,7 @@ contains
             do i = 1, size(self%tests)
                 results(i) = self%tests(i)%run(transformed_input)
             end do
-            allocate(result_%result_, source = test_collection_result( &
+            allocate(result_%result_, source = test_collection_result_t( &
                     self%description_, results))
         end select
     end function
