@@ -6,7 +6,7 @@ module vegetables_test_case_with_examples_m
 
     implicit none
     private
-    public :: test_case_with_examples_t, test_case_with_examples
+    public :: test_case_with_examples_t
 
     type, extends(test_t) :: test_case_with_examples_t
         private
@@ -21,8 +21,12 @@ module vegetables_test_case_with_examples_m
         procedure, public :: run_with_input
         procedure, public :: run_without_input
     end type
+
+    interface test_case_with_examples_t
+        module procedure constructor
+    end interface
 contains
-    function test_case_with_examples(description, examples, test)
+    function constructor(description, examples, test) result(test_case_with_examples)
         use iso_varying_string, only: varying_string
 
         type(varying_string), intent(in) :: description
