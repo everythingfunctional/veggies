@@ -101,7 +101,7 @@ contains
         type(result_t) :: results
 
         do i = 1, size(self%examples)
-            results = results.and.self%test(self%examples(i)%input)
+            results = results.and.self%test(self%examples(i)%input())
         end do
         result_ = test_result_item_t(test_case_result_t( &
                 self%description_, results))
