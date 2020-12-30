@@ -24,13 +24,11 @@ contains
         class(double_precision_generator_t), intent(in) :: self
         type(generated_t) :: random_double
 
-        type(double_precision_input_t) :: the_input
-
         associate(a => self)
         end associate
 
-        the_input%value_ = get_random_double_precision_with_magnitude(1.0d12)
-        random_double = generated_t(the_input)
+        random_double = generated_t(double_precision_input_t( &
+                get_random_double_precision_with_magnitude(1.0d12)))
     end function
 
     pure function shrink(input) result(shrunk)
@@ -44,17 +42,16 @@ contains
         class(input_t), intent(in) :: input
         type(shrink_result_t) :: shrunk
 
-        type(double_precision_input_t) :: new_input
-
         select type (input)
         type is (double_precision_input_t)
-            if (effectively_zero(input%value_)) then
-                new_input%value_ = 0.0d0
-                shrunk = simplest_value(new_input)
-            else
-                new_input%value_ = input%value_ / 2.0d0
-                shrunk = shrunk_value(new_input)
-            end if
+            associate(input_val => input%input())
+                if (effectively_zero(input_val)) then
+                    shrunk = simplest_value(double_precision_input_t(0.0d0))
+                else
+                    shrunk = shrunk_value(double_precision_input_t( &
+                            input_val / 2.0d0))
+                end if
+            end associate
         end select
     end function
 
