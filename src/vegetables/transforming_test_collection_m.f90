@@ -6,7 +6,7 @@ module vegetables_transforming_test_collection_m
 
     implicit none
     private
-    public :: transforming_test_collection_t, transforming_test_collection
+    public :: transforming_test_collection_t
 
     type, extends(test_t) :: transforming_test_collection_t
         private
@@ -21,8 +21,12 @@ module vegetables_transforming_test_collection_m
         procedure, public :: run_with_input
         procedure, public :: run_without_input
     end type
+
+    interface transforming_test_collection_t
+        module procedure constructor
+    end interface
 contains
-    function transforming_test_collection(description, transformer, tests)
+    function constructor(description, transformer, tests) result(transforming_test_collection)
         use iso_varying_string, only: varying_string
         use vegetables_test_interfaces_m, only: transformer_i
         use vegetables_test_item_m, only: test_item_t

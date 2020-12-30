@@ -349,14 +349,14 @@ contains
         use vegetables_test_interfaces_m, only: transformer_i
         use vegetables_test_item_m, only: test_item_t
         use vegetables_transforming_test_collection_m, only: &
-                transforming_test_collection
+                transforming_test_collection_t
 
         character(len=*), intent(in) :: description
         procedure(transformer_i) :: transformer
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        item = test_item_t(transforming_test_collection( &
+        item = test_item_t(transforming_test_collection_t( &
                 var_str("When " // description), transformer, tests))
     end function
 
@@ -365,14 +365,14 @@ contains
         use vegetables_test_interfaces_m, only: transformer_i
         use vegetables_test_item_m, only: test_item_t
         use vegetables_transforming_test_collection_m, only: &
-                transforming_test_collection
+                transforming_test_collection_t
 
         type(varying_string), intent(in) :: description
         procedure(transformer_i) :: transformer
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        item = test_item_t(transforming_test_collection( &
+        item = test_item_t(transforming_test_collection_t( &
                 "When " // description, transformer, tests))
     end function
 end module

@@ -64,6 +64,4 @@ module vegetables
     use vegetables_test_result_item_m, only: test_result_item_t
     use vegetables_transformation_failure_m, only: transformation_failure_t
     use vegetables_transformed_m, only: transformed_t, transformed
-    use vegetables_transforming_test_collection_m, only: &
-            transforming_test_collection_t, transforming_test_collection
 end module
