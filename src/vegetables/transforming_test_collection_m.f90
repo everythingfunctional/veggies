@@ -121,13 +121,13 @@ contains
         transformed_ = self%transformer(input)
         select type (transformed_input => transformed_%input)
         type is (transformation_failure_t)
-            allocate(result_%result_, source = test_case_result_t( &
+            result_ = test_result_item_t(test_case_result_t( &
                     self%description_, transformed_input%result_))
         class default
             do i = 1, size(self%tests)
                 results(i) = self%tests(i)%run(transformed_input)
             end do
-            allocate(result_%result_, source = test_collection_result_t( &
+            result_ = test_result_item_t(test_collection_result_t( &
                     self%description_, results))
         end select
     end function
@@ -140,7 +140,7 @@ contains
         class(transforming_test_collection_t), intent(in) :: self
         type(test_result_item_t) :: result_
 
-        allocate(result_%result_, source = test_case_result_t( &
+        result_ = test_result_item_t(test_case_result_t( &
                 self%description_, fail("No input provided")))
     end function
 end module

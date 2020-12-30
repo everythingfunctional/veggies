@@ -124,7 +124,7 @@ contains
         do i = 1, size(self%tests)
             results(i) = self%tests(i)%run()
         end do
-        allocate(result_%result_, source = test_collection_result_t( &
+        result_ = test_result_item_t(test_collection_result_t( &
                 self%description_, results))
     end function
 end module

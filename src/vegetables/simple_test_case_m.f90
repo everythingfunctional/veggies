@@ -92,7 +92,7 @@ contains
         class(simple_test_case_t), intent(in) :: self
         type(test_result_item_t) :: result_
 
-        allocate(result_%result_, source = test_case_result_t( &
+        result_ = test_result_item_t(test_case_result_t( &
                 self%description_, self%test()))
     end function
 end module

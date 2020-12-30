@@ -116,7 +116,7 @@ contains
             if (.not.previous_result%passed()) exit
         end do
         if (i > NUM_GENERATOR_TESTS) then
-            allocate(result_%result_, source = test_case_result_t( &
+            result_ = test_result_item_t(test_case_result_t( &
                     self%description_, &
                     succeed("Passed after " // to_string(NUM_GENERATOR_TESTS) // " examples")))
         else
@@ -125,12 +125,12 @@ contains
                 if (simpler_value%simplest) then
                     new_result = self%test(simpler_value%input)
                     if (new_result%passed()) then
-                        allocate(result_%result_, source = test_case_result_t( &
+                        result_ = test_result_item_t(test_case_result_t( &
                                 self%description_, &
                                 fail('Found simplest example causing failure').and.previous_result))
                         return
                     else
-                        allocate(result_%result_, source = test_case_result_t( &
+                        result_ = test_result_item_t(test_case_result_t( &
                                 self%description_, &
                                 fail('Fails with the simplest possible example').and.new_result))
                         return
@@ -138,7 +138,7 @@ contains
                 else
                     new_result = self%test(simpler_value%input)
                     if (new_result%passed()) then
-                        allocate(result_%result_, source = test_case_result_t( &
+                        result_ = test_result_item_t(test_case_result_t( &
                                 self%description_, &
                                 fail('Found simplest example causing failure').and.previous_result))
                         return

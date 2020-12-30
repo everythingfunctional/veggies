@@ -103,7 +103,7 @@ contains
         do i = 1, size(self%examples)
             results = results.and.self%test(self%examples(i)%input)
         end do
-        allocate(result_%result_, source = test_case_result_t( &
+        result_ = test_result_item_t(test_case_result_t( &
                 self%description_, results))
     end function
 end module

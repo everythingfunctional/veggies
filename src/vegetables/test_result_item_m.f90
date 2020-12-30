@@ -6,6 +6,7 @@ module vegetables_test_result_item_m
     public :: test_result_item_t
 
     type :: test_result_item_t
+        private
         class(test_result_t), allocatable :: result_
     contains
         private
@@ -17,7 +18,18 @@ module vegetables_test_result_item_m
         procedure, public :: failure_description
         procedure, public :: verbose_description
     end type
+
+    interface test_result_item_t
+        module procedure constructor
+    end interface
 contains
+    function constructor(result_) result(test_result_item)
+        class(test_result_t), intent(in) :: result_
+        type(test_result_item_t) :: test_result_item
+
+        allocate(test_result_item%result_, source = result_)
+    end function
+
     pure recursive function failure_description( &
             self, colorize) result(description)
         use iso_varying_string, only: varying_string
