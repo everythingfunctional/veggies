@@ -41,14 +41,12 @@ contains
 
         select type (input)
         type is (string_input_t)
-            associate(input_val => input%input())
-                if (len(input_val) <= 1) then
-                    shrunk = simplest_value(string_input_t(var_str("")))
-                else
-                    shrunk = shrunk_value(string_input_t(extract( &
-                            input_val, 1, len(input_val) - 1)))
-                end if
-            end associate
+            if (len(input%input()) <= 1) then
+                shrunk = simplest_value(string_input_t(var_str("")))
+            else
+                shrunk = shrunk_value(string_input_t(extract( &
+                        input%input(), 1, len(input%input()) - 1)))
+            end if
         end select
     end function
 end module
