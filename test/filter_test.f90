@@ -6,8 +6,16 @@ module filter_test
     public :: test_filter_case, test_filter_collection
 
     type, extends(input_t) :: filter_item_result_input_t
-        type(filter_item_result_t) :: input
+        private
+        type(filter_item_result_t) :: input_
+    contains
+        private
+        procedure, public :: input
     end type
+
+    interface filter_item_result_input_t
+        module procedure constructor
+    end interface
 contains
     function test_filter_case() result(tests)
         use example_cases_m, only: example_passing_test_case
@@ -80,12 +88,10 @@ contains
         class(input_t), intent(in) :: example_case
         type(transformed_t) :: filtered
 
-        type(filter_item_result_input_t) :: the_result
-
         select type (example_case)
         type is (test_item_input_t)
-            the_result%input = example_case%input%filter(var_str(NOT_IN_DESCRIPTION))
-            filtered = transformed_t(the_result)
+            filtered = transformed_t(filter_item_result_input_t( &
+                    example_case%input%filter(var_str(NOT_IN_DESCRIPTION))))
         class default
             filtered = transformed_t(transformation_failure_t( &
                     fail("Expected to get a test_item_input_t")))
@@ -105,12 +111,10 @@ contains
         class(input_t), intent(in) :: example_case
         type(transformed_t) :: filtered
 
-        type(filter_item_result_input_t) :: the_result
-
         select type (example_case)
         type is (test_item_input_t)
-            the_result%input = example_case%input%filter(var_str(EXAMPLE_DESCRIPTION))
-            filtered = transformed_t(the_result)
+            filtered = transformed_t(filter_item_result_input_t( &
+                    example_case%input%filter(var_str(EXAMPLE_DESCRIPTION))))
         class default
             filtered = transformed_t(transformation_failure_t( &
                     fail("Expected to get a test_item_input_t")))
@@ -130,12 +134,10 @@ contains
         class(input_t), intent(in) :: example_collection
         type(transformed_t) :: filtered
 
-        type(filter_item_result_input_t) :: the_result
-
         select type (example_collection)
         type is (test_item_input_t)
-            the_result%input = example_collection%input%filter(var_str(NOT_IN_DESCRIPTIONS))
-            filtered = transformed_t(the_result)
+            filtered = transformed_t(filter_item_result_input_t( &
+                    example_collection%input%filter(var_str(NOT_IN_DESCRIPTIONS))))
         class default
             filtered = transformed_t(transformation_failure_t( &
                     fail("Expected to get a test_item_input_t")))
@@ -155,12 +157,10 @@ contains
         class(input_t), intent(in) :: example_collection
         type(transformed_t) :: filtered
 
-        type(filter_item_result_input_t) :: the_result
-
         select type (example_collection)
         type is (test_item_input_t)
-            the_result%input = example_collection%input%filter(var_str(EXAMPLE_COLLECTION_DESCRIPTION))
-            filtered = transformed_t(the_result)
+            filtered = transformed_t(filter_item_result_input_t( &
+                    example_collection%input%filter(var_str(EXAMPLE_COLLECTION_DESCRIPTION))))
         class default
             filtered = transformed_t(transformation_failure_t( &
                     fail("Expected to get a test_item_input_t")))
@@ -180,98 +180,122 @@ contains
         class(input_t), intent(in) :: example_collection
         type(transformed_t) :: filtered
 
-        type(filter_item_result_input_t) :: the_result
-
         select type (example_collection)
         type is (test_item_input_t)
-            the_result%input = example_collection%input%filter(var_str(EXAMPLE_CASE_DESCRIPTION_1))
-            filtered = transformed_t(the_result)
+            filtered = transformed_t(filter_item_result_input_t( &
+                    example_collection%input%filter(var_str(EXAMPLE_CASE_DESCRIPTION_1))))
         class default
             filtered = transformed_t(transformation_failure_t( &
                     fail("Expected to get a test_item_input_t")))
         end select
     end function
 
-    pure function check_case_not_matching(filtered) result(result_)
+    function check_case_not_matching(input) result(result_)
         use vegetables, only: input_t, result_t, assert_not, fail
 
-        class(input_t), intent(in) :: filtered
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
-        select type (filtered)
+        type(filter_item_result_t) :: filtered
+
+        select type (input)
         type is (filter_item_result_input_t)
-            result_ = assert_not(filtered%input%matched())
+            filtered = input%input()
+            result_ = assert_not(filtered%matched())
         class default
             result_ = fail("Expected to get filter_item_result_input_t")
         end select
     end function
 
-    function check_case_is_same(filtered) result(result_)
+    function check_case_is_same(input) result(result_)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
         use vegetables, only: input_t, result_t, test_item_t, assert_equals, fail
 
-        class(input_t), intent(in) :: filtered
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
+        type(filter_item_result_t) :: filtered
         type(test_item_t) :: test_item
 
-        select type (filtered)
+        select type (input)
         type is (filter_item_result_input_t)
-            test_item = filtered%input%test()
+            filtered = input%input()
+            test_item = filtered%test()
             result_ = assert_equals(EXAMPLE_DESCRIPTION, test_item%description())
         class default
             result_ = fail("Expected to get filter_item_result_input_t")
         end select
     end function
 
-    pure function check_collection_not_matching(filtered) result(result_)
+    function check_collection_not_matching(input) result(result_)
         use vegetables, only: input_t, result_t, assert_not, fail
 
-        class(input_t), intent(in) :: filtered
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
-        select type (filtered)
+        type(filter_item_result_t) :: filtered
+
+        select type (input)
         type is (filter_item_result_input_t)
-            result_ = assert_not(filtered%input%matched())
+            filtered = input%input()
+            result_ = assert_not(filtered%matched())
         class default
             result_ = fail("Expected to get filter_item_result_input_t")
         end select
     end function
 
-    function check_collection_is_same(filtered) result(result_)
+    function check_collection_is_same(input) result(result_)
         use example_collections_m, only: example_passing_collection
         use vegetables, only: input_t, result_t, test_item_t, assert_equals, fail
 
-        class(input_t), intent(in) :: filtered
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
         type(test_item_t) :: example_collection
+        type(filter_item_result_t) :: filtered
         type(test_item_t) :: test_item
 
-        select type (filtered)
+        select type (input)
         type is (filter_item_result_input_t)
+            filtered = input%input()
             example_collection = example_passing_collection()
-            test_item = filtered%input%test()
+            test_item = filtered%test()
             result_ = assert_equals(example_collection%description(), test_item%description())
         class default
             result_ = fail("Expected to get filter_item_result_input_t")
         end select
     end function
 
-    function check_collection_single_case(filtered) result(result_)
+    function check_collection_single_case(input) result(result_)
         use vegetables, only: input_t, result_t, test_item_t, assert_equals, fail
 
-        class(input_t), intent(in) :: filtered
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
+        type(filter_item_result_t) :: filtered
         type(test_item_t) :: test_item
 
-        select type (filtered)
+        select type (input)
         type is (filter_item_result_input_t)
-            test_item = filtered%input%test()
+            filtered = input%input()
+            test_item = filtered%test()
             result_ = assert_equals(1, test_item%num_cases())
         class default
             result_ = fail("Expected to get filter_item_result_input_t")
         end select
+    end function
+
+    function constructor(input) result(filter_item_result_input)
+        type(filter_item_result_t), intent(in) :: input
+        type(filter_item_result_input_t) :: filter_item_result_input
+
+        filter_item_result_input%input_ = input
+    end function
+
+    function input(self)
+        class(filter_item_result_input_t), intent(in) :: self
+        type(filter_item_result_t) :: input
+
+        input = self%input_
     end function
 end module
