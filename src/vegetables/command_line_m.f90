@@ -3,7 +3,7 @@ module vegetables_command_line_m
 
     implicit none
     private
-    public :: options_t, get_options, NUM_GENERATOR_TESTS
+    public :: options_t, get_options, MAX_SHRINK_ATTEMPTS, NUM_GENERATOR_TESTS
 
     type :: options_t
         private
@@ -21,6 +21,7 @@ module vegetables_command_line_m
         procedure, public :: filter_string
     end type
 
+    integer, protected :: MAX_SHRINK_ATTEMPTS = 100
     integer, protected :: NUM_GENERATOR_TESTS = 100
 contains
     function get_options() result(options)
@@ -73,6 +74,17 @@ contains
                     call put_line(error_unit, "Number of random values must be >0")
                     error stop
                 end if
+            case ("-s", "--shrink-max")
+                i = i + 1
+                call get_command_argument(i, argument)
+                read(argument, *, iostat=iostat) MAX_SHRINK_ATTEMPTS
+                if (iostat /= 0) then
+                    call put_line( &
+                            error_unit, &
+                            'Unable to read "' // trim(argument) // '" as an integer' // NEWLINE)
+                    call put_line(error_unit, usageMessage(program_name))
+                    error stop
+                end if
             case ("-q", "--quiet")
                 options%quiet_ = .true.
             case ("-v", "--verbose")
@@ -105,6 +117,8 @@ contains
                     // "                                  description contains the given string" // NEWLINE &
                     // "    -n num, --numrand num         Number of random values to use for each" // NEWLINE &
                     // "                                  test with generated values (default = 100)" // NEWLINE &
+                    // "    -s num, --shrink-max num      Number of attempts to find a simpler value" // NEWLINE &
+                    // "                                  if a random value fails (default = 100)" // NEWLINE &
                     // "    -c, --color-off               Don't colorize the output"
         end function
     end function

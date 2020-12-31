@@ -94,7 +94,8 @@ contains
     function run_without_input(self) result(result_)
         use iso_varying_string, only: operator(//)
         use strff, only: to_string
-        use vegetables_command_line_m, only: NUM_GENERATOR_TESTS
+        use vegetables_command_line_m, only: &
+                MAX_SHRINK_ATTEMPTS, NUM_GENERATOR_TESTS
         use vegetables_generated_m, only: generated_t
         use vegetables_result_m, only: result_t, fail, succeed
         use vegetables_shrink_result_m, only: shrink_result_t
@@ -120,7 +121,7 @@ contains
                     self%description_, &
                     succeed("Passed after " // to_string(NUM_GENERATOR_TESTS) // " examples")))
         else
-            do
+            do i = 1, MAX_SHRINK_ATTEMPTS
                 simpler_value = self%generator%shrink(generated_value%input())
                 new_result = self%test(simpler_value%input())
                 if (simpler_value%simplest()) then
@@ -147,6 +148,9 @@ contains
                     end if
                 end if
             end do
+            result_ = test_result_item_t(test_case_result_t( &
+                    self%description_, &
+                    fail("Exhausted shrink attempts looking for simplest value causing failure").and.previous_result))
         end if
     end function
 end module
