@@ -23,13 +23,10 @@ contains
         class(integer_generator_t), intent(in) :: self
         type(generated_t) :: generated_value
 
-        type(integer_input_t) :: the_input
-
         associate(unused => self)
         end associate
 
-        the_input%value_ = get_random_integer()
-        generated_value = generated_t(the_input)
+        generated_value = generated_t(integer_input_t(get_random_integer()))
     end function
 
     function shrink(input) result(shrunk)
@@ -41,17 +38,15 @@ contains
         class(input_t), intent(in) :: input
         type(shrink_result_t) :: shrunk
 
-        type(integer_input_t) :: new_input
-
         select type (input)
         type is (integer_input_t)
-            if (input%value_ == 0) then
-                new_input%value_ = 0
-                shrunk = simplest_value(new_input)
-            else
-                new_input%value_ = input%value_ / 2
-                shrunk = shrunk_value(new_input)
-            end if
+            associate(input_val => input%input())
+                if (input_val == 0) then
+                    shrunk = simplest_value(integer_input_t(0))
+                else
+                    shrunk = shrunk_value(integer_input_t(input_val / 2))
+                end if
+            end associate
         end select
     end function
 end module

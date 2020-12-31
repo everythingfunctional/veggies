@@ -19,7 +19,7 @@ contains
         tests = describe("assert_equals with integers", individual_tests)
     end function
 
-    pure function check_pass_for_same_integer(the_input) result(result_)
+    pure function check_pass_for_same_integer(input) result(result_)
         use iso_varying_string, only: var_str
         use vegetables, only: &
                 input_t, &
@@ -29,7 +29,7 @@ contains
                 assert_that, &
                 fail
 
-        class(input_t), intent(in) :: the_input
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
         type(result_t) :: example_result
@@ -39,22 +39,22 @@ contains
         type(result_t) :: example_result_cs
         type(result_t) :: example_result_sc
         type(result_t) :: example_result_ss
-        integer :: input
+        integer :: input_val
 
-        select type (the_input)
+        select type (input)
         type is (integer_input_t)
-            input = the_input%value_
-            example_result = assert_equals(input, input)
-            example_result_c = assert_equals(input, input, BOTH_MESSAGE)
-            example_result_s = assert_equals(input, input, var_str(BOTH_MESSAGE))
+            input_val = input%input()
+            example_result = assert_equals(input_val, input_val)
+            example_result_c = assert_equals(input_val, input_val, BOTH_MESSAGE)
+            example_result_s = assert_equals(input_val, input_val, var_str(BOTH_MESSAGE))
             example_result_cc = assert_equals( &
-                    input, input, SUCCESS_MESSAGE, FAILURE_MESSAGE)
+                    input_val, input_val, SUCCESS_MESSAGE, FAILURE_MESSAGE)
             example_result_cs = assert_equals( &
-                    input, input, SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
+                    input_val, input_val, SUCCESS_MESSAGE, var_str(FAILURE_MESSAGE))
             example_result_sc = assert_equals( &
-                    input, input, var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
+                    input_val, input_val, var_str(SUCCESS_MESSAGE), FAILURE_MESSAGE)
             example_result_ss = assert_equals( &
-                    input, input, var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
+                    input_val, input_val, var_str(SUCCESS_MESSAGE), var_str(FAILURE_MESSAGE))
             result_ = &
                     assert_that( &
                             example_result%passed(), &
@@ -78,7 +78,7 @@ contains
                             example_result_ss%passed(), &
                             example_result_ss%verbose_description(.false.))
         class default
-            result_ = fail("Expected to get an integer")
+            result_ = fail("Expected to get an integer_input_t")
         end select
     end function
 
