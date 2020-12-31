@@ -19,7 +19,7 @@ contains
         tests = describe("assert_equals with strings", individual_tests)
     end function
 
-    pure function check_pass_for_same_strings(the_example) result(result_)
+    pure function check_pass_for_same_strings(input) result(result_)
         use iso_varying_string, only: varying_string, char, var_str
         use vegetables, only: &
                 input_t, &
@@ -29,7 +29,7 @@ contains
                 assert_that, &
                 fail
 
-        class(input_t), intent(in) :: the_example
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
         type(varying_string) :: example
@@ -62,9 +62,9 @@ contains
         type(result_t) :: example_result_sssc
         type(result_t) :: example_result_ssss
 
-        select type (the_example)
+        select type (input)
         type is (string_input_t)
-            example = the_example%value_
+            example = input%input()
             example_result_cc = assert_equals(char(example), char(example))
             example_result_cs = assert_equals(char(example), example)
             example_result_sc = assert_equals(example, char(example))
@@ -251,7 +251,7 @@ contains
                             example_result_ssss%passed(), &
                             example_result_ssss%verbose_description(.false.))
         class default
-            result_ = fail("Expected a character string")
+            result_ = fail("Expected a string_input_t")
         end select
     end function
 

@@ -7,6 +7,28 @@ module vegetables_string_input_m
     public :: string_input_t
 
     type, extends(input_t) :: string_input_t
-        type(varying_string) :: value_
+        private
+        type(varying_string) :: input_
+    contains
+        private
+        procedure, public :: input
     end type
+
+    interface string_input_t
+        module procedure constructor
+    end interface
+contains
+    pure function constructor(input) result(string_input)
+        type(varying_string), intent(in) :: input
+        type(string_input_t) :: string_input
+
+        string_input%input_ = input
+    end function
+
+    pure function input(self)
+        class(string_input_t), intent(in) :: self
+        type(varying_string) :: input
+
+        input = self%input_
+    end function
 end module

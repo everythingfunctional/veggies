@@ -23,17 +23,14 @@ contains
         class(ascii_string_generator_t), intent(in) :: self
         type(generated_t) :: generated_value
 
-        type(string_input_t) :: the_input
-
         associate(unused => self)
         end associate
 
-        the_input%value_ = get_random_ascii_string()
-        generated_value = generated_t(the_input)
+        generated_value = generated_t(string_input_t(get_random_ascii_string()))
     end function
 
     function shrink(input) result(shrunk)
-        use iso_varying_string, only: assignment(=), extract, len
+        use iso_varying_string, only: assignment(=), extract, len, var_str
         use vegetables_input_m, only: input_t
         use vegetables_shrink_result_m, only: &
                 shrink_result_t, simplest_value, shrunk_value
@@ -42,18 +39,16 @@ contains
         class(input_t), intent(in) :: input
         type(shrink_result_t) :: shrunk
 
-        type(string_input_t) :: new_input
-
         select type (input)
         type is (string_input_t)
-            if (len(input%value_) <= 1) then
-                new_input%value_ = ""
-                shrunk = simplest_value(new_input)
-            else
-                new_input%value_ = extract( &
-                        input%value_, 1, len(input%value_) - 1)
-                shrunk = shrunk_value(new_input)
-            end if
+            associate(input_val => input%input())
+                if (len(input_val) <= 1) then
+                    shrunk = simplest_value(string_input_t(var_str("")))
+                else
+                    shrunk = shrunk_value(string_input_t(extract( &
+                            input_val, 1, len(input_val) - 1)))
+                end if
+            end associate
         end select
     end function
 end module
