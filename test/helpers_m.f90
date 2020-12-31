@@ -23,7 +23,6 @@ contains
         class(input_t), intent(in) :: example_test
         type(transformed_t) :: example_result
 
-        type(transformation_failure_t) :: failure
         type(test_result_item_input_t) :: the_result
 
         select type (example_test)
@@ -31,8 +30,8 @@ contains
             the_result%input = example_test%input%run()
             example_result = transformed_t(the_result)
         class default
-            failure%result_ = fail("Expected to get a test_item_input_t")
-            example_result = transformed_t(failure)
+            example_result = transformed_t(transformation_failure_t( &
+                    fail("Expected to get a test_item_input_t")))
         end select
     end function
 end module

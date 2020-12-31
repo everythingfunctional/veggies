@@ -122,7 +122,7 @@ contains
         select type (transformed_input => transformed_%input())
         type is (transformation_failure_t)
             result_ = test_result_item_t(test_case_result_t( &
-                    self%description_, transformed_input%result_))
+                    self%description_, transformed_input%result_()))
         class default
             do i = 1, size(self%tests)
                 results(i) = self%tests(i)%run(transformed_input)
