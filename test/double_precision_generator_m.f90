@@ -31,7 +31,7 @@ contains
                 get_random_double_precision_with_magnitude(1.0d12)))
     end function
 
-    pure function shrink(input) result(shrunk)
+    function shrink(input) result(shrunk)
         use vegetables, only: &
                 double_precision_input_t, &
                 input_t, &

@@ -122,8 +122,8 @@ contains
         else
             do
                 simpler_value = self%generator%shrink(generated_value%input())
-                if (simpler_value%simplest) then
-                    new_result = self%test(simpler_value%input)
+                new_result = self%test(simpler_value%input())
+                if (simpler_value%simplest()) then
                     if (new_result%passed()) then
                         result_ = test_result_item_t(test_case_result_t( &
                                 self%description_, &
@@ -136,7 +136,6 @@ contains
                         return
                     end if
                 else
-                    new_result = self%test(simpler_value%input)
                     if (new_result%passed()) then
                         result_ = test_result_item_t(test_case_result_t( &
                                 self%description_, &
@@ -144,7 +143,7 @@ contains
                         return
                     else
                         previous_result = new_result
-                        generated_value = generated_t(simpler_value%input)
+                        generated_value = generated_t(simpler_value%input())
                     end if
                 end if
             end do

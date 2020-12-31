@@ -32,7 +32,7 @@ contains
         generated_value = generated_t(the_input)
     end function
 
-    pure function shrink(input) result(shrunk)
+    function shrink(input) result(shrunk)
         use iso_varying_string, only: assignment(=), extract, len
         use vegetables_input_m, only: input_t
         use vegetables_shrink_result_m, only: &

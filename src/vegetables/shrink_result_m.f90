@@ -6,23 +6,42 @@ module vegetables_shrink_result_m
     public :: shrink_result_t, shrunk_value, simplest_value
 
     type :: shrink_result_t
-        class(input_t), allocatable :: input
-        logical :: simplest
+        private
+        class(input_t), allocatable :: input_
+        logical :: simplest_
+    contains
+        private
+        procedure, public :: input
+        procedure, public :: simplest
     end type
 contains
-    pure function shrunk_value(value_)
-        class(input_t), intent(in) :: value_
+    function shrunk_value(input)
+        class(input_t), intent(in) :: input
         type(shrink_result_t) :: shrunk_value
 
-        allocate(shrunk_value%input, source = value_)
-        shrunk_value%simplest = .false.
+        allocate(shrunk_value%input_, source = input)
+        shrunk_value%simplest_ = .false.
     end function
 
-    pure function simplest_value(value_)
-        class(input_t), intent(in) :: value_
+    function simplest_value(input)
+        class(input_t), intent(in) :: input
         type(shrink_result_t) :: simplest_value
 
-        allocate(simplest_value%input, source = value_)
-        simplest_value%simplest = .true.
+        allocate(simplest_value%input_, source = input)
+        simplest_value%simplest_ = .true.
+    end function
+
+    pure function simplest(self)
+        class(shrink_result_t), intent(in) :: self
+        logical :: simplest
+
+        simplest = self%simplest_
+    end function
+
+    function input(self)
+        class(shrink_result_t), intent(in) :: self
+        class(input_t), allocatable :: input
+
+        allocate(input, source = self%input_)
     end function
 end module
