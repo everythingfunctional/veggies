@@ -20,11 +20,15 @@ contains
     function test_assert_empty() result(tests)
         type(test_item_t) :: tests
 
-        type(test_item_t) :: individual_tests(2)
-
-        individual_tests(1) = it("passes with an empty character", check_pass_for_empty_chars)
-        individual_tests(2) = it("fails with a non empty character", check_fails_for_nonempty_chars)
-        tests = describe("assert_empty", individual_tests)
+        tests = describe( &
+                "assert_empty", &
+                [ it( &
+                        "passes with an empty character", &
+                        check_pass_for_empty_chars) &
+                , it( &
+                        "fails with a non empty character", &
+                        check_fails_for_nonempty_chars) &
+                ])
     end function
 
     pure function check_pass_for_empty_chars() result(result_)

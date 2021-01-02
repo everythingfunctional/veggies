@@ -30,24 +30,31 @@ contains
     function test_passing_collection_behaviors() result(tests)
         type(test_item_t) :: tests
 
-        type(test_item_t) :: collection(1)
-        type(test_item_input_t) :: the_collection
-        type(test_item_t) :: individual_tests(9)
-
-        the_collection = test_item_input_t(example_passing_collection())
-        individual_tests(1) = then__("it knows it passed", check_collection_passes)
-        individual_tests(2) = then__("it knows how many cases there were", check_num_cases)
-        individual_tests(3) = then__("it has no failing cases", check_num_failing_cases)
-        individual_tests(4) = then__("it's verbose description includes the given description", check_werbose_top_description)
-        individual_tests(5) = then__( &
-                "it's verbose description includes the individual case descriptions", &
-                check_verbose_case_descriptions)
-        individual_tests(6) = then__("it's verbose description includes the assertion message", check_verbose_description_assertion)
-        individual_tests(7) = then__("it's failure description is empty", check_failure_description_empty)
-        individual_tests(8) = then__("it knows how many asserts there were", check_num_asserts)
-        individual_tests(9) = then__("it has no failing asserts", check_num_failing_asserts)
-        collection(1) = when("it is run", run_test, individual_tests)
-        tests = given("a passing test collection", the_collection, collection)
+        tests = given( &
+                "a passing test collection", &
+                test_item_input_t(example_passing_collection()), &
+                [ when( &
+                        "it is run", &
+                        run_test, &
+                        [ then__("it knows it passed", check_collection_passes) &
+                        , then__("it knows how many cases there were", check_num_cases) &
+                        , then__("it has no failing cases", check_num_failing_cases) &
+                        , then__( &
+                                "it's verbose description includes the given description", &
+                                check_werbose_top_description) &
+                        , then__( &
+                                "it's verbose description includes the individual case descriptions", &
+                                check_verbose_case_descriptions) &
+                        , then__( &
+                                "it's verbose description includes the assertion message", &
+                                check_verbose_description_assertion) &
+                        , then__( &
+                                "it's failure description is empty", &
+                                check_failure_description_empty) &
+                        , then__("it knows how many asserts there were", check_num_asserts) &
+                        , then__("it has no failing asserts", check_num_failing_asserts) &
+                        ]) &
+                ])
     end function
 
     function check_collection_passes(input) result(result_)

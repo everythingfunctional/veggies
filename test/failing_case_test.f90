@@ -30,25 +30,37 @@ contains
     function test_failing_case_behaviors() result(test)
         type(test_item_t) :: test
 
-        type(test_item_t) :: collection(1)
-        type(test_item_input_t) :: the_case
-        type(test_item_t) :: individual_tests(11)
-
-        the_case = test_item_input_t(example_failing_test_case())
-        individual_tests(1) = then__("it knows it failed", check_case_fails)
-        individual_tests(2) = then__("it has 1 test case", check_num_cases)
-        individual_tests(3) = then__("it has 1 failing case", check_num_failing_cases)
-        individual_tests(4) = then__("it's verbose description includes the given description", check_verbose_for_given_description)
-        individual_tests(5) = then__("it's verbose description includes the success message", check_verbose_for_success_message)
-        individual_tests(6) = then__("it's verbose description includes the failure message", check_verbose_for_failure_message)
-        individual_tests(7) = then__("it's failure description includes the given description", check_failure_for_given_description)
-        individual_tests(8) = then__("it's failure description includes the failure message", check_failure_for_failure_message)
-        individual_tests(9) = then__( &
-                "it's failure description doesn't include the success message", check_failure_no_success_message)
-        individual_tests(10) = then__("it knows how many asserts there were", check_num_asserts)
-        individual_tests(11) = then__("it knows how many asserts failed", check_num_failing_asserts)
-        collection(1) = when("it is run", run_test, individual_tests)
-        test = given("a failing test case", the_case, collection)
+        test = given( &
+                "a failing test case", &
+                test_item_input_t(example_failing_test_case()), &
+                [ when( &
+                        "it is run", &
+                        run_test, &
+                        [ then__("it knows it failed", check_case_fails) &
+                        , then__("it has 1 test case", check_num_cases) &
+                        , then__("it has 1 failing case", check_num_failing_cases) &
+                        , then__( &
+                                "it's verbose description includes the given description", &
+                                check_verbose_for_given_description) &
+                        , then__( &
+                                "it's verbose description includes the success message", &
+                                check_verbose_for_success_message) &
+                        , then__( &
+                                "it's verbose description includes the failure message", &
+                                check_verbose_for_failure_message) &
+                        , then__( &
+                                "it's failure description includes the given description", &
+                                check_failure_for_given_description) &
+                        , then__( &
+                                "it's failure description includes the failure message", &
+                                check_failure_for_failure_message) &
+                        , then__( &
+                                "it's failure description doesn't include the success message", &
+                                check_failure_no_success_message) &
+                        , then__("it knows how many asserts there were", check_num_asserts) &
+                        , then__("it knows how many asserts failed", check_num_failing_asserts) &
+                        ]) &
+                ])
     end function
 
     function check_case_fails(input) result(result_)

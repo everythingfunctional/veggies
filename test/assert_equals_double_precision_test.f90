@@ -13,11 +13,16 @@ contains
 
         type(test_item_t) :: tests
 
-        type(test_item_t) :: individual_tests(2)
-
-        individual_tests(1) = it("passes with the same number", DOUBLE_PRECISION_GENERATOR, check_pass_for_same_number)
-        individual_tests(2) = it("fails with different numbers", check_fail_for_different_numbers)
-        tests = describe("assert_equals with double precision values", individual_tests)
+        tests = describe( &
+                "assert_equals with double precision values", &
+                [ it( &
+                        "passes with the same number", &
+                        DOUBLE_PRECISION_GENERATOR, &
+                        check_pass_for_same_number) &
+                , it( &
+                        "fails with different numbers", &
+                        check_fail_for_different_numbers) &
+                ])
     end function
 
     pure function check_pass_for_same_number(input) result(result_)

@@ -12,11 +12,16 @@ contains
 
         type(test_item_t) :: tests
 
-        type(test_item_t) :: individual_tests(2)
-
-        individual_tests(1) = it("passes with the same strings", ASCII_STRING_GENERATOR, check_pass_for_same_strings)
-        individual_tests(2) = it("fails with different strings", check_fail_for_different_strings)
-        tests = describe("assert_equals with strings", individual_tests)
+        tests = describe( &
+                "assert_equals with strings", &
+                [ it( &
+                        "passes with the same strings", &
+                        ASCII_STRING_GENERATOR, &
+                        check_pass_for_same_strings) &
+                , it( &
+                        "fails with different strings", &
+                        check_fail_for_different_strings) &
+                ])
     end function
 
     pure function check_pass_for_same_strings(input) result(result_)

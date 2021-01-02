@@ -12,11 +12,16 @@ contains
 
         type(test_item_t) :: tests
 
-        type(test_item_t) :: individual_tests(2)
-
-        individual_tests(1) = it("passes with the same integer", INTEGER_GENERATOR, check_pass_for_same_integer)
-        individual_tests(2) = it("fails with different integers", check_fail_for_different_integers)
-        tests = describe("assert_equals with integers", individual_tests)
+        tests = describe( &
+                "assert_equals with integers", &
+                [ it( &
+                        "passes with the same integer", &
+                        INTEGER_GENERATOR, &
+                        check_pass_for_same_integer) &
+                , it( &
+                        "fails with different integers", &
+                        check_fail_for_different_integers) &
+                ])
     end function
 
     pure function check_pass_for_same_integer(input) result(result_)

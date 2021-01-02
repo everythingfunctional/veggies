@@ -9,21 +9,22 @@ contains
 
         type(test_item_t) :: tests
 
-        type(test_item_t) :: individual_tests(5)
-
-        individual_tests(1) = it("Can tell whether they passed", check_passed)
-        individual_tests(2) = it( &
-                "Can tell how many assertions there were", check_num_asserts)
-        individual_tests(3) = it(&
-                "Can tell how many failing assertions there were", &
-                check_num_failing_asserts)
-        individual_tests(4) = it( &
-                "Verbose description includes all the messages", &
-                check_verbose_includes)
-        individual_tests(5) = it( &
-                "Failure description only includes the failing messages", &
-                check_failure_includes)
-        tests = describe("Results", individual_tests)
+        tests = describe( &
+                "Results", &
+                [ it("Can tell whether they passed", check_passed) &
+                , it( &
+                        "Can tell how many assertions there were", &
+                        check_num_asserts) &
+                , it( &
+                        "Can tell how many failing assertions there were", &
+                        check_num_failing_asserts) &
+                , it( &
+                        "Verbose description includes all the messages", &
+                        check_verbose_includes) &
+                , it( &
+                        "Failure description only includes the failing messages", &
+                        check_failure_includes) &
+                ])
     end function
 
     pure function check_passed() result(result_)

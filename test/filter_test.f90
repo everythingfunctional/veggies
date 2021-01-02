@@ -24,23 +24,18 @@ contains
 
         type(test_item_t) :: tests
 
-        type(test_item_t) :: collection(2)
-        type(test_item_input_t) :: the_case
-        type(test_item_t) :: first(1)
-        type(test_item_t) :: second(1)
-
-        the_case = test_item_input_t(example_passing_test_case())
-        first(1) = then__("it doesn't match", check_case_not_matching)
-        second(1) = then__("it returns itself", check_case_is_same)
-        collection(1) = when( &
-                "it is filtered with a string it doesn't contain", &
-                filter_case_not_matching, &
-                first)
-        collection(2) = when( &
-                "it is filtered with a matching string", &
-                filter_case_matching, &
-                second)
-        tests = given("a test case", the_case, collection)
+        tests = given( &
+                "a test case", &
+                test_item_input_t(example_passing_test_case()), &
+                [ when( &
+                        "it is filtered with a string it doesn't contain", &
+                        filter_case_not_matching, &
+                        [then__("it doesn't match", check_case_not_matching)]) &
+                , when( &
+                        "it is filtered with a matching string", &
+                        filter_case_matching, &
+                        [then__("it returns itself", check_case_is_same)]) &
+                ])
     end function
 
     function test_filter_collection() result(tests)
@@ -50,29 +45,25 @@ contains
 
         type(test_item_t) :: tests
 
-        type(test_item_t) :: collection(3)
-        type(test_item_input_t) :: the_collection
-        type(test_item_t) :: first(1)
-        type(test_item_t) :: second(1)
-        type(test_item_t) :: third(1)
-
-        the_collection = test_item_input_t(example_passing_collection())
-        first(1) = then__("it doesn't match", check_collection_not_matching)
-        second(1) = then__("it returns itself", check_collection_is_same)
-        third(1) = then__("it returns a collection with only that case", check_collection_single_case)
-        collection(1) = when( &
-                "it is filtered with a string it doesn't contain", &
-                filter_collection_not_matching, &
-                first)
-        collection(2) = when( &
-                "it is filtered with a string matching its description", &
-                filter_collection_matching_description, &
-                second)
-        collection(3) = when( &
-                "it is filtered with a string matching only 1 of its cases", &
-                filter_collection_matching_case, &
-                third)
-        tests = given("a test collection", the_collection, collection)
+        tests = given( &
+                "a test collection", &
+                test_item_input_t(example_passing_collection()), &
+                [ when( &
+                        "it is filtered with a string it doesn't contain", &
+                        filter_collection_not_matching, &
+                        [then__("it doesn't match", check_collection_not_matching)]) &
+                , when( &
+                        "it is filtered with a string matching its description", &
+                        filter_collection_matching_description, &
+                        [then__("it returns itself", check_collection_is_same)]) &
+                , when( &
+                        "it is filtered with a string matching only 1 of its cases", &
+                        filter_collection_matching_case, &
+                        [ then__( &
+                                "it returns a collection with only that case", &
+                                check_collection_single_case) &
+                        ]) &
+                ])
     end function
 
     function filter_case_not_matching(input) result(filtered)

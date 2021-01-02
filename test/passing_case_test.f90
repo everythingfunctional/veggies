@@ -24,21 +24,28 @@ contains
     function test_passing_case_behaviors() result(test)
         type(test_item_t) :: test
 
-        type(test_item_t) :: collection(1)
-        type(test_item_input_t) :: the_case
-        type(test_item_t) :: individual_tests(8)
-
-        the_case = test_item_input_t(example_passing_test_Case())
-        individual_tests(1) = then__("it knows it passed", check_case_passes)
-        individual_tests(2) = then__("it has 1 test case", check_num_cases)
-        individual_tests(3) = then__("it has no failing case", check_num_failing_cases)
-        individual_tests(4) = then__("it's verbose description still includes the given description", check_verbose_description)
-        individual_tests(5) = then__("it's verbose description includes the assertion message", check_verbose_description_assertion)
-        individual_tests(6) = then__("it's failure description is empty", check_failure_description_empty)
-        individual_tests(7) = then__("it knows how many asserts there were", check_num_asserts)
-        individual_tests(8) = then__("it has no failing asserts", check_num_failing_asserts)
-        collection(1) = when("it is run", run_test, individual_tests)
-        test = given("a passing test case", the_case, collection)
+        test = given( &
+                "a passing test case", &
+                test_item_input_t(example_passing_test_case()), &
+                [ when( &
+                        "it is run", &
+                        run_test, &
+                        [ then__("it knows it passed", check_case_passes) &
+                        , then__("it has 1 test case", check_num_cases) &
+                        , then__("it has no failing case", check_num_failing_cases) &
+                        , then__( &
+                                "it's verbose description still includes the given description", &
+                                check_verbose_description) &
+                        , then__( &
+                                "it's verbose description includes the assertion message", &
+                                check_verbose_description_assertion) &
+                        , then__( &
+                                "it's failure description is empty", &
+                                check_failure_description_empty) &
+                        , then__("it knows how many asserts there were", check_num_asserts) &
+                        , then__("it has no failing asserts", check_num_failing_asserts) &
+                        ]) &
+                ])
     end function
 
     function check_case_passes(input) result(result_)

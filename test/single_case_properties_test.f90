@@ -11,14 +11,15 @@ contains
 
         type(test_item_t) :: test
 
-        type(test_item_t) :: individual_tests(3)
-        type(test_item_input_t) :: the_case
-
-        the_case = test_item_input_t(example_passing_test_case())
-        individual_tests(1) = it_("includes the given description", check_case_description)
-        individual_tests(2) = it_("only has 1 test case", check_num_cases)
-        individual_tests(3) = it_("takes less than 3 times as long as the assertions to run", check_speed)
-        test = describe("A test case", the_case, individual_tests)
+        test = describe( &
+                "A test case", &
+                test_item_input_t(example_passing_test_case()), &
+                [ it_("includes the given description", check_case_description) &
+                , it_("only has 1 test case", check_num_cases) &
+                , it_( &
+                        "takes less than 3 times as long as the assertions to run", &
+                        check_speed) &
+                ])
     end function
 
     function check_case_description(input) result(result_)
