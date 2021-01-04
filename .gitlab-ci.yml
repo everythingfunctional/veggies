@@ -18,7 +18,7 @@ documentation:
       - public
 
 pages:
-  depends:
+  dependencies:
     - documentation
   script:
     - echo "Deploying to pages"
