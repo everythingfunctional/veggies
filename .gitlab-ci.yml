@@ -18,6 +18,8 @@ documentation:
       - public
 
 pages:
+  script:
+    - echo "Deploying to pages"
   artifacts:
     paths:
       - public
