@@ -1,6 +1,7 @@
 stages:
   - test
   - documentation
+  - pages
 
 test:
   image: registry.gitlab.com/everythingfunctional/dockerfpm
@@ -15,3 +16,10 @@ documentation:
   artifacts:
     paths:
       - public
+
+pages:
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
