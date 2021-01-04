@@ -4,11 +4,13 @@ stages:
   - pages
 
 test:
+  stage: test
   image: registry.gitlab.com/everythingfunctional/dockerfpm
   script:
     - ./run_ci.sh
 
 documentation:
+  stage: documentation
   image: python:2.7
   script:
     - pip install ford
@@ -18,6 +20,7 @@ documentation:
       - public
 
 pages:
+  stage: pages
   dependencies:
     - documentation
   script:
