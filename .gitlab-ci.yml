@@ -8,9 +8,7 @@ test:
     - ./run_ci.sh
 
 documentation:
-  image:
-    name: python:2.7
-    entrypoint: ["bash"]
+  image: python:2.7
   script:
     - pip install ford
     - ford doc/front-matter.md
