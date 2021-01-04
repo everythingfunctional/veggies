@@ -11,60 +11,67 @@ contains
 
         type(test_item_t) :: test
 
-        type(test_item_t) :: individual_tests(3)
-        type(test_item_input_t) :: the_case
-
-        the_case%input = example_passing_test_Case()
-        individual_tests(1) = it_("includes the given description", check_case_description)
-        individual_tests(2) = it_("only has 1 test case", check_num_cases)
-        individual_tests(3) = it_("takes less than 3 times as long as the assertions to run", check_speed)
-        test = describe("A test case", the_case, individual_tests)
+        test = describe( &
+                "A test case", &
+                test_item_input_t(example_passing_test_case()), &
+                [ it_("includes the given description", check_case_description) &
+                , it_("only has 1 test case", check_num_cases) &
+                , it_( &
+                        "takes less than 3 times as long as the assertions to run", &
+                        check_speed) &
+                ])
     end function
 
-    pure function check_case_description(example_case) result(result_)
+    function check_case_description(input) result(result_)
         use example_cases_m, only: EXAMPLE_DESCRIPTION
         use helpers_m, only: test_item_input_t
-        use vegetables, only: input_t, result_t, assert_includes, fail
+        use vegetables, only: input_t, result_t, test_item_t, assert_includes, fail
 
-        class(input_t), intent(in) :: example_case
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
-        select type (example_case)
+        type(test_item_t) :: example_case
+
+        select type (input)
         class is (test_item_input_t)
-            result_ = assert_includes(EXAMPLE_DESCRIPTION, example_case%input%description())
+            example_case = input%input()
+            result_ = assert_includes(EXAMPLE_DESCRIPTION, example_case%description())
         class default
             result_ = fail("Expected to get a test_item_input_t")
         end select
     end function
 
-    pure function check_num_cases(example_case) result(result_)
+    function check_num_cases(input) result(result_)
         use helpers_m, only: test_item_input_t
-        use vegetables, only: input_t, result_t, assert_equals, fail
+        use vegetables, only: input_t, result_t, test_item_t, assert_equals, fail
 
-        class(input_t), intent(in) :: example_case
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
-        select type (example_case)
+        type(test_item_t) :: example_case
+
+        select type (input)
         class is (test_item_input_t)
-            result_ = assert_equals(1, example_case%input%num_cases())
+            example_case = input%input()
+            result_ = assert_equals(1, example_case%num_cases())
         class default
             result_ = fail("Expected to get a test_item_input_t")
         end select
     end function
 
-    function check_speed(example_case) result(result_)
+    function check_speed(input) result(result_)
         use helpers_m, only: test_item_input_t
         use vegetables, only: &
                 input_t, result_t, test_item_t, assert_faster_than, fail
 
-        class(input_t), intent(in) :: example_case
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
         type(test_item_t) :: internal_case
 
-        select type (example_case)
+        select type (input)
         type is (test_item_input_t)
-            internal_case = example_case%input
+            internal_case = input%input()
             result_ = assert_faster_than(run_assertions, run_case, 100)
         class default
             result_ = fail("Expected to get a test_item_input_t")

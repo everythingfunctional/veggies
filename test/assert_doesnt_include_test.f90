@@ -12,11 +12,16 @@ contains
 
         type(test_item_t) :: tests
 
-        type(test_item_t) :: individual_tests(2)
-
-        individual_tests(1) = it("passes with different strings", check_pass_for_different_strings)
-        individual_tests(2) = it("fails with the same string", ASCII_STRING_GENERATOR, check_fail_for_same_string)
-        tests = describe("assert_doesnt_include", individual_tests)
+        tests = describe( &
+                "assert_doesnt_include", &
+                [ it( &
+                        "passes with different strings", &
+                        check_pass_for_different_strings) &
+                , it( &
+                        "fails with the same string", &
+                        ASCII_STRING_GENERATOR, &
+                        check_fail_for_same_string) &
+                ])
     end function
 
     pure function check_pass_for_different_strings() result(result_)
@@ -248,7 +253,7 @@ contains
                         example_result_ssss%verbose_description(.false.))
     end function
 
-    pure function check_fail_for_same_string(the_example) result(result_)
+    pure function check_fail_for_same_string(input) result(result_)
         use iso_varying_string, only: varying_string, char, var_str
         use vegetables, only: &
                 input_t, &
@@ -257,7 +262,7 @@ contains
                 assert_doesnt_include, &
                 assert_not, fail
 
-        class(input_t), intent(in) :: the_example
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
         type(result_t) :: example_result_cc
@@ -290,9 +295,9 @@ contains
         type(result_t) :: example_result_ssss
         type(varying_string) :: example
 
-        select type (the_example)
+        select type (input)
         type is (string_input_t)
-            example = the_example%value_
+            example = input%input()
             example_result_cc = assert_doesnt_include( &
                     char(example), char(example))
             example_result_cs = assert_doesnt_include( &

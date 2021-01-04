@@ -12,14 +12,19 @@ contains
 
         type(test_item_t) :: tests
 
-        type(test_item_t) :: individual_tests(2)
-
-        individual_tests(1) = it("passes with the same strings", ASCII_STRING_GENERATOR, check_pass_for_same_strings)
-        individual_tests(2) = it("fails when the string isn't included", check_fail_for_different_strings)
-        tests = describe("assert_includes", individual_tests)
+        tests = describe( &
+                "assert_includes", &
+                [ it( &
+                        "passes with the same strings", &
+                        ASCII_STRING_GENERATOR, &
+                        check_pass_for_same_strings) &
+                , it( &
+                        "fails when the string isn't included", &
+                        check_fail_for_different_strings) &
+                ])
     end function
 
-    pure function check_pass_for_same_strings(the_example) result(result_)
+    pure function check_pass_for_same_strings(input) result(result_)
         use iso_varying_string, only: varying_string, var_str, char
         use vegetables, only: &
                 input_t, &
@@ -29,7 +34,7 @@ contains
                 assert_that, &
                 fail
 
-        class(input_t), intent(in) :: the_example
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
         type(varying_string) :: example
@@ -62,9 +67,9 @@ contains
         type(result_t) :: example_result_sssc
         type(result_t) :: example_result_ssss
 
-        select type (the_example)
+        select type (input)
         type is (string_input_t)
-            example = the_example%value_
+            example = input%input()
             example_result_cc = assert_includes(char(example), char(example))
             example_result_cs = assert_includes(char(example), example)
             example_result_sc = assert_includes(example, char(example))
@@ -251,7 +256,7 @@ contains
                             example_result_ssss%passed(), &
                             example_result_ssss%verbose_description(.false.))
         class default
-            result_ = fail("Expected a character string")
+            result_ = fail("Expected a string_input_t")
         end select
     end function
 

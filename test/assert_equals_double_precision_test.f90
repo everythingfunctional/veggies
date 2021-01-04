@@ -13,14 +13,19 @@ contains
 
         type(test_item_t) :: tests
 
-        type(test_item_t) :: individual_tests(2)
-
-        individual_tests(1) = it("passes with the same number", DOUBLE_PRECISION_GENERATOR, check_pass_for_same_number)
-        individual_tests(2) = it("fails with different numbers", check_fail_for_different_numbers)
-        tests = describe("assert_equals with double precision values", individual_tests)
+        tests = describe( &
+                "assert_equals with double precision values", &
+                [ it( &
+                        "passes with the same number", &
+                        DOUBLE_PRECISION_GENERATOR, &
+                        check_pass_for_same_number) &
+                , it( &
+                        "fails with different numbers", &
+                        check_fail_for_different_numbers) &
+                ])
     end function
 
-    pure function check_pass_for_same_number(the_example) result(result_)
+    pure function check_pass_for_same_number(input) result(result_)
         use iso_varying_string, only: var_str
         use vegetables, only: &
                 double_precision_input_t, &
@@ -30,7 +35,7 @@ contains
                 assert_that, &
                 fail
 
-        class(input_t), intent(in) :: the_example
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
         double precision :: example
@@ -42,9 +47,9 @@ contains
         type(result_t) :: example_result_sc
         type(result_t) :: example_result_ss
 
-        select type (the_example)
+        select type (input)
         type is (double_precision_input_t)
-                example = the_example%value_
+                example = input%input()
                 example_result = assert_equals(example, example)
                 example_result_c = assert_equals(example, example, BOTH_MESSAGE)
                 example_result_s = assert_equals(example, example, var_str(BOTH_MESSAGE))
@@ -79,7 +84,7 @@ contains
                                 example_result_ss%passed(), &
                                 example_result_ss%verbose_description(.false.))
         class default
-            result_ = fail("Expected to get a double precision value")
+            result_ = fail("Expected to get a double_precision_input_t")
         end select
     end function
 

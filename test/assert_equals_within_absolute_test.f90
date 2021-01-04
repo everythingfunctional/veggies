@@ -13,24 +13,24 @@ contains
 
         type(test_item_t) :: tests
 
-        type(test_item_t) :: individual_tests(3)
-
-        individual_tests(1) = it( &
-                "passes with the same number even with very small tolerance", &
-                DOUBLE_PRECISION_GENERATOR, &
-                check_pass_for_same_number)
-        individual_tests(2) = it( &
-                "fails with sufficiently different numbers", &
-                DOUBLE_PRECISION_GENERATOR, &
-                check_fail_for_different_numbers)
-        individual_tests(3) = it( &
-                "passes with sufficiently close numbers", &
-                DOUBLE_PRECISION_GENERATOR, &
-                check_pass_for_close_numbers)
-        tests = describe("assert_equals_within_absolute", individual_tests)
+        tests = describe( &
+                "assert_equals_within_absolute", &
+                [ it( &
+                        "passes with the same number even with very small tolerance", &
+                        DOUBLE_PRECISION_GENERATOR, &
+                        check_pass_for_same_number) &
+                , it( &
+                        "fails with sufficiently different numbers", &
+                        DOUBLE_PRECISION_GENERATOR, &
+                        check_fail_for_different_numbers) &
+                , it( &
+                        "passes with sufficiently close numbers", &
+                        DOUBLE_PRECISION_GENERATOR, &
+                        check_pass_for_close_numbers) &
+                ])
     end function
 
-    pure function check_pass_for_same_number(the_example) result(result_)
+    pure function check_pass_for_same_number(input) result(result_)
         use iso_varying_string, only: var_str
         use vegetables, only: &
                 double_precision_input_t, &
@@ -40,7 +40,7 @@ contains
                 assert_that, &
                 fail
 
-        class(input_t), intent(in) :: the_example
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
         double precision :: example
@@ -52,9 +52,9 @@ contains
         type(result_t) :: example_result_sc
         type(result_t) :: example_result_ss
 
-        select type (the_example)
+        select type (input)
         type is (double_precision_input_t)
-            example = the_example%value_
+            example = input%input()
             example_result = assert_equals_within_absolute( &
                     example, example, tiny(0.0d0))
             example_result_c = assert_equals_within_absolute( &
@@ -108,11 +108,11 @@ contains
                             example_result_ss%passed(), &
                             example_result_ss%verbose_description(.false.))
         class default
-            result_ = fail("Expected to get a double precision value")
+            result_ = fail("Expected to get a double_precision_input_t")
         end select
     end function
 
-    pure function check_fail_for_different_numbers(the_example) result(result_)
+    pure function check_fail_for_different_numbers(input) result(result_)
         use iso_varying_string, only: var_str
         use vegetables, only: &
                 double_precision_input_t, &
@@ -122,7 +122,7 @@ contains
                 assert_not, &
                 fail
 
-        class(input_t), intent(in) :: the_example
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
         double precision :: example
@@ -134,9 +134,9 @@ contains
         type(result_t) :: example_result_sc
         type(result_t) :: example_result_ss
 
-        select type (the_example)
+        select type (input)
         type is (double_precision_input_t)
-            example = the_example%value_
+            example = input%input()
             example_result = assert_equals_within_absolute( &
                     example, example+0.2d0, 0.1d0)
             example_result_c = assert_equals_within_absolute( &
@@ -190,11 +190,11 @@ contains
                             example_result_ss%passed(), &
                             example_result_ss%verbose_description(.false.))
         class default
-            result_ = fail("Expected to get a double precision value")
+            result_ = fail("Expected to get a double_precision_input_t")
         end select
     end function
 
-    pure function check_pass_for_close_numbers(the_example) result(result_)
+    pure function check_pass_for_close_numbers(input) result(result_)
         use iso_varying_string, only: var_str
         use vegetables, only: &
                 double_precision_input_t, &
@@ -204,7 +204,7 @@ contains
                 assert_that, &
                 fail
 
-        class(input_t), intent(in) :: the_example
+        class(input_t), intent(in) :: input
         type(result_t) :: result_
 
         double precision :: example
@@ -216,9 +216,9 @@ contains
         type(result_t) :: example_result_sc
         type(result_t) :: example_result_ss
 
-        select type (the_example)
+        select type (input)
         type is (double_precision_input_t)
-            example = the_example%value_
+            example = input%input()
             example_result = assert_equals_within_absolute( &
                     example, example+0.05d0, 0.1d0)
             example_result_c = assert_equals_within_absolute( &
@@ -272,7 +272,7 @@ contains
                             example_result_ss%passed(), &
                             example_result_ss%verbose_description(.false.))
         class default
-            result_ = fail("Expected to get a double precision value")
+            result_ = fail("Expected to get a double_precision_input_t")
         end select
     end function
 end module

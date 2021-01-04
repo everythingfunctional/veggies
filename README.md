@@ -1,7 +1,7 @@
 Vegetables
 ==========
 
-[![pipeline status](https://gitlab.com/everythingfunctional/vegetables/badges/master/pipeline.svg)](https://gitlab.com/everythingfunctional/vegetables/commits/master)
+[![pipeline status](https://gitlab.com/everythingfunctional/vegetables/badges/main/pipeline.svg)](https://gitlab.com/everythingfunctional/vegetables/-/commits/main)
 
 For a healthier code base, eat your vegetables.
 
@@ -169,15 +169,15 @@ An example of a specification function would be as follows:
 function test_assert_empty() result(tests)
     type(test_item_t) :: tests
 
-    type(test_item_t) :: individual_tests(2)
-
-    individual_tests(1) = it( &
-            "passes with an empty string", &
-            check_pass_for_empty_chars)
-    individual_tests(2) = it( &
-            "fails with a non empty string", &
-            check_fails_for_nonempty_chars)
-    tests = describe("assert_empty", individual_tests)
+    tests = describe( &
+            "assert_empty", &
+            [ it( &
+                    "passes with an empty string", &
+                    check_pass_for_empty_chars) &
+            , it( &
+                    "fails with a non empty string", &
+                    check_fails_for_nonempty_chars) &
+            ])
 end function
 ```
 
@@ -217,43 +217,58 @@ the simplest possible value. The relevant code for one of the provided generator
 is shown below.
 
 ```Fortran
-type, extends(generator_t) :: integer_generator_t
-contains
+module vegetables_integer_generator_m
+    use vegetables_generator_m, only: generator_t
+
+    implicit none
     private
-    procedure, public :: generate => generate_integer
-    procedure, nopass, public :: shrink => shrink_integer
-end type
+    public :: INTEGER_GENERATOR
 
-function generate_integer(self) result(generated_value)
-    class(integer_generator_t), intent(in) :: self
-    type(generated_t) :: generated_value
+    type, extends(generator_t) :: integer_generator_t
+    contains
+        private
+        procedure, public :: generate
+        procedure, nopass, public :: shrink
+    end type
 
-    type(integer_input_t) :: the_input
+    type(integer_generator_t), parameter :: &
+            INTEGER_GENERATOR = integer_generator_t()
+contains
+    function generate(self) result(generated_value)
+        use vegetables_generated_m, only: generated_t
+        use vegetables_integer_input_m, only: integer_input_t
+        use vegetables_random_m, only: get_random_integer
 
-    associate(a => self)
-    end associate
+        class(integer_generator_t), intent(in) :: self
+        type(generated_t) :: generated_value
 
-    the_input%value_ = get_random_integer()
-    generated_value = generated(the_input)
-end function
+        associate(unused => self)
+        end associate
 
-pure function shrink_integer(input) result(shrunk)
-    class(input_t), intent(in) :: input
-    type(shrink_result_t) :: shrunk
+        generated_value = generated_t(integer_input_t(get_random_integer()))
+    end function
 
-    type(integer_input_t) :: new_input
+    function shrink(input) result(shrunk)
+        use vegetables_input_m, only: input_t
+        use vegetables_integer_input_m, only: integer_input_t
+        use vegetables_shrink_result_m, only: &
+                shrink_result_t, shrunk_value, simplest_value
 
-    select type (input)
-    type is (integer_input_t)
-        if (input%value_ == 0) then
-            new_input%value_ = 0
-            shrunk = simplest_value(new_input)
-        else
-            new_input%value_ = input%value_ / 2
-            shrunk = shrunk_value(new_input)
-        end if
-    end select
-end function
+        class(input_t), intent(in) :: input
+        type(shrink_result_t) :: shrunk
+
+        select type (input)
+        type is (integer_input_t)
+            associate(input_val => input%input())
+                if (input_val == 0) then
+                    shrunk = simplest_value(integer_input_t(0))
+                else
+                    shrunk = shrunk_value(integer_input_t(input_val / 2))
+                end if
+            end associate
+        end select
+    end function
+end module
 ```
 
 When given a generator, the `generate` function will be called to generate up to
@@ -281,6 +296,8 @@ Usage: driver_name [-h] [-q] [-v] [-f string] [-n num] [-c]
                                   description contains the given string
     -n num, --numrand num         Number of random values to use for each
                                   test with generated values (default = 100)
+    -s num, --shrink-max num      Number of attempts to find a simpler value
+                                  if a random value fails (default = 100)
     -c, --color-off               Don't colorize the output
 ```
 
