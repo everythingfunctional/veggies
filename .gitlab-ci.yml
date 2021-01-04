@@ -18,6 +18,8 @@ documentation:
       - public
 
 pages:
+  depends:
+    - documentation
   script:
     - echo "Deploying to pages"
   artifacts:
