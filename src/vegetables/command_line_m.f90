@@ -106,7 +106,7 @@ contains
             type(varying_string) :: usageMessage
 
             usageMessage = &
-                    "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-f string] [-n num] [-c]" // NEWLINE &
+                    "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-f string] [-n num] [-s num] [-c]" // NEWLINE &
                     // "  options:" // NEWLINE &
                     // "    -h, --help                    Output this message and exit" // NEWLINE &
                     // "    -q, --quiet                   Don't print the test descriptions before" // NEWLINE &
