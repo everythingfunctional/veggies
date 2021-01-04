@@ -14,8 +14,6 @@ documentation:
   script:
     - pip install ford
     - ford doc/front-matter.md
-  only:
-    - main
   artifacts:
     paths:
       - public
