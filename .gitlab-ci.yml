@@ -1,8 +1,21 @@
-image: registry.gitlab.com/everythingfunctional/dockerfpm
-
-variables:
-    GIT_SUBMODULE_STRATEGY: normal
+stages:
+  - test
+  - documentation
 
 test:
+  image: registry.gitlab.com/everythingfunctional/dockerfpm
   script:
     - ./run_ci.sh
+
+documentation:
+  image:
+    name: python:2.7
+    entrypoint: ["/bin/sh"]
+  script:
+    - pip install ford
+    - ford doc/front-matter.md
+  only:
+    - main
+  artifacts:
+    paths:
+      - public
