@@ -10,7 +10,7 @@ test:
 documentation:
   image:
     name: python:2.7
-    entrypoint: ["/bin/sh"]
+    entrypoint: ["bash"]
   script:
     - pip install ford
     - ford doc/front-matter.md
