@@ -14,4 +14,5 @@ display: public
          private
 sort: permission-alpha
 output_dir: ../public
+graph: true
 ...
