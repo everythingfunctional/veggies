@@ -33,6 +33,9 @@ Using Vegetables
 
 Using Vegetables is (almost) as easy as writing a specification. A great first
 example are the tests for Vegetables themselves.
+The following overview should be sufficient to get you started,
+but you can take a deeper look into how vegetables works by referencing
+[the developer documentation](https://everythingfunctional.gitlab.io/vegetables).
 
 ### Writing a Test Function
 
