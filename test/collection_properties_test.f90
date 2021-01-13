@@ -1,13 +1,30 @@
 module collection_properties_test
+    use example_collections_m, only: &
+            example_passing_collection, &
+            example_test_case_1, &
+            example_test_case_2, &
+            EXAMPLE_CASE_DESCRIPTION_1, &
+            EXAMPLE_CASE_DESCRIPTION_2, &
+            EXAMPLE_COLLECTION_DESCRIPTION, &
+            NUM_CASES_IN_PASSING
+    use helpers_m, only: test_item_input_t
+    use vegetables, only: &
+            input_t, &
+            result_t, &
+            test_item_t, &
+            test_result_item_t, &
+            assert_equals, &
+            assert_faster_than, &
+            assert_includes, &
+            describe, &
+            fail, &
+            it_
+
     implicit none
     private
     public :: test_collection_properties
 contains
     function test_collection_properties() result(test)
-        use example_collections_m, only: example_passing_collection
-        use helpers_m, only: test_item_input_t
-        use vegetables, only: test_item_t, describe, it_
-
         type(test_item_t) :: test
 
         test = describe( &
@@ -27,10 +44,6 @@ contains
     end function
 
     function check_num_cases(input) result(result_)
-        use example_collections_m, only: NUM_CASES_IN_PASSING
-        use helpers_m, only: test_item_input_t
-        use vegetables, only: input_t, result_t, test_item_t, assert_equals, fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -46,10 +59,6 @@ contains
     end function
 
     function check_collection_top_description(input) result(result_)
-        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
-        use helpers_m, only: test_item_input_t
-        use vegetables, only: input_t, result_t, test_item_t, assert_includes, fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -66,11 +75,6 @@ contains
     end function
 
     function check_collection_descriptions(input) result(result_)
-        use example_collections_m, only: &
-                EXAMPLE_CASE_DESCRIPTION_1, EXAMPLE_CASE_DESCRIPTION_2
-        use helpers_m, only: test_item_input_t
-        use vegetables, only: input_t, result_t, test_item_t, assert_includes, fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -90,11 +94,6 @@ contains
     end function
 
     function check_speed(input) result(result_)
-        use example_collections_m, only: example_test_case_1, example_test_case_2
-        use helpers_m, only: test_item_input_t
-        use vegetables, only: &
-                input_t, result_t, test_item_t, assert_faster_than, fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -115,8 +114,6 @@ contains
         end select
     contains
         subroutine runCollection
-            use vegetables, only: test_result_item_t
-
             integer :: i
             type(test_result_item_t) :: internal_result
 
@@ -126,8 +123,6 @@ contains
         end subroutine
 
         subroutine runCases
-            use vegetables, only: test_result_item_t
-
             integer :: i
             type(test_result_item_t) :: the_results(3)
 

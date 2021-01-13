@@ -1,4 +1,9 @@
 module vegetables_messages_m
+    use iso_varying_string, only: &
+            varying_string, operator(==), operator(//), var_str
+    use strff, only: hanging_indent, indent, NEWLINE
+    use vegetables_constants_m, only: INDENTATION
+
     implicit none
     private
     public :: &
@@ -129,8 +134,6 @@ module vegetables_messages_m
     character(len=*), parameter :: THAT_SUCCESS_MESSAGE = "Was true"
 contains
     pure function delimit_c(string) result(delimited)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: string
         type(varying_string) :: delimited
 
@@ -138,8 +141,6 @@ contains
     end function
 
     pure function delimit_s(string) result(delimited)
-        use iso_varying_string, only: varying_string, operator(//)
-
         type(varying_string), intent(in) :: string
         type(varying_string) :: delimited
 
@@ -148,8 +149,6 @@ contains
 
     pure function make_doesnt_include_failure_message_cc( &
             search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string) :: message
@@ -160,8 +159,6 @@ contains
 
     pure function make_doesnt_include_failure_message_cs( &
             search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
@@ -172,8 +169,6 @@ contains
 
     pure function make_doesnt_include_failure_message_sc( &
             search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string) :: message
@@ -184,10 +179,6 @@ contains
 
     pure function make_doesnt_include_failure_message_ss( &
             search_for, string) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, indent, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
@@ -206,8 +197,6 @@ contains
 
     pure function make_doesnt_include_success_message_cc( &
             search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string) :: message
@@ -218,8 +207,6 @@ contains
 
     pure function make_doesnt_include_success_message_cs( &
             search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
@@ -230,8 +217,6 @@ contains
 
     pure function make_doesnt_include_success_message_sc( &
             search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string) :: message
@@ -242,10 +227,6 @@ contains
 
     pure function make_doesnt_include_success_message_ss( &
             search_for, string) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, indent, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
@@ -263,8 +244,6 @@ contains
     end function
 
     pure function make_empty_failure_message_c(string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: string
         type(varying_string) :: message
 
@@ -272,10 +251,6 @@ contains
     end function
 
     pure function make_empty_failure_message_s(string) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, indent, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
 
@@ -289,8 +264,6 @@ contains
     end function
 
     pure function make_equals_failure_message_cc(expected, actual) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string) :: message
@@ -299,8 +272,6 @@ contains
     end function
 
     pure function make_equals_failure_message_cs(expected, actual) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string) :: message
@@ -309,8 +280,6 @@ contains
     end function
 
     pure function make_equals_failure_message_sc(expected, actual) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string) :: message
@@ -319,10 +288,6 @@ contains
     end function
 
     pure function make_equals_failure_message_ss(expected, actual) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, indent, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string) :: message
@@ -340,8 +305,6 @@ contains
     end function
 
     pure function make_equals_success_message_c(expected) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         type(varying_string) :: message
 
@@ -349,10 +312,6 @@ contains
     end function
 
     pure function make_equals_success_message_s(expected) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, indent, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         type(varying_string), intent(in) :: expected
         type(varying_string) :: message
 
@@ -366,8 +325,6 @@ contains
 
     pure function make_faster_than_failure_message_ccc( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: reference
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -379,8 +336,6 @@ contains
 
     pure function make_faster_than_failure_message_ccs( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: reference
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: iterations
@@ -392,8 +347,6 @@ contains
 
     pure function make_faster_than_failure_message_csc( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: reference
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -405,8 +358,6 @@ contains
 
     pure function make_faster_than_failure_message_css( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: reference
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: iterations
@@ -418,8 +369,6 @@ contains
 
     pure function make_faster_than_failure_message_scc( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: reference
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -431,8 +380,6 @@ contains
 
     pure function make_faster_than_failure_message_scs( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: reference
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: iterations
@@ -444,8 +391,6 @@ contains
 
     pure function make_faster_than_failure_message_ssc( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: reference
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -457,8 +402,6 @@ contains
 
     pure function make_faster_than_failure_message_sss( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-
         type(varying_string), intent(in) :: reference
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: iterations
@@ -472,8 +415,6 @@ contains
 
     pure function make_faster_than_success_message_ccc( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: reference
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -485,8 +426,6 @@ contains
 
     pure function make_faster_than_success_message_ccs( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: reference
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: iterations
@@ -498,8 +437,6 @@ contains
 
     pure function make_faster_than_success_message_csc( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: reference
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -511,8 +448,6 @@ contains
 
     pure function make_faster_than_success_message_css( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: reference
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: iterations
@@ -524,8 +459,6 @@ contains
 
     pure function make_faster_than_success_message_scc( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: reference
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -537,8 +470,6 @@ contains
 
     pure function make_faster_than_success_message_scs( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: reference
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: iterations
@@ -550,8 +481,6 @@ contains
 
     pure function make_faster_than_success_message_ssc( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: reference
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: iterations
@@ -563,8 +492,6 @@ contains
 
     pure function make_faster_than_success_message_sss( &
             reference, actual, iterations) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-
         type(varying_string), intent(in) :: reference
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: iterations
@@ -577,8 +504,6 @@ contains
     end function
 
     pure function make_includes_failure_message_cc(search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string) :: message
@@ -588,8 +513,6 @@ contains
     end function
 
     pure function make_includes_failure_message_cs(search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
@@ -598,8 +521,6 @@ contains
     end function
 
     pure function make_includes_failure_message_sc(search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string) :: message
@@ -608,10 +529,6 @@ contains
     end function
 
     pure function make_includes_failure_message_ss(search_for, string) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, indent, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
@@ -629,8 +546,6 @@ contains
     end function
 
     pure function make_includes_success_message_cc(search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string) :: message
@@ -640,8 +555,6 @@ contains
     end function
 
     pure function make_includes_succes_message_cs(search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
@@ -650,8 +563,6 @@ contains
     end function
 
     pure function make_includes_succes_message_sc(search_for, string) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string) :: message
@@ -660,10 +571,6 @@ contains
     end function
 
     pure function make_includes_succes_message_ss(search_for, string) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, indent, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
@@ -682,8 +589,6 @@ contains
 
     pure function make_within_failure_message_ccc( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -695,8 +600,6 @@ contains
 
     pure function make_within_failure_message_ccs( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: tolerance
@@ -708,8 +611,6 @@ contains
 
     pure function make_within_failure_message_csc( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -721,8 +622,6 @@ contains
 
     pure function make_within_failure_message_css( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: tolerance
@@ -734,8 +633,6 @@ contains
 
     pure function make_within_failure_message_scc( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -747,8 +644,6 @@ contains
 
     pure function make_within_failure_message_scs( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: tolerance
@@ -760,8 +655,6 @@ contains
 
     pure function make_within_failure_message_ssc( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -773,8 +666,6 @@ contains
 
     pure function make_within_failure_message_sss( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: tolerance
@@ -787,8 +678,6 @@ contains
 
     pure function make_within_success_message_ccc( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -800,8 +689,6 @@ contains
 
     pure function make_within_success_message_ccs( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: tolerance
@@ -813,8 +700,6 @@ contains
 
     pure function make_within_success_message_csc( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -826,8 +711,6 @@ contains
 
     pure function make_within_success_message_css( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: tolerance
@@ -839,8 +722,6 @@ contains
 
     pure function make_within_success_message_scc( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -852,8 +733,6 @@ contains
 
     pure function make_within_success_message_scs( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: tolerance
@@ -865,8 +744,6 @@ contains
 
     pure function make_within_success_message_ssc( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: tolerance
@@ -878,8 +755,6 @@ contains
 
     pure function make_within_success_message_sss( &
             expected, actual, tolerance) result(message)
-        use iso_varying_string, only: varying_string, operator(//)
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: tolerance
@@ -891,8 +766,6 @@ contains
     end function
 
     pure function with_user_message_cc(message, user_message) result(whole_message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: message
         character(len=*), intent(in) :: user_message
         type(varying_string) :: whole_message
@@ -902,8 +775,6 @@ contains
     end function
 
     pure function with_user_message_cs(message, user_message) result(whole_message)
-        use iso_varying_string, only: varying_string, var_str
-
         character(len=*), intent(in) :: message
         type(varying_string), intent(in) :: user_message
         type(varying_string) :: whole_message
@@ -912,8 +783,6 @@ contains
     end function
 
     pure function with_user_message_sc(message, user_message) result(whole_message)
-        use iso_varying_string, only: varying_string, var_str
-
         type(varying_string), intent(in) :: message
         character(len=*), intent(in) :: user_message
         type(varying_string) :: whole_message
@@ -923,10 +792,6 @@ contains
     end function
 
     pure function with_user_message_ss(message, user_message) result(whole_message)
-        use iso_varying_string, only: varying_string, operator(//), operator(==)
-        use strff, only: hanging_indent, indent, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         type(varying_string), intent(in) :: message
         type(varying_string), intent(in) :: user_message
         type(varying_string) :: whole_message

@@ -1,5 +1,7 @@
 module vegetables_test_case_result_m
-    use iso_varying_string, only: varying_string
+    use iso_varying_string, only: varying_string, assignment(=), operator(//)
+    use strff, only: hanging_indent, NEWLINE
+    use vegetables_constants_m, only: INDENTATION
     use vegetables_result_m, only: result_t
     use vegetables_test_result_m, only: test_result_t
 
@@ -27,8 +29,6 @@ module vegetables_test_case_result_m
     end interface
 contains
     pure function constructor(description, result_) result(test_case_result)
-        use iso_varying_string, only: varying_string
-
         type(varying_string), intent(in) :: description
         type(result_t), intent(in) :: result_
         type(test_case_result_t) :: test_case_result
@@ -39,10 +39,6 @@ contains
 
     pure function failure_description( &
             self, colorize) result(description)
-        use iso_varying_string, only: varying_string, assignment(=), operator(//)
-        use strff, only: hanging_indent, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         class(test_case_result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(varying_string) :: description
@@ -101,10 +97,6 @@ contains
 
     pure function verbose_description( &
             self, colorize) result(description)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         class(test_case_result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(varying_string) :: description

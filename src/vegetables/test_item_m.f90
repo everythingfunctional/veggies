@@ -1,5 +1,8 @@
 module vegetables_test_item_m
-    use vegetables_test_m, only: test_t
+    use iso_varying_string, only: varying_string
+    use vegetables_input_m, only: input_t
+    use vegetables_test_m, only: filter_result_t, test_t
+    use vegetables_test_result_item_m, only: test_result_item_t
 
     implicit none
     private
@@ -40,8 +43,6 @@ contains
     end function
 
     pure recursive function description(self)
-        use iso_varying_string, only: varying_string
-
         class(test_item_t), intent(in) :: self
         type(varying_string) :: description
 
@@ -49,9 +50,6 @@ contains
     end function
 
     recursive function filter(self, filter_string) result(filter_result)
-        use iso_varying_string, only: varying_string
-        use vegetables_test_m, only: filter_result_t
-
         class(test_item_t), intent(in) :: self
         type(varying_string), intent(in) :: filter_string
         type(filter_item_result_t) :: filter_result
@@ -74,9 +72,6 @@ contains
     end function
 
     recursive function run_with_input(self, input) result(result_)
-        use vegetables_input_m, only: input_t
-        use vegetables_test_result_item_m, only: test_result_item_t
-
         class(test_item_t), intent(in) :: self
         class(input_t), intent(in) :: input
         type(test_result_item_t) :: result_
@@ -85,8 +80,6 @@ contains
     end function
 
     recursive function run_without_input(self) result(result_)
-        use vegetables_test_result_item_m, only: test_result_item_t
-
         class(test_item_t), intent(in) :: self
         type(test_result_item_t) :: result_
 
@@ -100,8 +93,6 @@ contains
     end function
 
     function filter_matched(test)
-        use vegetables_test_m, only: test_t
-
         class(test_t), intent(in) :: test
         type(filter_item_result_t) :: filter_matched
 

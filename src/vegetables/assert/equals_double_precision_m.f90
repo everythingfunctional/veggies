@@ -1,4 +1,9 @@
 module vegetables_assert_equals_double_precision_m
+    use iso_varying_string, only: varying_string, var_str
+    use vegetables_assert_equals_within_absolute_m, only: &
+            assert_equals_within_absolute
+    use vegetables_result_m, only: result_t
+
     implicit none
     private
     public :: assert_equals
@@ -17,9 +22,6 @@ contains
             expected, &
             actual) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(result_t) :: result__
@@ -36,9 +38,6 @@ contains
             actual, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -53,9 +52,6 @@ contains
             actual, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(varying_string), intent(in) :: message
@@ -70,9 +66,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -92,9 +85,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -111,9 +101,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(varying_string), intent(in) :: success_message
@@ -130,11 +117,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_assert_equals_within_absolute_m, only: &
-                assert_equals_within_absolute
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         type(varying_string), intent(in) :: success_message

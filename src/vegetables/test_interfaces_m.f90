@@ -1,4 +1,8 @@
 module vegetables_test_interfaces_m
+    use vegetables_input_m, only: input_t
+    use vegetables_result_m, only: result_t
+    use vegetables_transformed_m, only: transformed_t
+
     implicit none
     private
     public :: computation_i, input_test_i, simple_test_i, transformer_i
@@ -8,8 +12,7 @@ module vegetables_test_interfaces_m
         end subroutine
 
         function input_test_i(input) result(result_)
-            use vegetables_input_m, only: input_t
-            use vegetables_result_m, only: result_t
+            import :: input_t, result_t
 
             implicit none
 
@@ -18,7 +21,7 @@ module vegetables_test_interfaces_m
         end function
 
         function simple_test_i() result(result_)
-            use vegetables_result_m, only: result_t
+            import :: result_t
 
             implicit none
 
@@ -26,8 +29,7 @@ module vegetables_test_interfaces_m
         end function
 
         function transformer_i(input) result(output)
-            use vegetables_input_m, only: input_t
-            use vegetables_transformed_m, only: transformed_t
+            import :: input_t, transformed_t
 
             implicit none
 

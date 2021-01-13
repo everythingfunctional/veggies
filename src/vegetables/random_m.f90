@@ -1,4 +1,6 @@
 module vegetables_random_m
+    use iso_varying_string, only: varying_string, assignment(=)
+
     implicit none
     private
     public :: &
@@ -23,16 +25,12 @@ contains
     end function
 
     function get_random_ascii_string() result(random_string)
-        use iso_varying_string, only: varying_string
-
         type(varying_string) :: random_string
 
         random_string = get_random_ascii_string_with_max_length(1024)
     end function
 
     function get_random_ascii_string_with_max_length(max_length) result(random_string)
-        use iso_varying_string, only: varying_string, assignment(=)
-
         integer, intent(in) :: max_length
         type(varying_string) :: random_string
 

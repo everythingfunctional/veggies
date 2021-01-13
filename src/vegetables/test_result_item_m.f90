@@ -1,4 +1,5 @@
 module vegetables_test_result_item_m
+    use iso_varying_string, only: varying_string
     use vegetables_test_result_m, only: test_result_t
 
     implicit none
@@ -32,8 +33,6 @@ contains
 
     pure recursive function failure_description( &
             self, colorize) result(description)
-        use iso_varying_string, only: varying_string
-
         class(test_result_item_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(varying_string) :: description
@@ -78,8 +77,6 @@ contains
 
     pure recursive function verbose_description( &
             self, colorize) result(description)
-        use iso_varying_string, only: varying_string
-
         class(test_result_item_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(varying_string) :: description

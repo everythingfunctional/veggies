@@ -1,5 +1,13 @@
 module double_precision_generator_m
-    use vegetables, only: generator_t
+    use vegetables, only: &
+            double_precision_input_t, &
+            generated_t, &
+            generator_t, &
+            input_t, &
+            shrink_result_t, &
+            get_random_double_precision_with_magnitude, &
+            shrunk_value, &
+            simplest_value
 
     implicit none
     private
@@ -16,11 +24,6 @@ module double_precision_generator_m
             double_precision_generator_t()
 contains
     function generate(self) result(random_double)
-        use vegetables, only: &
-                double_precision_input_t, &
-                generated_t, &
-                get_random_double_precision_with_magnitude
-
         class(double_precision_generator_t), intent(in) :: self
         type(generated_t) :: random_double
 
@@ -32,13 +35,6 @@ contains
     end function
 
     function shrink(input) result(shrunk)
-        use vegetables, only: &
-                double_precision_input_t, &
-                input_t, &
-                shrink_result_t, &
-                shrunk_value, &
-                simplest_value
-
         class(input_t), intent(in) :: input
         type(shrink_result_t) :: shrunk
 

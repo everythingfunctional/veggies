@@ -1,4 +1,12 @@
 module vegetables_assert_equals_within_relative_m
+    use iso_varying_string, only: varying_string, operator(//), var_str
+    use strff, only: to_string
+    use vegetables_messages_m, only: &
+            make_within_failure_message, &
+            make_within_success_message, &
+            with_user_message
+    use vegetables_result_m, only: result_t, fail, succeed
+
     implicit none
     private
     public :: assert_equals_within_relative
@@ -18,9 +26,6 @@ contains
             actual, &
             tolerance) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -40,9 +45,6 @@ contains
             tolerance, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -63,9 +65,6 @@ contains
             tolerance, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -87,9 +86,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -112,9 +108,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -137,9 +130,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance
@@ -162,14 +152,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: to_string
-        use vegetables_messages_m, only: &
-                make_within_failure_message, &
-                make_within_success_message, &
-                with_user_message
-        use vegetables_result_m, only: result_t, fail, succeed
-
         double precision, intent(in) :: expected
         double precision, intent(in) :: actual
         double precision, intent(in) :: tolerance

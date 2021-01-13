@@ -1,4 +1,8 @@
 module vegetables_test_m
+    use iso_varying_string, only: varying_string
+    use vegetables_input_m, only: input_t
+    use vegetables_test_result_item_m, only: test_result_item_t
+
     implicit none
     private
     public :: filter_result_t, test_t, filter_failed, filter_matched
@@ -26,8 +30,7 @@ module vegetables_test_m
 
     abstract interface
         function filter_i(self, filter_string) result(filter_result)
-            use iso_varying_string, only: varying_string
-            import test_t, filter_result_t
+            import :: test_t, filter_result_t, varying_string
 
             implicit none
 
@@ -37,9 +40,7 @@ module vegetables_test_m
         end function
 
         function run_with_input_i(self, input) result(result_)
-            use vegetables_input_m, only: input_t
-            use vegetables_test_result_item_m, only: test_result_item_t
-            import test_t
+            import :: input_t, test_t, test_result_item_t
 
             implicit none
 
@@ -49,8 +50,7 @@ module vegetables_test_m
         end function
 
         function run_without_input_i(self) result(result_)
-            use vegetables_test_result_item_m, only: test_result_item_t
-            import test_t
+            import :: test_t, test_result_item_t
 
             implicit none
 
@@ -59,14 +59,16 @@ module vegetables_test_m
         end function
 
         pure function test_count_i(self) result(num)
-            import test_t
+            import :: test_t
+
+            implicit none
+
             class(test_t), intent(in) :: self
             integer :: num
         end function
 
         pure function test_description_i(self) result(description)
-            use iso_varying_string, only: varying_string
-            import test_t
+            import :: test_t, varying_string
 
             implicit none
 

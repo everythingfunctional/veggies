@@ -1,4 +1,18 @@
 module assert_equals_strings_test
+    use iso_varying_string, only: varying_string, char, var_str
+    use vegetables, only: &
+            input_t, &
+            result_t, &
+            string_input_t, &
+            test_item_t, &
+            assert_equals, &
+            assert_not, &
+            assert_that, &
+            describe, &
+            fail, &
+            it, &
+            ASCII_STRING_GENERATOR
+
     implicit none
     private
     public :: test_assert_equals_strings
@@ -8,8 +22,6 @@ module assert_equals_strings_test
     character(len=*), parameter :: FAILURE_MESSAGE = "Failure Message"
 contains
     function test_assert_equals_strings() result(tests)
-        use vegetables, only: test_item_t, describe, it, ASCII_STRING_GENERATOR
-
         type(test_item_t) :: tests
 
         tests = describe( &
@@ -25,15 +37,6 @@ contains
     end function
 
     pure function check_pass_for_same_strings(input) result(result_)
-        use iso_varying_string, only: varying_string, char, var_str
-        use vegetables, only: &
-                input_t, &
-                result_t, &
-                string_input_t, &
-                assert_equals, &
-                assert_that, &
-                fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -261,9 +264,6 @@ contains
     end function
 
     pure function check_fail_for_different_strings() result(result_)
-        use iso_varying_string, only: var_str
-        use vegetables, only: result_t, assert_equals, assert_not
-
         type(result_t) :: result_
 
         character(len=*), parameter :: ONE_STRNIG = "One String"

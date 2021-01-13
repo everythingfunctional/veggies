@@ -1,16 +1,16 @@
 module vegetables_run_tests_m
+    use iso_fortran_env, only: error_unit, output_unit
+    use iso_varying_string, only: operator(//), put_line
+    use strff, only: to_string
+    use vegetables_command_line_m, only: options_t, get_options
+    use vegetables_test_item_m, only: filter_item_result_t, test_item_t
+    use vegetables_test_result_item_m, only: test_result_item_t
+
     implicit none
     private
     public :: run_tests
 contains
     subroutine run_tests(tests)
-        use iso_fortran_env, only: error_unit, output_unit
-        use iso_varying_string, only: operator(//), put_line
-        use strff, only: to_string
-        use vegetables_command_line_m, only: options_t, get_options
-        use vegetables_test_item_m, only: filter_item_result_t, test_item_t
-        use vegetables_test_result_item_m, only: test_result_item_t
-
         type(test_item_t), intent(in) :: tests
 
         double precision :: end_time

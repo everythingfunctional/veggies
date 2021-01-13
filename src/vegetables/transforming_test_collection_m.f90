@@ -1,8 +1,18 @@
 module vegetables_transforming_test_collection_m
-    use iso_varying_string, only: varying_string
-    use vegetables_test_m, only: test_t
+    use iso_varying_string, only: varying_string, operator(//)
+    use strff, only: operator(.includes.), hanging_indent, join, NEWLINE
+    use vegetables_constants_m, only: INDENTATION
+    use vegetables_input_m, only: input_t
+    use vegetables_result_m, only: fail
+    use vegetables_test_m, only: &
+            filter_result_t, test_t, filter_failed, filter_matched
+    use vegetables_test_case_result_m, only: test_case_result_t
+    use vegetables_test_collection_result_m, only: test_collection_result_t
     use vegetables_test_interfaces_m, only: transformer_i
-    use vegetables_test_item_m, only: test_item_t
+    use vegetables_test_item_m, only: filter_item_result_t, test_item_t
+    use vegetables_test_result_item_m, only: test_result_item_t
+    use vegetables_transformation_failure_m, only: transformation_failure_t
+    use vegetables_transformed_m, only: transformed_t
 
     implicit none
     private
@@ -27,10 +37,6 @@ module vegetables_transforming_test_collection_m
     end interface
 contains
     function constructor(description, transformer, tests) result(transforming_test_collection)
-        use iso_varying_string, only: varying_string
-        use vegetables_test_interfaces_m, only: transformer_i
-        use vegetables_test_item_m, only: test_item_t
-
         type(varying_string), intent(in) :: description
         procedure(transformer_i) :: transformer
         type(test_item_t), intent(in) :: tests(:)
@@ -42,10 +48,6 @@ contains
     end function
 
     pure recursive function description(self)
-        use iso_varying_string, only: varying_string, operator(//)
-        use strff, only: hanging_indent, join, NEWLINE
-        use vegetables_constants_m, only: INDENTATION
-
         class(transforming_test_collection_t), intent(in) :: self
         type(varying_string) :: description
 
@@ -59,12 +61,6 @@ contains
     end function
 
     recursive function filter(self, filter_string) result(filter_result)
-        use iso_varying_string, only: varying_string
-        use strff, only: operator(.includes.)
-        use vegetables_test_m, only: &
-                filter_result_t, filter_failed, filter_matched
-        use vegetables_test_item_m, only: filter_item_result_t, test_item_t
-
         class(transforming_test_collection_t), intent(in) :: self
         type(varying_string), intent(in) :: filter_string
         type(filter_result_t) :: filter_result
@@ -103,13 +99,6 @@ contains
     end function
 
     recursive function run_with_input(self, input) result(result_)
-        use vegetables_input_m, only: input_t
-        use vegetables_test_case_result_m, only: test_case_result_t
-        use vegetables_test_collection_result_m, only: test_collection_result_t
-        use vegetables_test_result_item_m, only: test_result_item_t
-        use vegetables_transformation_failure_m, only: transformation_failure_t
-        use vegetables_transformed_m, only: transformed_t
-
         class(transforming_test_collection_t), intent(in) :: self
         class(input_t), intent(in) :: input
         type(test_result_item_t) :: result_
@@ -133,10 +122,6 @@ contains
     end function
 
     function run_without_input(self) result(result_)
-        use vegetables_result_m, only: fail
-        use vegetables_test_case_result_m, only: test_case_result_t
-        use vegetables_test_result_item_m, only: test_result_item_t
-
         class(transforming_test_collection_t), intent(in) :: self
         type(test_result_item_t) :: result_
 

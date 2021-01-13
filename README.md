@@ -288,7 +288,7 @@ how the tests are run. This is done inside the `run_tests` subroutine, so
 even manually or otherwise generated driver programs can use this functionality.
 
 ```
-Usage: driver_name [-h] [-q] [-v] [-f string] [-n num] [-c]
+Usage: driver_name [-h] [-q] [-v] [-f string] [-n num] [-s num] [-c]
   options:
     -h, --help                    Output this message and exit
     -q, --quiet                   Don't print the test descriptions before

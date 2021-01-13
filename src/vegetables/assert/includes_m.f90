@@ -1,4 +1,12 @@
 module vegetables_assert_includes_m
+    use iso_varying_string, only: varying_string, var_str
+    use strff, only: operator(.includes.)
+    use vegetables_messages_m, only: &
+            make_includes_failure_message, &
+            make_includes_success_message, &
+            with_user_message
+    use vegetables_result_m, only: result_t, fail, succeed
+
     implicit none
     private
     public :: assert_includes
@@ -38,9 +46,6 @@ contains
             search_for, &
             string) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(result_t) :: result__
@@ -56,9 +61,6 @@ contains
             search_for, &
             string) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(result_t) :: result__
@@ -74,9 +76,6 @@ contains
             search_for, &
             string) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(result_t) :: result__
@@ -92,9 +91,6 @@ contains
             search_for, &
             string) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(result_t) :: result__
@@ -111,9 +107,6 @@ contains
             string, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -131,9 +124,6 @@ contains
             string, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string), intent(in) :: message
@@ -151,9 +141,6 @@ contains
             string, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -171,9 +158,6 @@ contains
             string, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string), intent(in) :: message
@@ -191,9 +175,6 @@ contains
             string, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -211,9 +192,6 @@ contains
             string, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string), intent(in) :: message
@@ -231,9 +209,6 @@ contains
             string, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         character(len=*), intent(in) :: message
@@ -251,9 +226,6 @@ contains
             string, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string), intent(in) :: message
@@ -272,9 +244,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -294,9 +263,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -316,9 +282,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string), intent(in) :: success_message
@@ -338,9 +301,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string), intent(in) :: success_message
@@ -360,9 +320,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -382,9 +339,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -404,9 +358,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string), intent(in) :: success_message
@@ -426,9 +377,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string), intent(in) :: success_message
@@ -448,9 +396,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -470,9 +415,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -492,9 +434,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string), intent(in) :: success_message
@@ -514,9 +453,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         character(len=*), intent(in) :: string
         type(varying_string), intent(in) :: success_message
@@ -536,9 +472,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -558,9 +491,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         character(len=*), intent(in) :: success_message
@@ -580,9 +510,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string), intent(in) :: success_message
@@ -602,14 +529,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use strff, only: operator(.includes.)
-        use vegetables_messages_m, only: &
-                make_includes_failure_message, &
-                make_includes_success_message, &
-                with_user_message
-        use vegetables_result_m, only: result_t, fail, succeed
-
         type(varying_string), intent(in) :: search_for
         type(varying_string), intent(in) :: string
         type(varying_string), intent(in) :: success_message

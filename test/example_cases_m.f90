@@ -1,4 +1,8 @@
 module example_cases_m
+    use example_asserts_m, only: &
+            example_multiple_asserts, example_multiple_asserts_with_fail
+    use vegetables, only: test_item_t, it
+
     implicit none
     private
     public :: &
@@ -11,18 +15,12 @@ module example_cases_m
     character(len=*), parameter :: NOT_IN_DESCRIPTION = "NOT"
 contains
     function example_passing_test_case() result(test_case)
-        use example_asserts_m, only: example_multiple_asserts
-        use vegetables, only: test_item_t, it
-
         type(test_item_t) :: test_case
 
         test_case = it(EXAMPLE_DESCRIPTION, example_multiple_asserts)
     end function
 
     function example_failing_test_case() result(test_case)
-        use example_asserts_m, only: example_multiple_asserts_with_fail
-        use vegetables, only: test_item_t, it
-
         type(test_item_t) :: test_case
 
         test_case = it(EXAMPLE_DESCRIPTION, example_multiple_asserts_with_fail)

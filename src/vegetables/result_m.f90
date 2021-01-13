@@ -1,4 +1,6 @@
 module vegetables_result_m
+    use iso_varying_string, only: varying_string, var_str
+    use strff, only: join, NEWLINE
     use vegetables_individual_result_m, only: individual_result_t
 
     implicit none
@@ -30,8 +32,6 @@ module vegetables_result_m
     end interface
 contains
     pure function fail_c(message) result(failure)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: message
         type(result_t) :: failure
 
@@ -39,9 +39,6 @@ contains
     end function
 
     pure function fail_s(message) result(failure)
-        use iso_varying_string, only: varying_string
-        use vegetables_individual_result_m, only: individual_result_t
-
         type(varying_string), intent(in) :: message
         type(result_t) :: failure
 
@@ -50,8 +47,6 @@ contains
     end function
 
     pure function succeed_c(message) result(success)
-        use iso_varying_string, only: var_str
-
         character(len=*), intent(in) :: message
         type(result_t) :: success
 
@@ -59,9 +54,6 @@ contains
     end function
 
     pure function succeed_s(message) result(success)
-        use iso_varying_string, only: varying_string
-        use vegetables_individual_result_m, only: individual_result_t
-
         type(varying_string), intent(in) :: message
         type(result_t) :: success
 
@@ -91,9 +83,6 @@ contains
     end function
 
     pure function failure_description(self, colorize) result(description)
-        use iso_varying_string, only: varying_string
-        use strff, only: join, NEWLINE
-
         class(result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(varying_string) :: description
@@ -123,9 +112,6 @@ contains
     end function
 
     pure function verbose_description(self, colorize) result(description)
-        use iso_varying_string, only: varying_string
-        use strff, only: join, NEWLINE
-
         class(result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(varying_string) :: description

@@ -1,4 +1,8 @@
 module vegetables_generator_m
+    use vegetables_generated_m, only: generated_t
+    use vegetables_input_m, only: input_t
+    use vegetables_shrink_result_m, only: shrink_result_t
+
     implicit none
     private
     public :: generator_t
@@ -12,8 +16,7 @@ module vegetables_generator_m
 
     abstract interface
         function generate_i(self) result(generated_value)
-            use vegetables_generated_m, only: generated_t
-            import :: generator_t
+            import :: generated_t, generator_t
 
             implicit none
 
@@ -22,8 +25,7 @@ module vegetables_generator_m
         end function
 
         function shrink_i(input) result(shrunk)
-            use vegetables_input_m, only: input_t
-            use vegetables_shrink_result_m, only: shrink_result_t
+            import :: input_t, shrink_result_t
 
             implicit none
 

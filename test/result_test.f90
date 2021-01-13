@@ -1,12 +1,23 @@
 module result_test
+    use vegetables, only: &
+            result_t, &
+            test_item_t, &
+            assert_doesnt_include, &
+            assert_equals, &
+            assert_includes, &
+            assert_that, &
+            assert_not, &
+            describe, &
+            fail, &
+            it, &
+            succeed
+
     implicit none
     private
 
     public :: test_result
 contains
     function test_result() result(tests)
-        use vegetables, only: test_item_t, describe, it
-
         type(test_item_t) :: tests
 
         tests = describe( &
@@ -28,8 +39,6 @@ contains
     end function
 
     pure function check_passed() result(result_)
-        use vegetables, only: result_t, assert_that, assert_not, fail, succeed
-
         type(result_t) :: result_
 
         type(result_t) :: failing_result
@@ -44,8 +53,6 @@ contains
     end function
 
     pure function check_num_asserts() result(result_)
-        use vegetables, only: result_t, assert_equals, succeed
-
         type(result_t) :: result_
 
         type(result_t) :: multiple_asserts
@@ -56,8 +63,6 @@ contains
     end function
 
     pure function check_num_failing_asserts() result(result_)
-        use vegetables, only: result_t, assert_equals, fail, succeed
-
         type(result_t) :: result_
 
         type(result_t) :: multiple_asserts
@@ -68,8 +73,6 @@ contains
     end function
 
     pure function check_verbose_includes() result(result_)
-        use vegetables, only: result_t, assert_includes, fail, succeed
-
         type(result_t) :: result_
 
         type(result_t) :: multiple_asserts
@@ -84,8 +87,6 @@ contains
     end function
 
     pure function check_failure_includes() result(result_)
-        use vegetables, only: &
-                result_t, assert_doesnt_include, assert_includes, fail, succeed
         type(result_t) :: result_
 
         type(result_t) :: multiple_asserts

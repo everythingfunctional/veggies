@@ -1,5 +1,5 @@
 module vegetables_individual_result_m
-    use iso_varying_string, only: varying_string
+    use iso_varying_string, only: varying_string, assignment(=), operator(//)
 
     implicit none
     private
@@ -21,8 +21,6 @@ module vegetables_individual_result_m
     end interface
 contains
     pure function constructor(message, passed) result(individual_result)
-        use iso_varying_string, only: varying_string
-
         type(varying_string), intent(in) :: message
         logical, intent(in) :: passed
         type(individual_result_t) :: individual_result
@@ -32,8 +30,6 @@ contains
     end function
 
     elemental function failure_description(self, colorize) result(description)
-        use iso_varying_string, only: varying_string, assignment(=), operator(//)
-
         class(individual_result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(varying_string) :: description
@@ -57,8 +53,6 @@ contains
     end function
 
     elemental function verbose_description(self, colorize) result(description)
-        use iso_varying_string, only: varying_string, operator(//)
-
         class(individual_result_t), intent(in) :: self
         logical, intent(in) :: colorize
         type(varying_string) :: description

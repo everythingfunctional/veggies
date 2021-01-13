@@ -1,4 +1,13 @@
 module vegetables_assert_faster_than_m
+    use iso_varying_string, only: varying_string, var_str
+    use strff, only: to_string
+    use vegetables_messages_m, only: &
+            make_faster_than_failure_message, &
+            make_faster_than_success_message, &
+            with_user_message
+    use vegetables_result_m, only: result_t, fail, succeed
+    use vegetables_test_interfaces_m, only: computation_i
+
     implicit none
     private
     public :: assert_faster_than
@@ -41,10 +50,6 @@ contains
             after, &
             iterations) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: before
         procedure(computation_i) :: computation
@@ -70,10 +75,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: before
         procedure(computation_i) :: computation
@@ -100,10 +101,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: before
         procedure(computation_i) :: computation
@@ -131,10 +128,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: before
         procedure(computation_i) :: computation
@@ -163,10 +156,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: before
         procedure(computation_i) :: computation
@@ -195,10 +184,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: before
         procedure(computation_i) :: computation
@@ -227,15 +212,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use strff, only: to_string
-        use vegetables_messages_m, only: &
-                make_faster_than_failure_message, &
-                make_faster_than_success_message, &
-                with_user_message
-        use vegetables_result_m, only: result_t, fail, succeed
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: before
         procedure(computation_i) :: computation
@@ -283,10 +259,6 @@ contains
             computation, &
             iterations) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -306,10 +278,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -330,10 +298,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -355,10 +319,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -381,10 +341,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -407,10 +363,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -433,15 +385,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use strff, only: to_string
-        use vegetables_messages_m, only: &
-                make_faster_than_failure_message, &
-                make_faster_than_success_message, &
-                with_user_message
-        use vegetables_result_m, only: result_t, fail, succeed
-        use vegetables_test_interfaces_m, only: computation_i
-
         double precision, intent(in) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -489,10 +432,6 @@ contains
             after, &
             iterations) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference_before
         procedure(computation_i) :: reference
         procedure(computation_i) :: reference_after
@@ -524,10 +463,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference_before
         procedure(computation_i) :: reference
         procedure(computation_i) :: reference_after
@@ -560,10 +495,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference_before
         procedure(computation_i) :: reference
         procedure(computation_i) :: reference_after
@@ -597,10 +528,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference_before
         procedure(computation_i) :: reference
         procedure(computation_i) :: reference_after
@@ -635,10 +562,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference_before
         procedure(computation_i) :: reference
         procedure(computation_i) :: reference_after
@@ -673,10 +596,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference_before
         procedure(computation_i) :: reference
         procedure(computation_i) :: reference_after
@@ -711,15 +630,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use strff, only: to_string
-        use vegetables_messages_m, only: &
-                make_faster_than_failure_message, &
-                make_faster_than_success_message, &
-                with_user_message
-        use vegetables_result_m, only: result_t, fail, succeed
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference_before
         procedure(computation_i) :: reference
         procedure(computation_i) :: reference_after
@@ -783,10 +693,6 @@ contains
             computation, &
             iterations) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -806,10 +712,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -830,10 +732,6 @@ contains
             iterations, &
             message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -855,10 +753,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -881,10 +775,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -907,10 +797,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations
@@ -933,15 +819,6 @@ contains
             success_message, &
             failure_message) &
             result(result__)
-        use iso_varying_string, only: varying_string
-        use strff, only: to_string
-        use vegetables_messages_m, only: &
-                make_faster_than_failure_message, &
-                make_faster_than_success_message, &
-                with_user_message
-        use vegetables_result_m, only: result_t, fail, succeed
-        use vegetables_test_interfaces_m, only: computation_i
-
         procedure(computation_i) :: reference
         procedure(computation_i) :: computation
         integer, intent(in) :: iterations

@@ -1,5 +1,13 @@
 module vegetables_ascii_string_generator_m
+    use iso_varying_string, only: assignment(=), extract, len, var_str
+    use vegetables_generated_m, only: generated_t
     use vegetables_generator_m, only: generator_t
+    use vegetables_input_m, only: input_t
+    use vegetables_shrink_result_m, only: &
+            shrink_result_t, simplest_value, shrunk_value
+    use vegetables_string_input_m, only: string_input_t
+    use vegetables_random_m, only: get_random_ascii_string
+    use vegetables_string_input_m, only: string_input_t
 
     implicit none
     private
@@ -16,10 +24,6 @@ module vegetables_ascii_string_generator_m
             ASCII_STRING_GENERATOR = ascii_string_generator_t()
 contains
     function generate(self) result(generated_value)
-        use vegetables_generated_m, only: generated_t
-        use vegetables_random_m, only: get_random_ascii_string
-        use vegetables_string_input_m, only: string_input_t
-
         class(ascii_string_generator_t), intent(in) :: self
         type(generated_t) :: generated_value
 
@@ -30,12 +34,6 @@ contains
     end function
 
     function shrink(input) result(shrunk)
-        use iso_varying_string, only: assignment(=), extract, len, var_str
-        use vegetables_input_m, only: input_t
-        use vegetables_shrink_result_m, only: &
-                shrink_result_t, simplest_value, shrunk_value
-        use vegetables_string_input_m, only: string_input_t
-
         class(input_t), intent(in) :: input
         type(shrink_result_t) :: shrunk
 

@@ -1,8 +1,18 @@
 module vegetables_test_case_with_generator_m
-    use iso_varying_string, only: varying_string
+    use iso_varying_string, only: varying_string, operator(//)
+    use strff, only: operator(.includes.), to_string
+    use vegetables_command_line_m, only: &
+            MAX_SHRINK_ATTEMPTS, NUM_GENERATOR_TESTS
+    use vegetables_generated_m, only: generated_t
     use vegetables_generator_m, only: generator_t
-    use vegetables_test_m, only: test_t
+    use vegetables_input_m, only: input_t
+    use vegetables_result_m, only: result_t, fail, succeed
+    use vegetables_shrink_result_m, only: shrink_result_t
+    use vegetables_test_m, only: &
+            filter_result_t, test_t, filter_failed, filter_matched
+    use vegetables_test_case_result_m, only: test_case_result_t
     use vegetables_test_interfaces_m, only: input_test_i
+    use vegetables_test_result_item_m, only: test_result_item_t
 
     implicit none
     private
@@ -27,10 +37,6 @@ module vegetables_test_case_with_generator_m
     end interface
 contains
     function constructor(description, generator, test) result(test_case_with_generator)
-        use iso_varying_string, only: varying_string
-        use vegetables_generator_m, only: generator_t
-        use vegetables_test_interfaces_m, only: input_test_i
-
         type(varying_string), intent(in) :: description
         class(generator_t), intent(in) :: generator
         procedure(input_test_i) :: test
@@ -42,8 +48,6 @@ contains
     end function
 
     pure function description(self)
-        use iso_varying_string, only: varying_string
-
         class(test_case_with_generator_t), intent(in) :: self
         type(varying_string) :: description
 
@@ -51,11 +55,6 @@ contains
     end function
 
     function filter(self, filter_string) result(filter_result)
-        use iso_varying_string, only: varying_string
-        use strff, only: operator(.includes.)
-        use vegetables_test_m, only: &
-                filter_result_t, filter_failed, filter_matched
-
         class(test_case_with_generator_t), intent(in) :: self
         type(varying_string), intent(in) :: filter_string
         type(filter_result_t) :: filter_result
@@ -78,9 +77,6 @@ contains
     end function
 
     function run_with_input(self, input) result(result_)
-        use vegetables_input_m, only: input_t
-        use vegetables_test_result_item_m, only: test_result_item_t
-
         class(test_case_with_generator_t), intent(in) :: self
         class(input_t), intent(in) :: input
         type(test_result_item_t) :: result_
@@ -92,16 +88,6 @@ contains
     end function
 
     function run_without_input(self) result(result_)
-        use iso_varying_string, only: operator(//)
-        use strff, only: to_string
-        use vegetables_command_line_m, only: &
-                MAX_SHRINK_ATTEMPTS, NUM_GENERATOR_TESTS
-        use vegetables_generated_m, only: generated_t
-        use vegetables_result_m, only: result_t, fail, succeed
-        use vegetables_shrink_result_m, only: shrink_result_t
-        use vegetables_test_case_result_m, only: test_case_result_t
-        use vegetables_test_result_item_m, only: test_result_item_t
-
         class(test_case_with_generator_t), intent(in) :: self
         type(test_result_item_t) :: result_
 

@@ -1,5 +1,7 @@
 module vegetables_command_line_m
-    use iso_varying_string, only: varying_string
+    use iso_fortran_env, only: error_unit, output_unit
+    use iso_varying_string, only: varying_string, assignment(=), put_line
+    use strff, only: NEWLINE
 
     implicit none
     private
@@ -25,10 +27,6 @@ module vegetables_command_line_m
     integer, protected :: NUM_GENERATOR_TESTS = 100
 contains
     function get_options() result(options)
-        use iso_fortran_env, only: error_unit, output_unit
-        use iso_varying_string, only: assignment(=), put_line
-        use strff, only: NEWLINE
-
         type(options_t) :: options
 
         character(len=100) :: argument
@@ -100,8 +98,6 @@ contains
         end do
     contains
         pure function usageMessage(program_name_)
-            use iso_varying_string, only: varying_string
-
             character(len=*), intent(in) :: program_name_
             type(varying_string) :: usageMessage
 
@@ -152,8 +148,6 @@ contains
     end function
 
     pure function filter_string(self)
-        use iso_varying_string, only: varying_string
-
         class(options_t), intent(in) :: self
         type(varying_string) :: filter_string
 

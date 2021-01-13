@@ -1,5 +1,26 @@
 module filter_test
-    use vegetables, only: input_t, filter_item_result_t
+    use example_cases_m, only: &
+            example_passing_test_case, EXAMPLE_DESCRIPTION, NOT_IN_DESCRIPTION
+    use example_collections_m, only: &
+            example_passing_collection, &
+            EXAMPLE_CASE_DESCRIPTION_1, &
+            EXAMPLE_COLLECTION_DESCRIPTION, &
+            NOT_IN_DESCRIPTIONS
+    use helpers_m, only: test_item_input_t
+    use iso_varying_string, only: var_str
+    use vegetables, only: &
+            input_t, &
+            filter_item_result_t, &
+            result_t, &
+            test_item_t, &
+            transformation_failure_t, &
+            transformed_t, &
+            assert_equals, &
+            assert_not, &
+            fail, &
+            given, &
+            then__, &
+            when
 
     implicit none
     private
@@ -18,10 +39,6 @@ module filter_test
     end interface
 contains
     function test_filter_case() result(tests)
-        use example_cases_m, only: example_passing_test_case
-        use helpers_m, only: test_item_input_t
-        use vegetables, only: test_item_t, given, then__, when
-
         type(test_item_t) :: tests
 
         tests = given( &
@@ -39,10 +56,6 @@ contains
     end function
 
     function test_filter_collection() result(tests)
-        use example_collections_m, only: example_passing_collection
-        use helpers_m, only: test_item_input_t
-        use vegetables, only: test_item_t, given, then__, when
-
         type(test_item_t) :: tests
 
         tests = given( &
@@ -67,16 +80,6 @@ contains
     end function
 
     function filter_case_not_matching(input) result(filtered)
-        use example_cases_m, only: NOT_IN_DESCRIPTION
-        use helpers_m, only: test_item_input_t
-        use iso_varying_string, only: var_str
-        use vegetables, only: &
-                input_t, &
-                test_item_t, &
-                transformation_failure_t, &
-                transformed_t, &
-                fail
-
         class(input_t), intent(in) :: input
         type(transformed_t) :: filtered
 
@@ -94,16 +97,6 @@ contains
     end function
 
     function filter_case_matching(input) result(filtered)
-        use example_cases_m, only: EXAMPLE_DESCRIPTION
-        use helpers_m, only: test_item_input_t
-        use iso_varying_string, only: var_str
-        use vegetables, only: &
-                input_t, &
-                test_item_t, &
-                transformation_failure_t, &
-                transformed_t, &
-                fail
-
         class(input_t), intent(in) :: input
         type(transformed_t) :: filtered
 
@@ -121,16 +114,6 @@ contains
     end function
 
     function filter_collection_not_matching(input) result(filtered)
-        use example_collections_m, only: NOT_IN_DESCRIPTIONS
-        use helpers_m, only: test_item_input_t
-        use iso_varying_string, only: var_str
-        use vegetables, only: &
-                input_t, &
-                test_item_t, &
-                transformation_failure_t, &
-                transformed_t, &
-                fail
-
         class(input_t), intent(in) :: input
         type(transformed_t) :: filtered
 
@@ -148,16 +131,6 @@ contains
     end function
 
     function filter_collection_matching_description(input) result(filtered)
-        use example_collections_m, only: EXAMPLE_COLLECTION_DESCRIPTION
-        use helpers_m, only: test_item_input_t
-        use iso_varying_string, only: var_str
-        use vegetables, only: &
-                input_t, &
-                test_item_t, &
-                transformation_failure_t, &
-                transformed_t, &
-                fail
-
         class(input_t), intent(in) :: input
         type(transformed_t) :: filtered
 
@@ -175,16 +148,6 @@ contains
     end function
 
     function filter_collection_matching_case(input) result(filtered)
-        use example_collections_m, only: EXAMPLE_CASE_DESCRIPTION_1
-        use helpers_m, only: test_item_input_t
-        use iso_varying_string, only: var_str
-        use vegetables, only: &
-                input_t, &
-                test_item_t, &
-                transformation_failure_t, &
-                transformed_t, &
-                fail
-
         class(input_t), intent(in) :: input
         type(transformed_t) :: filtered
 
@@ -202,8 +165,6 @@ contains
     end function
 
     function check_case_not_matching(input) result(result_)
-        use vegetables, only: input_t, result_t, assert_not, fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -219,9 +180,6 @@ contains
     end function
 
     function check_case_is_same(input) result(result_)
-        use example_cases_m, only: EXAMPLE_DESCRIPTION
-        use vegetables, only: input_t, result_t, test_item_t, assert_equals, fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -239,8 +197,6 @@ contains
     end function
 
     function check_collection_not_matching(input) result(result_)
-        use vegetables, only: input_t, result_t, assert_not, fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -256,9 +212,6 @@ contains
     end function
 
     function check_collection_is_same(input) result(result_)
-        use example_collections_m, only: example_passing_collection
-        use vegetables, only: input_t, result_t, test_item_t, assert_equals, fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -278,8 +231,6 @@ contains
     end function
 
     function check_collection_single_case(input) result(result_)
-        use vegetables, only: input_t, result_t, test_item_t, assert_equals, fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 

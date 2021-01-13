@@ -1,4 +1,11 @@
 module vegetables_assert_equals_strings_m
+    use iso_varying_string, only: varying_string, operator(==), var_str
+    use vegetables_messages_m, only: &
+            make_equals_failure_message, &
+            make_equals_success_message, &
+            with_user_message
+    use vegetables_result_m, only: result_t, fail, succeed
+
     implicit none
     private
     public :: assert_equals
@@ -36,9 +43,6 @@ module vegetables_assert_equals_strings_m
 contains
     pure function assert_equals_strings_cc( &
             expected, actual) result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(result_t) :: result__
@@ -52,9 +56,6 @@ contains
 
     pure function assert_equals_strings_cs( &
             expected, actual) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(result_t) :: result__
@@ -68,9 +69,6 @@ contains
 
     pure function assert_equals_strings_sc( &
             expected, actual) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(result_t) :: result__
@@ -84,9 +82,6 @@ contains
 
     pure function assert_equals_strings_ss( &
             expected, actual) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(result_t) :: result__
@@ -100,9 +95,6 @@ contains
 
     pure function assert_equals_strings_with_message_ccc( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -117,9 +109,6 @@ contains
 
     pure function assert_equals_strings_with_message_ccs( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: message
@@ -134,9 +123,6 @@ contains
 
     pure function assert_equals_strings_with_message_csc( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -151,9 +137,6 @@ contains
 
     pure function assert_equals_strings_with_message_css( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: message
@@ -168,9 +151,6 @@ contains
 
     pure function assert_equals_strings_with_message_scc( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -185,9 +165,6 @@ contains
 
     pure function assert_equals_strings_with_message_scs( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: message
@@ -202,9 +179,6 @@ contains
 
     pure function assert_equals_strings_with_message_ssc( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -219,9 +193,6 @@ contains
 
     pure function assert_equals_strings_with_message_sss( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: message
@@ -236,9 +207,6 @@ contains
 
     pure function assert_equals_strings_with_messages_cccc( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -254,9 +222,6 @@ contains
 
     pure function assert_equals_strings_with_messages_cccs( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -272,9 +237,6 @@ contains
 
     pure function assert_equals_strings_with_messages_ccsc( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: success_message
@@ -290,9 +252,6 @@ contains
 
     pure function assert_equals_strings_with_messages_ccss( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: success_message
@@ -308,9 +267,6 @@ contains
 
     pure function assert_equals_strings_with_messages_cscc( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -326,9 +282,6 @@ contains
 
     pure function assert_equals_strings_with_messages_cscs( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -344,9 +297,6 @@ contains
 
     pure function assert_equals_strings_with_messages_cssc( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: success_message
@@ -362,9 +312,6 @@ contains
 
     pure function assert_equals_strings_with_messages_csss( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: success_message
@@ -380,9 +327,6 @@ contains
 
     pure function assert_equals_strings_with_messages_sccc( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -398,9 +342,6 @@ contains
 
     pure function assert_equals_strings_with_messages_sccs( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -416,9 +357,6 @@ contains
 
     pure function assert_equals_strings_with_messages_scsc( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: success_message
@@ -434,9 +372,6 @@ contains
 
     pure function assert_equals_strings_with_messages_scss( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         character(len=*), intent(in) :: actual
         type(varying_string), intent(in) :: success_message
@@ -452,9 +387,6 @@ contains
 
     pure function assert_equals_strings_with_messages_sscc( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -470,9 +402,6 @@ contains
 
     pure function assert_equals_strings_with_messages_sscs( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -488,9 +417,6 @@ contains
 
     pure function assert_equals_strings_with_messages_sssc( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: success_message
@@ -506,13 +432,6 @@ contains
 
     pure function assert_equals_strings_with_messages_ssss( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, operator(==)
-        use vegetables_messages_m, only: &
-                make_equals_failure_message, &
-                make_equals_success_message, &
-                with_user_message
-        use vegetables_result_m, only: result_t, fail, succeed
-
         type(varying_string), intent(in) :: expected
         type(varying_string), intent(in) :: actual
         type(varying_string), intent(in) :: success_message

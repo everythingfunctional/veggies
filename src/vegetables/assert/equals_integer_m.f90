@@ -1,4 +1,12 @@
 module vegetables_assert_equals_integer_m
+    use iso_varying_string, only: varying_string, var_str
+    use strff, only: to_string
+    use vegetables_messages_m, only: &
+            make_equals_failure_message, &
+            make_equals_success_message, &
+            with_user_message
+    use vegetables_result_m, only: result_t, fail, succeed
+
     implicit none
     private
     public :: assert_equals
@@ -14,9 +22,6 @@ module vegetables_assert_equals_integer_m
     end interface
 contains
     pure function assert_equals_integer_basic(expected, actual) result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(result_t) :: result__
@@ -30,9 +35,6 @@ contains
 
     pure function assert_equals_integer_with_message_c( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         character(len=*), intent(in) :: message
@@ -47,9 +49,6 @@ contains
 
     pure function assert_equals_integer_with_message_s( &
             expected, actual, message) result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_result_m, only: result_t
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(varying_string), intent(in) :: message
@@ -64,9 +63,6 @@ contains
 
     pure function assert_equals_integer_with_messages_cc( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -82,9 +78,6 @@ contains
 
     pure function assert_equals_integer_with_messages_cs( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         character(len=*), intent(in) :: success_message
@@ -97,9 +90,6 @@ contains
 
     pure function assert_equals_integer_with_messages_sc( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(varying_string), intent(in) :: success_message
@@ -112,14 +102,6 @@ contains
 
     pure function assert_equals_integer_with_messages_ss( &
             expected, actual, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string
-        use strff, only: to_string
-        use vegetables_messages_m, only: &
-                make_equals_failure_message, &
-                make_equals_success_message, &
-                with_user_message
-        use vegetables_result_m, only: result_t, fail, succeed
-
         integer, intent(in) :: expected
         integer, intent(in) :: actual
         type(varying_string), intent(in) :: success_message

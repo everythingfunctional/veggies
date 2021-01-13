@@ -1,4 +1,18 @@
 module assert_equals_within_relative_test
+    use double_precision_generator_m, only: DOUBLE_PRECISION_GENERATOR
+    use iso_varying_string, only: var_str
+    use vegetables, only: &
+            double_precision_input_t, &
+            input_t, &
+            result_t, &
+            test_item_t, &
+            assert_equals_within_relative, &
+            assert_not, &
+            assert_that, &
+            describe, &
+            fail, &
+            it
+
     implicit none
     private
     public :: test_assert_equals_within_relative
@@ -8,9 +22,6 @@ module assert_equals_within_relative_test
     character(len=*), parameter :: FAILURE_MESSAGE = "Failure Message"
 contains
     function test_assert_equals_within_relative() result(tests)
-        use double_precision_generator_m, only: DOUBLE_PRECISION_GENERATOR
-        use vegetables, only: test_item_t, describe, it
-
         type(test_item_t) :: tests
 
         tests = describe( &
@@ -31,15 +42,6 @@ contains
     end function
 
     pure function check_pass_for_same_number(input) result(result_)
-        use iso_varying_string, only: var_str
-        use vegetables, only: &
-                double_precision_input_t, &
-                input_t, &
-                result_t, &
-                assert_equals_within_relative, &
-                assert_that, &
-                fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -113,15 +115,6 @@ contains
     end function
 
     pure function check_fail_for_different_numbers(input) result(result_)
-        use iso_varying_string, only: var_str
-        use vegetables, only: &
-                double_precision_input_t, &
-                input_t, &
-                result_t, &
-                assert_equals_within_relative, &
-                assert_not, &
-                fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -195,15 +188,6 @@ contains
     end function
 
     pure function check_pass_for_close_numbers(input) result(result_)
-        use iso_varying_string, only: var_str
-        use vegetables, only: &
-                double_precision_input_t, &
-                input_t, &
-                result_t, &
-                assert_equals_within_relative, &
-                assert_that, &
-                fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 

@@ -1,5 +1,8 @@
 module example_collections_m
-    use example_asserts_m, only: NUM_PASSING_FROM_EXAMPLE => NUM_ASSERTS_IN_PASSING
+    use example_asserts_m, only: &
+            example_multiple_asserts, &
+            NUM_PASSING_FROM_EXAMPLE => NUM_ASSERTS_IN_PASSING
+    use vegetables, only: result_t, test_item_t, describe, fail, it
 
     implicit none
     private
@@ -42,42 +45,30 @@ module example_collections_m
     integer, parameter :: NUM_FAILING_CASES = 1
 contains
     function example_test_case_1() result(test_case)
-        use example_asserts_m, only: example_multiple_asserts
-        use vegetables, only: test_item_t, it
-
         type(test_item_t) :: test_case
 
         test_case = it(EXAMPLE_CASE_DESCRIPTION_1, example_multiple_asserts)
     end function
 
     function example_test_case_2() result(test_case)
-        use example_asserts_m, only: example_multiple_asserts
-        use vegetables, only: test_item_t, it
-
         type(test_item_t) :: test_case
 
         test_case = it(EXAMPLE_CASE_DESCRIPTION_2, example_multiple_asserts)
     end function
 
     pure function example_fail() result(result_)
-        use vegetables, only: result_t, fail
-
         type(result_t) :: result_
 
         result_ = fail(FAILURE_MESSAGE)
     end function
 
     function example_failing_test_case() result(test_case)
-        use vegetables, only: test_item_t, it
-
         type(test_item_t) :: test_case
 
         test_case = it(EXAMPLE_FAILING_CASE_DESCRIPTION, example_fail)
     end function
 
     function example_failing_collection() result(test_collection)
-        use vegetables, only: test_item_t, describe
-
         type(test_item_t) :: test_collection
 
         type(test_item_t) :: cases(3)
@@ -89,8 +80,6 @@ contains
     end function
 
     function middle_collection() result(test_collection)
-        use vegetables, only: test_item_t, describe
-
         type(test_item_t) :: test_collection
 
         type(test_item_t) :: cases(2)
@@ -101,8 +90,6 @@ contains
     end function
 
     function example_passing_collection() result(test_collection)
-        use vegetables, only: test_item_t, describe
-
         type(test_item_t) :: test_collection
 
         type(test_item_t) :: items(2)

@@ -1,4 +1,18 @@
 module assert_equals_integers_test
+    use iso_varying_string, only: var_str
+    use vegetables, only: &
+            input_t, &
+            integer_input_t, &
+            result_t, &
+            test_item_t, &
+            assert_equals, &
+            assert_not, &
+            assert_that, &
+            describe, &
+            fail, &
+            it, &
+            INTEGER_GENERATOR
+
     implicit none
     private
     public :: test_assert_equals_integers
@@ -8,8 +22,6 @@ module assert_equals_integers_test
     character(len=*), parameter :: FAILURE_MESSAGE = "Failure Message"
 contains
     function test_assert_equals_integers() result(tests)
-        use vegetables, only: test_item_t, describe, it, INTEGER_GENERATOR
-
         type(test_item_t) :: tests
 
         tests = describe( &
@@ -25,15 +37,6 @@ contains
     end function
 
     pure function check_pass_for_same_integer(input) result(result_)
-        use iso_varying_string, only: var_str
-        use vegetables, only: &
-                input_t, &
-                integer_input_t, &
-                result_t, &
-                assert_equals, &
-                assert_that, &
-                fail
-
         class(input_t), intent(in) :: input
         type(result_t) :: result_
 
@@ -88,9 +91,6 @@ contains
     end function
 
     pure function check_fail_for_different_integers() result(result_)
-        use iso_varying_string, only: var_str
-        use vegetables, only: result_t, assert_equals, assert_not
-
         type(result_t) :: result_
 
         type(result_t) :: example_result

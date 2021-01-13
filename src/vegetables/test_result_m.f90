@@ -22,8 +22,7 @@ module vegetables_test_result_m
     abstract interface
         pure function test_result_colorized_description_i( &
                 self, colorize) result(description)
-            use iso_varying_string, only: varying_string
-            import test_result_t
+            import :: test_result_t, varying_string
 
             implicit none
 
@@ -33,7 +32,7 @@ module vegetables_test_result_m
         end function
 
         pure function test_result_count_i(self) result(num)
-            import test_result_t
+            import :: test_result_t
 
             implicit none
 
@@ -42,7 +41,7 @@ module vegetables_test_result_m
         end function
 
         pure function test_result_passed_i(self) result(passed)
-            import test_result_t
+            import :: test_result_t
 
             implicit none
 

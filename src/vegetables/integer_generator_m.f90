@@ -1,5 +1,11 @@
 module vegetables_integer_generator_m
+    use vegetables_generated_m, only: generated_t
     use vegetables_generator_m, only: generator_t
+    use vegetables_input_m, only: input_t
+    use vegetables_integer_input_m, only: integer_input_t
+    use vegetables_random_m, only: get_random_integer
+    use vegetables_shrink_result_m, only: &
+            shrink_result_t, shrunk_value, simplest_value
 
     implicit none
     private
@@ -16,10 +22,6 @@ module vegetables_integer_generator_m
             INTEGER_GENERATOR = integer_generator_t()
 contains
     function generate(self) result(generated_value)
-        use vegetables_generated_m, only: generated_t
-        use vegetables_integer_input_m, only: integer_input_t
-        use vegetables_random_m, only: get_random_integer
-
         class(integer_generator_t), intent(in) :: self
         type(generated_t) :: generated_value
 
@@ -30,11 +32,6 @@ contains
     end function
 
     function shrink(input) result(shrunk)
-        use vegetables_input_m, only: input_t
-        use vegetables_integer_input_m, only: integer_input_t
-        use vegetables_shrink_result_m, only: &
-                shrink_result_t, shrunk_value, simplest_value
-
         class(input_t), intent(in) :: input
         type(shrink_result_t) :: shrunk
 

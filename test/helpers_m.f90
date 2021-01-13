@@ -1,5 +1,11 @@
 module helpers_m
-    use vegetables, only: input_t, test_item_t, test_result_item_t
+    use vegetables, only: &
+            input_t, &
+            test_item_t, &
+            test_result_item_t, &
+            transformed_t, &
+            transformation_failure_t, &
+            fail
 
     implicit none
     private
@@ -30,12 +36,6 @@ module helpers_m
     end interface
 contains
     function run_test(input) result(example_result)
-        use vegetables, only: &
-                input_t, &
-                transformed_t, &
-                transformation_failure_t, &
-                fail
-
         class(input_t), intent(in) :: input
         type(transformed_t) :: example_result
 

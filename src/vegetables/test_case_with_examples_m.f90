@@ -1,8 +1,14 @@
 module vegetables_test_case_with_examples_m
     use iso_varying_string, only: varying_string
+    use strff, only: operator(.includes.)
     use vegetables_example_m, only: example_t
-    use vegetables_test_m, only: test_t
+    use vegetables_input_m, only: input_t
+    use vegetables_result_m, only: result_t
+    use vegetables_test_m, only: &
+            filter_result_t, test_t, filter_failed, filter_matched
+    use vegetables_test_case_result_m, only: test_case_result_t
     use vegetables_test_interfaces_m, only: input_test_i
+    use vegetables_test_result_item_m, only: test_result_item_t
 
     implicit none
     private
@@ -27,8 +33,6 @@ module vegetables_test_case_with_examples_m
     end interface
 contains
     function constructor(description, examples, test) result(test_case_with_examples)
-        use iso_varying_string, only: varying_string
-
         type(varying_string), intent(in) :: description
         type(example_t), intent(in) :: examples(:)
         procedure(input_test_i) :: test
@@ -40,8 +44,6 @@ contains
     end function
 
     pure function description(self)
-        use iso_varying_string, only: varying_string
-
         class(test_case_with_examples_t), intent(in) :: self
         type(varying_string) :: description
 
@@ -49,11 +51,6 @@ contains
     end function
 
     function filter(self, filter_string) result(filter_result)
-        use iso_varying_string, only: varying_string
-        use strff, only: operator(.includes.)
-        use vegetables_test_m, only: &
-                filter_result_t, filter_failed, filter_matched
-
         class(test_case_with_examples_t), intent(in) :: self
         type(varying_string), intent(in) :: filter_string
         type(filter_result_t) :: filter_result
@@ -76,9 +73,6 @@ contains
     end function
 
     function run_with_input(self, input) result(result_)
-        use vegetables_input_m, only: input_t
-        use vegetables_test_result_item_m, only: test_result_item_t
-
         class(test_case_with_examples_t), intent(in) :: self
         class(input_t), intent(in) :: input
         type(test_result_item_t) :: result_
@@ -90,10 +84,6 @@ contains
     end function
 
     function run_without_input(self) result(result_)
-        use vegetables_result_m, only: result_t
-        use vegetables_test_case_result_m, only: test_case_result_t
-        use vegetables_test_result_item_m, only: test_result_item_t
-
         class(test_case_with_examples_t), intent(in) :: self
         type(test_result_item_t) :: result_
 

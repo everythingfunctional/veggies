@@ -1,4 +1,6 @@
 module example_asserts_m
+    use vegetables, only: result_t, fail, succeed
+
     implicit none
     private
     public :: &
@@ -20,16 +22,12 @@ module example_asserts_m
     character(len=*), parameter :: SUCCESS_MESSAGE = "Success Message"
 contains
     pure function example_multiple_asserts() result(result_)
-        use vegetables, only: result_t, succeed
-
         type(result_t) :: result_
 
         result_ = succeed(SUCCESS_MESSAGE).and.succeed(SUCCESS_MESSAGE)
     end function
 
     pure function example_multiple_asserts_with_fail() result(result_)
-        use vegetables, only: result_t, fail, succeed
-
         type(result_t) :: result_
 
         result_ = succeed(SUCCESS_MESSAGE).and.fail(FAILURE_MESSAGE)

@@ -1,4 +1,11 @@
 module vegetables_assert_empty_m
+    use iso_varying_string, only: varying_string, operator(==), var_str
+    use vegetables_messages_m, only: &
+            make_empty_failure_message, &
+            with_user_message, &
+            EMPTY_SUCCESS_MESSAGE
+    use vegetables_result_m, only: result_t, fail, succeed
+
     implicit none
     private
     public :: assert_empty
@@ -21,9 +28,6 @@ module vegetables_assert_empty_m
     end interface
 contains
     pure function assert_empty_basic_c(string) result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: string
         type(result_t) :: result__
 
@@ -34,9 +38,6 @@ contains
     end function
 
     pure function assert_empty_basic_s(string) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: string
         type(result_t) :: result__
 
@@ -47,9 +48,6 @@ contains
     end function
 
     pure function assert_empty_with_message_cc(string, message) result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: message
         type(result_t) :: result__
@@ -61,9 +59,6 @@ contains
     end function
 
     pure function assert_empty_with_message_cs(string, message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: string
         type(varying_string), intent(in) :: message
         type(result_t) :: result__
@@ -75,9 +70,6 @@ contains
     end function
 
     pure function assert_empty_with_message_sc(string, message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: string
         character(len=*), intent(in) :: message
         type(result_t) :: result__
@@ -89,9 +81,6 @@ contains
     end function
 
     pure function assert_empty_with_message_ss(string, message) result(result__)
-        use iso_varying_string, only: varying_string
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: string
         type(varying_string), intent(in) :: message
         type(result_t) :: result__
@@ -104,9 +93,6 @@ contains
 
     pure function assert_empty_with_messages_ccc( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -120,9 +106,6 @@ contains
 
     pure function assert_empty_with_messages_ccs( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: string
         character(len=*), intent(in) :: success_message
         type(varying_string), intent(in) :: failure_message
@@ -136,9 +119,6 @@ contains
 
     pure function assert_empty_with_messages_csc( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: string
         type(varying_string), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -152,9 +132,6 @@ contains
 
     pure function assert_empty_with_messages_css( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         character(len=*), intent(in) :: string
         type(varying_string), intent(in) :: success_message
         type(varying_string), intent(in) :: failure_message
@@ -168,9 +145,6 @@ contains
 
     pure function assert_empty_with_messages_scc( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: string
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -184,9 +158,6 @@ contains
 
     pure function assert_empty_with_messages_scs( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: string
         character(len=*), intent(in) :: success_message
         type(varying_string), intent(in) :: failure_message
@@ -200,9 +171,6 @@ contains
 
     pure function assert_empty_with_messages_ssc( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, var_str
-        use vegetables_result_m, only: result_t
-
         type(varying_string), intent(in) :: string
         type(varying_string), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -216,13 +184,6 @@ contains
 
     pure function assert_empty_with_messages_sss( &
             string, success_message, failure_message) result(result__)
-        use iso_varying_string, only: varying_string, operator(==)
-        use vegetables_messages_m, only: &
-                make_empty_failure_message, &
-                with_user_message, &
-                EMPTY_SUCCESS_MESSAGE
-        use vegetables_result_m, only: result_t, fail, succeed
-
         type(varying_string), intent(in) :: string
         type(varying_string), intent(in) :: success_message
         type(varying_string), intent(in) :: failure_message
