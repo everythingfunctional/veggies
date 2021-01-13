@@ -137,8 +137,8 @@ example of where I've done just that.
 ### Assemble The Suite
 
 Once you've written your test function, you'll need to include it into your
-test suite. I've got a little tool in this repository that can be used
-to do it, but you can also do it manually.
+test suite. I've [published a tool](https://gitlab.com/everythingfunctional/make_vegetable_driver)
+that can be used to do it, but you can also do it manually.
 
 First, you'll need to write a function that defines a part of your test suite,
 either spec or BDD style, using the provided functions `describe` and `it`/`it_` or
