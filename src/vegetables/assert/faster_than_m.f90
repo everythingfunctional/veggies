@@ -1,4 +1,5 @@
 module vegetables_assert_faster_than_m
+    use iso_fortran_env, only: int64
     use iso_varying_string, only: varying_string, var_str
     use strff, only: to_string
     use vegetables_messages_m, only: &
@@ -222,19 +223,20 @@ contains
         type(result_t) :: result__
 
         integer :: i
-        double precision :: start_time
-        double precision :: end_time
+        integer(int64) :: start_time
+        integer(int64) :: end_time
+        integer(int64) :: clock_rate
         double precision :: total_time
         double precision :: average_time
 
         total_time = 0.0d0
         do i = 1, iterations
             call before
-            call cpu_time(start_time)
+            call system_clock(start_time, clock_rate)
             call computation
-            call cpu_time(end_time)
+            call system_clock(end_time)
             call after
-            total_time = total_time + (end_time - start_time)
+            total_time = total_time + dble(end_time - start_time)/dble(clock_rate)
         end do
         average_time = total_time / dble(iterations)
         if (average_time < reference) then
@@ -393,17 +395,18 @@ contains
         type(result_t) :: result__
 
         integer :: i
-        double precision :: start_time
-        double precision :: end_time
+        integer(int64) :: start_time
+        integer(int64) :: end_time
+        integer(int64) :: clock_rate
         double precision :: total_time
         double precision :: average_time
 
         total_time = 0.0d0
         do i = 1, iterations
-            call cpu_time(start_time)
+            call system_clock(start_time, clock_rate)
             call computation
-            call cpu_time(end_time)
-            total_time = total_time + (end_time - start_time)
+            call system_clock(end_time)
+            total_time = total_time + dble(end_time - start_time)/dble(clock_rate)
         end do
         average_time = total_time / dble(iterations)
         if (average_time < reference) then
@@ -642,12 +645,13 @@ contains
         type(result_t) :: result__
 
         integer :: i
-        double precision :: start_time
-        double precision :: end_time
+        integer(int64) :: start_time
+        integer(int64) :: end_time
         double precision :: total_time
         double precision :: average_time
-        double precision :: reference_start_time
-        double precision :: reference_end_time
+        integer(int64) :: reference_start_time
+        integer(int64) :: reference_end_time
+        integer(int64) :: clock_rate
         double precision :: reference_total_time
         double precision :: reference_average_time
 
@@ -655,19 +659,19 @@ contains
         reference_total_time = 0.0d0
         do i = 1, iterations
             call reference_before
-            call cpu_time(reference_start_time)
+            call system_clock(reference_start_time, clock_rate)
             call reference
-            call cpu_time(reference_end_time)
+            call system_clock(reference_end_time)
             call reference_after
             reference_total_time = &
                     reference_total_time &
-                    + (reference_end_time - reference_start_time)
+                    + dble(reference_end_time - reference_start_time)/dble(clock_rate)
             call before
-            call cpu_time(start_time)
+            call system_clock(start_time)
             call computation
-            call cpu_time(end_time)
+            call system_clock(end_time)
             call after
-            total_time = total_time + (end_time - start_time)
+            total_time = total_time + dble(end_time - start_time)/dble(clock_rate)
         end do
         reference_average_time = reference_total_time / dble(iterations)
         average_time = total_time / dble(iterations)
@@ -827,28 +831,29 @@ contains
         type(result_t) :: result__
 
         integer :: i
-        double precision :: start_time
-        double precision :: end_time
+        integer(int64) :: start_time
+        integer(int64) :: end_time
         double precision :: total_time
         double precision :: average_time
-        double precision :: reference_start_time
-        double precision :: reference_end_time
+        integer(int64) :: reference_start_time
+        integer(int64) :: reference_end_time
+        integer(int64) :: clock_rate
         double precision :: reference_total_time
         double precision :: reference_average_time
 
         total_time = 0.0d0
         reference_total_time = 0.0d0
         do i = 1, iterations
-            call cpu_time(reference_start_time)
+            call system_clock(reference_start_time, clock_rate)
             call reference
-            call cpu_time(reference_end_time)
+            call system_clock(reference_end_time)
             reference_total_time = &
                     reference_total_time &
-                    + (reference_end_time - reference_start_time)
-            call cpu_time(start_time)
+                    + dble(reference_end_time - reference_start_time)/dble(clock_rate)
+            call system_clock(start_time)
             call computation
-            call cpu_time(end_time)
-            total_time = total_time + (end_time - start_time)
+            call system_clock(end_time)
+            total_time = total_time + dble(end_time - start_time)/dble(clock_rate)
         end do
         reference_average_time = reference_total_time / dble(iterations)
         average_time = total_time / dble(iterations)

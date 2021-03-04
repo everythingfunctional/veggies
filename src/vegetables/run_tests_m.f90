@@ -1,5 +1,5 @@
 module vegetables_run_tests_m
-    use iso_fortran_env, only: error_unit, output_unit
+    use iso_fortran_env, only: error_unit, int64, output_unit
     use iso_varying_string, only: operator(//), put_line
     use strff, only: to_string
     use vegetables_command_line_m, only: options_t, get_options
@@ -13,12 +13,14 @@ contains
     subroutine run_tests(tests)
         type(test_item_t), intent(in) :: tests
 
-        double precision :: end_time
+        integer(int64) :: clock_rate
+        real :: elapsed_time
+        integer(int64) :: end_time
         type(filter_item_result_t) :: filtered_tests
         integer :: i
         type(options_t) :: options
         type(test_result_item_t) :: results
-        double precision :: start_time
+        integer(int64) :: start_time
         logical, allocatable :: suite_failed[:]
         type(test_item_t) :: tests_to_run
 
@@ -53,9 +55,10 @@ contains
             call put_line(output_unit, "")
         end if
 
-        call cpu_time(start_time)
+        call system_clock(start_time, clock_rate)
         results = tests_to_run%run()
-        call cpu_time(end_time)
+        call system_clock(end_time)
+        elapsed_time = real(end_time - start_time) / real(clock_rate)
 
         critical ! report results one image at a time
             if (num_images() > 1) then
@@ -65,7 +68,7 @@ contains
                 call put_line(output_unit, "All Passed")
                 call put_line( &
                         output_unit, &
-                        "Took " // to_string(end_time - start_time, 6) // " seconds")
+                        "Took " // to_string(elapsed_time, 6) // " seconds")
                 call put_line(output_unit, "")
                 if (options%verbose()) then
                     call put_line( &
@@ -83,7 +86,7 @@ contains
                 call put_line(error_unit, "Failed")
                 call put_line( &
                         error_unit, &
-                        "Took " // to_string(end_time - start_time, 6) // " seconds")
+                        "Took " // to_string(elapsed_time, 6) // " seconds")
                 call put_line(error_unit, "")
                 if (options%verbose()) then
                     call put_line( &
