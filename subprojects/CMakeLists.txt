@@ -9,7 +9,7 @@ if(NOT TARGET "iso_varying_string")
     FetchContent_Declare(
       "iso_varying_string"
       GIT_REPOSITORY "${iso_varying_string-url}"
-      GIT_TAG "add-cmake-support"
+      GIT_TAG "v2.1.0"
     )
     FetchContent_MakeAvailable("iso_varying_string")
   endif()
@@ -31,7 +31,7 @@ if(NOT TARGET "strff")
     FetchContent_Declare(
       "strff"
       GIT_REPOSITORY "${strff-url}"
-      GIT_TAG "add-cmake-support"
+      GIT_TAG "v2.1.0"
     )
     FetchContent_MakeAvailable("strff")
   endif()
