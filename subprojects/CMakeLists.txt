@@ -1,0 +1,41 @@
+# Include the iso_varying_string project
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/iso_varying_string/CMakeLists.txt)
+  add_subdirectory("iso_varying_string")
+else()
+  set("iso_varying_string-url" "https://gitlab.com/everythingfunctional/iso_varying_string")
+  message(STATUS "Retrieving iso_varying_string from ${iso_varying_string-url}")
+  include(FetchContent)
+  FetchContent_Declare(
+    "iso_varying_string"
+    GIT_REPOSITORY "${iso_varying_string-url}"
+    GIT_TAG "add-cmake-support"
+  )
+  FetchContent_MakeAvailable("iso_varying_string")
+endif()
+
+list(
+  APPEND lib-deps
+  "iso_varying_string"
+)
+
+# Include the strff project
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/strff/CMakeLists.txt)
+  add_subdirectory("strff")
+else()
+  set("strff-url" "https://gitlab.com/everythingfunctional/strff")
+  message(STATUS "Retrieving strff from ${strff-url}")
+  include(FetchContent)
+  FetchContent_Declare(
+    "strff"
+    GIT_REPOSITORY "${strff-url}"
+    GIT_TAG "add-cmake-support"
+  )
+  FetchContent_MakeAvailable("strff")
+endif()
+
+list(
+  APPEND lib-deps
+  "strff"
+)
+
+set(lib-deps "${lib-deps}" PARENT_SCOPE)
