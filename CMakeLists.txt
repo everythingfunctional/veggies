@@ -48,7 +48,7 @@ if(INSTALL_PROJECT)
   # Package license files
   install(
     FILES
-    "LICENSE"
+    "LICENSE.md"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/${PROJECT_NAME}"
   )
 endif()
