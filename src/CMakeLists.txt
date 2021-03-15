@@ -82,17 +82,19 @@ target_include_directories(
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-# Export targets for other projects
-install(
-  TARGETS
-  "${PROJECT_NAME}-lib"
-  EXPORT
-  "${PROJECT_NAME}-targets"
-  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-)
-install(
-  DIRECTORY
-  "${MODULE_OUTPUT_DIR}/"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-)
+if(INSTALL_PROJECT)
+  # Export targets for other projects
+  install(
+    TARGETS
+    "${PROJECT_NAME}-lib"
+    EXPORT
+    "${PROJECT_NAME}-targets"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  )
+  install(
+    DIRECTORY
+    "${MODULE_OUTPUT_DIR}/"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+  )
+endif()
