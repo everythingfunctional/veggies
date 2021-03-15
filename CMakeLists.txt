@@ -15,6 +15,12 @@ include(GNUInstallDirs)
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcoarray=single")
 endif()
+if(CMAKE_Fortran_FLAGS MATCHES Intel)
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -coarray=single")
+endif()
+if(CMAKE_Fortran_FLAGS MATCHES NAG)
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -coarray=single")
+endif()
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}" PARENT_SCOPE)
 
 # Get the stdlib subproject
