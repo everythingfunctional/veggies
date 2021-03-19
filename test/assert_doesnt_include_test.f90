@@ -39,7 +39,7 @@ contains
     pure function check_pass_for_different_strings() result(result_)
         type(result_t) :: result_
 
-        character(len=*), parameter :: ONE_STRNIG = "One String"
+        character(len=*), parameter :: ONE_STRING = "One String"
         character(len=*), parameter :: OTHER_STRING = "Other String"
         type(result_t) :: example_result_cc
         type(result_t) :: example_result_cs
@@ -71,106 +71,106 @@ contains
         type(result_t) :: example_result_ssss
 
         example_result_cc = assert_doesnt_include( &
-                ONE_STRNIG, OTHER_STRING)
+                ONE_STRING, OTHER_STRING)
         example_result_cs = assert_doesnt_include( &
-                ONE_STRNIG, var_str(OTHER_STRING))
+                ONE_STRING, var_str(OTHER_STRING))
         example_result_sc = assert_doesnt_include( &
-                var_str(ONE_STRNIG), OTHER_STRING)
+                var_str(ONE_STRING), OTHER_STRING)
         example_result_ss = assert_doesnt_include( &
-                var_str(ONE_STRNIG), var_str(OTHER_STRING))
+                var_str(ONE_STRING), var_str(OTHER_STRING))
         example_result_ccc = assert_doesnt_include( &
-                ONE_STRNIG, OTHER_STRING, BOTH_MESSAGE)
+                ONE_STRING, OTHER_STRING, BOTH_MESSAGE)
         example_result_ccs = assert_doesnt_include( &
-                ONE_STRNIG, OTHER_STRING, var_str(BOTH_MESSAGE))
+                ONE_STRING, OTHER_STRING, var_str(BOTH_MESSAGE))
         example_result_csc = assert_doesnt_include( &
-                ONE_STRNIG, var_str(OTHER_STRING), BOTH_MESSAGE)
+                ONE_STRING, var_str(OTHER_STRING), BOTH_MESSAGE)
         example_result_css = assert_doesnt_include( &
-                ONE_STRNIG, var_str(OTHER_STRING), var_str(BOTH_MESSAGE))
+                ONE_STRING, var_str(OTHER_STRING), var_str(BOTH_MESSAGE))
         example_result_scc = assert_doesnt_include( &
-                var_str(ONE_STRNIG), OTHER_STRING, BOTH_MESSAGE)
+                var_str(ONE_STRING), OTHER_STRING, BOTH_MESSAGE)
         example_result_scs = assert_doesnt_include( &
-                var_str(ONE_STRNIG), OTHER_STRING, var_str(BOTH_MESSAGE))
+                var_str(ONE_STRING), OTHER_STRING, var_str(BOTH_MESSAGE))
         example_result_ssc = assert_doesnt_include( &
-                var_str(ONE_STRNIG), var_str(OTHER_STRING), BOTH_MESSAGE)
+                var_str(ONE_STRING), var_str(OTHER_STRING), BOTH_MESSAGE)
         example_result_sss = assert_doesnt_include( &
-                var_str(ONE_STRNIG), var_str(OTHER_STRING), var_str(BOTH_MESSAGE))
+                var_str(ONE_STRING), var_str(OTHER_STRING), var_str(BOTH_MESSAGE))
         example_result_cccc = assert_doesnt_include( &
-                ONE_STRNIG, &
+                ONE_STRING, &
                 OTHER_STRING, &
                 SUCCESS_MESSAGE, &
                 FAILURE_MESSAGE)
         example_result_cccs = assert_doesnt_include( &
-                ONE_STRNIG, &
+                ONE_STRING, &
                 OTHER_STRING, &
                 SUCCESS_MESSAGE, &
                 var_str(FAILURE_MESSAGE))
         example_result_ccsc = assert_doesnt_include( &
-                ONE_STRNIG, &
+                ONE_STRING, &
                 OTHER_STRING, &
                 var_str(SUCCESS_MESSAGE), &
                 FAILURE_MESSAGE)
         example_result_ccss = assert_doesnt_include( &
-                ONE_STRNIG, &
+                ONE_STRING, &
                 OTHER_STRING, &
                 var_str(SUCCESS_MESSAGE), &
                 var_str(FAILURE_MESSAGE))
         example_result_cscc = assert_doesnt_include( &
-                ONE_STRNIG, &
+                ONE_STRING, &
                 var_str(OTHER_STRING), &
                 SUCCESS_MESSAGE, &
                 FAILURE_MESSAGE)
         example_result_cscs = assert_doesnt_include( &
-                ONE_STRNIG, &
+                ONE_STRING, &
                 var_str(OTHER_STRING), &
                 SUCCESS_MESSAGE, &
                 var_str(FAILURE_MESSAGE))
         example_result_cssc = assert_doesnt_include( &
-                ONE_STRNIG, &
+                ONE_STRING, &
                 var_str(OTHER_STRING), &
                 var_str(SUCCESS_MESSAGE), &
                 FAILURE_MESSAGE)
         example_result_csss = assert_doesnt_include( &
-                ONE_STRNIG, &
+                ONE_STRING, &
                 var_str(OTHER_STRING), &
                 var_str(SUCCESS_MESSAGE), &
                 var_str(FAILURE_MESSAGE))
         example_result_sccc = assert_doesnt_include( &
-                var_str(ONE_STRNIG), &
+                var_str(ONE_STRING), &
                 OTHER_STRING, &
                 SUCCESS_MESSAGE, &
                 FAILURE_MESSAGE)
         example_result_sccs = assert_doesnt_include( &
-                var_str(ONE_STRNIG), &
+                var_str(ONE_STRING), &
                 OTHER_STRING, &
                 SUCCESS_MESSAGE, &
                 var_str(FAILURE_MESSAGE))
         example_result_scsc = assert_doesnt_include( &
-                var_str(ONE_STRNIG), &
+                var_str(ONE_STRING), &
                 OTHER_STRING, &
                 var_str(SUCCESS_MESSAGE), &
                 FAILURE_MESSAGE)
         example_result_scss = assert_doesnt_include( &
-                var_str(ONE_STRNIG), &
+                var_str(ONE_STRING), &
                 OTHER_STRING, &
                 var_str(SUCCESS_MESSAGE), &
                 var_str(FAILURE_MESSAGE))
         example_result_sscc = assert_doesnt_include( &
-                var_str(ONE_STRNIG), &
+                var_str(ONE_STRING), &
                 var_str(OTHER_STRING), &
                 SUCCESS_MESSAGE, &
                 FAILURE_MESSAGE)
         example_result_sscs = assert_doesnt_include( &
-                var_str(ONE_STRNIG), &
+                var_str(ONE_STRING), &
                 var_str(OTHER_STRING), &
                 SUCCESS_MESSAGE, &
                 var_str(FAILURE_MESSAGE))
         example_result_sssc = assert_doesnt_include( &
-                var_str(ONE_STRNIG), &
+                var_str(ONE_STRING), &
                 var_str(OTHER_STRING), &
                 var_str(SUCCESS_MESSAGE), &
                 FAILURE_MESSAGE)
         example_result_ssss = assert_doesnt_include( &
-                var_str(ONE_STRNIG), &
+                var_str(ONE_STRING), &
                 var_str(OTHER_STRING), &
                 var_str(SUCCESS_MESSAGE), &
                 var_str(FAILURE_MESSAGE))
