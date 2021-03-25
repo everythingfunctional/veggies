@@ -104,7 +104,7 @@ listed below:
 
 * `assert_that` and `assert_not` accept a logical value and make sure it is either `.true.` or `.false.` respectively
 * `assert_equals` accepts two values of integer, double precision, character, or `varying_string`, and ensures they are equal (Note that `assert_equals` with double precision values simply uses the `assert_equals_within_absolute` function with a tolerance of machine epsilon)
-* `assert_qquals_within_absolute` and `assert_equals_within_relative` accept two values of double precision and a third value of double precision to use as the tolerance, and ensures the values are within that tolerance.
+* `assert_equals_within_absolute` and `assert_equals_within_relative` accept two values of double precision and a third value of double precision to use as the tolerance, and ensures the values are within that tolerance.
 * `assert_empty` ensures that the given string is of zero length
 * `assert_includes` and `assert_doesnt_include` ensure that the second string includes (or doesn't include) the first string
 * `assert_faster_than` has several variations. It accepts a subroutine with no arguments, and runs it the specified number of times to measure how long it takes to run. It then compares that to either a given number in seconds, or from running another provided subroutine and measuring it as well. Optionally, additional subroutines can be provided to be executed before and after the other subroutine(s) to function as setup and tear-down, to avoid including that code in the measurement.
