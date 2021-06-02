@@ -17,14 +17,12 @@ contains
         real :: elapsed_time
         integer(int64) :: end_time
         type(filter_item_result_t) :: filtered_tests
-        integer :: i
         type(options_t) :: options
         type(test_result_item_t) :: results
         integer(int64) :: start_time
-        logical, allocatable :: suite_failed[:]
+        logical :: suite_failed
         type(test_item_t) :: tests_to_run
 
-        allocate(suite_failed[*])
         suite_failed = .false.
 
         options = get_options()
@@ -34,7 +32,8 @@ contains
             if (filtered_tests%matched()) then
                 tests_to_run = filtered_tests%test()
             else
-                error stop "No matching tests found"
+                call put_line(error_unit, "No matching tests found")
+                stop 1
             end if
         else
             tests_to_run = tests
@@ -110,11 +109,25 @@ contains
                 suite_failed = .true.
             end if
         end critical
-        sync all ! make sure all images have had a chance to record failure before checking for any
-        if (this_image() == 1) then
-            do i = 1, num_images()
-                if (suite_failed[i]) error stop
-            end do
-        end if
+        if (any_image_failed(suite_failed)) stop 1
     end subroutine
+
+    function any_image_failed(image_failed)
+        logical, intent(in) :: image_failed
+        logical :: any_image_failed
+
+        integer :: i
+        logical, allocatable :: suite_failed[:]
+
+        allocate(suite_failed[*])
+
+        suite_failed = image_failed
+        do i = 1, num_images()
+            if (suite_failed[i]) then
+                any_image_failed = .true.
+                return
+            end if
+        end do
+        any_image_failed = .false.
+    end function
 end module
