@@ -1,8 +1,8 @@
 module vegetables_run_tests_m
     use iso_fortran_env, only: error_unit, int64, output_unit
-    use iso_varying_string, only: operator(//), put_line
+    use iso_varying_string, only: operator(//), put_line, var_str
     use strff, only: to_string
-    use vegetables_command_line_m, only: options_t, get_options
+    use vegetables_command_line_m, only: options_t, get_options, DEBUG
     use vegetables_test_item_m, only: filter_item_result_t, test_item_t
     use vegetables_test_result_item_m, only: test_result_item_t
 
@@ -54,9 +54,15 @@ contains
             call put_line(output_unit, "")
         end if
 
+        if (DEBUG) call put_line( &
+                "Beginning execution of test suite" &
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
         call system_clock(start_time, clock_rate)
         results = tests_to_run%run()
         call system_clock(end_time)
+        if (DEBUG) call put_line( &
+                "Completed execution of test suite." &
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
         elapsed_time = real(end_time - start_time) / real(clock_rate)
 
         critical ! report results one image at a time

@@ -288,13 +288,15 @@ how the tests are run. This is done inside the `run_tests` subroutine, so
 even manually or otherwise generated driver programs can use this functionality.
 
 ```
-Usage: driver_name [-h] [-q] [-v] [-f string] [-n num] [-s num] [-c]
+Usage: driver_name [-h] [-q] [-v] [-d] [-f string] [-n num] [-s num] [-c]
   options:
     -h, --help                    Output this message and exit
     -q, --quiet                   Don't print the test descriptions before
                                   running the tests
     -v, --verbose                 Print all of the assertion messages, not
                                   just the failing ones
+    -d, --debug                   Report the beginning and end of execution
+                                  of each test case or suite
     -f string, --filter string    Only run cases or collections whose
                                   description contains the given string
     -n num, --numrand num         Number of random values to use for each

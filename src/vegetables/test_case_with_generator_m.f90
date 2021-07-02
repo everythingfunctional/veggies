@@ -1,8 +1,8 @@
 module vegetables_test_case_with_generator_m
-    use iso_varying_string, only: varying_string, operator(//)
+    use iso_varying_string, only: varying_string, operator(//), put_line, var_str
     use strff, only: operator(.includes.), to_string
     use vegetables_command_line_m, only: &
-            MAX_SHRINK_ATTEMPTS, NUM_GENERATOR_TESTS
+            DEBUG, MAX_SHRINK_ATTEMPTS, NUM_GENERATOR_TESTS
     use vegetables_generated_m, only: generated_t
     use vegetables_generator_m, only: generator_t
     use vegetables_input_m, only: input_t
@@ -97,6 +97,9 @@ contains
         type(result_t) :: previous_result
         type(shrink_result_t) :: simpler_value
 
+        if (DEBUG) call put_line( &
+                "Beginning execution of: " // self%description_&
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
         do i = 1, NUM_GENERATOR_TESTS
             generated_value = self%generator%generate()
             previous_result = self%test(generated_value%input())
@@ -138,5 +141,8 @@ contains
                     self%description_, &
                     fail("Exhausted shrink attempts looking for simplest value causing failure").and.previous_result))
         end if
+        if (DEBUG) call put_line( &
+                "Completed execution of: " // self%description_&
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
     end function
 end module
