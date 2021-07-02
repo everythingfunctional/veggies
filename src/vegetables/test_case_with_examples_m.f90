@@ -1,6 +1,7 @@
 module vegetables_test_case_with_examples_m
-    use iso_varying_string, only: varying_string
-    use strff, only: operator(.includes.)
+    use iso_varying_string, only: varying_string, operator(//), put_line, var_str
+    use strff, only: operator(.includes.), to_string
+    use vegetables_command_line_m, only: DEBUG
     use vegetables_example_m, only: example_t
     use vegetables_input_m, only: input_t
     use vegetables_result_m, only: result_t
@@ -90,10 +91,16 @@ contains
         integer :: i
         type(result_t) :: results
 
+        if (DEBUG) call put_line( &
+                "Beginning execution of: " // self%description_&
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
         do i = 1, size(self%examples)
             results = results.and.self%test(self%examples(i)%input())
         end do
         result_ = test_result_item_t(test_case_result_t( &
                 self%description_, results))
+        if (DEBUG) call put_line( &
+                "Completed execution of: " // self%description_&
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
     end function
 end module

@@ -1,6 +1,7 @@
 module vegetables_input_test_case_m
-    use iso_varying_string, only: varying_string
-    use strff, only: operator(.includes.)
+    use iso_varying_string, only: varying_string, operator(//), put_line, var_str
+    use strff, only: operator(.includes.), to_string
+    use vegetables_command_line_m, only: DEBUG
     use vegetables_input_m, only: input_t
     use vegetables_test_m, only: &
             filter_result_t, test_t, filter_failed, filter_matched
@@ -73,14 +74,23 @@ contains
         class(input_t), intent(in) :: input
         type(test_result_item_t) :: result_
 
+        if (DEBUG) call put_line( &
+                "Beginning execution of: " // self%description_ &
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
         result_ = test_result_item_t(test_case_result_t( &
                 self%description_, self%test(input)))
+        if (DEBUG) call put_line( &
+                "Completed execution of: " // self%description_&
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
     end function
 
     function run_without_input(self) result(result_)
         class(input_test_case_t), intent(in) :: self
         type(test_result_item_t) :: result_
 
+        if (DEBUG) call put_line( &
+                "Improper use of: " // self%description_&
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
         result_ = test_result_item_t(test_case_result_t( &
                 self%description_, fail("No input provided")))
     end function

@@ -1,6 +1,7 @@
 module vegetables_simple_test_collection_m
-    use iso_varying_string, only: varying_string, operator(//)
-    use strff, only: operator(.includes.), hanging_indent, join, NEWLINE
+    use iso_varying_string, only: varying_string, operator(//), put_line, var_str
+    use strff, only: operator(.includes.), hanging_indent, join, to_string, NEWLINE
+    use vegetables_command_line_m, only: DEBUG
     use vegetables_constants_m, only: INDENTATION
     use vegetables_input_m, only: input_t
     use vegetables_test_m, only: &
@@ -108,10 +109,16 @@ contains
         integer :: i
         type(test_result_item_t) :: results(size(self%tests))
 
+        if (DEBUG) call put_line( &
+                "Beginning execution of: " // self%description_&
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
         do i = 1, size(self%tests)
             results(i) = self%tests(i)%run()
         end do
         result_ = test_result_item_t(test_collection_result_t( &
                 self%description_, results))
+        if (DEBUG) call put_line( &
+                "Completed execution of: " // self%description_&
+                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
     end function
 end module

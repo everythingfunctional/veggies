@@ -5,7 +5,12 @@ module vegetables_command_line_m
 
     implicit none
     private
-    public :: options_t, get_options, MAX_SHRINK_ATTEMPTS, NUM_GENERATOR_TESTS
+    public :: &
+            options_t, &
+            get_options, &
+            DEBUG, &
+            MAX_SHRINK_ATTEMPTS, &
+            NUM_GENERATOR_TESTS
 
     type :: options_t
         private
@@ -23,9 +28,9 @@ module vegetables_command_line_m
         procedure, public :: filter_string
     end type
 
+    logical, protected :: DEBUG = .false.
     integer, protected :: MAX_SHRINK_ATTEMPTS = 100
     integer, protected :: NUM_GENERATOR_TESTS = 100
-    logical, protected :: DEBUG = .false.
 contains
     function get_options() result(options)
         type(options_t) :: options
