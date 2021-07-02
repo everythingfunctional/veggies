@@ -25,6 +25,7 @@ module vegetables_command_line_m
 
     integer, protected :: MAX_SHRINK_ATTEMPTS = 100
     integer, protected :: NUM_GENERATOR_TESTS = 100
+    logical, protected :: DEBUG = .false.
 contains
     function get_options() result(options)
         type(options_t) :: options
@@ -87,6 +88,8 @@ contains
                 options%quiet_ = .true.
             case ("-v", "--verbose")
                 options%verbose_ = .true.
+            case ("-d", "--debug")
+                DEBUG = .true.
             case default
                 call put_line( &
                         error_unit, &
@@ -102,13 +105,15 @@ contains
             type(varying_string) :: usageMessage
 
             usageMessage = &
-                    "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-f string] [-n num] [-s num] [-c]" // NEWLINE &
+                    "Usage: " // trim(program_name_) // " [-h] [-q] [-v] [-d] [-f string] [-n num] [-s num] [-c]" // NEWLINE &
                     // "  options:" // NEWLINE &
                     // "    -h, --help                    Output this message and exit" // NEWLINE &
                     // "    -q, --quiet                   Don't print the test descriptions before" // NEWLINE &
                     // "                                  running the tests" // NEWLINE &
                     // "    -v, --verbose                 Print all of the assertion messages, not" // NEWLINE &
                     // "                                  just the failing ones" // NEWLINE &
+                    // "    -d, --debug                   Report the beginning and end of execution" // NEWLINE &
+                    // "                                  of each test case or suite" // NEWLINE & 
                     // "    -f string, --filter string    Only run cases or collections whose" // NEWLINE &
                     // "                                  description contains the given string" // NEWLINE &
                     // "    -n num, --numrand num         Number of random values to use for each" // NEWLINE &
