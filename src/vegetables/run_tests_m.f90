@@ -128,6 +128,9 @@ contains
         allocate(suite_failed[*])
 
         suite_failed = image_failed
+
+        sync all
+
         do i = 1, num_images()
             if (suite_failed[i]) then
                 any_image_failed = .true.
