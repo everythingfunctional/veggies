@@ -118,11 +118,17 @@ contains
                         result_ = test_result_item_t(test_case_result_t( &
                                 self%description_, &
                                 fail('Found simplest example causing failure').and.previous_result))
+                        if (DEBUG) call put_line( &
+                                "Completed execution of: " // self%description_&
+                                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
                         return
                     else
                         result_ = test_result_item_t(test_case_result_t( &
                                 self%description_, &
                                 fail('Fails with the simplest possible example').and.new_result))
+                        if (DEBUG) call put_line( &
+                                "Completed execution of: " // self%description_&
+                                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
                         return
                     end if
                 else
@@ -130,6 +136,9 @@ contains
                         result_ = test_result_item_t(test_case_result_t( &
                                 self%description_, &
                                 fail('Found simplest example causing failure').and.previous_result))
+                        if (DEBUG) call put_line( &
+                                "Completed execution of: " // self%description_&
+                                // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
                         return
                     else
                         previous_result = new_result
