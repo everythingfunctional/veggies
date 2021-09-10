@@ -1,8 +1,10 @@
 ---
+favicon: images/vegetables_logo.png
 project: Vegetables
 summary: A Fortran Unit Testing Framework
 project_website: https://gitlab.com/everythingfunctional/vegetables
 author: Brad Richardson
+author_pic: https://gravatar.com/avatar/424894836e0edb265afa066d3f9f6cc9
 email: everythingfunctional@protonmail.com
 website: https://everythingfunctional.com
 twitter: https://twitter.com/everythingfunct
