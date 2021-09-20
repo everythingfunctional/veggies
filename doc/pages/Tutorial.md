@@ -2,6 +2,21 @@
 title: Tutorial
 ---
 
+# Prerequisites
+
+This tutorial assumes that you have working knowledge of, and are comfortable using the following tools:
+
+* The [Fortran Language](https://fortran-lang.org/)
+* [A command line interface](https://en.wikipedia.org/wiki/Command-line_interface)
+* [git](https://git-scm.com/)
+* The [Fortran Package Manager](https://github.com/fortran-lang/fpm)
+
+In addition, to understand some of the motivations behind this library,
+and how to use it effectively, you will want to understand:
+
+* [What unit testing is](https://everythingfunctional.wordpress.com/2021/09/09/a-what-test/)
+* [How to write good unit tests](https://www.youtube.com/watch?v=tWn8RA_DEic)
+
 # Getting Started With Vegetables
 
 If this is your first encounter with a unit testing framework,
