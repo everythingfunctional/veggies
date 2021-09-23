@@ -30,7 +30,7 @@ You'll need to have the following installed to do that.
 
 With those installed and configured, you should be able to open a terminal and issue the following commands.
 
-```
+``` { use_pygments=false }
 git clone https://gitlab.com/everythingfunctional/vegetables.git
 cd vegetables
 fpm test
@@ -38,7 +38,7 @@ fpm test
 
 You should see output looking like the following.
 
-```
+``` { use_pygments=false }
 Running Tests
 
 Test that
@@ -61,13 +61,13 @@ Congratulations, you've run your first suite of tests using the vegetables frame
 Some command line options are accepted by the default test suite runner.
 To see the options available, pass the `-h` option to the runner, which can be done using fpm like
 
-```
+``` { use_pygments=false }
 fpm test -- -h
 ```
 
 You should see output like the following:
 
-```
+``` { use_pygments=false }
 Usage: build/gfortran_2A42023B310FA28D/test/vegetables-test [-h] [-q] [-v] [-d] [-f string] [-n num] [-s num] [-c]
   options:
     -h, --help                    Output this message and exit
@@ -115,14 +115,14 @@ I'll link to tags in that repository for key milestones.
 To get started, we're going to use fpm to build and run our tests.
 In a terminal, move to a place you want to keep your project, and issue the command:
 
-```
+``` { use_pygments=false }
 fpm new --lib --test vegetables_tutorial
 ```
 
 This will generate a new project for us, with a template test and library.
 Move into the newly created folder, and run the command `fpm test`, and you should see some output like the following:
 
-```txt
+``` { use_pygments=false }
 $ fpm test
  + mkdir -p build/dependencies
  + mkdir -p build/gfortran_2A42023B310FA28D/vegetables_tutorial
@@ -323,7 +323,7 @@ end program
 You should also delete the original program in the `test` folder.
 Now run `fpm test` and you should see output like the following.
 
-```txt
+``` { use_pygments=false }
 $ fpm test
 Running Tests
 
