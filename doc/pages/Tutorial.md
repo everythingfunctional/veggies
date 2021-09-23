@@ -246,7 +246,7 @@ A test is a function that returns a test `result_t`, like so.
 
 ```Fortran
 module is_leap_year_test
-use is_leap_year_m, only: is_leap_year
+    use is_leap_year_m, only: is_leap_year
     use vegetables, only: result_t, test_item_t, assert_not, describe, it
 
     implicit none
@@ -324,17 +324,18 @@ You should also delete the original program in the `test` folder.
 Now run `fpm test` and you should see output like the following.
 
 ``` { use_pygments=false }
-$ fpm test
+$ fpm test -- -q -v
 Running Tests
-
-Test that
-    is_leap_year
-        returns false for years that are not divisible by 4
 
 A total of 1 test cases
 
 All Passed
-Took 8.464e-6 seconds
+Took 1.078e-5 seconds
+
+Test that
+    is_leap_year
+        returns false for years that are not divisible by 4
+            Was not true
 
 A total of 1 test cases containing a total of 1 assertions
 ```
@@ -344,7 +345,73 @@ You can find the code at this stage [here](https://gitlab.com/everythingfunction
 
 # More Advanced Testing Patterns
 
-Coming Soon!
+The test we wrote above really only used the bare minimum of features available in vegetables.
+There is some additional functionality that would be nice to make use of even for this simple test though.
+First of all, when we look at the verbose output from the test, we don't really see what was checked.
+All of the `assert_*` functions take two optional message arguments at the end.
+We can use this to provide additional detail to anyone executing our test suite,
+and if necessary to provide different details depending on whether the check passes or fails.
+In this case we'll just provide a string indicating the year we checked.
+
+```Fortran
+function check_not_divisible_by_4() result(result_)
+    type(result_t) :: result_
+
+    integer, parameter :: YEAR = 2002
+
+    result_ = assert_not(is_leap_year(YEAR), to_string(YEAR))
+end function
+```
+
+> Note: we're using the `to_string` function from the `strff` library.
+> Vegetables already depends on this library,
+> but if you're going to depend on something directly you should add it to your `fpm.toml` file.
+
+Next, we're only checking a single year.
+We really should check at least one more, but it would really fall under the same test.
+Luckily, we can combine test results using the `.and.` operator, like so.
+
+```Fortran
+function check_not_divisible_by_4() result(result_)
+    type(result_t) :: result_
+
+    integer, parameter :: YEAR1 = 2002
+    integer, parameter :: YEAR2 = 2003
+
+    result_ = &
+            assert_not(is_leap_year(YEAR1), to_string(YEAR1)) &
+            .and. assert_not(is_leap_year(YEAR2), to_string(YEAR2))
+end function
+```
+
+Now when we run the tests we can see what we're checking, and that we're checking multiple things.
+
+``` { use_pygments=false }
+$ fpm test -- -q -v (main)
+Running Tests
+
+A total of 1 test cases
+
+All Passed
+Took 3.567e-5 seconds
+
+Test that
+    is_leap_year
+        returns false for years that are not divisible by 4
+            Was not true
+                User Message:
+                    |2002|
+            Was not true
+                User Message:
+                    |2003|
+
+A total of 1 test cases containing a total of 2 assertions
+```
+
+This covers all the basics, and you can find the code at this stage
+[here](https://gitlab.com/everythingfunctional/vegetables_tutorial/-/tree/little_extras).
+In the following sections we'll start introducing advanced patterns for testing,
+and how vegetables supports them.
 
 ## Providing Example Inputs to a Test
 
