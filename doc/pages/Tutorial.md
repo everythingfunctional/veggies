@@ -479,14 +479,245 @@ Chances are small that a test case would receive a type not expected by the auth
 but mistakes happen and better to have the test case report the problem.
 You can find the code at this stage [here](https://gitlab.com/everythingfunctional/vegetables_tutorial/-/tree/example_inputs).
 
-## Generating Random Inputs for a Test
-
-Coming Soon!
 
 ## Inputs for a Whole Test Suite
 
-Coming Soon!
+For this and the next section, we're going to switch examples,
+and write tests for a stack implementation.
+It's a simple stack of integers, with an implementation like below.
+
+```Fortran
+module stack_m
+    implicit none
+    private
+    public :: stack_t
+
+    type :: stack_t
+        private
+        integer, allocatable :: items(:)
+    contains
+        private
+        procedure, public :: empty
+        procedure, public :: top
+        procedure, public :: pop
+        procedure, public :: push
+        procedure, public :: depth
+    end type
+
+    interface stack_t
+        module procedure constructor
+    end interface
+contains
+    pure function constructor() result(empty_stack)
+        type(stack_t) :: empty_stack
+
+        allocate(empty_stack%items(0))
+    end function
+
+    pure function empty(self)
+        class(stack_t), intent(in) :: self
+        logical :: empty
+
+        empty = self%depth() == 0
+    end function
+
+    pure function top(self)
+        class(stack_t), intent(in) :: self
+        integer :: top
+
+        if (self%empty()) then
+            error stop "Asked for top of an empty stack."
+        else
+            top = self%items(1)
+        end if
+    end function
+
+    pure function pop(self) result(popped)
+        class(stack_t), intent(in) :: self
+        type(stack_t) :: popped
+
+        if (self%empty()) then
+            error stop "Attempted to pop an empty stack."
+        else
+            if (self%depth() > 1) then
+                allocate(popped%items, source = self%items(2:))
+            else
+                allocate(popped%items(0))
+            end if
+        end if
+    end function
+
+    pure function push(self, top) result(pushed)
+        class(stack_t), intent(in) :: self
+        integer, intent(in) :: top
+        type(stack_t) :: pushed
+
+        if (self%empty()) then
+            allocate(pushed%items, source = [top])
+        else
+            allocate(pushed%items, source = [top, self%items])
+        end if
+    end function
+
+    pure function depth(self)
+        class(stack_t), intent(in) :: self
+        integer :: depth
+
+        if (allocated(self%items)) then
+            depth = size(self%items)
+        else
+            depth = 0
+        end if
+    end function
+end module
+```
+
+In some cases, there are multiple tests that make sense for some given starting point.
+In this instance, there are multiple properties of an empty empty stack that we'd like to test,
+that it is empty (i.e. the `empty` procedure returns `.true.`),
+and that it has a depth of zero.
+If a test collection is given an input, it will pass that input down to each of its test cases.
+In this case, that is done like the following.
+
+```Fortran
+module stack_test
+    use stack_m, only: stack_t
+    use stack_input_m, only: stack_input_t
+    use vegetables, only: &
+            input_t, &
+            result_t, &
+            test_item_t, &
+            assert_equals, &
+            assert_that, &
+            fail, &
+            given, &
+            it_
+
+    implicit none
+    private
+    public :: test_stack
+contains
+    function test_stack() result(tests)
+        type(test_item_t) :: tests
+
+        tests = given( &
+                "a new stack", &
+                stack_input_t(stack_t()), &
+                [ it_("it is empty", check_empty) &
+                , it_("it has a depth of zero", check_empty_depth) &
+                ])
+    end function
+
+    function check_empty(input) result(result_)
+        class(input_t), intent(in) :: input
+        type(result_t) :: result_
+
+        type(stack_t) :: stack
+
+        select type (input)
+        type is (stack_input_t)
+            stack = input%stack()
+            result_ = assert_that(stack%empty())
+        class default
+            result_ = fail("expected to get a stack_input_t")
+        end select
+    end function
+
+    function check_empty_depth(input) result(result_)
+        class(input_t), intent(in) :: input
+        type(result_t) :: result_
+
+        type(stack_t) :: stack
+
+        select type (input)
+        type is (stack_input_t)
+            stack = input%stack()
+            result_ = assert_equals(0, stack%depth())
+        class default
+            result_ = fail("expected to get a stack_input_t")
+        end select
+    end function
+end module
+```
+
+For reference, the `stack_input_t` type is a simple wrapper to hold on to a `stack_t`,
+in order to satisfy the requirement that it extend `input_t`,
+with implementation like the following.
+
+```Fortran
+module stack_input_m
+    use stack_m, only: stack_t
+    use vegetables, only: input_t
+
+    implicit none
+    private
+    public :: stack_input_t
+
+    type, extends(input_t) :: stack_input_t
+        private
+        type(stack_t) :: stack_
+    contains
+        private
+        procedure, public :: stack
+    end type
+
+    interface stack_input_t
+        module procedure constructor
+    end interface
+contains
+    function constructor(stack) result(stack_input)
+        type(stack_t), intent(in) :: stack
+        type(stack_input_t) :: stack_input
+
+        stack_input%stack_ = stack
+    end function
+
+    function stack(self)
+        class(stack_input_t), intent(in) :: self
+        type(stack_t) :: stack
+
+        stack = self%stack_
+    end function
+end module
+```
+
+Thus, with this new test suite, and remembering to regenerate the driver program with `make_vegetable_driver test/main.f90 test/*_test.f90`,
+running the tests gives the following.
+
+``` { use_pygments=false }
+$ fpm test -- -q -v
+Running Tests
+
+A total of 3 test cases
+
+All Passed
+Took 4.6017e-5 seconds
+
+Test that
+    is_leap_year
+        returns false for years that are not divisible by 4
+            Was not true
+                User Message:
+                    |2002|
+            Was not true
+                User Message:
+                    |2003|
+    Given a new stack
+        it is empty
+            Was true
+        it has a depth of zero
+            Expected and got
+                    |0|
+
+A total of 3 test cases containing a total of 4 assertions
+```
+
+You'll find the code at this [here](https://gitlab.com/everythingfunctional/vegetables_tutorial/-/tree/collection_input).
 
 ## Modifying Inputs Before Passing to a Test
+
+Coming Soon!
+
+## Generating Random Inputs for a Test
 
 Coming Soon!
