@@ -387,7 +387,7 @@ end function
 Now when we run the tests we can see what we're checking, and that we're checking multiple things.
 
 ``` { use_pygments=false }
-$ fpm test -- -q -v (main)
+$ fpm test -- -q -v
 Running Tests
 
 A total of 1 test cases
@@ -415,7 +415,69 @@ and how vegetables supports them.
 
 ## Providing Example Inputs to a Test
 
-Coming Soon!
+A common desire for testing frameworks is to be able to parameterize a test case by some input.
+For instance, in our above example, we have multiple years we'd like to provide as examples.
+In fact, we can benefit the understandability of our specification of the tests by putting the examples of inputs we are interested in for a given case near the specification for that case.
+We do this by changing two things.
+Pass an array of `example_t` objects to the `it` function,
+and modify the test function to accept a `class(input_t), intent(in)` argument.
+The `example_t` type is a simple wrapper for a `class(input_t), allocatable` variable,
+and thus any type extended from `input_t` can be passed as an example to a test case.
+For our current example this will look like the following.
+
+```Fortran
+module is_leap_year_test
+    use is_leap_year_m, only: is_leap_year
+    use strff, only: to_string
+    use vegetables, only: &
+            example_t, &
+            input_t, &
+            integer_input_t, &
+            result_t, &
+            test_item_t, &
+            assert_not, &
+            describe, &
+            fail, &
+            it
+
+    implicit none
+    private
+    public :: test_is_leap_year
+contains
+    function test_is_leap_year() result(tests)
+        type(test_item_t) :: tests
+
+        tests = describe(&
+                "is_leap_year", &
+                [ it( &
+                        "returns false for years that are not divisible by 4", &
+                        [ example_t(integer_input_t(2002)) &
+                        , example_t(integer_input_t(2003)) &
+                        ], &
+                        check_not_divisible_by_4) &
+                ])
+    end function
+
+    function check_not_divisible_by_4(input) result(result_)
+        class(input_t), intent(in) :: input
+        type(result_t) :: result_
+
+        select type (input)
+        type is (integer_input_t)
+            result_ = assert_not(is_leap_year(input%input()), to_string(input%input()))
+        class default
+            result_ = fail("Didn't get integer_input_t")
+        end select
+    end function
+end module
+```
+
+Note, this modified example will produce exactly the same report as the previous example.
+The framework assumes the job of combining together the results of the test case for each input.
+Also note, that best practice is to have a `class default` section in the `select type` construct that reports the test case failure in the case that an unexpected type is encountered.
+Chances are small that a test case would receive a type not expected by the author,
+but mistakes happen and better to have the test case report the problem.
+You can find the code at this stage [here](https://gitlab.com/everythingfunctional/vegetables_tutorial/-/tree/example_inputs).
 
 ## Generating Random Inputs for a Test
 
