@@ -718,7 +718,59 @@ You'll find the code at this point [here](https://gitlab.com/everythingfunctiona
 
 ## Modifying Inputs Before Passing to a Test
 
-Coming Soon!
+In some cases, we'd like to specify some some operation to be performed before checking different properties of the result.
+This pattern appears frequently when using a Given/When/Then style.
+I.e. Given some initial state, when this operation is performed, then these things are true about the result.
+
+In our example, we'd like to push something on to the stack and then check the resultant state.
+The specification then looks like the following.
+
+```Fortran
+function test_stack() result(tests)
+    type(test_item_t) :: tests
+
+    tests = given( &
+            "a new stack", &
+            stack_input_t(stack_t()), & ! The starting point
+            [ it_("it is empty", check_empty) &
+            , it_("it has a depth of zero", check_empty_depth) &
+            , when( &
+                    "an item is pushed onto it", &
+                    push_item, & ! The operation to be performed
+                    [ then__("it is no longer empty", check_not_empty) &
+                    , then__("it has a depth of one", check_depth_one) &
+                    ]) &
+            ])
+end function
+```
+
+The function provided to `when` must match the interface as shown below,
+and in the case of our example has an implementation like the following.
+
+```Fortran
+function push_item(input) result(output)
+    class(input_t), intent(in) :: input
+    type(transformed_t) :: output
+
+    type(stack_t) :: stack
+
+    select type (input)
+    type is (stack_input_t)
+        stack = input%stack()
+        output = transformed_t(stack_input_t(stack%push(1)))
+    class default
+        output = transformed_t(transformation_failure_t(fail( &
+                "expected to get a stack_input_t")))
+    end select
+end function
+```
+
+Note that the return type of this function, `transformed_t`,
+is another simple wrapper around a `class(item_t)`.
+The special type `transformation_failure_t` is provided as a way of signaling to the framework that something went wrong,
+and that it should not try to pass the result along to the remaining tests.
+
+The resulting code can be found [here](https://gitlab.com/everythingfunctional/vegetables_tutorial/-/tree/input_modification).
 
 ## Generating Random Inputs for a Test
 
