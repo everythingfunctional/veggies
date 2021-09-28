@@ -482,6 +482,7 @@ You can find the code at this stage [here](https://gitlab.com/everythingfunction
 
 ## Inputs for a Whole Test Suite
 
+In some cases, there are multiple tests that make sense for some given starting point.
 For this and the next section, we're going to switch examples,
 and write tests for a stack implementation.
 It's a simple stack of integers, with an implementation like below.
@@ -572,12 +573,13 @@ contains
 end module
 ```
 
-In some cases, there are multiple tests that make sense for some given starting point.
-In this instance, there are multiple properties of an empty empty stack that we'd like to test,
+In this instance, there are multiple properties of an empty stack that we'd like to test;
 that it is empty (i.e. the `empty` procedure returns `.true.`),
 and that it has a depth of zero.
 If a test collection is given an input, it will pass that input down to each of its test cases.
 In this case, that is done like the following.
+Note that the argument to `given` is `class(input_t)`, so any type that extends `input_t` can be provided.
+Also, we're now using the `it_` function (note the trailing `_`), which is necessary because the generic resolution in Fortran can't distinguish based on procedure arguments.
 
 ```Fortran
 module stack_test
@@ -712,7 +714,7 @@ Test that
 A total of 3 test cases containing a total of 4 assertions
 ```
 
-You'll find the code at this [here](https://gitlab.com/everythingfunctional/vegetables_tutorial/-/tree/collection_input).
+You'll find the code at this point [here](https://gitlab.com/everythingfunctional/vegetables_tutorial/-/tree/collection_input).
 
 ## Modifying Inputs Before Passing to a Test
 
