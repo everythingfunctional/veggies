@@ -1004,3 +1004,15 @@ Test that
 ```
 
 You can find the code at this stage [here](https://gitlab.com/everythingfunctional/vegetables_tutorial/-/tree/property_test).
+
+## Additional Resources
+
+At this stage, you should have a decent feel for the patterns and capabilities of vegetables.
+For more examples, and illustrations of use in real projects, you should check out:
+
+* The [vegetables test suite](https://gitlab.com/everythingfunctional/vegetables/-/tree/main/test)
+* The [iso_varying_string test suite](https://gitlab.com/everythingfunctional/iso_varying_string/-/tree/main/test/unit_test)
+* The [quaff test suite](https://gitlab.com/everythingfunctional/quaff/-/tree/main/test)
+  - Note, this illustrates how vegetables can be seamlessly extended to provide custom assertions
+
+You should also read through the [organized listing](./Organized_Listing.html) of capabilities to get a more comprehensive view of the available functionality.
