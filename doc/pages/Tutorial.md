@@ -774,4 +774,233 @@ The resulting code can be found [here](https://gitlab.com/everythingfunctional/v
 
 ## Generating Random Inputs for a Test
 
-Coming Soon!
+In some cases there is some foundational property of a piece of code that should hold for any input.
+In that case, we'd like to just throw all kinds of examples at it and make sure it still works.
+But writing all those examples by hand would be tedious,
+possibly (probably?) not cover all the interesting cases,
+and add a lot of extraneous code to the test.
+What if we could generate random inputs for a test case?
+We can.
+In this example we're going to write a test you never would in practice
+(because if intrinsic addition doesn't work you've got bigger problems),
+but will help to illustrate the technique.
+
+The test looks like the following.
+You need 3 integers, a, b and c, and whether you do (a + b) + c, or a + (b + c) should give the same answer.
+This is the associative property of addition.
+
+```Fortran
+module add_test
+    use iso_varying_string, only: operator(//)
+    use strff, only: to_string
+    use three_integer_generator_m, only: THREE_INTEGER_GENERATOR
+    use three_integer_input_m, only: three_integer_input_t
+    use vegetables, only: &
+            input_t, result_t, test_item_t, assert_equals, describe, fail, it
+
+    implicit none
+    private
+    public :: test_add
+contains
+    function test_add() result(tests)
+        type(test_item_t) :: tests
+
+        tests = describe( &
+                "addition", &
+                [ it("is associative", THREE_INTEGER_GENERATOR, check_associativity) &
+                ])
+    end function
+
+    function check_associativity(input) result(result_)
+        class(input_t), intent(in) :: input
+        type(result_t) :: result_
+
+        select type (input)
+        type is (three_integer_input_t)
+            associate(a => input%first(), b => input%second(), c => input%third())
+                result_ = assert_equals( &
+                        a + (b + c), &
+                        (a + b) + c, &
+                        to_string(a) &
+                        // " + " // to_string(b) &
+                        // " + " // to_string(c))
+            end associate
+        class default
+            result_ = fail("expected to get a three_integer_input_t")
+        end select
+    end function
+end module
+```
+
+By passing an object that extends from `generator_t` to the test case,
+it will use this object to generate random values that get passed to the test case.
+For a type to extend `generator_t`, it must implement 2 type-bound procedures; `generate` and `shrink`.
+`generate` will be called repeatedly to produce inputs that will be passed to the test case,
+so it should include some randomness, or at least produce different results for each call.
+
+But what if a test fails?
+Who knows what kind of complicated input could have caused it.
+That complicated input may not make it very easy to figure out what went wrong.
+So if a test case fails,
+vegetables will pass the input to the `shrink` function on your derived type,
+starting with the input that caused the failure,
+until either the test case passes, or the simplest possible input is found.
+
+That may have seemed complicated, so let's look at the implementation for this example.
+
+```Fortran
+module three_integer_generator_m
+    use three_integer_input_m, only: three_integer_input_t
+    use vegetables, only: &
+            generated_t, &
+            generator_t, &
+            input_t, &
+            shrink_result_t, &
+            get_random_integer, &
+            shrunk_value, &
+            simplest_value
+
+    implicit none
+    private
+    public :: THREE_INTEGER_GENERATOR
+
+    type, extends(generator_t) :: three_integer_generator_t
+    contains
+      procedure :: generate
+      procedure, nopass :: shrink
+    end type
+
+    type(three_integer_generator_t), parameter :: THREE_INTEGER_GENERATOR = &
+            three_integer_generator_t()
+contains
+    function generate(self) result(generated_value)
+        class(three_integer_generator_t), intent(in) :: self
+        type(generated_t) :: generated_value
+
+        generated_value = generated_t(three_integer_input_t( &
+                get_random_integer(), get_random_integer(), get_random_integer()))
+    end function
+
+    function shrink(input) result(shrunk)
+        class(input_t), intent(in) :: input
+        type(shrink_result_t) :: shrunk
+
+        select type (input)
+        type is (three_integer_input_t)
+            associate(a => input%first(), b => input%second(), c => input%third())
+                if (all([a, b, c] == 0)) then
+                    shrunk = simplest_value(three_integer_input_t( &
+                            0, 0, 0))
+                else
+                    shrunk = shrunk_value(three_integer_input_t( &
+                            a/2, b/2, c/2))
+                end if
+            end associate
+        end select
+    end function
+end module
+```
+
+The `generated` function uses the provided helper function `get_random_integer`
+to generate 3 random integers, uses those to construct a `three_integer_input_t` value,
+and wraps it into a `generated_t`.
+The `shrink` function looks at the current `input_t`.
+If all 3 numbers are already 0, then this is already the simplest possible input,
+so it uses the `simplest_value` function to construct its result.
+Otherwise, it returns smaller numbers for each value, using the `shrunk_value` function.
+
+If you run the test suite at this point, you'll see output like the following.
+Note where it says `Passed after 100 examples`.
+This means that vegetables used the provided generator to produce 100 random inputs,
+and the test case passed for every one.
+If you want to get a better feel for what is happening,
+you could add `print` statements in the test case and/or `generate` function.
+
+``` { use_pygments=false }
+fpm test -- -q -v
+Running Tests
+
+A total of 6 test cases
+
+All Passed
+Took 1.86468e-3 seconds
+
+Test that
+    addition
+        is associative
+            Passed after 100 examples
+    is_leap_year
+        returns false for years that are not divisible by 4
+            Was not true
+                User Message:
+                    |2002|
+            Was not true
+                User Message:
+                    |2003|
+    Given a new stack
+        it is empty
+            Was true
+        it has a depth of zero
+            Expected and got
+                    |0|
+        When an item is pushed onto it
+            Then it is no longer empty
+                Was true
+            Then it has a depth of one
+                Expected and got
+                        |1|
+
+A total of 6 test cases containing a total of 7 assertions
+```
+
+Additionally, to get a feel for how the `shrink` function works,
+you could modify the test to use the expression `(a + b) + c + 1` instead,
+to cause the test case to fail.
+This will cause output like the following,
+and you can again add print statements to get a better feel for it.
+
+``` { use_pygments=false }
+fpm test -- -q -v
+Running Tests
+
+A total of 6 test cases
+
+Failed
+Took 8.96107e-4 seconds
+
+Test that
+    addition
+        is associative
+            Fails with the simplest possible example
+            Expected
+                    |0|
+                but got
+                    |1|
+                User Message:
+                    |0 + 0 + 0|
+    is_leap_year
+        returns false for years that are not divisible by 4
+            Was not true
+                User Message:
+                    |2002|
+            Was not true
+                User Message:
+                    |2003|
+    Given a new stack
+        it is empty
+            Was true
+        it has a depth of zero
+            Expected and got
+                    |0|
+        When an item is pushed onto it
+            Then it is no longer empty
+                Was true
+            Then it has a depth of one
+                Expected and got
+                        |1|
+
+1 of 6 cases failed
+2 of 8 assertions failed
+```
+
+You can find the code at this stage [here](https://gitlab.com/everythingfunctional/vegetables_tutorial/-/tree/property_test).
