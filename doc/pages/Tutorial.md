@@ -1049,7 +1049,7 @@ and take a look at their implementations to see their general pattern.
 [Providing Your Own Assertions and Messages]: ./Organized_Listing.html#providing-your-own-assertions-and-messages
 [Organized Listing]: ./Organized_Listing.html
 
-## Additional Resources
+# Additional Resources
 
 At this stage, you should have a decent feel for the patterns and capabilities of vegetables.
 For more examples, and illustrations of use in real projects, you should check out:
