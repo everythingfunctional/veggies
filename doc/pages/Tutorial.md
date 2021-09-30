@@ -2,6 +2,8 @@
 title: Tutorial
 ---
 
+[TOC]
+
 # Prerequisites
 
 This tutorial assumes that you have working knowledge of, and are comfortable using the following tools:
@@ -1004,6 +1006,48 @@ Test that
 ```
 
 You can find the code at this stage [here](https://gitlab.com/everythingfunctional/vegetables_tutorial/-/tree/property_test).
+
+## Anatomy of an Assertion
+
+While many `assert` functions are available "out of the box",
+it is not unlikely you'll encounter a scenario where you'd like to provide your own.
+For example, maybe you'd like to extend `assert_equals` to handle some of the types in your own project.
+Since every `assert`ion in vegetables follows pretty much the exact same pattern,
+writing your own is pretty easy.
+And since the functions for constructing and formatting the message from an assertion are available,
+you can reuse them to make your assertion messages look consistent with the built in ones.
+The basic pattern for an assertion is like the following.
+
+```Fortran
+function assert_something(expected, actual, success_message, failure_message) result(result_)
+    type(my_type), intent(in) :: expected
+    type(my_type), intent(in) :: actual
+    type(varying_string), intent(in) :: success_message
+    type(varying_string), intent(in) :: failure_message
+    type(result_t) :: result_
+
+    if (some_condition(expected, actual)) then
+        result_ = succeed(with_user_message( &
+                make_some_message(to_string(expected), to_string(actual)), &
+                success_message))
+    else
+        result_ = fail(with_user_message( &
+                make_some_message(to_string(expected), to_string(actual)), &
+                failure_message))
+    end if
+end function
+```
+
+This is generally exposed in a generic interface,
+with additional specific functions that take only one or no message arguments,
+and then call the above function passing either the single message or an empty string
+in place of both messages.
+See the [Providing Your Own Assertions and Messages] section of the [Organized Listing]
+for an overview of the available formatting functions
+and take a look at their implementations to see their general pattern.
+
+[Providing Your Own Assertions and Messages]: ./Organized_Listing.html#providing-your-own-assertions-and-messages
+[Organized Listing]: ./Organized_Listing.html
 
 ## Additional Resources
 

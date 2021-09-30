@@ -18,6 +18,7 @@ display: public
 sort: permission-alpha
 output_dir: ../public
 graph: true
+md_extensions: markdown.extensions.toc
 ...
 
 Welcome to the Vegetables API documentation.

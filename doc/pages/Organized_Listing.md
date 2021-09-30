@@ -2,6 +2,8 @@
 title: Organized Listing
 ---
 
+[TOC]
+
 ## Constructing a Test Suite
 
 * [describe] -
