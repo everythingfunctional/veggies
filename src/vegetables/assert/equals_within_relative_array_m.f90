@@ -1,12 +1,12 @@
 module vegetables_assert_equals_within_relative_array_m
     use iso_varying_string, only: varying_string, operator(//), var_str
-    use strff, only: join, to_string
+    use strff, only: to_string
     use vegetables_messages_m, only: &
             make_within_failure_message, &
             make_within_success_message, &
             with_user_message
     use vegetables_result_m, only: result_t, fail, succeed
-    use vegetables_utilities_m, only: equals_within_relative
+    use vegetables_utilities_m, only: equals_within_relative, to_string
 
     implicit none
     private
@@ -164,8 +164,8 @@ contains
             if (all(equals_within_relative(expected, actual, tolerance))) then
                 result__ = succeed(with_user_message( &
                         make_within_success_message( &
-                                "[" // join(to_string(expected), ", ") // "]", &
-                                "[" // join(to_string(actual), ", ") // "]", &
+                                to_string(expected), &
+                                to_string(actual), &
                                 to_string(tolerance * 100.0d0) // "%"), &
                         success_message))
                 return
@@ -173,8 +173,8 @@ contains
         end if
         result__ = fail(with_user_message( &
                 make_within_failure_message( &
-                    "[" // join(to_string(expected), ", ") // "]", &
-                    "[" // join(to_string(actual), ", ") // "]", &
+                    to_string(expected), &
+                    to_string(actual), &
                     to_string(tolerance * 100.0d0) // "%"), &
                 failure_message))
     end function

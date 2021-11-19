@@ -1,11 +1,12 @@
 module vegetables_assert_equals_integer_array_m
     use iso_varying_string, only: varying_string, operator(//), var_str
-    use strff, only: join, to_string
+    use strff, only: join
     use vegetables_messages_m, only: &
             make_equals_failure_message, &
             make_equals_success_message, &
             with_user_message
     use vegetables_result_m, only: result_t, fail, succeed
+    use vegetables_utilities_m, only: to_string
 
     implicit none
     private
@@ -111,16 +112,15 @@ contains
         if (size(expected) == size(actual)) then
             if (all(expected == actual)) then
                 result__ = succeed(with_user_message( &
-                        make_equals_success_message( &
-                                "[" // join(to_string(expected), ", ") // "]"), &
+                        make_equals_success_message(to_string(expected)), &
                         success_message))
                 return
             end if
         end if
         result__ = fail(with_user_message( &
                 make_equals_failure_message( &
-                        "[" // join(to_string(expected), ", ") // "]", &
-                        "[" // join(to_string(actual), ", ") // "]"), &
+                        to_string(expected), &
+                        to_string(actual)), &
                 failure_message))
     end function
 end module
