@@ -4,6 +4,7 @@ module vegetables_assert_m
     use vegetables_assert_equals_double_precision_m, only: assert_equals
     use vegetables_assert_equals_double_precision_array_m, only: assert_equals
     use vegetables_assert_equals_integer_m, only: assert_equals
+    use vegetables_assert_equals_integer_array_m, only: assert_equals
     use vegetables_assert_equals_strings_m, only: assert_equals
     use vegetables_assert_equals_within_absolute_m, only: &
             assert_equals_within_absolute
