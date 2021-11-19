@@ -11,6 +11,9 @@ contains
         use assert_empty_test, only: &
                 assert_empty_assert_empty => &
                     test_assert_empty
+        use assert_equals_double_precision_array_test, only: &
+                assert_equals_double_precision_array_assert_eq_double_arr => &
+                    test_assert_eq_double_arr
         use assert_equals_double_precision_test, only: &
                 assert_equals_double_precision_assert_equals_integers => &
                     test_assert_equals_integers
@@ -64,27 +67,28 @@ contains
         use vegetables, only: test_item_t, test_that, run_tests
 
         type(test_item_t) :: tests
-        type(test_item_t) :: individual_tests(19)
+        type(test_item_t) :: individual_tests(20)
 
         individual_tests(1) = assert_doesnt_include_assert_includes()
         individual_tests(2) = assert_empty_assert_empty()
-        individual_tests(3) = assert_equals_double_precision_assert_equals_integers()
-        individual_tests(4) = assert_equals_integers_assert_equals_integers()
-        individual_tests(5) = assert_equals_strings_assert_equals_strings()
-        individual_tests(6) = assert_equals_within_absolute_array_assert_eq_within_abs_arr()
-        individual_tests(7) = assert_equals_within_absolute_assert_equals_within_absolute()
-        individual_tests(8) = assert_equals_within_relative_array_assert_eq_within_rel_arr()
-        individual_tests(9) = assert_equals_within_relative_assert_equals_within_relative()
-        individual_tests(10) = assert_includes_assert_includes()
-        individual_tests(11) = collection_properties_collection_properties()
-        individual_tests(12) = failing_case_failing_case_behaviors()
-        individual_tests(13) = failing_collection_failing_collection_behaviors()
-        individual_tests(14) = filter_filter_case()
-        individual_tests(15) = filter_filter_collection()
-        individual_tests(16) = passing_case_passing_case_behaviors()
-        individual_tests(17) = passing_collection_passing_collection_behaviors()
-        individual_tests(18) = result_result()
-        individual_tests(19) = single_case_properties_case_properties()
+        individual_tests(3) = assert_equals_double_precision_array_assert_eq_double_arr()
+        individual_tests(4) = assert_equals_double_precision_assert_equals_integers()
+        individual_tests(5) = assert_equals_integers_assert_equals_integers()
+        individual_tests(6) = assert_equals_strings_assert_equals_strings()
+        individual_tests(7) = assert_equals_within_absolute_array_assert_eq_within_abs_arr()
+        individual_tests(8) = assert_equals_within_absolute_assert_equals_within_absolute()
+        individual_tests(9) = assert_equals_within_relative_array_assert_eq_within_rel_arr()
+        individual_tests(10) = assert_equals_within_relative_assert_equals_within_relative()
+        individual_tests(11) = assert_includes_assert_includes()
+        individual_tests(12) = collection_properties_collection_properties()
+        individual_tests(13) = failing_case_failing_case_behaviors()
+        individual_tests(14) = failing_collection_failing_collection_behaviors()
+        individual_tests(15) = filter_filter_case()
+        individual_tests(16) = filter_filter_collection()
+        individual_tests(17) = passing_case_passing_case_behaviors()
+        individual_tests(18) = passing_collection_passing_collection_behaviors()
+        individual_tests(19) = result_result()
+        individual_tests(20) = single_case_properties_case_properties()
         tests = test_that(individual_tests)
 
         call run_tests(tests)
