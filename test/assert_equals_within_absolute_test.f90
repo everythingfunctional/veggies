@@ -15,13 +15,13 @@ module assert_equals_within_absolute_test
 
     implicit none
     private
-    public :: test_assert_equals_within_relative
+    public :: test_assert_equals_within_absolute
 
     character(len=*), parameter :: BOTH_MESSAGE = "Both Message"
     character(len=*), parameter :: SUCCESS_MESSAGE = "Success Message"
     character(len=*), parameter :: FAILURE_MESSAGE = "Failure Message"
 contains
-    function test_assert_equals_within_relative() result(tests)
+    function test_assert_equals_within_absolute() result(tests)
         type(test_item_t) :: tests
 
         tests = describe( &

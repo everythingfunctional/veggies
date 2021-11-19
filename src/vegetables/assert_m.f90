@@ -6,6 +6,8 @@ module vegetables_assert_m
     use vegetables_assert_equals_strings_m, only: assert_equals
     use vegetables_assert_equals_within_absolute_m, only: &
             assert_equals_within_absolute
+    use vegetables_assert_equals_within_absolute_array_m, only: &
+            assert_equals_within_absolute
     use vegetables_assert_equals_within_relative_m, only: &
             assert_equals_within_relative
     use vegetables_assert_faster_than_m, only: assert_faster_than
