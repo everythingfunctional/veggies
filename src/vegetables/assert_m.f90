@@ -10,6 +10,8 @@ module vegetables_assert_m
             assert_equals_within_absolute
     use vegetables_assert_equals_within_relative_m, only: &
             assert_equals_within_relative
+    use vegetables_assert_equals_within_relative_array_m, only: &
+            assert_equals_within_relative
     use vegetables_assert_faster_than_m, only: assert_faster_than
     use vegetables_assert_includes_m, only: assert_includes
     use vegetables_assert_not_m, only: assert_not

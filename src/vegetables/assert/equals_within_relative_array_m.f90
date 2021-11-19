@@ -1,6 +1,6 @@
-module vegetables_assert_equals_within_relative_m
+module vegetables_assert_equals_within_relative_array_m
     use iso_varying_string, only: varying_string, operator(//), var_str
-    use strff, only: to_string
+    use strff, only: join, to_string
     use vegetables_messages_m, only: &
             make_within_failure_message, &
             make_within_success_message, &
@@ -13,22 +13,22 @@ module vegetables_assert_equals_within_relative_m
     public :: assert_equals_within_relative
 
     interface assert_equals_within_relative
-        module procedure assert_equals_within_relative_basic
-        module procedure assert_equals_within_relative_with_message_c
-        module procedure assert_equals_within_relative_with_message_s
-        module procedure assert_equals_within_relative_with_messages_cc
-        module procedure assert_equals_within_relative_with_messages_cs
-        module procedure assert_equals_within_relative_with_messages_sc
-        module procedure assert_equals_within_relative_with_messages_ss
+        module procedure assert_equals_within_relative_array_basic
+        module procedure assert_equals_within_relative_array_with_message_c
+        module procedure assert_equals_within_relative_array_with_message_s
+        module procedure assert_equals_within_relative_array_with_messages_cc
+        module procedure assert_equals_within_relative_array_with_messages_cs
+        module procedure assert_equals_within_relative_array_with_messages_sc
+        module procedure assert_equals_within_relative_array_with_messages_ss
     end interface
 contains
-    pure function assert_equals_within_relative_basic( &
+    pure function assert_equals_within_relative_array_basic( &
             expected, &
             actual, &
             tolerance) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:)
+        double precision, intent(in) :: actual(:)
         double precision, intent(in) :: tolerance
         type(result_t) :: result__
 
@@ -40,14 +40,14 @@ contains
                 var_str(""))
     end function
 
-    pure function assert_equals_within_relative_with_message_c( &
+    pure function assert_equals_within_relative_array_with_message_c( &
             expected, &
             actual, &
             tolerance, &
             message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:)
+        double precision, intent(in) :: actual(:)
         double precision, intent(in) :: tolerance
         character(len=*), intent(in) :: message
         type(result_t) :: result__
@@ -60,14 +60,14 @@ contains
                 var_str(message))
     end function
 
-    pure function assert_equals_within_relative_with_message_s( &
+    pure function assert_equals_within_relative_array_with_message_s( &
             expected, &
             actual, &
             tolerance, &
             message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:)
+        double precision, intent(in) :: actual(:)
         double precision, intent(in) :: tolerance
         type(varying_string), intent(in) :: message
         type(result_t) :: result__
@@ -80,15 +80,15 @@ contains
                 message)
     end function
 
-    pure function assert_equals_within_relative_with_messages_cc( &
+    pure function assert_equals_within_relative_array_with_messages_cc( &
             expected, &
             actual, &
             tolerance, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:)
+        double precision, intent(in) :: actual(:)
         double precision, intent(in) :: tolerance
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -102,15 +102,15 @@ contains
                 var_str(failure_message))
     end function
 
-    pure function assert_equals_within_relative_with_messages_cs( &
+    pure function assert_equals_within_relative_array_with_messages_cs( &
             expected, &
             actual, &
             tolerance, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:)
+        double precision, intent(in) :: actual(:)
         double precision, intent(in) :: tolerance
         character(len=*), intent(in) :: success_message
         type(varying_string), intent(in) :: failure_message
@@ -124,15 +124,15 @@ contains
                 failure_message)
     end function
 
-    pure function assert_equals_within_relative_with_messages_sc( &
+    pure function assert_equals_within_relative_array_with_messages_sc( &
             expected, &
             actual, &
             tolerance, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:)
+        double precision, intent(in) :: actual(:)
         double precision, intent(in) :: tolerance
         type(varying_string), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -146,34 +146,36 @@ contains
                 var_str(failure_message))
     end function
 
-    pure function assert_equals_within_relative_with_messages_ss( &
+    pure function assert_equals_within_relative_array_with_messages_ss( &
             expected, &
             actual, &
             tolerance, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:)
+        double precision, intent(in) :: actual(:)
         double precision, intent(in) :: tolerance
         type(varying_string), intent(in) :: success_message
         type(varying_string), intent(in) :: failure_message
         type(result_t) :: result__
 
-        if (equals_within_relative(expected, actual, tolerance)) then
-            result__ = succeed(with_user_message( &
-                    make_within_success_message( &
-                            to_string(expected), &
-                            to_string(actual), &
-                            to_string(tolerance * 100.0d0) // "%"), &
-                    success_message))
-        else
-            result__ = fail(with_user_message( &
-                    make_within_failure_message( &
-                            to_string(expected), &
-                            to_string(actual), &
-                            to_string(tolerance * 100.0d0) // "%"), &
-                    failure_message))
+        if (size(expected) == size(actual)) then
+            if (all(equals_within_relative(expected, actual, tolerance))) then
+                result__ = succeed(with_user_message( &
+                        make_within_success_message( &
+                                "[" // join(to_string(expected), ", ") // "]", &
+                                "[" // join(to_string(actual), ", ") // "]", &
+                                to_string(tolerance * 100.0d0) // "%"), &
+                        success_message))
+                return
+            end if
         end if
+        result__ = fail(with_user_message( &
+                make_within_failure_message( &
+                    "[" // join(to_string(expected), ", ") // "]", &
+                    "[" // join(to_string(actual), ", ") // "]", &
+                    to_string(tolerance * 100.0d0) // "%"), &
+                failure_message))
     end function
 end module
