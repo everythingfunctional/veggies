@@ -9,8 +9,10 @@ module vegetables_utilities_m
     interface to_string
         module procedure double_array_to_string
         module procedure double_matrix_to_string
+        module procedure double_tensor_to_string
         module procedure integer_array_to_string
         module procedure integer_matrix_to_string
+        module procedure integer_tensor_to_string
     end interface
 contains
     pure function double_array_to_string(array) result(string)
@@ -31,6 +33,17 @@ contains
             1)
     end function
 
+    pure function double_tensor_to_string(tensor) result(string)
+        double precision, intent(in) :: tensor(:,:,:)
+        type(varying_string) :: string
+
+        integer :: i
+
+        string = hanging_indent( &
+            "[" // join([(to_string(tensor(i,:,:)), i = 1, size(tensor, dim=1))], "," // NEWLINE) // "]", &
+            1)
+    end function
+
     pure function integer_array_to_string(array) result(string)
         integer, intent(in) :: array(:)
         type(varying_string) :: string
@@ -46,6 +59,17 @@ contains
 
         string = hanging_indent( &
             "[" // join([(to_string(matrix(i,:)), i = 1, size(matrix, dim=1))], "," // NEWLINE) // "]", &
+            1)
+    end function
+
+    pure function integer_tensor_to_string(tensor) result(string)
+        integer, intent(in) :: tensor(:,:,:)
+        type(varying_string) :: string
+
+        integer :: i
+
+        string = hanging_indent( &
+            "[" // join([(to_string(tensor(i,:,:)), i = 1, size(tensor, dim=1))], "," // NEWLINE) // "]", &
             1)
     end function
 
