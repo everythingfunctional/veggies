@@ -1,6 +1,6 @@
 module vegetables_utilities_m
     use iso_varying_string, only: varying_string, operator(//)
-    use strff, only: join, strff_to_string => to_string
+    use strff, only: hanging_indent, join, strff_to_string => to_string, NEWLINE
 
     implicit none
     private
@@ -8,7 +8,9 @@ module vegetables_utilities_m
 
     interface to_string
         module procedure double_array_to_string
+        module procedure double_matrix_to_string
         module procedure integer_array_to_string
+        module procedure integer_matrix_to_string
     end interface
 contains
     pure function double_array_to_string(array) result(string)
@@ -18,11 +20,33 @@ contains
         string = "[" // join(strff_to_string(array), ", ") // "]"
     end function
 
+    pure function double_matrix_to_string(matrix) result(string)
+        double precision, intent(in) :: matrix(:,:)
+        type(varying_string) :: string
+
+        integer :: i
+
+        string = hanging_indent( &
+            "[" // join([(to_string(matrix(i,:)), i = 1, size(matrix, dim=1))], "," // NEWLINE) // "]", &
+            1)
+    end function
+
     pure function integer_array_to_string(array) result(string)
         integer, intent(in) :: array(:)
         type(varying_string) :: string
 
         string = "[" // join(strff_to_string(array), ", ") // "]"
+    end function
+
+    pure function integer_matrix_to_string(matrix) result(string)
+        integer, intent(in) :: matrix(:,:)
+        type(varying_string) :: string
+
+        integer :: i
+
+        string = hanging_indent( &
+            "[" // join([(to_string(matrix(i,:)), i = 1, size(matrix, dim=1))], "," // NEWLINE) // "]", &
+            1)
     end function
 
     elemental function equals_within_absolute(expected, actual, tolerance)

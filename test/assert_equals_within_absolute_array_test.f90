@@ -252,34 +252,34 @@ contains
         type(result_t) :: example_result_sc
         type(result_t) :: example_result_ss
 
-        associate(example => [1.0d0, 2.0d0])
+        associate(example1 => [1.0d0, 2.0d0], example2 => [1.0d0, 2.0d0, 3.0d0])
             example_result = assert_equals_within_absolute( &
-                    example, [example, 3.0d0], 0.1d0)
+                    example1, example2, 0.1d0)
             example_result_c = assert_equals_within_absolute( &
-                    example, [example, 3.0d0], 0.1d0, BOTH_MESSAGE)
+                    example1, example2, 0.1d0, BOTH_MESSAGE)
             example_result_s = assert_equals_within_absolute( &
-                    example, [example, 3.0d0], 0.1d0, var_str(BOTH_MESSAGE))
+                    example1, example2, 0.1d0, var_str(BOTH_MESSAGE))
             example_result_cc = assert_equals_within_absolute( &
-                    example, &
-                    [example, 3.0d0], &
+                    example1, &
+                    example2, &
                     0.1d0, &
                     SUCCESS_MESSAGE, &
                     FAILURE_MESSAGE)
             example_result_cs = assert_equals_within_absolute( &
-                    example, &
-                    [example, 3.0d0], &
+                    example1, &
+                    example2, &
                     0.1d0, &
                     SUCCESS_MESSAGE, &
                     var_str(FAILURE_MESSAGE))
             example_result_sc = assert_equals_within_absolute( &
-                    example, &
-                    [example, 3.0d0], &
+                    example1, &
+                    example2, &
                     0.1d0, &
                     var_str(SUCCESS_MESSAGE), &
                     FAILURE_MESSAGE)
             example_result_ss = assert_equals_within_absolute( &
-                    example, &
-                    [example, 3.0d0], &
+                    example1, &
+                    example2, &
                     0.1d0, &
                     var_str(SUCCESS_MESSAGE), &
                     var_str(FAILURE_MESSAGE))

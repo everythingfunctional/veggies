@@ -14,12 +14,18 @@ contains
         use assert_equals_double_precision_array_test, only: &
                 assert_equals_double_precision_array_assert_eq_double_arr => &
                     test_assert_eq_double_arr
+        use assert_equals_double_precision_matrix_test, only: &
+                assert_equals_double_precision_matrix_assert_eq_double_mat => &
+                    test_assert_eq_double_mat
         use assert_equals_double_precision_test, only: &
                 assert_equals_double_precision_assert_equals_integers => &
                     test_assert_equals_integers
         use assert_equals_integer_array_test, only: &
                 assert_equals_integer_array_assert_eq_integer_arr => &
                     test_assert_eq_integer_arr
+        use assert_equals_integer_matrix_test, only: &
+                assert_equals_integer_matrix_assert_eq_integer_matrix => &
+                    test_assert_eq_integer_matrix
         use assert_equals_integers_test, only: &
                 assert_equals_integers_assert_equals_integers => &
                     test_assert_equals_integers
@@ -29,12 +35,18 @@ contains
         use assert_equals_within_absolute_array_test, only: &
                 assert_equals_within_absolute_array_assert_eq_within_abs_arr => &
                     test_assert_eq_within_abs_arr
+        use assert_equals_within_absolute_matrix_test, only: &
+                assert_equals_within_absolute_matrix_assert_eq_within_abs_mat => &
+                    test_assert_eq_within_abs_mat
         use assert_equals_within_absolute_test, only: &
                 assert_equals_within_absolute_assert_equals_within_absolute => &
                     test_assert_equals_within_absolute
         use assert_equals_within_relative_array_test, only: &
                 assert_equals_within_relative_array_assert_eq_within_rel_arr => &
                     test_assert_eq_within_rel_arr
+        use assert_equals_within_relative_matrix_test, only: &
+                assert_equals_within_relative_matrix_assert_eq_within_rel_mat => &
+                    test_assert_eq_within_rel_mat
         use assert_equals_within_relative_test, only: &
                 assert_equals_within_relative_assert_equals_within_relative => &
                     test_assert_equals_within_relative
@@ -70,29 +82,33 @@ contains
         use vegetables, only: test_item_t, test_that, run_tests
 
         type(test_item_t) :: tests
-        type(test_item_t) :: individual_tests(21)
+        type(test_item_t) :: individual_tests(25)
 
         individual_tests(1) = assert_doesnt_include_assert_includes()
         individual_tests(2) = assert_empty_assert_empty()
         individual_tests(3) = assert_equals_double_precision_array_assert_eq_double_arr()
-        individual_tests(4) = assert_equals_double_precision_assert_equals_integers()
-        individual_tests(5) = assert_equals_integer_array_assert_eq_integer_arr()
-        individual_tests(6) = assert_equals_integers_assert_equals_integers()
-        individual_tests(7) = assert_equals_strings_assert_equals_strings()
-        individual_tests(8) = assert_equals_within_absolute_array_assert_eq_within_abs_arr()
-        individual_tests(9) = assert_equals_within_absolute_assert_equals_within_absolute()
-        individual_tests(10) = assert_equals_within_relative_array_assert_eq_within_rel_arr()
-        individual_tests(11) = assert_equals_within_relative_assert_equals_within_relative()
-        individual_tests(12) = assert_includes_assert_includes()
-        individual_tests(13) = collection_properties_collection_properties()
-        individual_tests(14) = failing_case_failing_case_behaviors()
-        individual_tests(15) = failing_collection_failing_collection_behaviors()
-        individual_tests(16) = filter_filter_case()
-        individual_tests(17) = filter_filter_collection()
-        individual_tests(18) = passing_case_passing_case_behaviors()
-        individual_tests(19) = passing_collection_passing_collection_behaviors()
-        individual_tests(20) = result_result()
-        individual_tests(21) = single_case_properties_case_properties()
+        individual_tests(4) = assert_equals_double_precision_matrix_assert_eq_double_mat()
+        individual_tests(5) = assert_equals_double_precision_assert_equals_integers()
+        individual_tests(6) = assert_equals_integer_array_assert_eq_integer_arr()
+        individual_tests(7) = assert_equals_integer_matrix_assert_eq_integer_matrix()
+        individual_tests(8) = assert_equals_integers_assert_equals_integers()
+        individual_tests(9) = assert_equals_strings_assert_equals_strings()
+        individual_tests(10) = assert_equals_within_absolute_array_assert_eq_within_abs_arr()
+        individual_tests(11) = assert_equals_within_absolute_matrix_assert_eq_within_abs_mat()
+        individual_tests(12) = assert_equals_within_absolute_assert_equals_within_absolute()
+        individual_tests(13) = assert_equals_within_relative_array_assert_eq_within_rel_arr()
+        individual_tests(14) = assert_equals_within_relative_matrix_assert_eq_within_rel_mat()
+        individual_tests(15) = assert_equals_within_relative_assert_equals_within_relative()
+        individual_tests(16) = assert_includes_assert_includes()
+        individual_tests(17) = collection_properties_collection_properties()
+        individual_tests(18) = failing_case_failing_case_behaviors()
+        individual_tests(19) = failing_collection_failing_collection_behaviors()
+        individual_tests(20) = filter_filter_case()
+        individual_tests(21) = filter_filter_collection()
+        individual_tests(22) = passing_case_passing_case_behaviors()
+        individual_tests(23) = passing_collection_passing_collection_behaviors()
+        individual_tests(24) = result_result()
+        individual_tests(25) = single_case_properties_case_properties()
         tests = test_that(individual_tests)
 
         call run_tests(tests)

@@ -1,4 +1,4 @@
-module assert_equals_within_relative_array_test
+module assert_equals_within_relative_matrix_test
     use iso_varying_string, only: var_str
     use vegetables, only: &
         result_t, &
@@ -11,33 +11,33 @@ module assert_equals_within_relative_array_test
 
     implicit none
     private
-    public :: test_assert_eq_within_rel_arr
+    public :: test_assert_eq_within_rel_mat
 
     character(len=*), parameter :: BOTH_MESSAGE = "Both Message"
     character(len=*), parameter :: SUCCESS_MESSAGE = "Success Message"
     character(len=*), parameter :: FAILURE_MESSAGE = "Failure Message"
 contains
-    function test_assert_eq_within_rel_arr() result(tests)
+    function test_assert_eq_within_rel_mat() result(tests)
         type(test_item_t) :: tests
 
         tests = describe( &
-                "assert_equals_within_relative for arrays", &
+                "assert_equals_within_relative for matrices", &
                 [ it( &
-                        "passes with the same array, even with very small tolerance", &
-                        check_pass_for_same_array) &
+                        "passes with the same matrix, even with very small tolerance", &
+                        check_pass_for_same_matrix) &
                 , it( &
-                        "fails for arrays with sufficiently different values", &
-                        check_fail_for_different_arrays) &
+                        "fails for matrices with sufficiently different values", &
+                        check_fail_for_different_matrices) &
                 , it( &
-                        "passes for arrays with sufficiently close values", &
-                        check_pass_for_close_arrays) &
+                        "passes for matrices with sufficiently close values", &
+                        check_pass_for_close_matrices) &
                 , it( &
-                        "fails for arrays of different lengths", &
-                        check_fail_for_different_length_arrays) &
+                        "fails for matrices of different lengths", &
+                        check_fail_for_different_length_matrices) &
                 ])
     end function
 
-    pure function check_pass_for_same_array() result(result_)
+    pure function check_pass_for_same_matrix() result(result_)
         type(result_t) :: result_
 
         type(result_t) :: example_result
@@ -48,7 +48,7 @@ contains
         type(result_t) :: example_result_sc
         type(result_t) :: example_result_ss
 
-        associate(example => [1.0d0, 2.0d0])
+        associate(example => reshape([1.0d0, 3.0d0, 2.0d0, 4.0d0], [2, 2]))
             example_result = assert_equals_within_relative( &
                     example, example, tiny(0.0d0))
             example_result_c = assert_equals_within_relative( &
@@ -105,7 +105,7 @@ contains
                         example_result_ss%verbose_description(.false.))
     end function
 
-    pure function check_fail_for_different_arrays() result(result_)
+    pure function check_fail_for_different_matrices() result(result_)
         type(result_t) :: result_
 
         type(result_t) :: example_result
@@ -116,7 +116,7 @@ contains
         type(result_t) :: example_result_sc
         type(result_t) :: example_result_ss
 
-        associate(example => [1.0d0, 2.0d0])
+        associate(example => reshape([1.0d0, 3.0d0, 2.0d0, 4.0d0], [2, 2]))
             example_result = assert_equals_within_relative( &
                     example, example*1.11d0, 0.1d0)
             example_result_c = assert_equals_within_relative( &
@@ -173,7 +173,7 @@ contains
                         example_result_ss%verbose_description(.false.))
     end function
 
-    pure function check_pass_for_close_arrays() result(result_)
+    pure function check_pass_for_close_matrices() result(result_)
         type(result_t) :: result_
 
         type(result_t) :: example_result
@@ -184,7 +184,7 @@ contains
         type(result_t) :: example_result_sc
         type(result_t) :: example_result_ss
 
-        associate(example => [1.0d0, 2.0d0])
+        associate(example => reshape([1.0d0, 3.0d0, 2.0d0, 4.0d0], [2, 2]))
             example_result = assert_equals_within_relative( &
                     example, example*1.09d0, 0.1d0)
             example_result_c = assert_equals_within_relative( &
@@ -241,7 +241,7 @@ contains
                         example_result_ss%verbose_description(.false.))
     end function
 
-    pure function check_fail_for_different_length_arrays() result(result_)
+    pure function check_fail_for_different_length_matrices() result(result_)
         type(result_t) :: result_
 
         type(result_t) :: example_result
@@ -252,7 +252,9 @@ contains
         type(result_t) :: example_result_sc
         type(result_t) :: example_result_ss
 
-        associate(example1 => [1.0d0, 2.0d0], example2 => [1.0d0, 2.0d0, 3.0d0])
+        associate( &
+                example1 => reshape([1.0d0, 3.0d0, 2.0d0, 4.0d0], [2, 2]), &
+                example2 => reshape([1.0d0, 3.0d0, 5.0d0, 2.0d0, 4.0d0, 6.0d0], [3, 2]))
             example_result = assert_equals_within_relative( &
                     example1, example2, 0.1d0)
             example_result_c = assert_equals_within_relative( &
