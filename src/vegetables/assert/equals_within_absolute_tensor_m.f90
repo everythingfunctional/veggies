@@ -1,4 +1,4 @@
-module vegetables_assert_equals_within_absolute_m
+module vegetables_assert_equals_within_absolute_tensor_m
     use iso_varying_string, only: varying_string, var_str
     use strff, only: to_string
     use vegetables_messages_m, only: &
@@ -6,29 +6,29 @@ module vegetables_assert_equals_within_absolute_m
             make_within_success_message, &
             with_user_message
     use vegetables_result_m, only: result_t, fail, succeed
-    use vegetables_utilities_m, only: equals_within_absolute
+    use vegetables_utilities_m, only: equals_within_absolute, to_string
 
     implicit none
     private
     public :: assert_equals_within_absolute
 
     interface assert_equals_within_absolute
-        module procedure assert_equals_within_absolute_basic
-        module procedure assert_equals_within_absolute_with_message_c
-        module procedure assert_equals_within_absolute_with_message_s
-        module procedure assert_equals_within_absolute_with_messages_cc
-        module procedure assert_equals_within_absolute_with_messages_cs
-        module procedure assert_equals_within_absolute_with_messages_sc
-        module procedure assert_equals_within_absolute_with_messages_ss
+        module procedure assert_equals_within_absolute_tensor_basic
+        module procedure assert_equals_within_absolute_tensor_with_message_c
+        module procedure assert_equals_within_absolute_tensor_with_message_s
+        module procedure assert_equals_within_absolute_tensor_with_messages_cc
+        module procedure assert_equals_within_absolute_tensor_with_messages_cs
+        module procedure assert_equals_within_absolute_tensor_with_messages_sc
+        module procedure assert_equals_within_absolute_tensor_with_messages_ss
     end interface
 contains
-    pure function assert_equals_within_absolute_basic( &
+    pure function assert_equals_within_absolute_tensor_basic( &
             expected, &
             actual, &
             tolerance) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:,:,:)
+        double precision, intent(in) :: actual(:,:,:)
         double precision, intent(in) :: tolerance
         type(result_t) :: result__
 
@@ -40,14 +40,14 @@ contains
                 var_str(""))
     end function
 
-    pure function assert_equals_within_absolute_with_message_c( &
+    pure function assert_equals_within_absolute_tensor_with_message_c( &
             expected, &
             actual, &
             tolerance, &
             message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:,:,:)
+        double precision, intent(in) :: actual(:,:,:)
         double precision, intent(in) :: tolerance
         character(len=*), intent(in) :: message
         type(result_t) :: result__
@@ -60,14 +60,14 @@ contains
                 var_str(message))
     end function
 
-    pure function assert_equals_within_absolute_with_message_s( &
+    pure function assert_equals_within_absolute_tensor_with_message_s( &
             expected, &
             actual, &
             tolerance, &
             message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:,:,:)
+        double precision, intent(in) :: actual(:,:,:)
         double precision, intent(in) :: tolerance
         type(varying_string), intent(in) :: message
         type(result_t) :: result__
@@ -80,15 +80,15 @@ contains
                 message)
     end function
 
-    pure function assert_equals_within_absolute_with_messages_cc( &
+    pure function assert_equals_within_absolute_tensor_with_messages_cc( &
             expected, &
             actual, &
             tolerance, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:,:,:)
+        double precision, intent(in) :: actual(:,:,:)
         double precision, intent(in) :: tolerance
         character(len=*), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -102,15 +102,15 @@ contains
                 var_str(failure_message))
     end function
 
-    pure function assert_equals_within_absolute_with_messages_cs( &
+    pure function assert_equals_within_absolute_tensor_with_messages_cs( &
             expected, &
             actual, &
             tolerance, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:,:,:)
+        double precision, intent(in) :: actual(:,:,:)
         double precision, intent(in) :: tolerance
         character(len=*), intent(in) :: success_message
         type(varying_string), intent(in) :: failure_message
@@ -124,15 +124,15 @@ contains
                 failure_message)
     end function
 
-    pure function assert_equals_within_absolute_with_messages_sc( &
+    pure function assert_equals_within_absolute_tensor_with_messages_sc( &
             expected, &
             actual, &
             tolerance, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:,:,:)
+        double precision, intent(in) :: actual(:,:,:)
         double precision, intent(in) :: tolerance
         type(varying_string), intent(in) :: success_message
         character(len=*), intent(in) :: failure_message
@@ -146,34 +146,40 @@ contains
                 var_str(failure_message))
     end function
 
-    pure function assert_equals_within_absolute_with_messages_ss( &
+    pure function assert_equals_within_absolute_tensor_with_messages_ss( &
             expected, &
             actual, &
             tolerance, &
             success_message, &
             failure_message) &
             result(result__)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
+        double precision, intent(in) :: expected(:,:,:)
+        double precision, intent(in) :: actual(:,:,:)
         double precision, intent(in) :: tolerance
         type(varying_string), intent(in) :: success_message
         type(varying_string), intent(in) :: failure_message
         type(result_t) :: result__
 
-        if (equals_within_absolute(expected, actual, tolerance)) then
-            result__ = succeed(with_user_message( &
-                    make_within_success_message( &
-                            to_string(expected), &
-                            to_string(actual), &
-                            to_string(tolerance)), &
-                    success_message))
-        else
-            result__ = fail(with_user_message( &
-                    make_within_failure_message( &
-                            to_string(expected), &
-                            to_string(actual), &
-                            to_string(tolerance)), &
-                    failure_message))
+
+        if ( &
+                size(expected, dim=1) == size(actual, dim=1) &
+                .and. size(expected, dim=2) == size(actual, dim=2) &
+                .and. size(expected, dim=3) == size(actual, dim=3)) then
+            if (all(equals_within_absolute(expected, actual, tolerance))) then
+                result__ = succeed(with_user_message( &
+                        make_within_success_message( &
+                                to_string(expected), &
+                                to_string(actual), &
+                                to_string(tolerance)), &
+                        success_message))
+                return
+            end if
         end if
+        result__ = fail(with_user_message( &
+                make_within_failure_message( &
+                    to_string(expected), &
+                    to_string(actual), &
+                    to_string(tolerance)), &
+                failure_message))
     end function
 end module

@@ -6,6 +6,7 @@ module vegetables_assert_equals_within_relative_m
             make_within_success_message, &
             with_user_message
     use vegetables_result_m, only: result_t, fail, succeed
+    use vegetables_utilities_m, only: equals_within_relative
 
     implicit none
     private
@@ -174,18 +175,5 @@ contains
                             to_string(tolerance * 100.0d0) // "%"), &
                     failure_message))
         end if
-    end function
-
-    pure function equals_within_relative(expected, actual, tolerance)
-        double precision, intent(in) :: expected
-        double precision, intent(in) :: actual
-        double precision, intent(in) :: tolerance
-        logical :: equals_within_relative
-
-        double precision, parameter :: MACHINE_TINY = tiny(0.0d0)
-
-        equals_within_relative = &
-                (abs(expected) <= MACHINE_TINY .and. abs(actual) <= MACHINE_TINY) &
-                .or. (abs(expected - actual) / abs(expected) <= tolerance)
     end function
 end module

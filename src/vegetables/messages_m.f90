@@ -671,9 +671,16 @@ contains
         type(varying_string), intent(in) :: tolerance
         type(varying_string) :: message
 
-        message = &
-                "Expected " // delimit(actual) // " to be within " &
-                // delimit("±" // tolerance) // " of " // delimit(expected)
+        message = hanging_indent( &
+                "Expected" // NEWLINE &
+                    // indent( &
+                            delimit(hanging_indent(actual, 1)), &
+                            INDENTATION) // NEWLINE &
+                    // "to be within " // delimit("±" // tolerance) // " of" // NEWLINE &
+                    // indent( &
+                            delimit(hanging_indent(expected, 1)), &
+                            INDENTATION), &
+                INDENTATION)
     end function
 
     pure function make_within_success_message_ccc( &
@@ -760,9 +767,16 @@ contains
         type(varying_string), intent(in) :: tolerance
         type(varying_string) :: message
 
-        message = &
-                delimit(actual) // " was within " // delimit("±" // tolerance) &
-                // " of " // delimit(expected)
+        message = hanging_indent( &
+                "The value" // NEWLINE &
+                    // indent( &
+                            delimit(hanging_indent(actual, 1)), &
+                            INDENTATION) // NEWLINE &
+                    // "was within " // delimit("±" // tolerance) // " of" // NEWLINE &
+                    // indent( &
+                            delimit(hanging_indent(expected, 1)), &
+                            INDENTATION), &
+                INDENTATION)
     end function
 
     pure function with_user_message_cc(message, user_message) result(whole_message)
