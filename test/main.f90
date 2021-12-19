@@ -65,6 +65,9 @@ contains
         use assert_includes_test, only: &
                 assert_includes_assert_includes => &
                     test_assert_includes
+        use bracketed_case_test, only: &
+                bracketed_case_bracketed_test_case => &
+                    test_bracketed_test_case
         use collection_properties_test, only: &
                 collection_properties_collection_properties => &
                     test_collection_properties
@@ -94,7 +97,7 @@ contains
         use vegetables, only: test_item_t, test_that, run_tests
 
         type(test_item_t) :: tests
-        type(test_item_t) :: individual_tests(29)
+        type(test_item_t) :: individual_tests(30)
 
         individual_tests(1) = assert_doesnt_include_assert_includes()
         individual_tests(2) = assert_empty_assert_empty()
@@ -116,15 +119,16 @@ contains
         individual_tests(18) = assert_equals_within_relative_tensor_assert_eq_within_rel_tens()
         individual_tests(19) = assert_equals_within_relative_assert_equals_within_relative()
         individual_tests(20) = assert_includes_assert_includes()
-        individual_tests(21) = collection_properties_collection_properties()
-        individual_tests(22) = failing_case_failing_case_behaviors()
-        individual_tests(23) = failing_collection_failing_collection_behaviors()
-        individual_tests(24) = filter_filter_case()
-        individual_tests(25) = filter_filter_collection()
-        individual_tests(26) = passing_case_passing_case_behaviors()
-        individual_tests(27) = passing_collection_passing_collection_behaviors()
-        individual_tests(28) = result_result()
-        individual_tests(29) = single_case_properties_case_properties()
+        individual_tests(21) = bracketed_case_bracketed_test_case()
+        individual_tests(22) = collection_properties_collection_properties()
+        individual_tests(23) = failing_case_failing_case_behaviors()
+        individual_tests(24) = failing_collection_failing_collection_behaviors()
+        individual_tests(25) = filter_filter_case()
+        individual_tests(26) = filter_filter_collection()
+        individual_tests(27) = passing_case_passing_case_behaviors()
+        individual_tests(28) = passing_collection_passing_collection_behaviors()
+        individual_tests(29) = result_result()
+        individual_tests(30) = single_case_properties_case_properties()
         tests = test_that(individual_tests)
 
         call run_tests(tests)

@@ -11,7 +11,7 @@ module vegetables_test_constructors_m
     use vegetables_test_collection_with_input_m, only: &
             test_collection_with_input_t
     use vegetables_test_interfaces_m, only: &
-            input_test_i, simple_test_i, transformer_i
+            computation_i, input_test_i, simple_test_i, transformer_i
     use vegetables_test_item_m, only: test_item_t
     use vegetables_transforming_test_collection_m, only: &
             transforming_test_collection_t
@@ -37,15 +37,23 @@ module vegetables_test_constructors_m
     interface it
         module procedure it_basic_c
         module procedure it_basic_s
+        module procedure it_bracketed_c
+        module procedure it_bracketed_s
         module procedure it_with_examples_c
         module procedure it_with_examples_s
+        module procedure it_with_examples_bracketed_c
+        module procedure it_with_examples_bracketed_s
         module procedure it_with_generator_c
         module procedure it_with_generator_s
+        module procedure it_with_generator_bracketed_c
+        module procedure it_with_generator_bracketed_s
     end interface
 
     interface it_
         module procedure it_input_c
         module procedure it_input_s
+        module procedure it_input_bracketed_c
+        module procedure it_input_bracketed_s
     end interface
 
     interface then_
@@ -153,6 +161,26 @@ contains
         item = test_item_t(simple_test_case_t(description, test))
     end function
 
+    function it_bracketed_c(description, test, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        procedure(simple_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(simple_test_case_t(var_str(description), test, setup, teardown))
+    end function
+
+    function it_bracketed_s(description, test, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        procedure(simple_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(simple_test_case_t(description, test, setup, teardown))
+    end function
+
     function it_input_c(description, test) result(item)
         character(len=*), intent(in) :: description
         procedure(input_test_i) :: test
@@ -167,6 +195,26 @@ contains
         type(test_item_t) :: item
 
         item = test_item_t(input_test_case_t(description, test))
+    end function
+
+    function it_input_bracketed_c(description, test, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(input_test_case_t(var_str(description), test, setup, teardown))
+    end function
+
+    function it_input_bracketed_s(description, test, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(input_test_case_t(description, test, setup, teardown))
     end function
 
     function it_with_examples_c(description, examples, test) result(item)
@@ -189,6 +237,32 @@ contains
                 description, examples, test))
     end function
 
+    function it_with_examples_bracketed_c( &
+            description, examples, test, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        type(example_t), intent(in) :: examples(:)
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(test_case_with_examples_t( &
+                var_str(description), examples, test, setup, teardown))
+    end function
+
+    function it_with_examples_bracketed_s( &
+            description, examples, test, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        type(example_t), intent(in) :: examples(:)
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(test_case_with_examples_t( &
+                description, examples, test, setup, teardown))
+    end function
+
     function it_with_generator_c(description, generator, test) result(item)
         character(len=*), intent(in) :: description
         class(generator_t), intent(in) :: generator
@@ -207,6 +281,32 @@ contains
 
         item = test_item_t(test_case_with_generator_t( &
                 description, generator, test))
+    end function
+
+    function it_with_generator_bracketed_c( &
+            description, generator, test, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        class(generator_t), intent(in) :: generator
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(test_case_with_generator_t( &
+                var_str(description), generator, test, setup, teardown))
+    end function
+
+    function it_with_generator_bracketed_s( &
+            description, generator, test, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        class(generator_t), intent(in) :: generator
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(test_case_with_generator_t( &
+                description, generator, test, setup, teardown))
     end function
 
     function test_that(tests) result(item)
