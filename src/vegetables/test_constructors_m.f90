@@ -59,11 +59,23 @@ module vegetables_test_constructors_m
     interface then_
         module procedure then_basic_c
         module procedure then_basic_s
+        module procedure then_bracketed_c
+        module procedure then_bracketed_s
+        module procedure then_with_examples_c
+        module procedure then_with_examples_s
+        module procedure then_with_examples_bracketed_c
+        module procedure then_with_examples_bracketed_s
+        module procedure then_with_generator_c
+        module procedure then_with_generator_s
+        module procedure then_with_generator_bracketed_c
+        module procedure then_with_generator_bracketed_s
     end interface
 
     interface then__
         module procedure then_input_c
         module procedure then_input_s
+        module procedure then_input_bracketed_c
+        module procedure then_input_bracketed_s
     end interface
 
     interface when
@@ -332,6 +344,110 @@ contains
         item = it("Then " // description, test)
     end function
 
+    function then_bracketed_c(description, test, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        procedure(simple_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = it("Then " // description, test, setup, teardown)
+    end function
+
+    function then_bracketed_s(description, test, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        procedure(simple_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = it("Then " // description, test, setup, teardown)
+    end function
+
+    function then_with_examples_c(description, examples, test) result(item)
+        character(len=*), intent(in) :: description
+        type(example_t), intent(in) :: examples(:)
+        procedure(input_test_i) :: test
+        type(test_item_t) :: item
+
+        item = it("Then " // description, examples, test)
+    end function
+
+    function then_with_examples_s(description, examples, test) result(item)
+        type(varying_string), intent(in) :: description
+        type(example_t), intent(in) :: examples(:)
+        procedure(input_test_i) :: test
+        type(test_item_t) :: item
+
+        item = it("Then " // description, examples, test)
+    end function
+
+    function then_with_examples_bracketed_c( &
+            description, examples, test, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        type(example_t), intent(in) :: examples(:)
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = it("Then " // description, examples, test, setup, teardown)
+    end function
+
+    function then_with_examples_bracketed_s( &
+            description, examples, test, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        type(example_t), intent(in) :: examples(:)
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = it("Then " // description, examples, test, setup, teardown)
+    end function
+
+    function then_with_generator_c(description, generator, test) result(item)
+        character(len=*), intent(in) :: description
+        class(generator_t), intent(in) :: generator
+        procedure(input_test_i) :: test
+        type(test_item_t) :: item
+
+        item = it("Then " // description, generator, test)
+    end function
+
+    function then_with_generator_s(description, generator, test) result(item)
+        type(varying_string), intent(in) :: description
+        class(generator_t), intent(in) :: generator
+        procedure(input_test_i) :: test
+        type(test_item_t) :: item
+
+        item = it("Then " // description, generator, test)
+    end function
+
+    function then_with_generator_bracketed_c( &
+            description, generator, test, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        class(generator_t), intent(in) :: generator
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = it("Then " // description, generator, test, setup, teardown)
+    end function
+
+    function then_with_generator_bracketed_s( &
+            description, generator, test, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        class(generator_t), intent(in) :: generator
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = it("Then " // description, generator, test, setup, teardown)
+    end function
+
     function then_input_c(description, test) result(item)
         character(len=*), intent(in) :: description
         procedure(input_test_i) :: test
@@ -346,6 +462,26 @@ contains
         type(test_item_t) :: item
 
         item = it_("Then " // description, test)
+    end function
+
+    function then_input_bracketed_c(description, test, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = it_("Then " // description, test, setup, teardown)
+    end function
+
+    function then_input_bracketed_s(description, test, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = it_("Then " // description, test, setup, teardown)
     end function
 
     function when_basic_c(description, tests) result(item)
