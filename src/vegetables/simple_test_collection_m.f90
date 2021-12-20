@@ -7,6 +7,7 @@ module vegetables_simple_test_collection_m
     use vegetables_test_m, only: &
             filter_result_t, test_t, filter_failed, filter_matched
     use vegetables_test_collection_result_m, only: test_collection_result_t
+    use vegetables_test_interfaces_m, only: computation_i
     use vegetables_test_item_m, only: filter_item_result_t, test_item_t
     use vegetables_test_result_item_m, only: test_result_item_t
 
@@ -18,6 +19,9 @@ module vegetables_simple_test_collection_m
         private
         type(varying_string) :: description_
         type(test_item_t), allocatable :: tests(:)
+        logical :: has_setup_and_teardown
+        procedure(computation_i), nopass, pointer :: setup
+        procedure(computation_i), nopass, pointer :: teardown
     contains
         private
         procedure, public :: description
@@ -28,16 +32,33 @@ module vegetables_simple_test_collection_m
     end type
 
     interface simple_test_collection_t
-        module procedure constructor
+        module procedure constructor_basic
+        module procedure constructor_bracketed
     end interface
 contains
-    function constructor(description, tests) result(simple_test_collection)
+    function constructor_basic(description, tests) result(simple_test_collection)
         type(varying_string), intent(in) :: description
         type(test_item_t), intent(in) :: tests(:)
         type(simple_test_collection_t) :: simple_test_collection
 
         simple_test_collection%description_ = description
         allocate(simple_test_collection%tests, source = tests)
+        simple_test_collection%has_setup_and_teardown = .false.
+    end function
+
+    function constructor_bracketed( &
+            description, tests, setup, teardown) result(simple_test_collection)
+        type(varying_string), intent(in) :: description
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(simple_test_collection_t) :: simple_test_collection
+
+        simple_test_collection%description_ = description
+        allocate(simple_test_collection%tests, source = tests)
+        simple_test_collection%has_setup_and_teardown = .true.
+        simple_test_collection%setup => setup
+        simple_test_collection%teardown => teardown
     end function
 
     pure recursive function description(self)
@@ -112,11 +133,13 @@ contains
         if (DEBUG) call put_line( &
                 "Beginning execution of: " // self%description_&
                 // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
+        if (self%has_setup_and_teardown) call self%setup
         do i = 1, size(self%tests)
             results(i) = self%tests(i)%run()
         end do
         result_ = test_result_item_t(test_collection_result_t( &
                 self%description_, results))
+        if (self%has_setup_and_teardown) call self%teardown
         if (DEBUG) call put_line( &
                 "Completed execution of: " // self%description_&
                 // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))

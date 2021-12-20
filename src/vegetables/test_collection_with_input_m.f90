@@ -7,6 +7,7 @@ module vegetables_test_collection_with_input_m
     use vegetables_test_m, only: &
             filter_result_t, test_t, filter_failed, filter_matched
     use vegetables_test_collection_result_m, only: test_collection_result_t
+    use vegetables_test_interfaces_m, only: computation_i
     use vegetables_test_item_m, only: filter_item_result_t, test_item_t
     use vegetables_test_result_item_m, only: test_result_item_t
 
@@ -19,6 +20,9 @@ module vegetables_test_collection_with_input_m
         type(varying_string) :: description_
         type(test_item_t), allocatable :: tests(:)
         class(input_t), allocatable :: input
+        logical :: has_setup_and_teardown
+        procedure(computation_i), nopass, pointer :: setup
+        procedure(computation_i), nopass, pointer :: teardown
     contains
         private
         procedure, public :: description
@@ -29,10 +33,12 @@ module vegetables_test_collection_with_input_m
     end type
 
     interface test_collection_with_input_t
-        module procedure constructor
+        module procedure constructor_basic
+        module procedure constructor_bracketed
     end interface
 contains
-    function constructor(description, input, tests) result(test_collection_with_input)
+    function constructor_basic( &
+            description, input, tests) result(test_collection_with_input)
         type(varying_string), intent(in) :: description
         class(input_t), intent(in) :: input
         type(test_item_t), intent(in) :: tests(:)
@@ -41,6 +47,24 @@ contains
         test_collection_with_input%description_ = description
         allocate(test_collection_with_input%input, source = input)
         allocate(test_collection_with_input%tests, source = tests)
+        test_collection_with_input%has_setup_and_teardown = .false.
+    end function
+
+    function constructor_bracketed( &
+            description, input, tests, setup, teardown) result(test_collection_with_input)
+        type(varying_string), intent(in) :: description
+        class(input_t), intent(in) :: input
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_collection_with_input_t) :: test_collection_with_input
+
+        test_collection_with_input%description_ = description
+        allocate(test_collection_with_input%input, source = input)
+        allocate(test_collection_with_input%tests, source = tests)
+        test_collection_with_input%has_setup_and_teardown = .true.
+        test_collection_with_input%setup => setup
+        test_collection_with_input%teardown => teardown
     end function
 
     pure recursive function description(self)
@@ -109,11 +133,13 @@ contains
         if (DEBUG) call put_line( &
                 "Beginning execution of: " // self%description_&
                 // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
+        if (self%has_setup_and_teardown) call self%setup
         do i = 1, size(self%tests)
             results(i) = self%tests(i)%run(self%input)
         end do
         result_ = test_result_item_t(test_collection_result_t( &
                 self%description_, results))
+        if (self%has_setup_and_teardown) call self%teardown
         if (DEBUG) call put_line( &
                 "Completed execution of: " // self%description_&
                 // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))

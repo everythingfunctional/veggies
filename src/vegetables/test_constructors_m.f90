@@ -23,15 +23,31 @@ module vegetables_test_constructors_m
     interface describe
         module procedure describe_basic_c
         module procedure describe_basic_s
+        module procedure describe_bracketed_c
+        module procedure describe_bracketed_s
         module procedure describe_with_input_c
         module procedure describe_with_input_s
+        module procedure describe_with_input_brackted_c
+        module procedure describe_with_input_brackted_s
+        module procedure describe_with_transformer_c
+        module procedure describe_with_transformer_s
+        module procedure describe_with_transformer_bracketed_c
+        module procedure describe_with_transformer_bracketed_s
     end interface
 
     interface given
         module procedure given_basic_c
         module procedure given_basic_s
+        module procedure given_bracketed_c
+        module procedure given_bracketed_s
         module procedure given_with_input_c
         module procedure given_with_input_s
+        module procedure given_with_input_bracketed_c
+        module procedure given_with_input_bracketed_s
+        module procedure given_with_transformer_c
+        module procedure given_with_transformer_s
+        module procedure given_with_transformer_bracketed_c
+        module procedure given_with_transformer_bracketed_s
     end interface
 
     interface it
@@ -81,8 +97,16 @@ module vegetables_test_constructors_m
     interface when
         module procedure when_basic_c
         module procedure when_basic_s
+        module procedure when_bracketed_c
+        module procedure when_bracketed_s
+        module procedure when_with_input_c
+        module procedure when_with_input_s
+        module procedure when_with_input_bracketed_c
+        module procedure when_with_input_bracketed_s
         module procedure when_with_transformer_c
         module procedure when_with_transformer_s
+        module procedure when_with_transformer_bracketed_c
+        module procedure when_with_transformer_bracketed_s
     end interface
 contains
     function describe_basic_c(description, tests) result(item)
@@ -101,6 +125,28 @@ contains
 
         item = test_item_t(simple_test_collection_t( &
                 description, tests))
+    end function
+
+    function describe_bracketed_c(description, tests, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(simple_test_collection_t( &
+                var_str(description), tests, setup, teardown))
+    end function
+
+    function describe_bracketed_s(description, tests, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(simple_test_collection_t( &
+                description, tests, setup, teardown))
     end function
 
     function describe_with_input_c(description, input, tests) result(item)
@@ -123,6 +169,78 @@ contains
                 description, input, tests))
     end function
 
+    function describe_with_input_brackted_c( &
+            description, input, tests, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        class(input_t), intent(in) :: input
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(test_collection_with_input_t( &
+                var_str(description), input, tests, setup, teardown))
+    end function
+
+    function describe_with_input_brackted_s( &
+            description, input, tests, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        class(input_t), intent(in) :: input
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(test_collection_with_input_t( &
+                description, input, tests, setup, teardown))
+    end function
+
+    function describe_with_transformer_c(description, transformer, tests) result(item)
+        character(len=*), intent(in) :: description
+        procedure(transformer_i) :: transformer
+        type(test_item_t), intent(in) :: tests(:)
+        type(test_item_t) :: item
+
+        item = test_item_t(transforming_test_collection_t( &
+                var_str(description), transformer, tests))
+    end function
+
+    function describe_with_transformer_s(description, transformer, tests) result(item)
+        type(varying_string), intent(in) :: description
+        procedure(transformer_i) :: transformer
+        type(test_item_t), intent(in) :: tests(:)
+        type(test_item_t) :: item
+
+        item = test_item_t(transforming_test_collection_t( &
+                description, transformer, tests))
+    end function
+
+    function describe_with_transformer_bracketed_c( &
+            description, transformer, tests, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        procedure(transformer_i) :: transformer
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(transforming_test_collection_t( &
+                var_str(description), transformer, tests, setup, teardown))
+    end function
+
+    function describe_with_transformer_bracketed_s( &
+            description, transformer, tests, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        procedure(transformer_i) :: transformer
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = test_item_t(transforming_test_collection_t( &
+                description, transformer, tests, setup, teardown))
+    end function
+
     function given_basic_c(description, tests) result(item)
         character(len=*), intent(in) :: description
         type(test_item_t), intent(in) :: tests(:)
@@ -137,6 +255,26 @@ contains
         type(test_item_t) :: item
 
         item = describe("Given " // description, tests)
+    end function
+
+    function given_bracketed_c(description, tests, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("Given " // description, tests, setup, teardown)
+    end function
+
+    function given_bracketed_s(description, tests, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("Given " // description, tests, setup, teardown)
     end function
 
     function given_with_input_c(description, input, tests) result(item)
@@ -155,6 +293,72 @@ contains
         type(test_item_t) :: item
 
         item = describe("Given " // description, input, tests)
+    end function
+
+    function given_with_input_bracketed_c( &
+            description, input, tests, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        class(input_t), intent(in) :: input
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("Given " // description, input, tests, setup, teardown)
+    end function
+
+    function given_with_input_bracketed_s( &
+            description, input, tests, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        class(input_t), intent(in) :: input
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("Given " // description, input, tests, setup, teardown)
+    end function
+
+    function given_with_transformer_c(description, transformer, tests) result(item)
+        character(len=*), intent(in) :: description
+        procedure(transformer_i) :: transformer
+        type(test_item_t), intent(in) :: tests(:)
+        type(test_item_t) :: item
+
+        item = describe("Given " // description, transformer, tests)
+    end function
+
+    function given_with_transformer_s(description, transformer, tests) result(item)
+        type(varying_string), intent(in) :: description
+        procedure(transformer_i) :: transformer
+        type(test_item_t), intent(in) :: tests(:)
+        type(test_item_t) :: item
+
+        item = describe("Given " // description, transformer, tests)
+    end function
+
+    function given_with_transformer_bracketed_c( &
+            description, transformer, tests, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        procedure(transformer_i) :: transformer
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("Given " // description, transformer, tests, setup, teardown)
+    end function
+
+    function given_with_transformer_bracketed_s( &
+            description, transformer, tests, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        procedure(transformer_i) :: transformer
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("Given " // description, transformer, tests, setup, teardown)
     end function
 
     function it_basic_c(description, test) result(item)
@@ -500,14 +704,75 @@ contains
         item = describe("When " // description, tests)
     end function
 
+    function when_bracketed_c(description, tests, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("When " // description, tests, setup, teardown)
+    end function
+
+    function when_bracketed_s(description, tests, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("When " // description, tests, setup, teardown)
+    end function
+
+    function when_with_input_c(description, input, tests) result(item)
+        character(len=*), intent(in) :: description
+        class(input_t), intent(in) :: input
+        type(test_item_t), intent(in) :: tests(:)
+        type(test_item_t) :: item
+
+        item = describe("When " // description, input, tests)
+    end function
+
+    function when_with_input_s(description, input, tests) result(item)
+        type(varying_string), intent(in) :: description
+        class(input_t), intent(in) :: input
+        type(test_item_t), intent(in) :: tests(:)
+        type(test_item_t) :: item
+
+        item = describe("When " // description, input, tests)
+    end function
+
+    function when_with_input_bracketed_c( &
+            description, input, tests, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        class(input_t), intent(in) :: input
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("When " // description, input, tests, setup, teardown)
+    end function
+
+    function when_with_input_bracketed_s( &
+            description, input, tests, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        class(input_t), intent(in) :: input
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("When " // description, input, tests, setup, teardown)
+    end function
+
     function when_with_transformer_c(description, transformer, tests) result(item)
         character(len=*), intent(in) :: description
         procedure(transformer_i) :: transformer
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        item = test_item_t(transforming_test_collection_t( &
-                var_str("When " // description), transformer, tests))
+        item = describe("When " // description, transformer, tests)
     end function
 
     function when_with_transformer_s(description, transformer, tests) result(item)
@@ -516,7 +781,30 @@ contains
         type(test_item_t), intent(in) :: tests(:)
         type(test_item_t) :: item
 
-        item = test_item_t(transforming_test_collection_t( &
-                "When " // description, transformer, tests))
+        item = describe("When " // description, transformer, tests)
+    end function
+
+    function when_with_transformer_bracketed_c( &
+            description, transformer, tests, setup, teardown) result(item)
+        character(len=*), intent(in) :: description
+        procedure(transformer_i) :: transformer
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("When " // description, transformer, tests, setup, teardown)
+    end function
+
+    function when_with_transformer_bracketed_s( &
+            description, transformer, tests, setup, teardown) result(item)
+        type(varying_string), intent(in) :: description
+        procedure(transformer_i) :: transformer
+        type(test_item_t), intent(in) :: tests(:)
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_item_t) :: item
+
+        item = describe("When " // description, transformer, tests, setup, teardown)
     end function
 end module
