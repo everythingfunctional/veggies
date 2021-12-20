@@ -6,7 +6,7 @@ module vegetables_simple_test_case_m
     use vegetables_test_m, only: &
             filter_result_t, test_t, filter_failed, filter_matched
     use vegetables_test_case_result_m, only: test_case_result_t
-    use vegetables_test_interfaces_m, only: simple_test_i
+    use vegetables_test_interfaces_m, only: computation_i, simple_test_i
     use vegetables_test_result_item_m, only: test_result_item_t
 
     implicit none
@@ -17,6 +17,9 @@ module vegetables_simple_test_case_m
         private
         type(varying_string) :: description_
         procedure(simple_test_i), nopass, pointer :: test
+        logical :: has_setup_and_teardown
+        procedure(computation_i), nopass, pointer :: setup
+        procedure(computation_i), nopass, pointer :: teardown
     contains
         private
         procedure, public :: description
@@ -27,16 +30,33 @@ module vegetables_simple_test_case_m
     end type
 
     interface simple_test_case_t
-        module procedure constructor
+        module procedure constructor_basic
+        module procedure constructor_bracketed
     end interface
 contains
-    function constructor(description, test) result(simple_test_case)
+    function constructor_basic(description, test) result(simple_test_case)
         type(varying_string), intent(in) :: description
         procedure(simple_test_i) :: test
         type(simple_test_case_t) :: simple_test_case
 
         simple_test_case%description_ = description
         simple_test_case%test => test
+        simple_test_case%has_setup_and_teardown = .false.
+    end function
+
+    function constructor_bracketed( &
+            description, test, setup, teardown) result(simple_test_case)
+        type(varying_string), intent(in) :: description
+        procedure(simple_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(simple_test_case_t) :: simple_test_case
+
+        simple_test_case%description_ = description
+        simple_test_case%test => test
+        simple_test_case%has_setup_and_teardown = .true.
+        simple_test_case%setup => setup
+        simple_test_case%teardown => teardown
     end function
 
     pure function description(self)
@@ -86,8 +106,10 @@ contains
         if (DEBUG) call put_line( &
                 "Beginning execution of: " // self%description_&
                 // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
+        if (self%has_setup_and_teardown) call self%setup
         result_ = test_result_item_t(test_case_result_t( &
                 self%description_, self%test()))
+        if (self%has_setup_and_teardown) call self%teardown
         if (DEBUG) call put_line( &
                 "Completed execution of: " // self%description_&
                 // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))

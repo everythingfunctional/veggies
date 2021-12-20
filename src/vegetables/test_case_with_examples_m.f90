@@ -8,7 +8,7 @@ module vegetables_test_case_with_examples_m
     use vegetables_test_m, only: &
             filter_result_t, test_t, filter_failed, filter_matched
     use vegetables_test_case_result_m, only: test_case_result_t
-    use vegetables_test_interfaces_m, only: input_test_i
+    use vegetables_test_interfaces_m, only: computation_i, input_test_i
     use vegetables_test_result_item_m, only: test_result_item_t
 
     implicit none
@@ -20,6 +20,9 @@ module vegetables_test_case_with_examples_m
         type(varying_string) :: description_
         type(example_t), allocatable :: examples(:)
         procedure(input_test_i), nopass, pointer :: test
+        logical :: has_setup_and_teardown
+        procedure(computation_i), nopass, pointer :: setup
+        procedure(computation_i), nopass, pointer :: teardown
     contains
         private
         procedure, public :: description
@@ -30,10 +33,11 @@ module vegetables_test_case_with_examples_m
     end type
 
     interface test_case_with_examples_t
-        module procedure constructor
+        module procedure constructor_basic
+        module procedure constructor_bracketed
     end interface
 contains
-    function constructor(description, examples, test) result(test_case_with_examples)
+    function constructor_basic(description, examples, test) result(test_case_with_examples)
         type(varying_string), intent(in) :: description
         type(example_t), intent(in) :: examples(:)
         procedure(input_test_i) :: test
@@ -42,6 +46,24 @@ contains
         test_case_with_examples%description_ = description
         allocate(test_case_with_examples%examples, source = examples)
         test_case_with_examples%test => test
+        test_case_with_examples%has_setup_and_teardown = .false.
+    end function
+
+    function constructor_bracketed( &
+            description, examples, test, setup, teardown) result(test_case_with_examples)
+        type(varying_string), intent(in) :: description
+        type(example_t), intent(in) :: examples(:)
+        procedure(input_test_i) :: test
+        procedure(computation_i) :: setup
+        procedure(computation_i) :: teardown
+        type(test_case_with_examples_t) :: test_case_with_examples
+
+        test_case_with_examples%description_ = description
+        allocate(test_case_with_examples%examples, source = examples)
+        test_case_with_examples%test => test
+        test_case_with_examples%has_setup_and_teardown = .true.
+        test_case_with_examples%setup => setup
+        test_case_with_examples%teardown => teardown
     end function
 
     pure function description(self)
@@ -94,11 +116,13 @@ contains
         if (DEBUG) call put_line( &
                 "Beginning execution of: " // self%description_&
                 // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
+        if (self%has_setup_and_teardown) call self%setup
         do i = 1, size(self%examples)
             results = results.and.self%test(self%examples(i)%input())
         end do
         result_ = test_result_item_t(test_case_result_t( &
                 self%description_, results))
+        if (self%has_setup_and_teardown) call self%teardown
         if (DEBUG) call put_line( &
                 "Completed execution of: " // self%description_&
                 // merge(" on image " // to_string(this_image()), var_str(""), num_images() > 1))
