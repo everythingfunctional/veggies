@@ -122,21 +122,20 @@ contains
         logical, intent(in) :: image_failed
         logical :: any_image_failed
 
-        integer :: i
-        logical, allocatable :: suite_failed[:]
-
-        allocate(suite_failed[*])
-
-        suite_failed = image_failed
-
-        sync all
-
-        do i = 1, num_images()
-            if (suite_failed[i]) then
-                any_image_failed = .true.
-                return
-            end if
-        end do
-        any_image_failed = .false.
+        any_image_failed = image_failed
+        call co_any(any_image_failed)
     end function
+
+    subroutine co_any(x)
+        logical, intent(inout) :: x
+
+        call co_reduce(x, or_)
+    contains
+        pure function or_(lhs, rhs)
+            logical, intent(in) :: lhs, rhs
+            logical :: or_
+
+            or_ = lhs .or. rhs
+        end function
+    end subroutine
 end module
