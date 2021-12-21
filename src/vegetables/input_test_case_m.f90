@@ -89,7 +89,7 @@ contains
         num_cases = 1
     end function
 
-    function run_with_input(self, input) result(result_)
+    recursive function run_with_input(self, input) result(result_)
         class(input_test_case_t), intent(in) :: self
         class(input_t), intent(in) :: input
         type(test_result_item_t) :: result_
