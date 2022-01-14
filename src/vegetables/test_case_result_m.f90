@@ -1,6 +1,6 @@
 module vegetables_test_case_result_m
     use iso_varying_string, only: varying_string, assignment(=), operator(//)
-    use strff, only: hanging_indent, NEWLINE
+    use strff, only: add_hanging_indentation, NEWLINE
     use vegetables_constants_m, only: INDENTATION
     use vegetables_result_m, only: result_t
     use vegetables_test_result_m, only: test_result_t
@@ -46,7 +46,7 @@ contains
         if (self%passed()) then
             description = ""
         else
-            description = hanging_indent( &
+            description = add_hanging_indentation( &
                     self%description // NEWLINE &
                         // self%result_%failure_description(colorize), &
                     INDENTATION)
@@ -101,7 +101,7 @@ contains
         logical, intent(in) :: colorize
         type(varying_string) :: description
 
-        description = hanging_indent( &
+        description = add_hanging_indentation( &
                 self%description // NEWLINE &
                     // self%result_%verbose_description(colorize), &
                 INDENTATION)

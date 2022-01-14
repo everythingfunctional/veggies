@@ -1,6 +1,6 @@
 module vegetables_utilities_m
     use iso_varying_string, only: varying_string, operator(//)
-    use strff, only: hanging_indent, join, strff_to_string => to_string, NEWLINE
+    use strff, only: add_hanging_indentation, join, strff_to_string => to_string, NEWLINE
 
     implicit none
     private
@@ -28,7 +28,7 @@ contains
 
         integer :: i
 
-        string = hanging_indent( &
+        string = add_hanging_indentation( &
             "[" // join([(to_string(matrix(i,:)), i = 1, size(matrix, dim=1))], "," // NEWLINE) // "]", &
             1)
     end function
@@ -39,7 +39,7 @@ contains
 
         integer :: i
 
-        string = hanging_indent( &
+        string = add_hanging_indentation( &
             "[" // join([(to_string(tensor(i,:,:)), i = 1, size(tensor, dim=1))], "," // NEWLINE) // "]", &
             1)
     end function
@@ -57,7 +57,7 @@ contains
 
         integer :: i
 
-        string = hanging_indent( &
+        string = add_hanging_indentation( &
             "[" // join([(to_string(matrix(i,:)), i = 1, size(matrix, dim=1))], "," // NEWLINE) // "]", &
             1)
     end function
@@ -68,7 +68,7 @@ contains
 
         integer :: i
 
-        string = hanging_indent( &
+        string = add_hanging_indentation( &
             "[" // join([(to_string(tensor(i,:,:)), i = 1, size(tensor, dim=1))], "," // NEWLINE) // "]", &
             1)
     end function

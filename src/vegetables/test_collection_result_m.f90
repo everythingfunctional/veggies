@@ -1,6 +1,6 @@
 module vegetables_test_collection_result_m
     use iso_varying_string, only: varying_string, assignment(=), operator(//)
-    use strff, only: hanging_indent, join, NEWLINE
+    use strff, only: add_hanging_indentation, join, NEWLINE
     use vegetables_constants_m, only: INDENTATION
     use vegetables_test_result_m, only: test_result_t
     use vegetables_test_result_item_m, only: test_result_item_t
@@ -43,14 +43,28 @@ contains
         logical, intent(in) :: colorize
         type(varying_string) :: description
 
-        integer :: i
+        logical, allocatable :: failed(:)
+        type(varying_string), allocatable :: failed_messages(:)
+        integer :: num_failed
+        integer :: i, j
 
         if (self%passed()) then
             description = ""
         else
-            description = hanging_indent( &
+            failed = [(.not.self%results(i)%passed(), i = 1, size(self%results))]
+            num_failed = count(failed)
+            j= 1
+            allocate(failed_messages(num_failed))
+            do i = 1, size(failed)
+                if (failed(i)) then
+                    failed_messages(j) = self%results(i)%failure_description(colorize)
+                    j = j + 1
+                    if (j > num_failed) exit
+                end if
+            end do
+            description = add_hanging_indentation( &
                     self%description // NEWLINE // join( &
-                            [(self%results(i)%failure_description(colorize), i = 1, size(self%results))], &
+                            failed_messages, &
                             NEWLINE), &
                     INDENTATION)
         end if
@@ -109,7 +123,7 @@ contains
 
         integer :: i
 
-        description = hanging_indent( &
+        description = add_hanging_indentation( &
                 self%description // NEWLINE // join( &
                         [(self%results(i)%verbose_description(colorize), i = 1, size(self%results))], &
                         NEWLINE), &

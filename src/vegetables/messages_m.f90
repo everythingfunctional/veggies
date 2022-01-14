@@ -1,7 +1,7 @@
 module vegetables_messages_m
     use iso_varying_string, only: &
             varying_string, operator(==), operator(//), var_str
-    use strff, only: hanging_indent, indent, NEWLINE
+    use strff, only: add_hanging_indentation, indent, NEWLINE
     use vegetables_constants_m, only: INDENTATION
 
     implicit none
@@ -183,14 +183,14 @@ contains
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
 
-        message = hanging_indent( &
+        message = add_hanging_indentation( &
                 "Expected" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(string, 1)), &
+                            delimit(add_hanging_indentation(string, 1)), &
                             INDENTATION) // NEWLINE &
                     // "to not include" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(search_for, 1)), &
+                            delimit(add_hanging_indentation(search_for, 1)), &
                             INDENTATION), &
                 INDENTATION)
     end function
@@ -231,14 +231,14 @@ contains
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
 
-        message = hanging_indent( &
+        message = add_hanging_indentation( &
                 "The string" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(string, 1)), &
+                            delimit(add_hanging_indentation(string, 1)), &
                             INDENTATION) // NEWLINE &
                     // "did not include" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(search_for, 1)), &
+                            delimit(add_hanging_indentation(search_for, 1)), &
                             INDENTATION), &
                 INDENTATION)
     end function
@@ -254,10 +254,10 @@ contains
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
 
-        message = hanging_indent( &
+        message = add_hanging_indentation( &
                 "The string" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(string, 1)), &
+                            delimit(add_hanging_indentation(string, 1)), &
                             INDENTATION) // NEWLINE &
                     // "wasn't empty", &
                 INDENTATION)
@@ -292,14 +292,14 @@ contains
         type(varying_string), intent(in) :: actual
         type(varying_string) :: message
 
-        message = hanging_indent( &
+        message = add_hanging_indentation( &
                 "Expected" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(expected, 1)), &
+                            delimit(add_hanging_indentation(expected, 1)), &
                             INDENTATION) // NEWLINE &
                     // "but got" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(actual, 1)), &
+                            delimit(add_hanging_indentation(actual, 1)), &
                             INDENTATION), &
                 INDENTATION)
     end function
@@ -315,10 +315,10 @@ contains
         type(varying_string), intent(in) :: expected
         type(varying_string) :: message
 
-        message = hanging_indent( &
+        message = add_hanging_indentation( &
                 "Expected and got" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(expected, 1)), &
+                            delimit(add_hanging_indentation(expected, 1)), &
                             INDENTATION), &
                 INDENTATION)
     end function
@@ -533,14 +533,14 @@ contains
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
 
-        message = hanging_indent( &
+        message = add_hanging_indentation( &
                 "Expected" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(string, 1)), &
+                            delimit(add_hanging_indentation(string, 1)), &
                             INDENTATION) // NEWLINE &
                     // "to include" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(search_for, 1)), &
+                            delimit(add_hanging_indentation(search_for, 1)), &
                             INDENTATION), &
                 INDENTATION)
     end function
@@ -575,14 +575,14 @@ contains
         type(varying_string), intent(in) :: string
         type(varying_string) :: message
 
-        message = hanging_indent( &
+        message = add_hanging_indentation( &
                 "The string" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(string, 1)), &
+                            delimit(add_hanging_indentation(string, 1)), &
                             INDENTATION) // NEWLINE &
                     // "included" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(search_for, 1)), &
+                            delimit(add_hanging_indentation(search_for, 1)), &
                             INDENTATION), &
                 INDENTATION)
     end function
@@ -671,14 +671,14 @@ contains
         type(varying_string), intent(in) :: tolerance
         type(varying_string) :: message
 
-        message = hanging_indent( &
+        message = add_hanging_indentation( &
                 "Expected" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(actual, 1)), &
+                            delimit(add_hanging_indentation(actual, 1)), &
                             INDENTATION) // NEWLINE &
                     // "to be within " // delimit("±" // tolerance) // " of" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(expected, 1)), &
+                            delimit(add_hanging_indentation(expected, 1)), &
                             INDENTATION), &
                 INDENTATION)
     end function
@@ -767,14 +767,14 @@ contains
         type(varying_string), intent(in) :: tolerance
         type(varying_string) :: message
 
-        message = hanging_indent( &
+        message = add_hanging_indentation( &
                 "The value" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(actual, 1)), &
+                            delimit(add_hanging_indentation(actual, 1)), &
                             INDENTATION) // NEWLINE &
                     // "was within " // delimit("±" // tolerance) // " of" // NEWLINE &
                     // indent( &
-                            delimit(hanging_indent(expected, 1)), &
+                            delimit(add_hanging_indentation(expected, 1)), &
                             INDENTATION), &
                 INDENTATION)
     end function
@@ -816,9 +816,9 @@ contains
             whole_message = &
                     message // NEWLINE &
                     // indent( &
-                            hanging_indent( &
+                            add_hanging_indentation( &
                                     "User Message:" // NEWLINE &
-                                        // delimit(hanging_indent( &
+                                        // delimit(add_hanging_indentation( &
                                                 user_message, 1)), &
                                     INDENTATION), &
                             INDENTATION)

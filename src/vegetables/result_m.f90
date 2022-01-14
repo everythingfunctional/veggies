@@ -1,5 +1,5 @@
 module vegetables_result_m
-    use iso_varying_string, only: varying_string, var_str
+    use iso_varying_string, only: varying_string, assignment(=), var_str
     use strff, only: join, NEWLINE
     use vegetables_individual_result_m, only: individual_result_t
 
@@ -87,7 +87,27 @@ contains
         logical, intent(in) :: colorize
         type(varying_string) :: description
 
-        description = join(self%results%failure_description(colorize), NEWLINE)
+        logical, allocatable :: failed(:)
+        type(varying_string), allocatable :: failed_messages(:)
+        integer :: num_failed
+        integer :: i, j
+
+        if (self%passed()) then
+            description = ""
+        else
+            failed = .not.self%results%passed()
+            num_failed = count(failed)
+            j = 1
+            allocate(failed_messages(num_failed))
+            do i = 1, size(failed)
+                if (failed(i)) then
+                    failed_messages(j) = self%results(i)%failure_description(colorize)
+                    j = j + 1
+                    if (j > num_failed) exit
+                end if
+            end do
+            description = join(failed_messages, NEWLINE)
+        end if
     end function
 
     pure function num_asserts(self)
