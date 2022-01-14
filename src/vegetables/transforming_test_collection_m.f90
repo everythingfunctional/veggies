@@ -1,6 +1,6 @@
 module vegetables_transforming_test_collection_m
     use iso_varying_string, only: varying_string, operator(//), put_line, var_str
-    use strff, only: operator(.includes.), hanging_indent, join, to_string, NEWLINE
+    use strff, only: operator(.includes.), add_hanging_indentation, join, to_string, NEWLINE
     use vegetables_command_line_m, only: DEBUG
     use vegetables_constants_m, only: INDENTATION
     use vegetables_input_m, only: input_t
@@ -82,7 +82,7 @@ contains
 
         integer :: i
 
-        description = hanging_indent( &
+        description = add_hanging_indentation( &
                 self%description_ // NEWLINE // join( &
                         [(self%tests(i)%description(), i = 1, size(self%tests))], &
                         NEWLINE), &
