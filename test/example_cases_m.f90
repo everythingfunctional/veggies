@@ -1,7 +1,7 @@
 module example_cases_m
     use example_asserts_m, only: &
             example_multiple_asserts, example_multiple_asserts_with_fail
-    use garden, only: test_item_t, it
+    use veggies, only: test_item_t, it
 
     implicit none
     private

@@ -1,5 +1,5 @@
 module bracketed_collection_test
-    use garden, only: &
+    use veggies, only: &
             result_t, &
             test_item_t, &
             test_result_item_t, &

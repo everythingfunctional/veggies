@@ -1,6 +1,6 @@
 module assert_equals_integers_test
     use iso_varying_string, only: var_str
-    use garden, only: &
+    use veggies, only: &
             input_t, &
             integer_input_t, &
             result_t, &

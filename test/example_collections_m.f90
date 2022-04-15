@@ -2,7 +2,7 @@ module example_collections_m
     use example_asserts_m, only: &
             example_multiple_asserts, &
             NUM_PASSING_FROM_EXAMPLE => NUM_ASSERTS_IN_PASSING
-    use garden, only: result_t, test_item_t, describe, fail, it
+    use veggies, only: result_t, test_item_t, describe, fail, it
 
     implicit none
     private

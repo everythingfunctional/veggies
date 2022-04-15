@@ -1,6 +1,6 @@
 module assert_includes_test
     use iso_varying_string, only: varying_string, var_str, char
-    use garden, only: &
+    use veggies, only: &
             input_t, &
             result_t, &
             string_input_t, &

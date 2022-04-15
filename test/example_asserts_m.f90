@@ -1,5 +1,5 @@
 module example_asserts_m
-    use garden, only: result_t, fail, succeed
+    use veggies, only: result_t, fail, succeed
 
     implicit none
     private

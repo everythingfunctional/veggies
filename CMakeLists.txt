@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(
-  "garden"
+  "veggies"
   LANGUAGES "Fortran"
   VERSION "1.0.0"
 )
@@ -10,18 +10,6 @@ option(INSTALL_PROJECT "Whether this project should be installed" TRUE)
 
 # Follow GNU conventions for installing directories
 include(GNUInstallDirs)
-
-# Add flag for gfortran to allow coarray syntax
-if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcoarray=single")
-endif()
-if(CMAKE_Fortran_FLAGS MATCHES Intel)
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -coarray=single")
-endif()
-if(CMAKE_Fortran_FLAGS MATCHES NAG)
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -coarray=single")
-endif()
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}" PARENT_SCOPE)
 
 # Get the stdlib subproject
 set(lib-deps)

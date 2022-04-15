@@ -1,7 +1,7 @@
 module assert_equals_within_relative_test
     use double_precision_generator_m, only: DOUBLE_PRECISION_GENERATOR
     use iso_varying_string, only: var_str
-    use garden, only: &
+    use veggies, only: &
             double_precision_input_t, &
             input_t, &
             result_t, &

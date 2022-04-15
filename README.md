@@ -1,11 +1,11 @@
-Garden
+Veggies
 ==========
 
-[![pipeline status](https://gitlab.com/everythingfunctional/garden/badges/main/pipeline.svg)](https://gitlab.com/everythingfunctional/garden/-/commits/main)
+[![pipeline status](https://gitlab.com/everythingfunctional/veggies/badges/main/pipeline.svg)](https://gitlab.com/everythingfunctional/veggies/-/commits/main)
 
 For a healthier code base, eat your vegetables.
 
-Garden is a Fortran unit testing framework written using functional programming principles,
+Veggies is a Fortran unit testing framework written using functional programming principles,
 with the ability to test parallel code.
 As many of its procedures as possible are marked with the pure keyword,
 while still allowing the framework to test impure code.
@@ -26,19 +26,19 @@ In order to run this you will need:
 Running the tests is then as simple as
 
 ```
-git clone https://gitlab.com/everythingfunctional/garden.git
-cd garden
+git clone https://gitlab.com/everythingfunctional/veggies.git
+cd veggies
 fpm test
 ```
 
-Using Garden
+Using Veggies
 ----------------
 
-Using Garden is (almost) as easy as writing a specification.
-A great first example are the tests for Garden themselves.
+Using Veggies is (almost) as easy as writing a specification.
+A great first example are the tests for Veggies themselves.
 The following overview should be sufficient to get you started,
-but you can take a deeper look into how Garden works by referencing
-[the developer documentation](https://everythingfunctional.gitlab.io/garden).
+but you can take a deeper look into how Veggies works by referencing
+[the developer documentation](https://everythingfunctional.gitlab.io/veggies).
 
 ### Writing a Test Function
 
@@ -51,7 +51,7 @@ The simplest example of a test function would be something like the following:
 
 ```Fortran
 function simplest()
-    use garden, only: result_t, succeed
+    use veggies, only: result_t, succeed
 
     type(result_t) :: simplest
 
@@ -70,7 +70,7 @@ Assembling the test suite is described below.
 
 ```Fortran
 function input_test(input) result(result_)
-    use garden, only: input_t, integer_input_t, result_t, assert_equals, fail
+    use veggies, only: input_t, integer_input_t, result_t, assert_equals, fail
 
     class(input_t), intent(in) :: input
     type(result_t) :: result_
@@ -156,7 +156,7 @@ The `given`, `when` and `describe` functions take a description string, and an a
 The `it` and `then_` functions accept a string description,
 and a function that takes no arguments and returns a `result_t`.
 The `it_` and `then__` functions accept a function that takes one argument of `class(input_t)`.
-These are the descriptions that are given in the output of Garden for each test.
+These are the descriptions that are given in the output of Veggies for each test.
 
 The `given`, `when` and `describe` functions can also accept a `class(input_t)` value,
 to be passed to each of the tests they contain.
@@ -226,8 +226,8 @@ This is just a wrapper around a `class(input_t)`, with a flag for whether it is 
 The relevant code for one of the provided generators is shown below.
 
 ```Fortran
-module garden_integer_generator_m
-    use garden_generator_m, only: generator_t
+module veggies_integer_generator_m
+    use veggies_generator_m, only: generator_t
 
     implicit none
     private
@@ -244,9 +244,9 @@ module garden_integer_generator_m
             INTEGER_GENERATOR = integer_generator_t()
 contains
     function generate(self) result(generated_value)
-        use garden_generated_m, only: generated_t
-        use garden_integer_input_m, only: integer_input_t
-        use garden_random_m, only: get_random_integer
+        use veggies_generated_m, only: generated_t
+        use veggies_integer_input_m, only: integer_input_t
+        use veggies_random_m, only: get_random_integer
 
         class(integer_generator_t), intent(in) :: self
         type(generated_t) :: generated_value
@@ -258,9 +258,9 @@ contains
     end function
 
     function shrink(input) result(shrunk)
-        use garden_input_m, only: input_t
-        use garden_integer_input_m, only: integer_input_t
-        use garden_shrink_result_m, only: &
+        use veggies_input_m, only: input_t
+        use veggies_integer_input_m, only: integer_input_t
+        use veggies_shrink_result_m, only: &
                 shrink_result_t, shrunk_value, simplest_value
 
         class(input_t), intent(in) :: input

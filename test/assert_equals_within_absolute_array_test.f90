@@ -1,6 +1,6 @@
 module assert_equals_within_absolute_array_test
     use iso_varying_string, only: var_str
-    use garden, only: &
+    use veggies, only: &
         result_t, &
         test_item_t, &
         assert_equals_within_absolute, &

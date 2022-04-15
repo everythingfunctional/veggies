@@ -97,7 +97,7 @@ contains
         use single_case_properties_test, only: &
                 single_case_properties_case_properties => &
                     test_case_properties
-        use garden, only: test_item_t, test_that, run_tests
+        use veggies, only: test_item_t, test_that, run_tests
 
         type(test_item_t) :: tests
         type(test_item_t) :: individual_tests(31)

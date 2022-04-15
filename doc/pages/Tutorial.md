@@ -19,11 +19,11 @@ and how to use it effectively, you will want to understand:
 * [What unit testing is](https://everythingfunctional.wordpress.com/2021/09/09/a-what-test/)
 * [How to write good unit tests](https://www.youtube.com/watch?v=tWn8RA_DEic)
 
-# Getting Started With Garden
+# Getting Started With Veggies
 
 If this is your first encounter with a unit testing framework,
-or even just your first encounter with garden,
-I highly recommend cloning the garden repository and running its test suite.
+or even just your first encounter with veggies,
+I highly recommend cloning the veggies repository and running its test suite.
 You'll need to have the following installed to do that.
 
 * git
@@ -33,8 +33,8 @@ You'll need to have the following installed to do that.
 With those installed and configured, you should be able to open a terminal and issue the following commands.
 
 ``` { use_pygments=false }
-git clone https://gitlab.com/everythingfunctional/garden.git
-cd garden
+git clone https://gitlab.com/everythingfunctional/veggies.git
+cd veggies
 fpm test
 ```
 
@@ -56,7 +56,7 @@ Took 3.17154 seconds
 A total of 78 test cases containing a total of 205 assertions
 ```
 
-Congratulations, you've run your first suite of tests using the garden framework.
+Congratulations, you've run your first suite of tests using the veggies framework.
 
 ## Options for Running Test Suites
 
@@ -70,7 +70,7 @@ fpm test -- -h
 You should see output like the following:
 
 ``` { use_pygments=false }
-Usage: build/gfortran_2A42023B310FA28D/test/garden-test [-h] [-q] [-v] [-d] [-f string] [-n num] [-s num] [-c]
+Usage: build/gfortran_2A42023B310FA28D/test/veggies-test [-h] [-q] [-v] [-d] [-f string] [-n num] [-s num] [-c]
   options:
     -h, --help                    Output this message and exit
     -q, --quiet                   Don't print the test descriptions before
@@ -89,16 +89,16 @@ Usage: build/gfortran_2A42023B310FA28D/test/garden-test [-h] [-q] [-v] [-d] [-f 
 ```
 
 The `-q`, `-v`, and `-d` options affect the verbosity of the output.
-By default, garden will report the tests that will be run, before starting to run them.
+By default, veggies will report the tests that will be run, before starting to run them.
 The `-q` option suppresses this initial output.
-By default, garden will only report assertions that fail.
+By default, veggies will only report assertions that fail.
 The `-v` option will cause the passing assertions to be reported as well.
-By default, garden does not produce any output during the execution of the tests.
+By default, veggies does not produce any output during the execution of the tests.
 If a test crashes, this can make it difficult to isolate the cause of the problem.
 The `-d` option will cause the beginning and completion of execution of each test.
 
 The `-f` options impacts what tests are run.
-By passing this option, garden will filter the test suite before execution,
+By passing this option, veggies will filter the test suite before execution,
 thus only executing tests that match the given string.
 
 The `-n` and `-s` affect the behavior of generator tests (a more advanced concept that we'll get to later).
@@ -106,19 +106,19 @@ The `-n` option will set how many randomly generated values will be provided to 
 The `-s` option will set how many attempts will be made to find the simplest possible input causing a failure, in the case that an input causing failure is found.
 
 The `-c` option impacts the output color.
-By default, garden attempts to color the messages from passing assertions green, and from failing assertions red.
+By default, veggies attempts to color the messages from passing assertions green, and from failing assertions red.
 It uses terminal escape sequences to do so, but under some terminals or environments these may not be interpreted correctly, or at all, leading to some visual clutter.
 
 # Writing Your First Test
 
-The examples for this tutorial are stored in a public repository available [here](https://gitlab.com/everythingfunctional/garden_tutorial).
+The examples for this tutorial are stored in a public repository available [here](https://gitlab.com/everythingfunctional/veggies_tutorial).
 I'll link to tags in that repository for key milestones.
 
 To get started, we're going to use fpm to build and run our tests.
 In a terminal, move to a place you want to keep your project, and issue the command:
 
 ``` { use_pygments=false }
-fpm new --lib --test garden_tutorial
+fpm new --lib --test veggies_tutorial
 ```
 
 This will generate a new project for us, with a template test and library.
@@ -127,30 +127,30 @@ Move into the newly created folder, and run the command `fpm test`, and you shou
 ``` { use_pygments=false }
 $ fpm test
  + mkdir -p build/dependencies
- + mkdir -p build/gfortran_2A42023B310FA28D/garden_tutorial
- + gfortran -c test/check.f90 -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds -fcheck=array-temps -fbacktrace -fcoarray=single -J build/gfortran_2A42023B310FA28D/garden_tutorial -I build/gfortran_2A42023B310FA28D/garden_tutorial  -o build/gfortran_2A42023B310FA28D/garden_tutorial/test_check.f90.o
- + gfortran -c ././src/garden_tutorial.f90 -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds -fcheck=array-temps -fbacktrace -fcoarray=single -J build/gfortran_2A42023B310FA28D/garden_tutorial -I build/gfortran_2A42023B310FA28D/garden_tutorial  -o build/gfortran_2A42023B310FA28D/garden_tutorial/src_garden_tutorial.f90.o
- + ar -rs build/gfortran_2A42023B310FA28D/garden_tutorial/libgarden_tutorial.a build/gfortran_2A42023B310FA28D/garden_tutorial/src_garden_tutorial.f90.o
-ar: creating build/gfortran_2A42023B310FA28D/garden_tutorial/libgarden_tutorial.a
+ + mkdir -p build/gfortran_2A42023B310FA28D/veggies_tutorial
+ + gfortran -c test/check.f90 -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds -fcheck=array-temps -fbacktrace -fcoarray=single -J build/gfortran_2A42023B310FA28D/veggies_tutorial -I build/gfortran_2A42023B310FA28D/veggies_tutorial  -o build/gfortran_2A42023B310FA28D/veggies_tutorial/test_check.f90.o
+ + gfortran -c ././src/veggies_tutorial.f90 -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds -fcheck=array-temps -fbacktrace -fcoarray=single -J build/gfortran_2A42023B310FA28D/veggies_tutorial -I build/gfortran_2A42023B310FA28D/veggies_tutorial  -o build/gfortran_2A42023B310FA28D/veggies_tutorial/src_veggies_tutorial.f90.o
+ + ar -rs build/gfortran_2A42023B310FA28D/veggies_tutorial/libveggies_tutorial.a build/gfortran_2A42023B310FA28D/veggies_tutorial/src_veggies_tutorial.f90.o
+ar: creating build/gfortran_2A42023B310FA28D/veggies_tutorial/libveggies_tutorial.a
  + mkdir -p build/gfortran_2A42023B310FA28D/test/
- + gfortran  -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds -fcheck=array-temps -fbacktrace -fcoarray=single -J build/gfortran_2A42023B310FA28D/garden_tutorial -I build/gfortran_2A42023B310FA28D/garden_tutorial  build/gfortran_2A42023B310FA28D/garden_tutorial/test_check.f90.o build/gfortran_2A42023B310FA28D/garden_tutorial/libgarden_tutorial.a -o build/gfortran_2A42023B310FA28D/test/check
+ + gfortran  -Wall -Wextra -Wimplicit-interface -fPIC -fmax-errors=1 -g -fcheck=bounds -fcheck=array-temps -fbacktrace -fcoarray=single -J build/gfortran_2A42023B310FA28D/veggies_tutorial -I build/gfortran_2A42023B310FA28D/veggies_tutorial  build/gfortran_2A42023B310FA28D/veggies_tutorial/test_check.f90.o build/gfortran_2A42023B310FA28D/veggies_tutorial/libveggies_tutorial.a -o build/gfortran_2A42023B310FA28D/test/check
  Put some tests in here!
 ```
 
-You can find the code at this stage [here](https://gitlab.com/everythingfunctional/garden_tutorial/-/tree/starting_point).
+You can find the code at this stage [here](https://gitlab.com/everythingfunctional/veggies_tutorial/-/tree/starting_point).
 
 At this point, our code compiles and our tests run,
-but the code doesn't do anything interesting, our tests aren't actually testing anything, and we aren't using garden yet.
-Let's start by getting garden.
+but the code doesn't do anything interesting, our tests aren't actually testing anything, and we aren't using veggies yet.
+Let's start by getting veggies.
 In the `fpm.toml` file, add the following section:
 
 ```toml
 [dev-dependencies]
-garden = { git = "https://gitlab.com/everythingfunctional/garden.git", tag = "v1.0.0" }
+veggies = { git = "https://gitlab.com/everythingfunctional/veggies.git", tag = "v1.0.0" }
 ```
 
-Now fpm will fetch and compile garden into our test suite.
-Of course, we're still not actually using garden,
+Now fpm will fetch and compile veggies into our test suite.
+Of course, we're still not actually using veggies,
 so running `fpm test` after this step will still produce the same message.
 
 In order to write a test, we're going to need something to test.
@@ -200,7 +200,7 @@ We do this in a function in this module, like so.
 
 ```Fortran
 module is_leap_year_test
-    use garden, only: test_item_t
+    use veggies, only: test_item_t
 
     implicit none
     private
@@ -219,7 +219,7 @@ we will use the `describe` and `it` functions, like so.
 
 ```Fortran
 module is_leap_year_test
-    use garden, only: test_item_t, describe, it
+    use veggies, only: test_item_t, describe, it
 
     implicit none
     private
@@ -249,7 +249,7 @@ A test is a function that returns a test `result_t`, like so.
 ```Fortran
 module is_leap_year_test
     use is_leap_year_m, only: is_leap_year
-    use garden, only: result_t, test_item_t, assert_not, describe, it
+    use veggies, only: result_t, test_item_t, assert_not, describe, it
 
     implicit none
     private
@@ -309,7 +309,7 @@ contains
     subroutine run()
         use is_leap_year_test, only: &
                 is_leap_year_is_leap_year => test_is_leap_year
-        use garden, only: test_item_t, test_that, run_tests
+        use veggies, only: test_item_t, test_that, run_tests
 
         type(test_item_t) :: tests
         type(test_item_t) :: individual_tests(1)
@@ -342,12 +342,12 @@ Test that
 A total of 1 test cases containing a total of 1 assertions
 ```
 
-Congratulations, you've written and executed your first garden test suite!
-You can find the code at this stage [here](https://gitlab.com/everythingfunctional/garden_tutorial/-/tree/first_test).
+Congratulations, you've written and executed your first veggies test suite!
+You can find the code at this stage [here](https://gitlab.com/everythingfunctional/veggies_tutorial/-/tree/first_test).
 
 # More Advanced Testing Patterns
 
-The test we wrote above really only used the bare minimum of features available in garden.
+The test we wrote above really only used the bare minimum of features available in veggies.
 There is some additional functionality that would be nice to make use of even for this simple test though.
 First of all, when we look at the verbose output from the test, we don't really see what was checked.
 All of the `assert_*` functions take two optional message arguments at the end.
@@ -366,7 +366,7 @@ end function
 ```
 
 > Note: we're using the `to_string` function from the `strff` library.
-> Garden already depends on this library,
+> Veggies already depends on this library,
 > but if you're going to depend on something directly you should add it to your `fpm.toml` file.
 
 Next, we're only checking a single year.
@@ -411,9 +411,9 @@ A total of 1 test cases containing a total of 2 assertions
 ```
 
 This covers all the basics, and you can find the code at this stage
-[here](https://gitlab.com/everythingfunctional/garden_tutorial/-/tree/little_extras).
+[here](https://gitlab.com/everythingfunctional/veggies_tutorial/-/tree/little_extras).
 In the following sections we'll start introducing advanced patterns for testing,
-and how garden supports them.
+and how veggies supports them.
 
 ## Providing Example Inputs to a Test
 
@@ -431,7 +431,7 @@ For our current example this will look like the following.
 module is_leap_year_test
     use is_leap_year_m, only: is_leap_year
     use strff, only: to_string
-    use garden, only: &
+    use veggies, only: &
             example_t, &
             input_t, &
             integer_input_t, &
@@ -479,7 +479,7 @@ The framework assumes the job of combining together the results of the test case
 Also note, that best practice is to have a `class default` section in the `select type` construct that reports the test case failure in the case that an unexpected type is encountered.
 Chances are small that a test case would receive a type not expected by the author,
 but mistakes happen and better to have the test case report the problem.
-You can find the code at this stage [here](https://gitlab.com/everythingfunctional/garden_tutorial/-/tree/example_inputs).
+You can find the code at this stage [here](https://gitlab.com/everythingfunctional/veggies_tutorial/-/tree/example_inputs).
 
 
 ## Inputs for a Whole Test Suite
@@ -587,7 +587,7 @@ Also, we're now using the `it_` function (note the trailing `_`), which is neces
 module stack_test
     use stack_m, only: stack_t
     use stack_input_m, only: stack_input_t
-    use garden, only: &
+    use veggies, only: &
             input_t, &
             result_t, &
             test_item_t, &
@@ -651,7 +651,7 @@ with implementation like the following.
 ```Fortran
 module stack_input_m
     use stack_m, only: stack_t
-    use garden, only: input_t
+    use veggies, only: input_t
 
     implicit none
     private
@@ -716,7 +716,7 @@ Test that
 A total of 3 test cases containing a total of 4 assertions
 ```
 
-You'll find the code at this point [here](https://gitlab.com/everythingfunctional/garden_tutorial/-/tree/collection_input).
+You'll find the code at this point [here](https://gitlab.com/everythingfunctional/veggies_tutorial/-/tree/collection_input).
 
 ## Modifying Inputs Before Passing to a Test
 
@@ -772,7 +772,7 @@ is another simple wrapper around a `class(item_t)`.
 The special type `transformation_failure_t` is provided as a way of signaling to the framework that something went wrong,
 and that it should not try to pass the result along to the remaining tests.
 
-The resulting code can be found [here](https://gitlab.com/everythingfunctional/garden_tutorial/-/tree/input_modification).
+The resulting code can be found [here](https://gitlab.com/everythingfunctional/veggies_tutorial/-/tree/input_modification).
 
 ## Generating Random Inputs for a Test
 
@@ -797,7 +797,7 @@ module add_test
     use strff, only: to_string
     use three_integer_generator_m, only: THREE_INTEGER_GENERATOR
     use three_integer_input_m, only: three_integer_input_t
-    use garden, only: &
+    use veggies, only: &
             input_t, result_t, test_item_t, assert_equals, describe, fail, it
 
     implicit none
@@ -844,7 +844,7 @@ But what if a test fails?
 Who knows what kind of complicated input could have caused it.
 That complicated input may not make it very easy to figure out what went wrong.
 So if a test case fails,
-garden will pass the input to the `shrink` function on your derived type,
+veggies will pass the input to the `shrink` function on your derived type,
 starting with the input that caused the failure,
 until either the test case passes, or the simplest possible input is found.
 
@@ -853,7 +853,7 @@ That may have seemed complicated, so let's look at the implementation for this e
 ```Fortran
 module three_integer_generator_m
     use three_integer_input_m, only: three_integer_input_t
-    use garden, only: &
+    use veggies, only: &
             generated_t, &
             generator_t, &
             input_t, &
@@ -913,7 +913,7 @@ Otherwise, it returns smaller numbers for each value, using the `shrunk_value` f
 
 If you run the test suite at this point, you'll see output like the following.
 Note where it says `Passed after 100 examples`.
-This means that garden used the provided generator to produce 100 random inputs,
+This means that veggies used the provided generator to produce 100 random inputs,
 and the test case passed for every one.
 If you want to get a better feel for what is happening,
 you could add `print` statements in the test case and/or `generate` function.
@@ -1005,14 +1005,14 @@ Test that
 2 of 8 assertions failed
 ```
 
-You can find the code at this stage [here](https://gitlab.com/everythingfunctional/garden_tutorial/-/tree/property_test).
+You can find the code at this stage [here](https://gitlab.com/everythingfunctional/veggies_tutorial/-/tree/property_test).
 
 ## Anatomy of an Assertion
 
 While many `assert` functions are available "out of the box",
 it is not unlikely you'll encounter a scenario where you'd like to provide your own.
 For example, maybe you'd like to extend `assert_equals` to handle some of the types in your own project.
-Since every `assert`ion in garden follows pretty much the exact same pattern,
+Since every `assert`ion in veggies follows pretty much the exact same pattern,
 writing your own is pretty easy.
 And since the functions for constructing and formatting the message from an assertion are available,
 you can reuse them to make your assertion messages look consistent with the built in ones.
@@ -1051,12 +1051,12 @@ and take a look at their implementations to see their general pattern.
 
 # Additional Resources
 
-At this stage, you should have a decent feel for the patterns and capabilities of garden.
+At this stage, you should have a decent feel for the patterns and capabilities of veggies.
 For more examples, and illustrations of use in real projects, you should check out:
 
-* The [garden test suite](https://gitlab.com/everythingfunctional/garden/-/tree/main/test)
+* The [veggies test suite](https://gitlab.com/everythingfunctional/veggies/-/tree/main/test)
 * The [iso_varying_string test suite](https://gitlab.com/everythingfunctional/iso_varying_string/-/tree/main/test/unit_test)
 * The [quaff test suite](https://gitlab.com/everythingfunctional/quaff/-/tree/main/test)
-  - Note, this illustrates how garden can be seamlessly extended to provide custom assertions
+  - Note, this illustrates how veggies can be seamlessly extended to provide custom assertions
 
 You should also read through the [organized listing](./Organized_Listing.html) of capabilities to get a more comprehensive view of the available functionality.
