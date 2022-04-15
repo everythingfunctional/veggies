@@ -1,6 +1,6 @@
 module veggies_test_collection_with_input_m
-    use iso_varying_string, only: varying_string, operator(//), put_line, var_str
-    use strff, only: operator(.includes.), add_hanging_indentation, join, to_string, NEWLINE
+    use iso_varying_string, only: varying_string, operator(//), put_line
+    use strff, only: operator(.includes.), add_hanging_indentation, join, NEWLINE
     use veggies_command_line_m, only: DEBUG
     use veggies_constants_m, only: INDENTATION
     use veggies_input_m, only: input_t

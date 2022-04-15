@@ -1,6 +1,6 @@
 module veggies_run_tests_m
     use iso_fortran_env, only: error_unit, int64, output_unit
-    use iso_varying_string, only: operator(//), put_line, var_str
+    use iso_varying_string, only: operator(//), put_line
     use strff, only: to_string
     use veggies_command_line_m, only: options_t, get_options, DEBUG
     use veggies_test_item_m, only: filter_item_result_t, test_item_t
@@ -21,7 +21,6 @@ contains
         type(options_t) :: options
         type(test_result_item_t) :: results
         integer(int64) :: start_time
-        logical :: suite_failed
         type(test_item_t) :: tests_to_run
 
         options = get_options()

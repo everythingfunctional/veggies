@@ -1,6 +1,6 @@
 module veggies_simple_test_case_m
-    use iso_varying_string, only: varying_string, operator(//), put_line, var_str
-    use strff, only: operator(.includes.), to_string
+    use iso_varying_string, only: varying_string, operator(//), put_line
+    use strff, only: operator(.includes.)
     use veggies_command_line_m, only: DEBUG
     use veggies_input_m, only: input_t
     use veggies_test_m, only: &
