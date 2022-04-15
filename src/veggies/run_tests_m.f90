@@ -10,8 +10,9 @@ module veggies_run_tests_m
     private
     public :: run_tests
 contains
-    subroutine run_tests(tests)
+    function run_tests(tests) result(passed)
         type(test_item_t), intent(in) :: tests
+        logical :: passed
 
         integer(int64) :: clock_rate
         real :: elapsed_time
@@ -31,7 +32,8 @@ contains
                 tests_to_run = filtered_tests%test()
             else
                 call put_line(error_unit, "No matching tests found")
-                stop 1
+                passed = .false.
+                return
             end if
         else
             tests_to_run = tests
@@ -75,6 +77,7 @@ contains
                         // " test cases containing a total of " &
                         // to_string(results%num_asserts()) // " assertions")
             call put_line(output_unit, "")
+            passed = .true.
         else
             call put_line(error_unit, "Failed")
             call put_line( &
@@ -100,7 +103,7 @@ contains
                     to_string(results%num_failing_asserts()) // " of " &
                         // to_string(results%num_asserts()) // " assertions failed")
             call put_line(error_unit, "")
-            stop 1
+            passed = .false.
         end if
-    end subroutine
+    end function
 end module
