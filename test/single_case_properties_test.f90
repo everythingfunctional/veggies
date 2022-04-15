@@ -2,7 +2,7 @@ module single_case_properties_test
     use example_asserts_m, only: example_multiple_asserts
     use example_cases_m, only: example_passing_test_case, EXAMPLE_DESCRIPTION
     use helpers_m, only: test_item_input_t
-    use vegetables, only: &
+    use garden, only: &
             input_t, &
             result_t, &
             test_item_t, &

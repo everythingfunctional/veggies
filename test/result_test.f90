@@ -1,5 +1,5 @@
 module result_test
-    use vegetables, only: &
+    use garden, only: &
             result_t, &
             test_item_t, &
             assert_doesnt_include, &

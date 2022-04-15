@@ -1,6 +1,6 @@
 module assert_equals_double_precision_array_test
     use iso_varying_string, only: var_str
-    use vegetables, only: &
+    use garden, only: &
             result_t, &
             test_item_t, &
             assert_equals, &

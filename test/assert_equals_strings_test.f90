@@ -1,6 +1,6 @@
 module assert_equals_strings_test
     use iso_varying_string, only: varying_string, char, var_str
-    use vegetables, only: &
+    use garden, only: &
             input_t, &
             result_t, &
             string_input_t, &

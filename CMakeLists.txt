@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(
-  "vegetables"
+  "garden"
   LANGUAGES "Fortran"
-  VERSION "7.4.3"
+  VERSION "1.0.0"
 )
 
 option(INSTALL_PROJECT "Whether this project should be installed" TRUE)

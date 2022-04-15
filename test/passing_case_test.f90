@@ -2,7 +2,7 @@ module passing_case_test
     use example_asserts_m, only: NUM_ASSERTS_IN_PASSING, SUCCESS_MESSAGE
     use example_cases_m, only: example_passing_test_case, EXAMPLE_DESCRIPTION
     use helpers_m, only: test_item_input_t, test_result_item_input_t, run_test
-    use vegetables, only: &
+    use garden, only: &
             input_t, &
             result_t, &
             test_item_t, &

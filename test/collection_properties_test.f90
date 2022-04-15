@@ -8,7 +8,7 @@ module collection_properties_test
             EXAMPLE_COLLECTION_DESCRIPTION, &
             NUM_CASES_IN_PASSING
     use helpers_m, only: test_item_input_t
-    use vegetables, only: &
+    use garden, only: &
             input_t, &
             result_t, &
             test_item_t, &

@@ -1,11 +1,12 @@
-Vegetables
+Garden
 ==========
 
-[![pipeline status](https://gitlab.com/everythingfunctional/vegetables/badges/main/pipeline.svg)](https://gitlab.com/everythingfunctional/vegetables/-/commits/main)
+[![pipeline status](https://gitlab.com/everythingfunctional/garden/badges/main/pipeline.svg)](https://gitlab.com/everythingfunctional/garden/-/commits/main)
 
 For a healthier code base, eat your vegetables.
 
-Vegetables is a Fortran unit testing framework written using functional programming principles.
+Garden is a Fortran unit testing framework written using functional programming principles,
+with the ability to test parallel code.
 As many of its procedures as possible are marked with the pure keyword,
 while still allowing the framework to test impure code.
 It's biggest features are that it provides a readable test/code specification as it's output by default,
@@ -25,19 +26,19 @@ In order to run this you will need:
 Running the tests is then as simple as
 
 ```
-git clone https://gitlab.com/everythingfunctional/vegetables.git
-cd vegetables
+git clone https://gitlab.com/everythingfunctional/garden.git
+cd garden
 fpm test
 ```
 
-Using Vegetables
+Using Garden
 ----------------
 
-Using Vegetables is (almost) as easy as writing a specification.
-A great first example are the tests for Vegetables themselves.
+Using Garden is (almost) as easy as writing a specification.
+A great first example are the tests for Garden themselves.
 The following overview should be sufficient to get you started,
-but you can take a deeper look into how vegetables works by referencing
-[the developer documentation](https://everythingfunctional.gitlab.io/vegetables).
+but you can take a deeper look into how Garden works by referencing
+[the developer documentation](https://everythingfunctional.gitlab.io/garden).
 
 ### Writing a Test Function
 
@@ -50,7 +51,7 @@ The simplest example of a test function would be something like the following:
 
 ```Fortran
 function simplest()
-    use vegetables, only: result_t, succeed
+    use garden, only: result_t, succeed
 
     type(result_t) :: simplest
 
@@ -69,7 +70,7 @@ Assembling the test suite is described below.
 
 ```Fortran
 function input_test(input) result(result_)
-    use vegetables, only: input_t, integer_input_t, result_t, assert_equals, fail
+    use garden, only: input_t, integer_input_t, result_t, assert_equals, fail
 
     class(input_t), intent(in) :: input
     type(result_t) :: result_
@@ -140,7 +141,7 @@ The [Quantities for Fortran](https://gitlab.com/everythingfunctional/quaff) is a
 ### Assemble The Suite
 
 Once you've written your test function, you'll need to include it into your test suite.
-I've [published a tool](https://gitlab.com/everythingfunctional/make_vegetable_driver)
+I've [published a tool](https://gitlab.com/everythingfunctional/cart)
 that can be used to do it, but you can also do it manually.
 
 First, you'll need to write a function that defines a part of your test suite,
@@ -155,7 +156,7 @@ The `given`, `when` and `describe` functions take a description string, and an a
 The `it` and `then_` functions accept a string description,
 and a function that takes no arguments and returns a `result_t`.
 The `it_` and `then__` functions accept a function that takes one argument of `class(input_t)`.
-These are the descriptions that are given in the output of Vegetables for each test.
+These are the descriptions that are given in the output of Garden for each test.
 
 The `given`, `when` and `describe` functions can also accept a `class(input_t)` value,
 to be passed to each of the tests they contain.
@@ -225,8 +226,8 @@ This is just a wrapper around a `class(input_t)`, with a flag for whether it is 
 The relevant code for one of the provided generators is shown below.
 
 ```Fortran
-module vegetables_integer_generator_m
-    use vegetables_generator_m, only: generator_t
+module garden_integer_generator_m
+    use garden_generator_m, only: generator_t
 
     implicit none
     private
@@ -243,9 +244,9 @@ module vegetables_integer_generator_m
             INTEGER_GENERATOR = integer_generator_t()
 contains
     function generate(self) result(generated_value)
-        use vegetables_generated_m, only: generated_t
-        use vegetables_integer_input_m, only: integer_input_t
-        use vegetables_random_m, only: get_random_integer
+        use garden_generated_m, only: generated_t
+        use garden_integer_input_m, only: integer_input_t
+        use garden_random_m, only: get_random_integer
 
         class(integer_generator_t), intent(in) :: self
         type(generated_t) :: generated_value
@@ -257,9 +258,9 @@ contains
     end function
 
     function shrink(input) result(shrunk)
-        use vegetables_input_m, only: input_t
-        use vegetables_integer_input_m, only: integer_input_t
-        use vegetables_shrink_result_m, only: &
+        use garden_input_m, only: input_t
+        use garden_integer_input_m, only: integer_input_t
+        use garden_shrink_result_m, only: &
                 shrink_result_t, shrunk_value, simplest_value
 
         class(input_t), intent(in) :: input

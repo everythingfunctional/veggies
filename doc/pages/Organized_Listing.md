@@ -156,7 +156,7 @@ but must produce as output a value of `type(transformed_t)`.
 so a [transformer_i] function is really just transforming one kind of input into another.
 However, there is a possibility that something could go wrong in the transformation.
 For this reason a special type is provided that extends from `input_t`, [transformation_failure_t].
-This type contains a [result_t] and signals to vegetables that
+This type contains a [result_t] and signals to garden that
 this result should be used instead of attempting to run any following test cases in the sequence.
 
 [transformer_i]: ../interface/transformer_i.html
@@ -167,7 +167,7 @@ this result should be used instead of attempting to run any following test cases
 An advanced technique in testing can be to write tests (or properties)
 that hold true for an entire set of inputs.
 One can then generate random inputs from this set and check that the test always passes.
-In vegetables this can be done by providing a [generator_t];
+In garden this can be done by providing a [generator_t];
 extend that type and provide an object of the extended type to the framework.
 A [generator_t] must provide two functions.
 
@@ -256,8 +256,8 @@ to make it easier for your custom `assert`s to conform to this style.
 [make_within_failure_message]: ../interface/make_within_failure_message.html
 [make_within_success_message]: ../interface/make_within_success_message.html
 [with_user_message]: ../interface/with_user_message.html
-[EMPTY_SUCCESS_MESSAGE]: ../module/vegetables_messages_m.html#variable-empty_success_message
-[NOT_FAILURE_MESSAGE]: ../module/vegetables_messages_m.html#variable-not_failure_message
-[NOT_SUCCESS_MESSAGE]: ../module/vegetables_messages_m.html#variable-not_success_message
-[THAT_FAILURE_MESSAGE]: ../module/vegetables_messages_m.html#variable-that_failure_message
-[THAT_SUCCESS_MESSAGE]: ../module/vegetables_messages_m.html#variable-that_success_message
+[EMPTY_SUCCESS_MESSAGE]: ../module/garden_messages_m.html#variable-empty_success_message
+[NOT_FAILURE_MESSAGE]: ../module/garden_messages_m.html#variable-not_failure_message
+[NOT_SUCCESS_MESSAGE]: ../module/garden_messages_m.html#variable-not_success_message
+[THAT_FAILURE_MESSAGE]: ../module/garden_messages_m.html#variable-that_failure_message
+[THAT_SUCCESS_MESSAGE]: ../module/garden_messages_m.html#variable-that_success_message

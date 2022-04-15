@@ -1,5 +1,5 @@
 module double_precision_generator_m
-    use vegetables, only: &
+    use garden, only: &
             double_precision_input_t, &
             generated_t, &
             generator_t, &

@@ -13,7 +13,7 @@ module failing_collection_test
             NUM_FAILING_CASES
     use helpers_m, only: test_item_input_t, test_result_item_input_t, run_test
     use strff, only: NEWLINE
-    use vegetables, only: &
+    use garden, only: &
             input_t, &
             result_t, &
             test_item_t, &

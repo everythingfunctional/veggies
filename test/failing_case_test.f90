@@ -8,7 +8,7 @@ module failing_case_test
             example_failing_test_case, &
             EXAMPLE_DESCRIPTION
     use helpers_m, only: test_item_input_t, test_result_item_input_t, run_test
-    use vegetables, only: &
+    use garden, only: &
             input_t, &
             result_t, &
             test_item_t, &

@@ -8,7 +8,7 @@ module filter_test
             NOT_IN_DESCRIPTIONS
     use helpers_m, only: test_item_input_t
     use iso_varying_string, only: var_str
-    use vegetables, only: &
+    use garden, only: &
             input_t, &
             filter_item_result_t, &
             result_t, &
