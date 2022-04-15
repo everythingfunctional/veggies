@@ -10,8 +10,9 @@ module garden_run_tests_m
     private
     public :: run_tests
 contains
-    subroutine run_tests(tests)
+    function run_tests(tests) result(passed)
         type(test_item_t), intent(in) :: tests
+        logical :: passed
 
         integer(int64) :: clock_rate
         real :: elapsed_time
@@ -33,7 +34,8 @@ contains
                 tests_to_run = filtered_tests%test()
             else
                 call put_line(error_unit, "No matching tests found")
-                stop 1
+                passed = .false.
+                return
             end if
         else
             tests_to_run = tests
@@ -115,8 +117,12 @@ contains
                 suite_failed = .true.
             end if
         end critical
-        if (any_image_failed(suite_failed)) stop 1
-    end subroutine
+        if (any_image_failed(suite_failed)) then
+            passed = .false.
+        else
+            passed = .true.
+        end if
+    end function
 
     function any_image_failed(image_failed)
         logical, intent(in) :: image_failed
