@@ -1,6 +1,5 @@
 module veggies_assert_equals_integer_tensor_m
     use iso_varying_string, only: varying_string, operator(//), var_str
-    use strff, only: join
     use veggies_messages_m, only: &
             make_equals_failure_message, &
             make_equals_success_message, &
