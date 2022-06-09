@@ -51,7 +51,7 @@ contains
         if (self%passed()) then
             description = ""
         else
-            failed = [(.not.self%results(i)%passed(), i = 1, size(self%results))]
+            allocate(failed, source = [(.not.self%results(i)%passed(), i = 1, size(self%results))])
             num_failed = count(failed)
             j= 1
             allocate(failed_messages(num_failed))

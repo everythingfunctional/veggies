@@ -95,7 +95,7 @@ contains
         if (self%passed()) then
             description = ""
         else
-            failed = .not.self%results%passed()
+            allocate(failed, source = .not.self%results%passed())
             num_failed = count(failed)
             j = 1
             allocate(failed_messages(num_failed))
