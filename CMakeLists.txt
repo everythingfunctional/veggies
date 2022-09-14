@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 project(
   "veggies"
   LANGUAGES "Fortran"
-  VERSION "1.0.4"
+  VERSION "1.0.5
 )
 
 option(INSTALL_PROJECT "Whether this project should be installed" TRUE)
