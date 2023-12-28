@@ -41,7 +41,7 @@ contains
         integer :: iostat
         integer :: num_arguments
 
-        options%colorize_ = .true.
+        options%colorize_ = isatty(output_unit)
         options%quiet_ = .false.
         options%verbose_ = .false.
         options%filter_tests_ = .false.
